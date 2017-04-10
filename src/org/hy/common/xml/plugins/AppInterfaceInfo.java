@@ -24,6 +24,9 @@ import org.hy.common.xml.plugins.AppInterface;
 public class AppInterfaceInfo extends Param
 {
     
+    private static final long serialVersionUID = 2497294980260367411L;
+
+
     private static final String [] $RegisterXIDs = {"AppInterfaces" ,"AppInterfacesRetrun" ,"AppInterface_MappingError"};
     
     
