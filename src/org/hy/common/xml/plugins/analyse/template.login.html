@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8"/>
+ 
+<title>Login</title>
+<style type="text/css"> 
+
+</style>
+
+<script>
+	function f_Submit(event)
+	{
+		var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+   		if ( keyCode == 13 ) 
+		{
+   			document.getElementById("form").submit();
+		}
+	}
+</script>
+
+</head>
+<body onload="javascript:document.getElementById('password').focus();">
+    <div style="height:700px; width:500px; margin:0 auto;">
+    	<div style="padding-top:300px; padding-left:130px">
+    		<form id="form" action=":LoginPath" method="post">
+	            <label for="textfield">Password:</label>
+	            <input type="password" name="password" id="password" onKeyUp="f_Submit(event);">
+            </form>
+        </div>
+    </div>
+</body>
+</html>

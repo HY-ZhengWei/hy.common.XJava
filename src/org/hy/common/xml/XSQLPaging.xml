@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="sqls" class="java.util.ArrayList" />
+	<import name="sql"  class="org.hy.common.app.Param" />
+
+
+
+    <!-- 分页模板的相关SQL -->
+	<sqls>
+		
+		<!-- 查询MYSQL的分页模板SQL -->
+		<sql id="XSQLPaging_MYSQL">
+		
+			<value>
+				<![CDATA[
+					:SQLPaging LIMIT :StartIndex ,:PagePerCount
+				]]>
+			</value>
+			
+		</sql>
+		
+		
+		<!-- 查询SQLite的分页模板SQL -->
+		<sql id="XSQLPaging_SQLITE">
+		
+			<value>
+				<![CDATA[
+					:SQLPaging LIMIT :PagePerCount OFFSET :StartIndex + 1
+				]]>
+			</value>
+			
+		</sql>
+		
+		
+		<!-- 查询PostgreSQL的分页模板SQL -->
+		<sql id="XSQLPaging_POSTGRESQL">
+		
+			<value>
+				<![CDATA[
+					:SQLPaging LIMIT :PagePerCount OFFSET :StartIndex
+				]]>
+			</value>
+			
+		</sql>
+		
+		
+		<!-- 查询Oracle的分页模板SQL -->
+		<sql id="XSQLPaging_ORACLE">
+		
+			<value>
+				<![CDATA[
+					SELECT  HYPaging_W.*
+                      FROM (
+                            SELECT  ROWNUM AS rowNumber ,HYPaging_N.*
+                              FROM  ( :SQLPaging )  HYPaging_N
+                             WHERE  ROWNUM <= :StartIndex + :PagePerCount
+                           )  HYPaging_W
+                     WHERE  HYPaging_W.rowNumber > :StartIndex
+				]]>
+			</value>
+			
+		</sql>
+		
+		
+		<!-- 查询SQL Server的分页模板SQL -->
+		<!-- 
+		      要求:SQLPaging的SELECT部分必须有如下关键字
+		      SELECT ROW_NUMBER() OVER(ORDER BY id) AS rowNumber ,...... 
+		      
+		      其中 OVER(ORDER BY id) id 应为具体表的主键或排序字段，可为多个字段 
+		      
+		      同时，:SQLPaging的最外层SQL不能有ORDER BY，因为排序已写在 OVER(...)中了。
+		      
+		      此分页只支持SQL2005后的版本
+		-->
+		<sql id="XSQLPaging_SQLSERVER">
+		
+			<value>
+				<![CDATA[
+					SELECT  TOP :PagePerCount HYPaging.*
+					  FROM ( :SQLPaging )  HYPaging
+					 WHERE  HYPaging.rowNumber > :StartIndex
+				]]>
+			</value>
+			
+		</sql>
+		
+		
+		<!-- 查询DB2的分页模板SQL -->
+		<!-- 
+		      要求:SQLPaging的SELECT部分必须有如下关键字
+		      SELECT ROW_NUMBER() OVER(ORDER BY id) AS rowNumber ,...... 
+		      
+		      其中 OVER(ORDER BY id) id 应为具体表的主键或排序字段，可为多个字段 
+		      
+		      同时，:SQLPaging的最外层SQL不能有ORDER BY，因为排序已写在 OVER(...)中了。
+		-->
+		<sql id="XSQLPaging_DB2">
+		
+			<value>
+				<![CDATA[
+					SELECT  HYPaging.*
+					  FROM ( :SQLPaging )  HYPaging
+					 WHERE  HYPaging.rowNumber >  :StartIndex
+					   AND  HYPaging.rowNumber <= :StartIndex + :PagePerCount
+				]]>
+			</value>
+			
+		</sql>
+		
+	</sqls>
+	
+</config>
