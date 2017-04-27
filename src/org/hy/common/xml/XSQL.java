@@ -610,6 +610,50 @@ public final class XSQL implements Comparable<XSQL>
 	
 	
 	/**
+     * 占位符SQL的查询。（内部不再关闭数据库连接）
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @param i_Conn  
+     * @return
+     */
+    public Object query(Map<String ,?> i_Values ,Connection i_Conn)
+    {
+        if ( this.content == null )
+        {
+            throw new NullPointerException("Content is null of XSQL.");
+        }
+        
+        boolean v_IsError = false;
+        
+        try
+        {
+            return this.query(this.content.getSQL(i_Values) ,i_Conn);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes(i_Values);
+            }
+        }
+    }
+	
+	
+	
+	/**
 	 * 占位符SQL的查询。(按输出字段名称过滤)
 	 * 
 	 * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
@@ -741,6 +785,50 @@ public final class XSQL implements Comparable<XSQL>
 	
 	
 	/**
+     * 占位符SQL的查询。（内部不再关闭数据库连接）
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Conn
+     * @return
+     */
+    public Object query(Object i_Obj ,Connection i_Conn)
+    {
+        if ( this.content == null )
+        {
+            throw new NullPointerException("Content is null of XSQL.");
+        }
+        
+        boolean v_IsError = false;
+
+        try
+        {
+            return this.query(this.content.getSQL(i_Obj) ,i_Conn);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes(i_Obj);
+            }
+        }
+    }
+	
+	
+	
+	/**
 	 * 占位符SQL的查询。(按输出字段名称过滤)
 	 * 
 	 * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
@@ -829,14 +917,14 @@ public final class XSQL implements Comparable<XSQL>
 	
 	
 	/**
-	 * 常规SQL的查询。
+	 * 常规SQL的查询。（内部不再关闭数据库连接）
 	 * 
 	 * 1. 提交数据库执行 i_SQL ，将数据库结果集转化为Java实例对象返回
 	 * 
 	 * @param i_SQL              常规SQL语句
 	 * @return
 	 */
-	public Object query(String i_SQL)
+	public Object query(String i_SQL ,Connection i_Conn)
 	{
 		if ( this.result == null )
 		{
@@ -853,16 +941,19 @@ public final class XSQL implements Comparable<XSQL>
 			throw new NullPointerException("SQL is null of XSQL.");
 		}
 		
+		if ( null == i_Conn)
+        {
+            throw new NullPointerException("Connection is null of XSQL.");
+        }
 		
-		Connection v_Conn      = null;
+		
 		Statement  v_Statement = null;
 	    ResultSet  v_Resultset = null;
 	    long       v_BeginTime = this.request().getTime();
 		
 		try
 		{
-			v_Conn      = this.getConnection();
-			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
+			v_Statement = i_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 			v_Resultset = v_Statement.executeQuery(i_SQL);
 			$SQLBusway.put(new XSQLLog(i_SQL));
 			
@@ -878,9 +969,65 @@ public final class XSQL implements Comparable<XSQL>
 		}
 		finally
 		{
-			this.closeDB(v_Resultset ,v_Statement ,v_Conn);
+			this.closeDB(v_Resultset ,v_Statement ,null);
 		}
 	}
+	
+	
+	
+	/**
+     * 常规SQL的查询。
+     * 
+     * 1. 提交数据库执行 i_SQL ，将数据库结果集转化为Java实例对象返回
+     * 
+     * @param i_SQL              常规SQL语句
+     * @return
+     */
+    public Object query(String i_SQL)
+    {
+        if ( this.result == null )
+        {
+            throw new NullPointerException("Result is null of XSQL.");
+        }
+        
+        if ( !this.dataSourceGroup.isValid() )
+        {
+            throw new RuntimeException("DataSourceGroup is not valid.");
+        }
+        
+        if ( Help.isNull(i_SQL) )
+        {
+            throw new NullPointerException("SQL is null of XSQL.");
+        }
+        
+        
+        Connection v_Conn      = null;
+        Statement  v_Statement = null;
+        ResultSet  v_Resultset = null;
+        long       v_BeginTime = this.request().getTime();
+        
+        try
+        {
+            v_Conn      = this.getConnection();
+            v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
+            v_Resultset = v_Statement.executeQuery(i_SQL);
+            $SQLBusway.put(new XSQLLog(i_SQL));
+            
+            Object v_Ret = this.result.getDatas(v_Resultset);
+            this.success(Date.getNowTime().getTime() - v_BeginTime);
+            
+            return v_Ret;
+        }
+        catch (Exception exce)
+        {
+            erroring(i_SQL ,exce ,this);
+            throw new RuntimeException(exce.getMessage());
+        }
+        finally
+        {
+            this.closeDB(v_Resultset ,v_Statement ,v_Conn);
+        }
+    }
 	
 	
 	
