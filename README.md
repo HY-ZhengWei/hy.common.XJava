@@ -682,9 +682,9 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
 	
 	<content>
 	<![CDATA[
-		INSERT  INTO TLog_:sysID       <!-- 动态表写数据 -->
-		       (
-		        id
+        INSERT  INTO TLog_:sysID       <!-- 动态表写数据 -->
+               (
+                id
                ,logID
                ,logType
                ,logClass
@@ -697,7 +697,7 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
                ,waitTime
                )
         VALUES (
-		        ':id'
+                ':id'
                ,':logID'
                ,':logType'
                ,':logClass'
