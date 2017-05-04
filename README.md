@@ -31,7 +31,11 @@ import
 ------
 类似于Java语言中的引包功能。定义XML文件中节点对应的Java类型。
 写在XML文件的最外层节点的首个位置上。
-基本语法：<import name="节点名称"  class="Java类型" />
+基本语法：
+```xml
+	<import name="节点名称"  class="Java类型" />
+```
+举例说明：
 ```xml
 	<import name="xconfig"  class="java.util.ArrayList" />     <!-- 定义一个List集合的节点名称 -->
 	<import name="xparam"   class="java.util.Hashtable" />     <!-- 定义一个Map集合的节点名称 -->
