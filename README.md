@@ -8,7 +8,7 @@
 		* [constructor 构造器](#constructor)
 		* [call 执行方法](#call)
 	* 通用标记属性
-		* [id 定义变量名称](#id)
+		* [id 定义变量名](#id)
 		* class
 		* ref
 		* setter
@@ -114,6 +114,8 @@ call
 ------
 执行Java方法。写在任一XML节点名称之内，即表示执行主体为本节点名称对应的Java对象实例。
 
+call:name属性：为执行方法的名称。同时支持 xx.yy.zz 的形式(详见举例说明2)。
+
 基本语法：
 ```xml
 <Java对象的节点名称>
@@ -183,7 +185,30 @@ xiconSubmit.setImage(ximageSubmit);
 
 id
 ------
-类似于变量名，是对节点构造对象实例的唯一标识。定义ID变量名后，可以其后的XML文件中引用。同时，在Java代码中也可被引用。
+类似于Java中的变量名，是对节点构造对象实例的唯一标识。ID变量名区分大小写。定义ID变量名后，可以在其后的XML文件中引用。同时，在Java代码中也可被引用。
 
 允许在XML文件中定义两个相同的ID变量名，但后面ID对应的实例将覆盖前面的。有了这个好处后，就能做很多事情了，比如说版本升级，ID变量名可以保持不变，
-但业务逻辑可以重新定义的同时也用不覆盖老版本的代码。
+但业务逻辑可以重新定义的同时也用不覆盖老版本的Java代码和老版本的XML文件。
+
+在Java代码中引用的方法为：XJava.getObject("对象实例的变量名");
+
+基本语法：
+```xml
+<Java对象的节点名称 id="对象实例的变量名">
+</Java对象的节点名称>
+```
+举例说明：
+```xml
+<import name="dataSourceGroup" class="org.hy.common.db.DataSourceGroup" />
+
+<xconfig>
+	<!-- 数据库连接池组 -->
+	<dataSourceGroup id="dsg" />
+</xconfig>
+```
+举例翻译成Java代码：
+```java
+import org.hy.common.db.DataSourceGroup
+
+DataSourceGroup dsg = new DataSourceGroup();
+```
