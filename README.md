@@ -653,7 +653,7 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
 		       ,A.projectID  AS "project.modelID"  <!-- 一对一关系映射。映射到行级对象的getProject().setModelID(...)方法 -->
 		  FROM  Product:tableDate  A               <!-- 动态表查询 -->
 		 WHERE  A.projectID  = ':modelID'          <!-- 固定的查询条件 -->
-	  <[   AND  A.curUserId IN (:curUserId)  ]>    <!-- 动态的查询条件。当curUserId不为null时有效 -->
+		<[ AND  A.curUserId IN (:curUserId)  ]>    <!-- 动态的查询条件。当curUserId不为null时有效 -->
 		 ORDER  BY A.orderNum
 		]]>
 	</content>
