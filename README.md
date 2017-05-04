@@ -611,7 +611,9 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
 	
 	* 2.占位符支持面向对象：占位符可以为xxx.yyy.www(或getXxx.getYyy.getWww)全路径的解释。如，:shool.BeginTime。
 	
-	* 3.动态SQL标记区 <[ ... ]>。当区域内的占位符有值时(不为null)，动态SQL标记区生效，将参与到最终SQL的执行中。
+	* 3.占位符可以写在SQL语句的任何位置。如，表名称后，表示动态表；Where条件后，表示动态条件。
+	
+	* 4.动态SQL标记区 <[ ... ]>。当区域内的占位符有值时(不为null)，动态SQL标记区生效，将参与到最终SQL的执行中。
 
 基本语法：
 ```xml
@@ -623,7 +625,44 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
 	
 	<content>...</content>                   <!-- 定义执行的SQL语句 -->  
 	
-	<result>...</result>                     <!-- 当为查询SQL语句时，定义查询结果集映射的Java对象及映射的方式 -->
+	<result>                                 <!-- 当为查询SQL语句时，定义查询结果集映射的Java对象及映射的方式 -->
+		<table>java.util.ArrayList</table>   <!-- 表级的对象类型 -->
+		<fill>add(row)</fill>                <!-- 行级对象填充到表级对象的填充方法名 -->
+		<row>java.util.ArrayList</row>       <!-- 行级的对象类型 -->
+		<cfill>add(colValue)</cfill>         <!-- 列级对象填充到行级对象的填充方法名 -->
+	</result>                     
+	
+	<trigger>...</trigger>                   <!-- 定义触发器。类似于数据库的After触发器。可选 -->
+	
+</sql>
+```
+
+查询SQL举例说明：
+```xml
+<import name="sql" class="org.hy.common.xml.XSQL" />
+
+<sql> 
+
+	<dataSourceGroup ref="DSG" />
+			
+	<content>
+		<![CDATA[
+		SELECT <[ TOP :pagePerSize ]>              <!-- 动态区。当pagePerSize不为null时有效，表示只查询前多少行记录 -->
+		        A.modelID                          <!-- 普通列值映射。映射到行级对象的setModelID(...)方法 -->
+		       ,A.only_Code  AS onlyCode           <!-- 列传重命名映射。映射到行级对象的setOnlyCode(...)方法 -->
+		       ,A.projectID  AS "project.modelID"  <!-- 一对一关系映射。映射到行级对象的getProject().setModelID(...)方法 -->
+		  FROM  Product:tableDate  A               <!-- 动态表查询 -->
+		 WHERE  A.projectID  = ':modelID'          <!-- 固定的查询条件 -->
+      <[   AND  A.curUserId IN (:curUserId)  ]>    <!-- 动态的查询条件。当curUserId不为null时有效 -->
+		 ORDER  BY A.orderNum
+		]]>
+	</content>
+	
+	<result>                                       <!-- 查询结果集转为Java对象的结构为：Set<Product> -->
+		<table>java.util.LinkedHashSet</table>
+		<row>xx.xx.Product</row>
+		<cfill>setter(colValue)</cfill>            <!-- 使用setter方法的形式填充对象属性 -->
+	</result>
 	
 </sql>
 ```
