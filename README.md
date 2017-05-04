@@ -599,4 +599,31 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
 	
 	* 2.无数据库连接池：特殊情况下，如手机App这样的微型应用，一个单例的数据库连接就可以满足了，不需要庞大的数据库连接池。
 	
+两种入参类型：
 
+	* 1.可按对象填充占位符SQL; 同时支持动态SQL，动态标识 <[ ... ]>
+	
+	* 2.可按Map集合填充占位符SQL。同时支持动态SQL，动态标识 <[ ... ]>
+	
+动态SQL的形式：
+
+	* 1.占位符：由一个冒号+变量名组成。如，:name。
+	
+	* 2.占位符支持面向对象：占位符可以为xxx.yyy.www(或getXxx.getYyy.getWww)全路径的解释。如，:shool.BeginTime。
+	
+	* 3.动态SQL标记区 <[ ... ]>。当区域内的占位符有值时(不为null)，动态SQL标记区生效，将参与到最终SQL的执行中。
+
+基本语法：
+```xml
+<import name="sql" class="org.hy.common.xml.XSQL" />
+
+<sql>
+
+	<dataSourceGroup>...</dataSourceGroup>   <!-- 定义所使用的数据库连接池 -->
+	
+	<content>...</content>                   <!-- 定义执行的SQL语句 -->  
+	
+	<result>...</result>                     <!-- 当为查询SQL语句时，定义查询结果集映射的Java对象及映射的方式 -->
+	
+</sql>
+```
