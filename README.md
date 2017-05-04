@@ -14,11 +14,15 @@
 		* [setter 容器添加子对象](#属性setter)
 		* [key Map集合添加子元素的Key值](#属性key)
 		* [submit 打包提交](#属性submit)
+		* [new 是否为单例](#属性new)
 	* 关键字
 		* [this 对象实例自已](#关键字this)
 		* [classpath XML同级包的路径](#关键字classpath)
 		* [classhome Java工程的根路径](#关键字classhome)
 		* [webhome Web工程的根路径](#关键字webhome)
+	* 逻辑判断
+		* [if 真值才解释](逻辑判断if)
+		* [ifnot 假值才解释](逻辑判断ifnot)
 * [XSQL 轻量级持久层](#轻量级持久层xsql)
 * XSQLGroup
 * XSQLPaging
