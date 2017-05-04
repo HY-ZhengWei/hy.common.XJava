@@ -12,7 +12,8 @@
 		* [class 标记的Java类型](#属性class)
 		* [ref 引用](#属性ref)
 		* [setter 容器添加子对象](#属性setter)
-		* submit
+		* [key Map集合添加子元素的Key值](#属性key)
+		* [submit 打包提交](#属性submit)
 	* 关键字
 		* this
 		* classpath
@@ -303,7 +304,7 @@ v_Berkeley.setDatabaseConfig(v_DatabaseConfig);
 
 属性setter
 ------
-只用于容器对象、集合对象。表示XML中父节点添加子节点的Java方法名称。入参数量只能是一个。
+只用于容器对象、List集合、Set集合对象。表示XML中父节点添加子节点的Java方法名称。入参数量只能是一个。
 
 当XML中节点为java.util.List类型时，默认XML节点的setter属性值为:add，不用标明在XML节点中。
 
@@ -320,7 +321,7 @@ v_Berkeley.setDatabaseConfig(v_DatabaseConfig);
 <import name="XTextField"  class="javax.swing.JTextField" />
 <import name="flowLayout"  class="java.awt.FlowLayout" />
 
-<xconfig>                              <!-- 因为xconfig节点是List集合对象，默认setter="add" -->
+<xconfig>	                           <!-- 因为xconfig节点是List集合对象，默认setter="add" -->
 	<XPanel id="panel" setter="add">   <!-- 容器添加子对象的方法为: add -->
 		<layout>
 			<flowLayout>
@@ -365,4 +366,54 @@ v_Panel.add(v_TxtTitle);            -- 容器添加子对象
 
 ArrayList v_List = new ArrayList();
 v_List.add(v_Panel);                -- 集合添加子元素
+```
+
+
+
+属性key
+------
+只用于Map集合对象。表示Map集合通过Map.put(key ,value)方法添加子元素时，Map.Key的取值方法的名称(子节点对象的方法名称)。Map.Value默认为XML子节点中实例的对象本身。
+
+当XML中节点为java.util.List类型时，默认XML节点的setter属性值为:add，不用标明在XML节点中。
+
+基本语法：
+```xml
+<Map集合对象的节点名称 key="子节点的方法名称">
+</Map集合对象的节点名称>
+```
+举例说明：
+```xml
+<import name="xconfig"  class="java.util.ArrayList" />
+<import name="xparam"   class="java.util.Hashtable" />
+<import name="item"     class="org.hy.common.app.Param" />
+
+<xconfig>
+	
+    <xparam id="SYSParam" key="name">  <!-- 子节点对象的getName()方法的返回值为Map.key值 -->
+    	<item id="Param01">
+            <name>参数名称01</name>
+        </item>
+		
+		<item id="Param02">
+            <name>参数名称02</name>
+        </item>
+	</xparam>
+	
+</xconfig>
+```
+举例翻译成Java代码：
+```java
+import java.util.ArrayList;
+import java.util.Hashtable;
+import org.hy.common.app.Param;
+
+Param v_Param01 = new Param();
+Param v_Param02 = new Param();
+
+v_Param01.setName("参数名称01");
+v_Param02.setName("参数名称02");
+
+Hashtable v_SYSParam = new Hashtable();
+v_SYSParam.put(v_Param01.getName() ,v_Param01);  -- Map集合添加子元素
+v_SYSParam.put(v_Param02.getName() ,v_Param02);  -- Map集合添加子元素
 ```
