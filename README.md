@@ -25,10 +25,10 @@
 		* [ifnot 假值才解释](逻辑判断ifnot)
 * [XSQL 轻量级持久层](#轻量级持久层xsql)
 * [XSQLGroup 轻量级ETL](#轻量级etl)
-* XSQLPaging
-* XJSON
-* XHttp
-* XWebService
+* [XSQLPaging 多种类数据库通用分页](src/org/hy/common/xml/XSQLPaging.xml)
+* [XJSON Json与Java对象的转换](src/org/hy/common/xml/XJSON.java)
+* [XHttp Http访问](src/org/hy/common/xml/XHttp.java)
+* [XWebService 接口服务](src/org/hy/common/xml/XWebService.java)
 
 
 
