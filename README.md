@@ -29,4 +29,10 @@
 
 import
 ------
-类似于Java语言中的引包功能。将xml文件中节点对应一个Java类型
+类似于Java语言中的引包功能。定义XML文件中节点对应的Java类型。
+```xml
+    <import name="节点名称"  class="Java类型" />
+	<import name="xconfig"  class="java.util.ArrayList" />
+	<import name="xparam"   class="java.util.Hashtable" />
+	<import name="item"     class="org.hy.common.app.Param" />
+```
