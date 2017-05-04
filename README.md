@@ -4,12 +4,12 @@
 
 * XJava
 	* 系统标记
-		* [import 引类](#import)
-		* [constructor 构造器](#constructor)
-		* [call 执行方法](#call)
+		* [import 引类](#系统标记import)
+		* [constructor 构造器](#系统标记constructor)
+		* [call 执行方法](#系统标记call)
 	* 通用标记属性
 		* [id 定义变量名](#属性id)
-		* class
+		* [class 标记的Java类型](#属性class)
 		* ref
 		* setter
 		* submit
@@ -27,7 +27,7 @@
 
 
 
-import
+系统标记import
 ------
 类似于Java语言中的引包功能。定义XML文件中节点对应的Java类型。
 写在XML文件的最外层节点之后，其它之前。
@@ -45,7 +45,7 @@ import
 
 
 
-constructor
+系统标记constructor
 ------
 Java对象的复杂构造器在创建实例时使用。
 写在Java对象节点名称之后，对象实例操作之前。
@@ -110,7 +110,7 @@ KettleDatabaseRepositoryMeta v_RepositoryMeta = new KettleDatabaseRepositoryMeta
 
 
 
-call
+系统标记call
 ------
 执行Java方法。写在任一XML节点名称之内，即表示执行主体为本节点名称对应的Java对象实例。
 
@@ -186,9 +186,9 @@ xiconSubmit.setImage(ximageSubmit);
 属性id
 ------
 类似于Java中的变量名，是对节点构造对象实例的唯一标识。ID变量名区分大小写。
-ID属性不是必须声明的属性，即没有变更名的匿名实例。
-定义ID变量名后，可以在其后的XML文件中引用。同时，在Java代码中也可被引用。
+ID属性不是必须声明的属性，即没有变更名的匿名实例，如：new Date()。
 
+定义ID变量名后，可以在其后的XML文件中引用。同时，在Java代码中也可被引用。
 在Java代码中引用的方法为：XJava.getObject("对象实例的变量名");
 
 允许在XML文件中定义两个相同的ID变量名，但后面ID对应的实例将覆盖前面的。有了这个好处后，就能做很多事情了，比如说版本升级，ID变量名可以保持不变，
@@ -213,4 +213,26 @@ ID属性不是必须声明的属性，即没有变更名的匿名实例。
 import org.hy.common.db.DataSourceGroup
 
 DataSourceGroup dsg = new DataSourceGroup();
+```
+
+
+
+属性class
+------
+表示XML文件中属性class所在节点的的Java类型。当被说明的XML节点使用次数少，如只出现一次时，可不用<import>引类，而用class属性说明。
+基本语法：
+```xml
+<Java对象的节点名称 class="Java类的全路径">
+</Java对象的节点名称>
+```
+举例说明：
+```xml
+<xconfig>
+	<!-- 数据库连接池组 -->
+	<dataSourceGroup class="org.hy.common.db.DataSourceGroup" />
+</xconfig>
+```
+举例翻译成Java代码：
+```java
+new org.hy.common.db.DataSourceGroup();
 ```
