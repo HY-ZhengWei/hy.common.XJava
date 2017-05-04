@@ -124,6 +124,23 @@ call
 	</call>
 </Java对象的节点名称>
 ```
+举例说明1：
+```xml
+<import name="jobs" class="org.hy.common.thread.Jobs" />
+
+<xconfig>
+	<jobs id="jobList">
+		<call name="startup" />  <!-- 无入参数方法的执行 -->
+	</jobs>
+</xconfig>
+```
+举例1翻译成Java代码：
+```java
+import org.hy.common.thread.Jobs
+
+Jobs jobList = new Jobs();
+jobList.startup();
+```
 举例说明2：
 ```xml
 <import name="XImageIcon" class="javax.swing.ImageIcon" />
@@ -146,7 +163,7 @@ call
 			<int>1</int>
 		</call>
 		
-		<image ref="ximageSubmit" />  <!-- 设置图标组件的大小，这里引用上面方法的返回值 -->
+		<image ref="ximageSubmit" />  <!-- 设置图标组件的大小，这里引用方法的返回值 -->
 	</XImageIcon>
 </xconfig>
 ```
