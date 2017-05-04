@@ -20,8 +20,8 @@
 		* [classhome Java工程的根路径](#关键字classhome)
 		* [webhome Web工程的根路径](#关键字webhome)
 * [XSQL 轻量级持久层](#轻量级持久层XSQL)
-	* XSQLGroup
-	* XSQLPaging
+* XSQLGroup
+* XSQLPaging
 * XJSON
 * XHttp
 * XWebService
