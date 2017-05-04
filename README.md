@@ -24,7 +24,7 @@
 		* [if 真值才解释](逻辑判断if)
 		* [ifnot 假值才解释](逻辑判断ifnot)
 * [XSQL 轻量级持久层](#轻量级持久层xsql)
-* [XSQLGroup 轻量级ETL](#轻量级ETL)
+* [XSQLGroup 轻量级ETL](#轻量级etl)
 * XSQLPaging
 * XJSON
 * XHttp
@@ -775,7 +775,7 @@ DDL举例说明：
 
 
 
-轻量级ETL
+轻量级etl
 ------
 组合一组XSQL，有顺序，有参数关联的执行。
 
