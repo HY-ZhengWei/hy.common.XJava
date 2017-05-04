@@ -11,7 +11,7 @@
 		* [id 定义变量名](#属性id)
 		* [class 标记的Java类型](#属性class)
 		* [ref 引用](#属性ref)
-		* setter
+		* [setter 容器添加子对象](#属性setter)
 		* submit
 	* 关键字
 		* this
@@ -243,6 +243,10 @@ new org.hy.common.db.DataSourceGroup();
 ------
 表示引用的对象实例是谁，用于对XML节点对象赋值，与XJava:id属性配合使用。
 
+属性ref不只是简单的引用对象实例，还可以引用对象实例中某个方法的返回值。如：date.getFull()方法的返回值对象。
+
+属性ref除了引用其它对象实例外，还引用自己或自己中某个方法的返回值(详见关键字this)，多用于引用Java类中定义的常量值。
+
 基本语法：
 ```xml
 <Java对象的节点名称 ref="实例ID变量名">
@@ -250,11 +254,12 @@ new org.hy.common.db.DataSourceGroup();
 ```
 举例说明：
 ```xml
-<xconfig>
-	<import name="envConfig" class="com.sleepycat.je.EnvironmentConfig" />
-	<import name="dbConfig"  class="com.sleepycat.je.DatabaseConfig" />
-	<import name="berkeley"  class="org.hy.common.berkeley.Berkeley" />
+<import name="envConfig" class="com.sleepycat.je.EnvironmentConfig" />
+<import name="dbConfig"  class="com.sleepycat.je.DatabaseConfig" />
+<import name="berkeley"  class="org.hy.common.berkeley.Berkeley" />
 
+<xconfig>
+	<!-- 嵌入式数据库的配置参数信息 -->
 	<envConfig id="BEnvConfig">
 		<allowCreate>true</allowCreate>
 		<transactional>false</transactional>
@@ -292,5 +297,72 @@ v_DatabaseConfig.setDeferredWrite(true);
 Berkeley v_Berkeley = new Berkeley();
 v_Berkeley.setEnvironmentConfig(v_BEnvConfig);
 v_Berkeley.setDatabaseConfig(v_DatabaseConfig);
- 
+```
+
+
+
+属性setter
+------
+只用于容器对象、集合对象。表示XML中父节点添加子节点的Java方法名称。入参数量只能是一个。
+
+当XML中节点为java.util.List类型时，默认XML节点的setter属性值为:add，不用标明在XML节点中。
+
+基本语法：
+```xml
+<Java容器、集合对象的节点名称 setter="方法名称">
+</Java容器、集合对象的节点名称>
+```
+举例说明：
+```xml
+<import name="xconfig"     class="java.util.ArrayList" />
+<import name="XPanel"      class="javax.swing.JPanel" />
+<import name="XLabel"      class="javax.swing.JLabel" />
+<import name="XTextField"  class="javax.swing.JTextField" />
+<import name="flowLayout"  class="java.awt.FlowLayout" />
+
+<xconfig>                              <!-- 因为xconfig节点是List集合对象，默认setter="add" -->
+	<XPanel id="panel" setter="add">   <!-- 容器添加子对象的方法为: add -->
+		<layout>
+			<flowLayout>
+				<alignment ref="this.LEFT" />
+			</flowLayout>
+		</layout>
+		
+		<XLabel>
+			<text>标题：</text>
+		</XLabel>
+		
+		<XTextField id="txtTitle">
+			<columns>20</columns>
+			<toolTipText>请输入标题</toolTipText>
+		</XTextField>
+	</XPanel>
+</xconfig>
+```
+举例翻译成Java代码：
+```java
+import java.util.ArrayList;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import java.awt.FlowLayout;
+
+FlowLayout v_FlowLayout = new FlowLayout();
+v_FlowLayout.setAlignment(FlowLayout.LEFT);
+
+JLabel v_Label = new JLabel();
+v_Label.setText("标题");
+
+JTextField v_TxtTitle = new JTextField();
+v_TxtTitle.setColumns(20);
+v_TxtTitle.setToolTipText("请输入标题");
+
+JPanel v_Panel = new JPanel();
+v_Panel.setLayout(v_FlowLayout);
+
+v_Panel.add(v_Label);               -- 容器添加子对象
+v_Panel.add(v_TxtTitle);            -- 容器添加子对象
+
+ArrayList v_List = new ArrayList();
+v_List.add(v_Panel);                -- 集合添加子元素
 ```
