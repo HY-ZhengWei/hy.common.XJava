@@ -10,7 +10,7 @@
 	* 通用标记属性
 		* [id 定义变量名](#属性id)
 		* [class 标记的Java类型](#属性class)
-		* ref
+		* [ref 引用](#属性ref)
 		* setter
 		* submit
 	* 关键字
@@ -235,4 +235,62 @@ DataSourceGroup dsg = new DataSourceGroup();
 举例翻译成Java代码：
 ```java
 new org.hy.common.db.DataSourceGroup();
+```
+
+
+
+属性ref
+------
+表示引用的对象实例是谁，用于对XML节点对象赋值，与XJava:id属性配合使用。
+
+基本语法：
+```xml
+<Java对象的节点名称 ref="实例ID变量名">
+</Java对象的节点名称>
+```
+举例说明：
+```xml
+<xconfig>
+	<import name="envConfig" class="com.sleepycat.je.EnvironmentConfig" />
+	<import name="dbConfig"  class="com.sleepycat.je.DatabaseConfig" />
+	<import name="berkeley"  class="org.hy.common.berkeley.Berkeley" />
+
+	<envConfig id="BEnvConfig">
+		<allowCreate>true</allowCreate>
+		<transactional>false</transactional>
+		<locking>false</locking>
+		<cacheSize>104857600</cacheSize> <!-- 100 * 1024 * 1024 -->
+	</envConfig>
+	
+	<dbConfig id="BDBConfig">
+		<allowCreate>true</allowCreate>
+		<deferredWrite>true</deferredWrite>
+	</dbConfig>
+	
+	<berkeley id="Berkeley">
+		<environmentConfig ref="BEnvConfig" />  <!-- 引用ID=BEnvConfig -->
+		<databaseConfig    ref="BDBConfig"  />  <!-- 引用ID=BDBConfig -->
+	</berkeley>
+</xconfig>
+```
+举例翻译成Java代码：
+```java
+import com.sleepycat.je.EnvironmentConfig;
+import com.sleepycat.je.DatabaseConfig;
+import org.hy.common.berkeley.Berkeley;
+
+EnvironmentConfig v_BEnvConfig = new EnvironmentConfig();
+v_BEnvConfig.setAllowCreate(true);
+v_BEnvConfig.setTransactional(false);
+v_BEnvConfig.setLocking(false);
+v_BEnvConfig.setCacheSize(104857600);
+ 
+DatabaseConfig v_DatabaseConfig = new DatabaseConfig();
+v_DatabaseConfig.setAllowCreate(true);
+v_DatabaseConfig.setDeferredWrite(true);
+
+Berkeley v_Berkeley = new Berkeley();
+v_Berkeley.setEnvironmentConfig(v_BEnvConfig);
+v_Berkeley.setDatabaseConfig(v_DatabaseConfig);
+ 
 ```
