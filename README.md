@@ -19,7 +19,7 @@
 		* [classpath XML同级包的路径](#关键字classpath)
 		* [classhome Java工程的根路径](#关键字classhome)
 		* [webhome Web工程的根路径](#关键字webhome)
-* XSQL
+* [XSQL 轻量级持久层](#XSQL)
 	* XSQLGroup
 	* XSQLPaging
 * XJSON
@@ -580,3 +580,18 @@ webhome的父目录是：Web工程的名称
 	</XImageIcon>
 </xconfig>
 ```
+
+
+
+XSQL
+------
+XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发器和数据库与Java对象映射的持久层轻量级框架。与XJava融合，用XML文件保存SQL语句配置信息，构建SQL对象池。
+
+两种加载SQL配置的方式：
+	* 1.启动加载：常规情况下，应用程序在首次启动时，按SQL配置文件初始化SQL对象，并已单例的形式保存在内存中。
+	* 2.动态加载：同时，也支持应用程序运行过程中（应用程序不停机），动态重新加载SQL配置文件。可局部加载或全量加载。
+
+两种数据源：
+	* 1.数据库连接池：默认情况XSQL须与数据库连接池对象关联。每个XSQL对应一个数据库连接池对象，多个XSQL也可共用一个数据库连接池对象。
+	* 2.无数据库连接池：特殊情况下，如手机App这样的微型应用，一个单例的数据库连接就可以满足了，不需要庞大的数据库连接池。
+
