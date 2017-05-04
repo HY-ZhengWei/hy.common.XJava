@@ -25,6 +25,7 @@
 		* [ifnot 假值才解释](逻辑判断ifnot)
 	* 注解
 		* [@Xjava](src/org/hy/common/xml/annotation/Xjava.java)
+		* [@Doc](src/org/hy/common/xml/annotation/Doc.java)
 * [XSQL 轻量级持久层](#轻量级持久层xsql)
 * [XSQLGroup 轻量级ETL](#轻量级etl)
 * [XSQLPaging 多种类数据库通用分页](src/org/hy/common/xml/XSQLPaging.xml)
