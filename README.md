@@ -621,18 +621,18 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
 
 <sql>
 
-	<dataSourceGroup>...</dataSourceGroup>   <!-- 定义所使用的数据库连接池 -->
+	<dataSourceGroup>...</dataSourceGroup>	 <!-- 定义所使用的数据库连接池 -->
 	
-	<content>...</content>                   <!-- 定义执行的SQL语句 -->  
+	<content>...</content>	                 <!-- 定义执行的SQL语句 -->  
 	
-	<result>                                 <!-- 当为查询SQL语句时，定义查询结果集映射的Java对象及映射的方式 -->
+	<result>	                             <!-- 当为查询SQL语句时，定义查询结果集映射的Java对象及映射的方式 -->
 		<table>java.util.ArrayList</table>   <!-- 表级的对象类型 -->
 		<fill>add(row)</fill>                <!-- 行级对象填充到表级对象的填充方法名 -->
 		<row>java.util.ArrayList</row>       <!-- 行级的对象类型 -->
 		<cfill>add(colValue)</cfill>         <!-- 列级对象填充到行级对象的填充方法名 -->
 	</result>                     
 	
-	<trigger>...</trigger>                   <!-- 定义触发器。类似于数据库的After触发器。可选 -->
+	<trigger>...</trigger>	                 <!-- 定义触发器。类似于数据库的After触发器。可选 -->
 	
 </sql>
 ```
@@ -653,12 +653,12 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
 		       ,A.projectID  AS "project.modelID"  <!-- 一对一关系映射。映射到行级对象的getProject().setModelID(...)方法 -->
 		  FROM  Product:tableDate  A               <!-- 动态表查询 -->
 		 WHERE  A.projectID  = ':modelID'          <!-- 固定的查询条件 -->
-      <[   AND  A.curUserId IN (:curUserId)  ]>    <!-- 动态的查询条件。当curUserId不为null时有效 -->
+	  <[   AND  A.curUserId IN (:curUserId)  ]>    <!-- 动态的查询条件。当curUserId不为null时有效 -->
 		 ORDER  BY A.orderNum
 		]]>
 	</content>
 	
-	<result>                                       <!-- 查询结果集转为Java对象的结构为：Set<Product> -->
+	<result>	                                   <!-- 查询结果集转为Java对象的结构为：Set<Product> -->
 		<table>java.util.LinkedHashSet</table>
 		<row>xx.xx.Product</row>
 		<cfill>setter(colValue)</cfill>            <!-- 使用setter方法的形式填充对象属性 -->
