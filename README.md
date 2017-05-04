@@ -19,7 +19,7 @@
 		* [classpath XML同级包的路径](#关键字classpath)
 		* [classhome Java工程的根路径](#关键字classhome)
 		* [webhome Web工程的根路径](#关键字webhome)
-* [XSQL 轻量级持久层](#轻量级持久层)
+* [XSQL 轻量级持久层](#轻量级持久层xsql)
 * XSQLGroup
 * XSQLPaging
 * XJSON
@@ -583,7 +583,7 @@ webhome的父目录是：Web工程的名称
 
 
 
-轻量级持久层 XSQL
+轻量级持久层xsql
 ------
 XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发器和数据库与Java对象映射的持久层轻量级框架。与XJava融合，用XML文件保存SQL语句配置信息，构建SQL对象池。
 
