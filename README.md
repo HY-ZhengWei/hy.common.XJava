@@ -3,10 +3,10 @@
 
 
 * XJava
-	* 标记
+	* 系统标记
 		* [import 引类](#import)
 		* [constructor 构造器](#constructor)
-		* call
+		* [call 执行方法](#call)
 	* 通用标记属性
 		* id
 		* class
@@ -106,4 +106,58 @@ import org.pentaho.di.repository.kdr.KettleDatabaseRepositoryMeta;
 
 DatabaseMeta                 v_DatabaseMeta   = new DatabaseMeta();
 KettleDatabaseRepositoryMeta v_RepositoryMeta = new KettleDatabaseRepositoryMeta("Kettle" ,"Kettle" ,"Description" ,v_DatabaseMeta);
+```
+
+
+
+call
+------
+执行Java方法。写在任一XML节点名称之内，即表示执行主体为本节点名称对应的Java对象实例。
+
+基本语法：
+```xml
+<Java对象的节点名称>
+	<call name="方法名称" returnid="方法返回值的变量名">
+		<参数类型01>参数值01</参数类型01>
+		<参数类型02>参数值02</参数类型02>
+		<...>...</...>
+	</call>
+</Java对象的节点名称>
+```
+举例说明2：
+```xml
+<import name="XImageIcon" class="javax.swing.ImageIcon" />
+<import name="XURL"       class="java.net.URL" />
+
+<xconfig>
+	<XImageIcon id="xiconSubmit">
+		<constructor>
+			<XURL>
+				<constructor>
+					<String>classpath:Ubuntu.png</String>
+				</constructor>
+			</XURL>
+		</constructor>
+		
+		<!-- 定义组件的大小，通过方法的返回值获取组件尺寸对象 -->
+		<call name="this.getImage.getScaledInstance" returnID="ximageSubmit">
+			<int>24</int>
+			<int>24</int>
+			<int>1</int>
+		</call>
+		
+		<image ref="ximageSubmit" />  <!-- 设置图标组件的大小，这里引用上面方法的返回值 -->
+	</XImageIcon>
+</xconfig>
+```
+举例2翻译成Java代码：
+```java
+import java.awt.Image;
+import java.net.URL;
+import javax.swing.ImageIcon;
+
+ImageIcon xiconSubmit  = new ImageIcon(new URL("Ubuntu.png"));
+Image     ximageSubmit = xiconSubmit.getImage().getScaledInstance(24 ,24 ,Image.SCALE_DEFAULT);
+
+xiconSubmit.setImage(ximageSubmit);
 ```
