@@ -630,6 +630,7 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
 		<fill>add(row)</fill>                <!-- 行级对象填充到表级对象的填充方法名 -->
 		<row>java.util.ArrayList</row>       <!-- 行级的对象类型 -->
 		<cfill>add(colValue)</cfill>         <!-- 列级对象填充到行级对象的填充方法名 -->
+		<relationKeys>...</relationKeys>     <!-- 一对多关系时，识别出属于同一对象的主键信息（多个属性间用逗号分隔） -->
 	</result>                     
 	
 	<trigger>...</trigger>	                 <!-- 定义触发器。类似于数据库的After触发器。可选 -->
@@ -664,5 +665,106 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
 		<cfill>setter(colValue)</cfill>            <!-- 使用setter方法的形式填充对象属性 -->
 	</result>
 	
+</sql>
+```
+
+插入SQL举例说明：
+```xml
+<import name="sql" class="org.hy.common.xml.XSQL" />
+
+<sql> 
+
+	<dataSourceGroup ref="DSG" />
+			
+	<contentDB>
+		<keyReplace>true</keyReplace>  <!-- 替换数据库关键字。如，单引号替换成两个单引号。默认为：false，即不替换 -->
+	</contentDB>
+	
+	<content>
+	<![CDATA[
+		INSERT  INTO TLog_:sysID       <!-- 动态表写数据 -->
+		       (
+		        id
+               ,logID
+               ,logType
+               ,logClass
+               ,logContent
+               ,logInfo
+               ,operatorNo
+               ,operationType
+               ,operationRemark
+               ,operationTime
+               ,waitTime
+               )
+        VALUES (
+		        ':id'
+               ,':logID'
+               ,':logType'
+               ,':logClass'
+               ,':logContent'
+               ,':logInfo'
+               ,':operatorNo'
+               ,':operationType'
+               ,':operationRemark'
+               ,':operationTime'
+               ,':waitTime'
+               )
+	]]>
+	</content>
+			
+</sql>
+```
+
+DDL举例说明：
+```xml
+<import name="sql" class="org.hy.common.xml.XSQL" />
+
+<sql> 
+
+	<dataSourceGroup ref="DSG" />
+			
+	<content>
+	<![CDATA[
+		CREATE TABLE TLog_:sysID       <!-- 动态表创建 --> 
+		(
+		  id                           VARCHAR(64)        NOT NULL
+		 ,logID                        VARCHAR(64)
+		 ,logType                      VARCHAR(1000)
+		 ,logClass                     VARCHAR(1000)
+		 ,logContent                   TEXT
+		 ,logInfo                      TEXT
+		 ,operatorNo                   VARCHAR(64)
+		 ,operationType                VARCHAR(64)
+		 ,operationRemark              VARCHAR(1000)
+		 ,operationTime                DATETIME          NOT NULL 
+		 ,waitTime                     INT               NOT NULL
+		 ,PRIMARY KEY (id)
+		)
+	]]>
+	</content>
+			
+</sql>
+```
+
+多种类数据库兼容举例说明：
+```xml
+<import name="sql" class="org.hy.common.xml.XSQL" />
+
+<sql> 
+
+	<dataSourceGroup ref="DSG" />
+			
+	<content if="MYSQL == DSG.getDbProductType">
+	<![CDATA[
+		ALTER TABLE TLog_:sysID ADD INDEX (logID)
+	]]>
+	</content>
+	
+	<content if="SQLSERVER == DSG.getDbProductType">
+	<![CDATA[
+		CREATE NONCLUSTERED INDEX IX_TLog_LogID_:sysID ON TLog_:sysID (logID)
+	]]>
+	</content>
+			
 </sql>
 ```
