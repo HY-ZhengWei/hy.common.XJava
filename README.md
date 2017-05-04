@@ -84,7 +84,9 @@ Java对象的复杂构造器在创建实例时使用。
 
 <xconfig>
 	<!-- 创建Kettle数据库 -->
-    <databaseMeta id="DatabaseMeta" />
+	<databaseMeta id="DatabaseMeta" />
+		<...>...</...>
+	</databaseMeta>
 	
 	<!-- 创建Kettle资源库 -->
 	<repositoryMeta id="RepositoryMeta">
