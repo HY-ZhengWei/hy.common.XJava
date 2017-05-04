@@ -8,7 +8,7 @@
 		* [constructor 构造器](#constructor)
 		* [call 执行方法](#call)
 	* 通用标记属性
-		* id
+		* [id 定义变量名称](#id)
 		* class
 		* ref
 		* setter
@@ -130,7 +130,7 @@ call
 
 <xconfig>
 	<jobs id="jobList">
-		<call name="startup" />  <!-- 无入参数方法的执行 -->
+		<call name="startup" />  <!-- 无入参参数的方法执行 -->
 	</jobs>
 </xconfig>
 ```
@@ -178,3 +178,12 @@ Image     ximageSubmit = xiconSubmit.getImage().getScaledInstance(24 ,24 ,Image.
 
 xiconSubmit.setImage(ximageSubmit);
 ```
+
+
+
+id
+------
+类似于变量名，是对节点构造对象实例的唯一标识。定义ID变量名后，可以其后的XML文件中引用。同时，在Java代码中也可被引用。
+
+允许在XML文件中定义两个相同的ID变量名，但后面ID对应的实例将覆盖前面的。有了这个好处后，就能做很多事情了，比如说版本升级，ID变量名可以保持不变，
+但业务逻辑可以重新定义的同时也用不覆盖老版本的代码。
