@@ -15,10 +15,10 @@
 		* [key Map集合添加子元素的Key值](#属性key)
 		* [submit 打包提交](#属性submit)
 	* 关键字
-		* this
-		* classpath
-		* classhome
-		* webhome
+		* [this 对象实例自已](#关键字this)
+		* [classpath XML同级包的路径](#关键字classpath)
+		* [classhome Java工程的根路径](#关键字classhome)
+		* [webhome Web工程的根路径](#关键字webhome)
 * XSQL
 	* XSQLGroup
 	* XSQLPaging
@@ -361,11 +361,11 @@ v_TxtTitle.setToolTipText("请输入标题");
 JPanel v_Panel = new JPanel();
 v_Panel.setLayout(v_FlowLayout);
 
-v_Panel.add(v_Label);               -- 容器添加子对象
-v_Panel.add(v_TxtTitle);            -- 容器添加子对象
+v_Panel.add(v_Label);               // 容器添加子对象
+v_Panel.add(v_TxtTitle);            // 容器添加子对象
 
 ArrayList v_List = new ArrayList();
-v_List.add(v_Panel);                -- 集合添加子元素
+v_List.add(v_Panel);                // 集合添加子元素
 ```
 
 
@@ -373,8 +373,6 @@ v_List.add(v_Panel);                -- 集合添加子元素
 属性key
 ------
 只用于Map集合对象。表示Map集合通过Map.put(key ,value)方法添加子元素时，Map.Key的取值方法的名称(子节点对象的方法名称)。Map.Value默认为XML子节点中实例的对象本身。
-
-当XML中节点为java.util.List类型时，默认XML节点的setter属性值为:add，不用标明在XML节点中。
 
 基本语法：
 ```xml
@@ -414,6 +412,171 @@ v_Param01.setName("参数名称01");
 v_Param02.setName("参数名称02");
 
 Hashtable v_SYSParam = new Hashtable();
-v_SYSParam.put(v_Param01.getName() ,v_Param01);  -- Map集合添加子元素
-v_SYSParam.put(v_Param02.getName() ,v_Param02);  -- Map集合添加子元素
+v_SYSParam.put(v_Param01.getName() ,v_Param01);  // Map集合添加子元素
+v_SYSParam.put(v_Param02.getName() ,v_Param02);  // Map集合添加子元素
+```
+
+
+
+属性submit
+------
+Submit属性值是一个被XJava定义过的XJava:id变量名称。
+将此变量名称下对应的所有子节点中有XJava:id属性的节点实例化的对象，保存在java.util.Map集合中，此集合的Map.key为XJava:id属性值，Map.value 为节点实例化的对象。
+然后将Map集合通过 Setter 方法赋值传递给指定的对象。
+
+因此，submit属性所在的XML节点是对象的方法名称，并且方法的入参为：只有一个类型为Map集合的参数。
+
+基本语法：
+```xml
+<Java对象的节点名称>
+	<对象方法的名称 submit="ID变量名" />
+</Java对象的节点名称>
+```
+举例说明：
+```xml
+
+```
+举例翻译成Java代码：
+```java
+
+```
+
+
+
+关键字this
+------
+此为一个关键字，它即不xml文件中的节点，也不是节点的属性。而是用在节点属性值的关键字。
+它表示所在节点的父节点对应的Java类实例的引用。同Java语言中的this关键同样的含义。
+
+基本语法：
+```xml
+<Java对象的节点名称>
+	<对象方法的名称 属性="this.xxx" />
+</Java对象的节点名称>
+```
+举例说明：
+```xml
+<import name="job" class="org.hy.common.thread.Job" />
+
+<xconfig>
+	
+    <job id="JOB01">
+    	<name>间隔1分钟执行的任务</name>
+    	<intervalType ref="this.$IntervalType_Minute"/>  <!-- 取对象中定义的常量值 -->
+    	<intervalLen>1</intervalLen>
+    </job>
+</xconfig>
+```
+举例翻译成Java代码：
+```java
+import org.hy.common.thread.Job;
+
+Job v_JOB01 = new Job();
+
+v_JOB01.setName("间隔1分钟执行的任务");
+v_JOB01.setIntervalType(Job.$IntervalType_Minute);
+v_JOB01.setIntervalLen(1);
+```
+
+
+
+关键字classpath
+------
+此为一个关键字，它即不xml文件中的节点，也不是节点的属性。而是用在节点属性值的关键字。
+它表示当前XML文件在Java工程中的包路径。通过它，可获取同包下的其它资源或是上级包、下级包等相对包路径中的资源信息。
+
+在使用时，classpath后面会后缀一个冒号。
+
+基本语法：
+```xml
+<Java对象的节点名称>
+	<对象方法的名称>classpath:/xxx.xxx</对象方法的名称>
+</Java对象的节点名称>
+```
+举例说明：
+```xml
+<import name="XImageIcon" class="javax.swing.ImageIcon" />
+<import name="XURL"       class="java.net.URL" />
+
+<xconfig>
+	<XImageIcon id="xiconSubmit">
+		<constructor>
+			<XURL>
+				<constructor>
+					<String>classpath:Ubuntu.png</String>  <!-- 图片与XML类放在同一包下 -->
+				</constructor>
+			</XURL>
+		</constructor>
+	</XImageIcon>
+</xconfig>
+```
+
+
+
+关键字classhome
+------
+此为一个关键字，它即不xml文件中的节点，也不是节点的属性。而是用在节点属性值的关键字。
+它表示Java工程中的根路径。通过它，可获取资源信息。
+
+classhome的父目录是：Java工程的bin目录
+
+在使用时，classhome后面会后缀一个冒号。
+
+基本语法：
+```xml
+<Java对象的节点名称>
+	<对象方法的名称>classhome:/xxx.xxx</对象方法的名称>
+</Java对象的节点名称>
+```
+举例说明：
+```xml
+<import name="XImageIcon" class="javax.swing.ImageIcon" />
+<import name="XURL"       class="java.net.URL" />
+
+<xconfig>
+	<XImageIcon id="xiconSubmit">
+		<constructor>
+			<XURL>
+				<constructor>
+					<String>classhome:Ubuntu.png</String>  <!-- 图片放在Java工程的根路径 -->
+				</constructor>
+			</XURL>
+		</constructor>
+	</XImageIcon>
+</xconfig>
+```
+
+
+
+关键字webhome
+------
+此为一个关键字，它即不xml文件中的节点，也不是节点的属性。而是用在节点属性值的关键字。
+它表示Web工程中的根路径。通过它，可获取资源信息。
+
+webhome的父目录是：Web工程的名称
+
+在使用时，webhome后面会后缀一个冒号。
+
+基本语法：
+```xml
+<Java对象的节点名称>
+	<对象方法的名称>webhome:/xxx.xxx</对象方法的名称>
+</Java对象的节点名称>
+```
+举例说明：
+```xml
+<import name="XImageIcon" class="javax.swing.ImageIcon" />
+<import name="XURL"       class="java.net.URL" />
+
+<xconfig>
+	<XImageIcon id="xiconSubmit">
+		<constructor>
+			<XURL>
+				<constructor>
+					<String>webhome:Ubuntu.png</String>  <!-- 图片放在Web工程的根路径 -->
+				</constructor>
+			</XURL>
+		</constructor>
+	</XImageIcon>
+</xconfig>
 ```
