@@ -810,3 +810,5 @@ DDL举例说明：
 * 特点14：支持返回多个查询结果集。returnID标记的查询XSQL节点，一次性返回所有记录，并按XSQLResult定义的规则生成一个结果集对象。
 * 特点15：支持查询结果当作其后节点的SQL入参的同时，还返回查询结果。将查询XSQL节点每次循环遍历出的每一行记录，用 PartitionMap<String ,Object> 类型的行转列保存的数据结构，并返回查询结果集。
 * 特点16：支持执行Java代码，对查询结果集进行二次加工处理等Java操作。
+
+[举例说明](https://github.com/HY-ZhengWei/Stock/blob/master/src/com/hy/stock/config/db/db.StockInfoDay.CalcKDJ.xml)
