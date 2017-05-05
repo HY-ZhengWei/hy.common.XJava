@@ -4,7 +4,7 @@
 
 * XJava
 	* 系统标记
-		* [import 引类](#系统标记import)
+		* [import 引用类名](#系统标记import)
 		* [constructor 构造器](#系统标记constructor)
 		* [call 执行方法](#系统标记call)
 	* 通用标记属性
