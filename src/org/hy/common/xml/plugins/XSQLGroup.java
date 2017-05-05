@@ -46,11 +46,15 @@ import org.hy.common.thread.TaskGroup;
  *   特点14：支持返回多个查询结果集。returnID标记的查询XSQL节点，一次性返回所有记录，并按XSQLResult定义的规则生成一个结果集对象。
  *   特点15：支持查询结果当作其后节点的SQL入参的同时，还返回查询结果。将查询XSQL节点每次循环遍历出的每一行记录，用 PartitionMap<String ,Object> 类型的行转列保存的数据结构，并返回查询结果集。
  *   特点16：支持执行Java代码，对查询结果集进行二次加工处理等Java操作。
+ *   特点17：查询SQL语句有两种使用数据库连接的方式
+ *           1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
+ *           2. 读写同事务：查询SQL与更新修改SQL共用一个连接，达到读、写在同一个事务中进行。
  *   
  *   注意01：查询类型XSQL节点的查询结果使用List<Object>结构保存。List元素也可以是Map类型的。如果元素是JavaBean，是会被内部自动转为Map的。
  *   注意02：XSQL中占位符的命名，无大小写要求。但那怕是为了一点点儿的性能，都写成大写的要好些（或前后关系中写法一致）。
  *   注意03：节点检查条件的占位符命名无大小写要求。
  *   注意04：如果前一个节点做了更新操作(Update、Delete等)，但没有提交，后一个节点对同一张表的查询，是会死锁的（一直等待上个更新节点的提交）。
+ *          但设置 XSQLNode.oneConnection=true 后，同一张表的查询是OK的。
  *   
  * 此类的原始构想来源于：2013-12-16开发的名为DBTask（数据库任务执行程序）的程序。
  * 本类比起DBTask而言，功能单一，但更加专注，去掉了Mail、FTP、File、系统命令等相关复杂操作。
@@ -78,6 +82,7 @@ import org.hy.common.thread.TaskGroup;
  *              v9.0  2016-08-02  1.添加节点类型：XSQLGroup.execute()方法的入参中的集合，整体批量的写入的数据库中。
  *              v10.0 2016-08-16  1.添加：最后执行时间点的记录。
  *              v11.0 2017-03-08  1.添加：描述属性。方便在http://IP:Port/WebName/analyses/analyseObject?xid=GXSQL*页面中显示描述信息。
+ *              v12.0 2017-05-05  1.添加：XSQLNode.oneConnection 查询SQL数据库连接的占用模式。
  */
 public final class XSQLGroup
 {
@@ -511,11 +516,25 @@ public final class XSQLGroup
                     
                     if ( Help.isNull(io_Params) )
                     {
-                        v_QueryRet = v_Node.getSql().query();
+                        if ( v_Node.isOneConnection() )
+                        {
+                            v_QueryRet = v_Node.getSql().query(this.getConnection(v_Node ,io_DSGConns));
+                        }
+                        else
+                        {
+                            v_QueryRet = v_Node.getSql().query();
+                        }
                     }
                     else
                     {
-                        v_QueryRet = v_Node.getSql().query(io_Params);
+                        if ( v_Node.isOneConnection() )
+                        {
+                            v_QueryRet = v_Node.getSql().query(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                        }
+                        else
+                        {
+                            v_QueryRet = v_Node.getSql().query(io_Params);
+                        }
                     }
                     
                     // put返回查询结果集
@@ -696,11 +715,25 @@ public final class XSQLGroup
                     {
                         if ( Help.isNull(io_Params) )
                         {
-                            v_QueryRet = (List<Object>)v_Node.getSql().query();
+                            if ( v_Node.isOneConnection() )
+                            {
+                                v_QueryRet = (List<Object>)v_Node.getSql().query(this.getConnection(v_Node ,io_DSGConns));
+                            }
+                            else
+                            {
+                                v_QueryRet = (List<Object>)v_Node.getSql().query();
+                            }
                         }
                         else
                         {
-                            v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params);
+                            if ( v_Node.isOneConnection() )
+                            {
+                                v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                            }
+                            else
+                            {
+                                v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params);
+                            }
                         }
                     }
                     
@@ -845,7 +878,7 @@ public final class XSQLGroup
                                 for (int v_RowIndex=0; v_RowIndex<v_QueryRet.size(); v_RowIndex++)
                                 {
                                     Object              v_QRItem    = v_QueryRet.get(v_RowIndex);
-                                    Map<String ,Object> v_QRItemMap = Help.toMap(v_QRItem);
+                                    Map<String ,Object> v_QRItemMap = Help.toMap(v_QRItem ,null ,false);
                                     
                                     io_Params.putAll(v_QRItemMap);
                                     io_Params.put($Param_RowIndex ,v_RowIndex);
@@ -891,7 +924,7 @@ public final class XSQLGroup
                                 for (int v_RowIndex=0; v_RowIndex<v_QueryRet.size(); v_RowIndex++)
                                 {
                                     Object              v_QRItem    = v_QueryRet.get(v_RowIndex);
-                                    Map<String ,Object> v_QRItemMap = Help.toMap(v_QRItem);
+                                    Map<String ,Object> v_QRItemMap = Help.toMap(v_QRItem ,null ,false);
                                     
                                     io_Params.putAll(v_QRItemMap);
                                     io_Params.put($Param_RowIndex ,v_RowIndex);
@@ -1259,10 +1292,10 @@ public final class XSQLGroup
     /**
      * 获取数据库连接。
      * 
-     * 其数据库连接，统一有本类管理（包含打开及关闭）。实现统一提交、统一回滚的事务功能。
+     * 其数据库连接，统一由本类管理（包含打开及关闭）。实现统一提交、统一回滚的事务功能。
      * 
      * 对于Insert、Update、Delete操作，同一个数据库只使用一个数据库连接，不再另外打开新的数据库连接。
-     * 但对于查询的操作，每次查询都是打开一个新的数据库连接。
+     * 但对于查询的操作，每次查询都是打开一个新的数据库连接。但，也可通过 XSQLNode.oneConnection 参数改变连接占用模型。
      * 
      * @author      ZhengWei(HY)
      * @createDate  2016-01-22

@@ -567,6 +567,46 @@ public final class XSQL implements Comparable<XSQL>
 	
 	
 	/**
+     * 占位符SQL的查询。 -- 无填充值的
+     * 
+     * @param i_Conn
+     * @return
+     */
+    public Object query(Connection i_Conn)
+    {
+        if ( this.content == null )
+        {
+            throw new NullPointerException("Content is null of XSQL.");
+        }
+        
+        boolean v_IsError = false;
+
+        try
+        {
+            return this.query(this.content.getSQL() ,i_Conn);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes();
+            }
+        }
+    }
+	
+	
+	
+	/**
 	 * 占位符SQL的查询。
 	 * 
 	 * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；

@@ -40,6 +40,7 @@ import com.greenpineyu.fel.context.FelContext;
  *              v5.0  2016-05-17  1.添加节点类型：执行Java代码。即可以对查询结果集进行二次加工处理等Java操作。
  *              v6.0  2016-07-30  1.添加节点类型：XSQLGroup.execute()方法的入参中的集合，转换角色为数据库查询结果。
  *              v7.0  2016-08-02  1.添加节点类型：XSQLGroup.execute()方法的入参中的集合，整体批量的写入的数据库中。
+ *              v8.0  2017-05-05  1.添加：this.oneConnection 查询SQL数据库连接的占用模式。
  */
 public class XSQLNode
 {
@@ -58,7 +59,7 @@ public class XSQLNode
     public static final String  $Type_ExecuteUpdate              = "DMLExecute";
     
     /** 
-     * 节点类型： 执行（包含DML、DDL）
+     * 节点类型： 执行（包含DML、DDL、DCL、TCL）
      * 
      *  即执行数据库操作，不获取操作结果。执行参数由外界或其它查询类型的节点(XSQLNode)提供
      */
@@ -109,7 +110,7 @@ public class XSQLNode
     
     
     
-    /** 节点类型。默认为：执行类型（包含DML、DDL） */
+    /** 节点类型。默认为：执行类型（包含DML、DDL、DCL、TCL） */
     private String              type;
     
     /** 操作SQL对象 */
@@ -265,6 +266,13 @@ public class XSQLNode
      */
     private boolean            thread;
     
+    /**
+     * 对于查询语句有两种使用数据库连接的方式
+     *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
+     *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，达到读、写在同一个事务中进行。
+     */
+    private boolean            oneConnection;
+    
     
     
     public XSQLNode()
@@ -284,12 +292,13 @@ public class XSQLNode
         this.xjavaMethod    = null;
         this.collectionID   = null;
         this.thread         = false;
+        this.oneConnection  = false;
     }
     
     
     
     /**
-     * 获取：节点类型。默认为：执行类型（包含DML、DDL）
+     * 获取：节点类型。默认为：执行类型（包含DML、DDL、DCL、TCL）
      */
     public String getType()
     {
@@ -299,7 +308,7 @@ public class XSQLNode
     
     
     /**
-     * 设置：节点类型。默认为：执行类型（包含DML、DDL）
+     * 设置：节点类型。默认为：执行类型（包含DML、DDL、DCL、TCL）
      * 
      * @param type 
      */
@@ -929,6 +938,32 @@ public class XSQLNode
     public void setThread(boolean i_Thread)
     {
         this.thread = i_Thread;
+    }
+
+
+    
+    /**
+     * 获取：对于查询语句有两种使用数据库连接的方式
+     *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
+     *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，达到读、写在同一个事务中进行。
+     */
+    public boolean isOneConnection()
+    {
+        return oneConnection;
+    }
+
+    
+    
+    /**
+     * 设置：对于查询语句有两种使用数据库连接的方式
+     *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
+     *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，达到读、写在同一个事务中进行。
+     * 
+     * @param oneConnection 
+     */
+    public void setOneConnection(boolean oneConnection)
+    {
+        this.oneConnection = oneConnection;
     }
     
 }
