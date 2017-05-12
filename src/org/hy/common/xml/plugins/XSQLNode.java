@@ -808,7 +808,7 @@ public class XSQLNode
             throw new NullPointerException("XSQLNode.getXjavaID() = " + this.xjavaID + " XJava.getObject(...) is null.");
         }
         
-        Method [] v_Methods = this.xjavaIntance.getClass().getDeclaredMethods();
+        Method [] v_Methods = this.xjavaIntance.getClass().getMethods();
         
         for (int i=0; i<v_Methods.length; i++)
         {
