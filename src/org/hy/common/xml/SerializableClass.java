@@ -188,7 +188,7 @@ public class SerializableClass implements Serializable
      * 
      * @return
      */
-    public Map<String ,Object> toMap()
+    public Map<String ,?> toMap()
     {
         return this.toMap(true);
     }
@@ -201,7 +201,7 @@ public class SerializableClass implements Serializable
      * @param i_IsRecursive  是否递归转换
      * @return
      */
-    public Map<String ,Object> toMap(boolean i_IsRecursive)
+    public Map<String ,?> toMap(boolean i_IsRecursive)
     {
         Map<String ,Object> v_Ret = new HashMap<String ,Object>();
         
@@ -234,7 +234,7 @@ public class SerializableClass implements Serializable
      * @param i_DefaultValue  当对象属性值为 null 时，Map集合填充的默认值 
      * @return
      */
-    public Map<String ,Object> toMap(Object i_DefaultValue)
+    public Map<String ,?> toMap(Object i_DefaultValue)
     {
         return this.toMap(true ,i_DefaultValue);
     }
@@ -248,7 +248,7 @@ public class SerializableClass implements Serializable
      * @param i_DefaultValue  当对象属性值为 null 时，Map集合填充的默认值 
      * @return
      */
-    public Map<String ,Object> toMap(boolean i_IsRecursive ,Object i_DefaultValue)
+    public Map<String ,?> toMap(boolean i_IsRecursive ,Object i_DefaultValue)
     {
         Map<String ,Object> v_Ret = new HashMap<String ,Object>();
         

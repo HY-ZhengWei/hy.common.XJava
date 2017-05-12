@@ -116,7 +116,24 @@ public class AppInitConfig
     
     public synchronized void init(List<Param> i_Params)
     {
-        this.init(null ,i_Params);
+        this.init(null ,i_Params ,null);
+    }
+    
+    
+    
+    /**
+     * 初始配置。主要用于配置文件与*.class一同存放的情况
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-05-10
+     * @version     v1.0
+     *
+     * @param i_Params  Param.getValue() 为配置文件名称。支持相对路径。如 db/db.Config.xml
+     * @param i_XmlRootPath
+     */
+    public synchronized void init(List<Param> i_Params ,String i_XmlRootPath)
+    {
+        this.init(null ,i_Params ,i_XmlRootPath); 
     }
     
     

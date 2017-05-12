@@ -260,7 +260,7 @@ public abstract class SerializableDef extends SerializableClass implements Seria
         {
             @SuppressWarnings("unchecked")
             Map<Object ,Object> v_Datas     = (Map<Object ,Object>)io_CloneNewObj;
-            Map<String ,Object> v_ThisDatas = this.toMap(true);
+            Map<String ,?>      v_ThisDatas = this.toMap(true);
             
             if ( !Help.isNull(v_ThisDatas) )
             {

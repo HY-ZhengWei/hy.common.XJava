@@ -1633,10 +1633,17 @@ public final class XSQLGroup
             
             if ( null != i_Return.getException() )
             {
-            v_Buffer.append("-- Error MSG：  ").append(i_Return.getException().getMessage());
+                v_Buffer.append("-- Error MSG：  ").append(i_Return.getException().getMessage()).append("\n");
+                System.out.print(v_Buffer.toString());
+                
+                i_Return.getException().printStackTrace();
+            }
+            else
+            {
+                System.out.print(v_Buffer.toString());
             }
             
-            System.out.print(v_Buffer.toString());
+            
         }
         
         return i_Return;

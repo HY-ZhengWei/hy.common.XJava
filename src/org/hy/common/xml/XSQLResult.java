@@ -1521,7 +1521,7 @@ public final class XSQLResult
 	    
 	    for (XSQLMethod v_XSQLMethod : this.cfillMethodArr)
 	    {
-	        if ( v_XSQLMethod.getGetInstanceOfMethod() != null )
+	        if ( v_XSQLMethod != null && v_XSQLMethod.getGetInstanceOfMethod() != null )
 	        {
     	        if ( MethodReflect.isExtendImplement(v_XSQLMethod.getGetInstanceOfMethod().getReturnType() ,Collection.class) )
     	        {
