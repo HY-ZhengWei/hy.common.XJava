@@ -2,6 +2,7 @@ package org.hy.common.xml;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -12,6 +13,7 @@ import java.util.Set;
 
 import org.hy.common.Date;
 import org.hy.common.Help;
+import org.hy.common.MethodComparator;
 import org.hy.common.MethodReflect;
 import org.hy.common.Return;
 import org.hy.common.StaticReflect;
@@ -1134,27 +1136,44 @@ public final class XJSON
             }
             else
             {
-                List<Method> v_Methods = MethodReflect.getStartMethods(i_Obj.getClass() ,new String[]{"get" ,"is"} ,0);
+                List<Method> v_Methods   = MethodReflect.getStartMethods(i_Obj.getClass() ,new String[]{"get" ,"is"} ,0);
+                Method []    v_MethodArr = v_Methods.toArray(new Method[]{});
                 
-                if ( !Help.isNull(v_Methods) )
+                Arrays.sort(v_MethodArr ,MethodComparator.getInstance());
+                
+                if ( !Help.isNull(v_MethodArr) )
                 {
-                    for (int i=0; i<v_Methods.size(); i++)
+                    for (int i=0; i<v_MethodArr.length; i++)
                     {
                         String v_Name  = null;
                         Object v_Value = null;
                         
-                        if ( this.firstCharIsUpper )
+                        if ( v_MethodArr[i].getName().startsWith("get") )
                         {
-                            v_Name = v_Methods.get(i).getName().substring(3);
+                            if ( this.firstCharIsUpper )
+                            {
+                                v_Name = v_MethodArr[i].getName().substring(3);
+                            }
+                            else
+                            {
+                                v_Name = v_MethodArr[i].getName().substring(3 ,4).toLowerCase() + v_MethodArr[i].getName().substring(4);
+                            }
                         }
-                        else
+                        else if ( v_MethodArr[i].getName().startsWith("is") )
                         {
-                            v_Name = v_Methods.get(i).getName().substring(3 ,4).toLowerCase() + v_Methods.get(i).getName().substring(4);
+                            if ( this.firstCharIsUpper )
+                            {
+                                v_Name = v_Methods.get(i).getName().substring(2);
+                            }
+                            else
+                            {
+                                v_Name = v_Methods.get(i).getName().substring(2 ,3).toLowerCase() + v_Methods.get(i).getName().substring(3);
+                            }
                         }
                         
                         try
                         {
-                            v_Value = v_Methods.get(i).invoke(i_Obj);
+                            v_Value = v_MethodArr[i].invoke(i_Obj);
                             if ( v_Value == null )
                             {
                                 v_Value = "";
@@ -1167,42 +1186,6 @@ public final class XJSON
                         }
                         
                         v_ChildCount++;
-                    }
-                }
-                
-                
-                // 获取Boolean属性
-                v_Methods = MethodReflect.getStartMethods(i_Obj.getClass() ,"is" ,0);
-                
-                if ( !Help.isNull(v_Methods) )
-                {
-                    for (int i=0; i<v_Methods.size(); i++)
-                    {
-                        String v_Name  = null;
-                        Object v_Value = null;
-                        
-                        if ( this.firstCharIsUpper )
-                        {
-                            v_Name = v_Methods.get(i).getName().substring(2);
-                        }
-                        else
-                        {
-                            v_Name = v_Methods.get(i).getName().substring(2 ,3).toLowerCase() + v_Methods.get(i).getName().substring(3);
-                        }
-                        
-                        try
-                        {
-                            v_Value = v_Methods.get(i).invoke(i_Obj);
-                            if ( v_Value == null )
-                            {
-                                v_Value = "";
-                            }
-                            parser(v_Name ,v_Value ,v_ChildJsonObj);
-                        }
-                        catch (Exception e)
-                        {
-                            throw new Exception(v_Name + ":" + e.getMessage());
-                        }
                     }
                 }
             }
