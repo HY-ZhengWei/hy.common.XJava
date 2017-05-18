@@ -83,6 +83,10 @@ import org.hy.common.thread.TaskGroup;
  *              v10.0 2016-08-16  1.添加：最后执行时间点的记录。
  *              v11.0 2017-03-08  1.添加：描述属性。方便在http://IP:Port/WebName/analyses/analyseObject?xid=GXSQL*页面中显示描述信息。
  *              v12.0 2017-05-05  1.添加：XSQLNode.oneConnection 查询SQL数据库连接的占用模式。
+ *              v13.0 2017-05-17  1.添加：this.returnQuery，针对 this.returnID 属性，定义返回查询结果集是 "返回结果集"？还是 "查询并返回"。
+ *                                  提供一种好理解的数据结构(与this.queryReturnID属性返回的数据结构相比)。
+ *                                  此建议来自于：向以前同学
+ *                                2.准备放弃this.queryReturnID属性，只少是不再建议使用此属性。
  */
 public final class XSQLGroup
 {
@@ -699,7 +703,8 @@ public final class XSQLGroup
           || XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
         {
             // 控制其后节点循环执行的查询
-            if ( Help.isNull(v_Node.getReturnID()) || XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
+            if ( (!Help.isNull(v_Node.getReturnID()) && v_Node.isReturnQuery()) 
+               || XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
             {
                 List<Object> v_QueryRet = null;
                 
@@ -746,6 +751,12 @@ public final class XSQLGroup
                     v_Ret.setException(    exce);
                     v_Ret.setSuccess(false);
                     return v_Ret;
+                }
+                
+                // 查询并返回：返回结果集，控制其后节点执行：返回结果集的同时，还将控制其后XSQL节点的执行次数。ZhengWei(HY) Add 2017-05-17
+                if ( !Help.isNull(v_Node.getReturnID()) )
+                {
+                    this.putReturnID(v_Ret ,v_Node ,v_QueryRet);
                 }
                 
                 if ( !Help.isNull(v_QueryRet) )
@@ -1160,7 +1171,7 @@ public final class XSQLGroup
     private void putReturnID(XSQLGroupResult io_Result ,XSQLNode i_Node ,Object i_QueryDatas)
     {
         // "追加方式"：多个相同标示ID，会向首个有值的结果集对象中追加其它结果集对象。
-        if ( i_Node.getReturnAppend() )
+        if ( i_Node.isReturnAppend() )
         {
             Object v_FirstDatas = io_Result.getReturns().get(i_Node.getReturnID());
             if ( v_FirstDatas == null )

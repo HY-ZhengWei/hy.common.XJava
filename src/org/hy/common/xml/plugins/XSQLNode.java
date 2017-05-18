@@ -41,6 +41,10 @@ import com.greenpineyu.fel.context.FelContext;
  *              v6.0  2016-07-30  1.添加节点类型：XSQLGroup.execute()方法的入参中的集合，转换角色为数据库查询结果。
  *              v7.0  2016-08-02  1.添加节点类型：XSQLGroup.execute()方法的入参中的集合，整体批量的写入的数据库中。
  *              v8.0  2017-05-05  1.添加：this.oneConnection 查询SQL数据库连接的占用模式。
+ *              v9.0  2017-05-17  1.添加：this.returnQuery，针对 this.returnID 属性，定义返回查询结果集是 "返回结果集"？还是 "查询并返回"。
+ *                                  提供一种好理解的数据结构(与this.queryReturnID属性返回的数据结构相比)。
+ *                                  此建议来自于：向以前同学
+ *                                2.准备放弃this.queryReturnID属性，只少是不再建议使用此属性。
  */
 public class XSQLNode
 {
@@ -197,6 +201,18 @@ public class XSQLNode
     private boolean             returnAppend;
     
     /**
+     * 针对 this.returnID 属性，定义返回查询结果集是 "返回结果集"？还是 "查询并返回"。
+     *   1. 返回结果集：只返回结果集，不再控制其后XSQL节点的执行次数。
+     *   2. 查询并返回：返回结果集，控制其后节点执行：返回结果集的同时，还将控制其后XSQL节点的执行次数。
+     * 默认为：false（返回结果集）
+     * 
+     * 与 queryReturnID功能是一样。还添加此功能的原因是：queryReturnID返回的结果集的数据结构不好被理解。
+     * 
+     * ZhengWei(HY) Add 2017-05-17
+     */
+    private boolean             returnQuery;
+    
+    /**
      * 查询结果当作其后节点的SQL入参的同时，还返回查询结果
      * 
      * 专用于查询类型的XSQL节点。
@@ -211,6 +227,9 @@ public class XSQLNode
      *   PartitionMap.行记录为：数据库表字段对应的数值
      *   
      * 可应用于：在循环中多次生成数个主键ID，并将所有生成的主键ID统一返回的功能。
+     * 
+     * 2017-05-17 准备放弃this.queryReturnID属性，只少是不再建议使用此属性。
+     *            用 this.returnQuery 属性代替。原因是，this.returnQuery 返回的数据结构更好被理解。
      */
     private String              queryReturnID;
     
@@ -284,6 +303,7 @@ public class XSQLNode
         this.lastOnce       = false;
         this.returnID       = null;
         this.returnAppend   = false;
+        this.returnQuery    = false;
         this.queryReturnID  = null;
         this.sqlGroup       = null;
         this.xjavaID        = null;
@@ -557,7 +577,7 @@ public class XSQLNode
      *   3. 其它查询结果集还是采用覆盖方式。
      * 默认为：false（覆盖方式）
      */
-    public boolean getReturnAppend()
+    public boolean isReturnAppend()
     {
         return returnAppend;
     }
@@ -576,6 +596,42 @@ public class XSQLNode
     public void setReturnAppend(boolean returnAppend)
     {
         this.returnAppend = returnAppend;
+    }
+
+
+    
+    /**
+     * 获取：针对 this.returnID 属性，定义返回查询结果集是 "返回结果集"？还是 "查询并返回"。
+     *   1. 返回结果集：只返回结果集，不再控制其后XSQL节点的执行次数。
+     *   2. 查询并返回：返回结果集，控制其后节点执行：返回结果集的同时，还将控制其后XSQL节点的执行次数。
+     * 默认为：false（返回结果集）
+     * 
+     * 与 queryReturnID功能是一样。还添加此功能的原因是：queryReturnID返回的结果集的数据结构不好被理解。
+     * 
+     * ZhengWei(HY) Add 2017-05-17
+     */
+    public boolean isReturnQuery()
+    {
+        return returnQuery;
+    }
+
+
+    
+    /**
+     * 设置：针对 this.returnID 属性，定义返回查询结果集是 "返回结果集"？还是 "查询并返回"。
+     *   1. 返回结果集：只返回结果集，不再控制其后XSQL节点的执行次数。
+     *   2. 查询并返回：返回结果集，控制其后节点执行：返回结果集的同时，还将控制其后XSQL节点的执行次数。
+     * 默认为：false（返回结果集）
+     * 
+     * 与 queryReturnID功能是一样。还添加此功能的原因是：queryReturnID返回的结果集的数据结构不好被理解。
+     * 
+     * ZhengWei(HY) Add 2017-05-17
+     * 
+     * @param returnQuery 
+     */
+    public void setReturnQuery(boolean returnQuery)
+    {
+        this.returnQuery = returnQuery;
     }
 
 
