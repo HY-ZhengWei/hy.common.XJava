@@ -703,7 +703,8 @@ public final class XSQLGroup
           || XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
         {
             // 控制其后节点循环执行的查询
-            if ( (!Help.isNull(v_Node.getReturnID()) && v_Node.isReturnQuery()) 
+            if (    Help.isNull(v_Node.getReturnID())
+               || (!Help.isNull(v_Node.getReturnID()) && v_Node.isReturnQuery()) 
                || XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
             {
                 List<Object> v_QueryRet = null;
