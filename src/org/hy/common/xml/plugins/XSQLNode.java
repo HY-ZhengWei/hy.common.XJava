@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.hy.common.Help;
+import org.hy.common.MethodReflect;
 import org.hy.common.StringHelp;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
@@ -45,6 +46,7 @@ import com.greenpineyu.fel.context.FelContext;
  *                                  提供一种好理解的数据结构(与this.queryReturnID属性返回的数据结构相比)。
  *                                  此建议来自于：向以前同学
  *                                2.准备放弃this.queryReturnID属性，只少是不再建议使用此属性。
+ *              v10.0 2017-05-23  1.添加：节点的执行条件this.condition中的占位符支持xx.yy.ww的面向对象的形式。此建议来自于：向以前同学
  */
 public class XSQLNode
 {
@@ -923,7 +925,7 @@ public class XSQLNode
         
         for (String v_Key : this.placeholders.keySet())
         {
-            Object v_Value = Help.getValueIgnoreCase(i_ConditionValues ,v_Key);
+            Object v_Value = MethodReflect.getMapValue(i_ConditionValues ,v_Key);
             
             if ( null == v_Value )
             {
