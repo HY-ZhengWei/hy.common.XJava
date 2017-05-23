@@ -395,7 +395,7 @@ public class XSQLNode
             
             for (String v_Key : this.placeholders.keySet())
             {
-                this.conditionFel = StringHelp.replaceAll(this.conditionFel ,":" + v_Key ,v_Key);
+                this.conditionFel = StringHelp.replaceAll(this.conditionFel ,":" + v_Key ,StringHelp.replaceAll(v_Key ,"." ,"_"));
             }
         }
     }
@@ -926,6 +926,8 @@ public class XSQLNode
         for (String v_Key : this.placeholders.keySet())
         {
             Object v_Value = MethodReflect.getMapValue(i_ConditionValues ,v_Key);
+            
+            v_Key = StringHelp.replaceAll(v_Key ,"." ,"_"); // 点原本就是Fel关键字，所以要替换 ZhengWei(HY) Add 2017-05-23
             
             if ( null == v_Value )
             {
