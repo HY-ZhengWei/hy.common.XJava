@@ -1891,7 +1891,7 @@ public final class XSQL implements Comparable<XSQL>
      * @return
      * @throws Exception 
      */
-    public Object getSQLCount(Object i_Obj)
+    public long getSQLCount(Object i_Obj)
     {
         if ( this.content == null )
         {
