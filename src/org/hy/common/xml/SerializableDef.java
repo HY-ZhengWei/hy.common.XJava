@@ -31,6 +31,7 @@ import org.hy.common.Serializable;
  *
  * @author   ZhengWei(HY)
  * @version  V1.0  2013-11-18
+ *           V2.0  2017-06-09  添加：this.initNotNull(...) 初始化'我自己' (将自己设置成于别人对象一样)，但只初始非空的有效的值。
  */
 public abstract class SerializableDef extends SerializableClass implements Serializable
 {
@@ -366,6 +367,143 @@ public abstract class SerializableDef extends SerializableClass implements Seria
                     if ( v_Key.equals(this.gatPropertyShortName(v_ThisIndex)) )
                     {
                         this.setPropertyValue(v_ThisIndex ,v_Datas.get(v_Key));
+                    }
+                }
+            }
+        }
+        else
+        {
+            throw new ClassCastException("Clone new object class is different.");
+        }
+    }
+    
+    
+    
+    /**
+     * 初始化'我自己' (将自己设置成于别人对象一样)，但只初始非空的有效的值。
+     *   1. 只初始非空的有效的值
+     *   2. 别人对象属性为空时(null)，不对'我自己'初始化值
+     * 
+     * 即，克隆动作的另一种观察角度下的执行数据复制。
+     * 
+     * 1. 用序列化的同类初始化'我自己'
+     * 2. 用序列化的另一个类初始化'我自己'
+     * 3. 用Map集合初始化'我自己'
+     * 
+     * 主要用于子类的实现 java.lang.Cloneable 接口的情况。
+     * 
+     * 一切只为了方便
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-06-09
+     * @version     v1.0
+     *
+     * @param i_InitObj   初始化的参考对象(即被克隆的类)
+     */
+    public void initNotNull(Object i_InitObj)
+    {
+        if ( i_InitObj == null )
+        {
+            throw new NullPointerException("Init object is null.");
+        }
+        else if ( i_InitObj.getClass() == this.getClass() )
+        {
+            SerializableDef v_SerialObj = (SerializableDef)i_InitObj;
+            
+            for (int i=0; i<v_SerialObj.gatPropertySize(); i++)
+            {
+                Object v_InitValue = v_SerialObj.gatPropertyValue(i);
+                
+                if ( v_InitValue != null  )
+                {
+                    if ( MethodReflect.isExtendImplement(v_InitValue ,SerializableDef.class) )
+                    {
+                        // 当对象的属性也是一个SerializableDef类时，进行深度克隆
+                        SerializableDef v_FieldSerial      = (SerializableDef)v_InitValue;
+                        Object          v_FieldSerialClone = v_FieldSerial.newObject();
+                        
+                        if ( this.gatPropertyValue(i) == null )
+                        {
+                            v_FieldSerial.clone(v_FieldSerialClone);
+                            v_InitValue = v_FieldSerialClone;
+                            this.setPropertyValue(i ,v_InitValue);
+                        }
+                        else
+                        {
+                            ((SerializableDef)this.gatPropertyValue(i)).initNotNull(v_InitValue);
+                        }
+                    }
+                    else
+                    {
+                        this.setPropertyValue(i ,v_InitValue);
+                    }
+                }
+            }
+        }
+        // 用序列化的另一个类初始化'我自己'
+        // 主要用于 1. 父类无法强转为子类的情况
+        //         2. 用不同序列化类转为本类的情况
+        else if ( MethodReflect.isExtendImplement(i_InitObj ,SerializableDef.class) )
+        {
+            int             v_FindlIndex = 0;
+            SerializableDef v_SerialObj  = (SerializableDef)i_InitObj;
+            
+            for (int v_ThisIndex = 0; v_ThisIndex < this.gatPropertySize(); v_ThisIndex++)
+            {
+                for (int v_SerialIndex = v_FindlIndex ; v_SerialIndex < v_SerialObj.gatPropertySize(); v_SerialIndex++)
+                {
+                    if ( v_SerialObj.gatPropertyName(v_SerialIndex).equals(this.gatPropertyName(v_ThisIndex)) )
+                    {
+                        Object v_InitValue = v_SerialObj.gatPropertyValue(v_SerialIndex);
+                        
+                        if ( v_InitValue != null  )
+                        {
+                            if ( MethodReflect.isExtendImplement(v_InitValue ,SerializableDef.class) )
+                            {
+                                // 当对象的属性也是一个SerializableDef类时，进行深度克隆
+                                SerializableDef v_FieldSerial      = (SerializableDef)v_InitValue;
+                                Object          v_FieldSerialClone = v_FieldSerial.newObject();
+                                
+                                if ( this.gatPropertyValue(v_ThisIndex) == null )
+                                {
+                                    v_FieldSerial.clone(v_FieldSerialClone);
+                                    v_InitValue = v_FieldSerialClone;
+                                    
+                                    v_FindlIndex++;
+                                    this.setPropertyValue(v_ThisIndex ,v_InitValue);
+                                }
+                                else
+                                {
+                                    ((SerializableDef)this.gatPropertyValue(v_ThisIndex)).initNotNull(v_InitValue);
+                                    v_FindlIndex++;
+                                }
+                            }
+                            else
+                            {
+                                v_FindlIndex++;
+                                this.setPropertyValue(v_ThisIndex ,v_InitValue);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // 用Map集合初始化'我自己'
+        else if ( i_InitObj instanceof Map || MethodReflect.isExtendImplement(i_InitObj ,Map.class) )
+        {
+            @SuppressWarnings("unchecked")
+            Map<Object ,Object> v_Datas = (Map<Object ,Object>)i_InitObj;
+            
+            for (Object v_Key : v_Datas.keySet())
+            {
+                for (int v_ThisIndex = 0; v_ThisIndex < this.gatPropertySize(); v_ThisIndex++)
+                {
+                    if ( v_Key.equals(this.gatPropertyShortName(v_ThisIndex)) )
+                    {
+                        if ( v_Datas.get(v_Key) != null )
+                        {
+                            this.setPropertyValue(v_ThisIndex ,v_Datas.get(v_Key));
+                        }
                     }
                 }
             }
