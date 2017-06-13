@@ -3,6 +3,7 @@ package org.hy.common.xml;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
@@ -32,6 +33,7 @@ import org.hy.common.Serializable;
  * @author   ZhengWei(HY)
  * @version  V1.0  2013-11-18
  *           V2.0  2017-06-09  添加：this.initNotNull(...) 初始化'我自己' (将自己设置成于别人对象一样)，但只初始非空的有效的值。
+ *           V3.0  2017-06-13  优化：this.init()方法的中用Map集合初始化'我自己'的执行性能，并不再区分Map.key大小写的匹配模式。
  */
 public abstract class SerializableDef extends SerializableClass implements Serializable
 {
@@ -283,7 +285,7 @@ public abstract class SerializableDef extends SerializableClass implements Seria
      * 
      * 1. 用序列化的同类初始化'我自己'
      * 2. 用序列化的另一个类初始化'我自己'
-     * 3. 用Map集合初始化'我自己'
+     * 3. 用Map集合初始化'我自己'。不再区分Map.key大小写的匹配模式
      * 
      * 主要用于子类的实现 java.lang.Cloneable 接口的情况。
      * 
@@ -360,13 +362,27 @@ public abstract class SerializableDef extends SerializableClass implements Seria
             @SuppressWarnings("unchecked")
             Map<Object ,Object> v_Datas = (Map<Object ,Object>)i_InitObj;
             
-            for (Object v_Key : v_Datas.keySet())
+            for (int v_ThisIndex = 0; v_ThisIndex < this.gatPropertySize(); v_ThisIndex++)
             {
-                for (int v_ThisIndex = 0; v_ThisIndex < this.gatPropertySize(); v_ThisIndex++)
+                String v_Key = this.gatPropertyShortName(v_ThisIndex);
+                
+                // 先通过常规方式快速获取一次，如果没有获取到，再忽略大小写的方式遍历。
+                if ( v_Datas.containsKey(v_Key) )
                 {
-                    if ( v_Key.equals(this.gatPropertyShortName(v_ThisIndex)) )
+                    this.setPropertyValue(v_ThisIndex ,v_Datas.get(v_Key));
+                }
+                else
+                {
+                    for (Entry<Object ,Object> v_Data : v_Datas.entrySet())
                     {
-                        this.setPropertyValue(v_ThisIndex ,v_Datas.get(v_Key));
+                        if ( null != v_Data.getKey() )
+                        {
+                            if ( v_Data.getKey().toString().equalsIgnoreCase(v_Key) )
+                            {
+                                this.setPropertyValue(v_ThisIndex ,v_Data.getValue());
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -388,7 +404,7 @@ public abstract class SerializableDef extends SerializableClass implements Seria
      * 
      * 1. 用序列化的同类初始化'我自己'
      * 2. 用序列化的另一个类初始化'我自己'
-     * 3. 用Map集合初始化'我自己'
+     * 3. 用Map集合初始化'我自己'。不再区分Map.key大小写的匹配模式
      * 
      * 主要用于子类的实现 java.lang.Cloneable 接口的情况。
      * 
@@ -494,17 +510,14 @@ public abstract class SerializableDef extends SerializableClass implements Seria
             @SuppressWarnings("unchecked")
             Map<Object ,Object> v_Datas = (Map<Object ,Object>)i_InitObj;
             
-            for (Object v_Key : v_Datas.keySet())
+            for (int v_ThisIndex = 0; v_ThisIndex < this.gatPropertySize(); v_ThisIndex++)
             {
-                for (int v_ThisIndex = 0; v_ThisIndex < this.gatPropertySize(); v_ThisIndex++)
+                String v_Key    = this.gatPropertyShortName(v_ThisIndex);
+                Object v_Object = Help.getValueIgnoreCase(v_Datas ,v_Key);
+                
+                if ( null != v_Object )
                 {
-                    if ( v_Key.equals(this.gatPropertyShortName(v_ThisIndex)) )
-                    {
-                        if ( v_Datas.get(v_Key) != null )
-                        {
-                            this.setPropertyValue(v_ThisIndex ,v_Datas.get(v_Key));
-                        }
-                    }
+                    this.setPropertyValue(v_ThisIndex ,v_Object);
                 }
             }
         }
