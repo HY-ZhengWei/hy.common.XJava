@@ -87,6 +87,10 @@ import org.hy.common.thread.TaskGroup;
  *                                  提供一种好理解的数据结构(与this.queryReturnID属性返回的数据结构相比)。
  *                                  此建议来自于：向以前同学
  *                                2.准备放弃this.queryReturnID属性，只少是不再建议使用此属性。
+ *              v14.0 2017-06-22  1.添加：XSQLGroup也同样支持在执行前的条件检查，只有检查通过时才允许执行。
+ *                                2.添加：XSQLGroup也同样支持在执行前的提交BeforeCommit。
+ *                                3.添加：XSQLGroup也同样支持在执行前的提交AfterCommit。
+ *                                  此建议来自于：谈闻同学
  */
 public final class XSQLGroup
 {
@@ -479,13 +483,6 @@ public final class XSQLGroup
                 continue;
             }
             
-            // 嵌套的XSQLGroup组
-            if ( null != v_Node.getSqlGroup() )
-            {
-                v_Ret = executeGroup_Nesting(v_NodeIndex - 1 ,io_Params ,io_DSGConns ,v_Ret);
-                continue;
-            }
-            
             // 检查条件是否通过
             if ( !v_Node.isPass(io_Params) )
             {
@@ -505,6 +502,20 @@ public final class XSQLGroup
             if ( v_Node.isBeforeCommit() )
             {
                 this.commits(io_DSGConns ,v_Ret.getExecSumCount());
+            }
+            
+            // 嵌套的XSQLGroup组
+            if ( null != v_Node.getSqlGroup() )
+            {
+                v_Ret = executeGroup_Nesting(v_NodeIndex - 1 ,io_Params ,io_DSGConns ,v_Ret);
+                
+                // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
+                if ( v_Ret.isSuccess() && v_Node.isAfterCommit() )
+                {
+                    this.commits(io_DSGConns ,v_Ret.getExecSumCount());
+                }
+                
+                continue;
             }
             
             try
@@ -673,12 +684,6 @@ public final class XSQLGroup
             return this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
         }
         
-        // 嵌套的XSQLGroup组
-        if ( null != v_Node.getSqlGroup() )
-        {
-            return executeGroup_Nesting(i_SuperNodeIndex ,io_Params ,io_DSGConns ,v_Ret);
-        }
-        
         // 检查条件是否通过
         if ( !v_Node.isPass(io_Params) )
         {
@@ -697,6 +702,20 @@ public final class XSQLGroup
         if ( v_Node.isBeforeCommit() )
         {
             this.commits(io_DSGConns ,v_Ret.getExecSumCount());
+        }
+        
+        // 嵌套的XSQLGroup组
+        if ( null != v_Node.getSqlGroup() )
+        {
+            v_Ret = executeGroup_Nesting(i_SuperNodeIndex ,io_Params ,io_DSGConns ,v_Ret);
+            
+            // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
+            if ( v_Ret.isSuccess() && v_Node.isAfterCommit() )
+            {
+                this.commits(io_DSGConns ,v_Ret.getExecSumCount());
+            }
+            
+            return v_Ret;
         }
         
         if ( XSQLNode.$Type_Query            .equals(v_Node.getType()) 
