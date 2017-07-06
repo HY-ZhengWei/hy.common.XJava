@@ -83,6 +83,7 @@ import org.hy.common.xml.event.BLobEvent;
  *                                     不建立的原因为：
  *                                       1. 原生态的SQL文本是动态不确定的SQL，可比喻为临时写的SQL语言，是不用建立触发器的。
  *                                       2. BLob类型的不太常用，业务逻辑也较为单一，暂时就不建立触发器了。
+ *              v6.1  2017-07-06  修正：当预处理 this.executeUpdatesPrepared_Inner() 执行异常时，未记录异常SQL的问题。
  */
 /*
  * 游标类型的说明
@@ -2815,7 +2816,8 @@ public final class XSQL implements Comparable<XSQL>
             v_Conn       = i_Conn == null ? this.getConnection() : i_Conn;
             v_AutoCommit = v_Conn.getAutoCommit();  
             v_Conn.setAutoCommit(false);
-            v_PStatement = v_Conn.prepareStatement(this.content.getPreparedSQL().getSQL());
+            v_SQL        = this.content.getPreparedSQL().getSQL();
+            v_PStatement = v_Conn.prepareStatement(v_SQL);
             
             if ( this.batchCommit <= 0 || i_Conn != null )
             {
@@ -2928,7 +2930,7 @@ public final class XSQL implements Comparable<XSQL>
                 }
             }
             
-            $SQLBusway.put(new XSQLLog(this.content.getPreparedSQL().getSQL()));
+            $SQLBusway.put(new XSQLLog(v_SQL));
             this.success(Date.getNowTime().getTime() - v_BeginTime ,v_Ret);
             
             return v_Ret;

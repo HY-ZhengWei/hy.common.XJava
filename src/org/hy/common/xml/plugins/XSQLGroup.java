@@ -91,6 +91,8 @@ import org.hy.common.thread.TaskGroup;
  *                                2.添加：XSQLGroup也同样支持在执行前的提交BeforeCommit。
  *                                3.添加：XSQLGroup也同样支持在执行前的提交AfterCommit。
  *                                  此建议来自于：谈闻同学
+ *              v14.1 2017-07-06  1.修正：当预处理 XSQLNode.$Type_CollectionToExecuteUpdate 执行异常时，输出的SQL日志不正确的问题。
+ *                                  发现人：向以前同学
  */
 public final class XSQLGroup
 {
@@ -617,32 +619,16 @@ public final class XSQLGroup
                 else
                 {
                     v_Ret.setExceptionNode(v_NodeIndex);
+                    v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
                     v_Ret.setSuccess(false);
-                    
-                    if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_Node.getType()) )
-                    {
-                        v_Ret.setExceptionSQL(this.getSQL(v_Node ,this.getCollectionToQueryOrDB(v_Node ,io_Params) ,io_Params));
-                    }
-                    else
-                    {
-                        v_Ret.setExceptionSQL(this.getSQL(v_Node ,io_Params));
-                    }
                 }
             }
             catch (Exception exce)
             {
                 v_Ret.setExceptionNode(v_NodeIndex);
+                v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
                 v_Ret.setException(    exce);
                 v_Ret.setSuccess(false);
-                
-                if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_Node.getType()) )
-                {
-                    v_Ret.setExceptionSQL(this.getSQL(v_Node ,this.getCollectionToQueryOrDB(v_Node ,io_Params) ,io_Params));
-                }
-                else
-                {
-                    v_Ret.setExceptionSQL(this.getSQL(v_Node ,io_Params));
-                }
             }
         }
         
@@ -1497,54 +1483,19 @@ public final class XSQLGroup
     {
         if ( null != i_Node.getSql() )
         {
-            if ( Help.isNull(i_Params) )
-            {
-                return i_Node.getSql().getContent().getSQL();
-            }
-            else
-            {
-                return i_Node.getSql().getContent().getSQL(i_Params);
-            }
-        }
-        else
-        {
-            return null;
-        }
-    }
-    
-    
-    
-    /**
-     * 获取可执行SQL语句（批量执行的）
-     * 
-     *   用集合中首个元素做样例生成SQL语句
-     * 
-     * @author      ZhengWei(HY)
-     * @createDate  2016-08-02
-     * @version     v1.0
-     *
-     * @param i_Node
-     * @param i_Params
-     * @param io_Params
-     * @return
-     */
-    private String getSQL(XSQLNode i_Node ,List<Object> i_Params ,Map<String ,Object> io_Params) 
-    {
-        if ( null != i_Node.getSql() )
-        {
-            if ( Help.isNull(i_Params) )
+            if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(i_Node.getType()) )
             {
                 return i_Node.getSql().getContent().getPreparedSQL().getSQL();
             }
             else
             {
-                try
+                if ( Help.isNull(i_Params) )
                 {
-                    return i_Node.getSql().getContent().getPreparedSQL().getSQL(); // (this.getCollectionToDB(i_Params ,io_Params).get(0));
+                    return i_Node.getSql().getContent().getSQL();
                 }
-                catch (Exception exce)
+                else
                 {
-                    return null;
+                    return i_Node.getSql().getContent().getSQL(i_Params);
                 }
             }
         }
@@ -1581,17 +1532,6 @@ public final class XSQLGroup
             else if ( XSQLNode.$Type_CollectionToQuery.equals(i_Node.getType()) )
             {
                 System.out.println("-- " + Date.getNowTime().getFullMilli() + " CollectionToQuery = " + Help.NVL(i_Node.getCollectionID() ,"整个入参对象"));
-            }
-            else if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(i_Node.getType()) )
-            {
-                if ( Help.isNull(i_Node.getComment()) )
-                {
-                    System.out.print("-- " + Date.getNowTime().getFullMilli() + " " + this.getSQL(i_Node ,this.getCollectionToQueryOrDB(i_Node ,i_Params) ,i_Params) + " ... ... ");
-                }
-                else
-                {
-                    System.out.print("-- " + Date.getNowTime().getFullMilli() + " " + i_Node.getComment() + "：" + this.getSQL(i_Node ,this.getCollectionToQueryOrDB(i_Node ,i_Params) ,i_Params) + " ... ... ");
-                }
             }
             else
             {
