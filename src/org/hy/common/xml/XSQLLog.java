@@ -64,8 +64,6 @@ public class XSQLLog implements Serializable
         this.sql  = i_SQL;
         this.e    = i_Exce.getMessage();
         this.oid  = i_XSQLObjectID;
-        
-        this.logXSQL();
     }
     
     
