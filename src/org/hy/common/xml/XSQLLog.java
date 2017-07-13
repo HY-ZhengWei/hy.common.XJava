@@ -3,6 +3,7 @@ package org.hy.common.xml;
 import java.io.Serializable;
 
 import org.hy.common.Date;
+import org.hy.common.xml.plugins.XSQLFilter;
 
 
 
@@ -44,6 +45,8 @@ public class XSQLLog implements Serializable
         this.time  = Date.getNowTime().getFullMilli();
         this.sql   = i_SQL;
         this.e     = "";
+        
+        this.logXSQL();
     }
     
     
@@ -61,6 +64,15 @@ public class XSQLLog implements Serializable
         this.sql  = i_SQL;
         this.e    = i_Exce.getMessage();
         this.oid  = i_XSQLObjectID;
+        
+        this.logXSQL();
+    }
+    
+    
+    
+    private void logXSQL()
+    {
+        XSQLFilter.logXSQL(Thread.currentThread().getId() ,this.sql);
     }
     
     
