@@ -110,6 +110,13 @@ public class XSQLFilter implements Filter
     
     
     
+    public void setLogs(Busway<XSQLURL> i_SQLBusway)
+    {
+        // Nothing.
+    }
+    
+    
+    
     /**
      * 清除日志
      * 
@@ -165,6 +172,11 @@ public class XSQLFilter implements Filter
         if ( !Help.isNull(v_Exclusions) )
         {
             this.filters = v_Exclusions.split(",");
+            
+            for (int i=0; i<this.filters.length; i++)
+            {
+                this.filters[i] = StringHelp.replaceAll(this.filters[i] ,new String[]{"*." ,"*"} ,new String[]{"[\\S]+"});
+            }
         }
         else
         {
@@ -189,22 +201,20 @@ public class XSQLFilter implements Filter
         HttpServletRequest v_Request = (HttpServletRequest)i_Request;
         String             v_URL     = v_Request.getRequestURL().toString();
         
-        if ( this.isExclusions(v_URL) )
+        if ( !this.isExclusions(v_URL) )
         {
-            return;
+            XSQLURL v_XSQLURL = new XSQLURL();
+            if ( !Help.isNull(v_Request.getQueryString()) )
+            {
+                v_XSQLURL.setUrl(v_URL + "?" + v_Request.getQueryString());
+            }
+            else
+            {
+                v_XSQLURL.setUrl(v_URL);
+            }
+            
+            $Requests.put(Thread.currentThread().getId() ,v_XSQLURL ,this.timeOut);
         }
-        
-        XSQLURL v_XSQLURL = new XSQLURL();
-        if ( !Help.isNull(v_Request.getQueryString()) )
-        {
-            v_XSQLURL.setUrl(v_URL + "?" + v_Request.getQueryString());
-        }
-        else
-        {
-            v_XSQLURL.setUrl(v_URL);
-        }
-        
-        $Requests.put(Thread.currentThread().getId() ,v_XSQLURL ,this.timeOut);
         
         i_Chain.doFilter(i_Request ,i_Response);
     }
