@@ -27,6 +27,30 @@ import org.hy.common.xml.XJava;
  * 过滤器的初始化参数：1. exclusions  排除哪些URL不被记录。多个正则表达式规则间用,逗号分隔
  *                  2. cachesize   缓存大小。用于 $SQLBusway
  *                  3. timeout     超时时长，单位：秒。用于 $Requests
+ *                  
+ *                  
+    <!-- 记录一次页面访问所对应执行的SQL信息  ZhengWei(HY) Add 2017-07-13 -->
+    <filter>
+        <filter-name>XSQLFilter</filter-name>
+        <filter-class>org.hy.common.xml.plugins.XSQLFilter</filter-class>
+        <init-param>
+            <param-name>exclusions</param-name>
+            <param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,*.swf</param-value>
+        </init-param>
+        <init-param>
+            <param-name>cachesize</param-name>
+            <param-value>1000</param-value>
+        </init-param>
+        <init-param>
+            <param-name>timeout</param-name>
+            <param-value>60</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>XSQLFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
  *
  * @author      ZhengWei(HY)
  * @createDate  2017-07-13
