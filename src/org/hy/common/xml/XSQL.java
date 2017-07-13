@@ -306,9 +306,13 @@ public final class XSQL implements Comparable<XSQL>
      */
     private static void erroring(String i_SQL ,Exception i_Exce ,XSQL i_XSQL)
     {
-        i_XSQL.getDataSourceGroup().setException(true);
         $SQLBusway     .put(new XSQLLog(i_SQL ,i_Exce));
         $SQLBuswayError.put(new XSQLLog(i_SQL ,i_Exce ,i_XSQL == null ? "" : i_XSQL.getObjectID()));
+        
+        if ( i_XSQL != null && i_XSQL.getDataSourceGroup() != null )
+        {
+            i_XSQL.getDataSourceGroup().setException(true);
+        }
     }
     
     
