@@ -33,6 +33,7 @@ import org.hy.common.StringHelp;
  *              v3.0  2015-10-09  添加：可由外部控制字段名称的样式
  *              v4.0  2016-01-26  添加：行级对象填充到表级对象时，在填充之前触发的事件接口（fillEvent）
  *              v5.0  2017-03-02  添加：支持一对多关系的对象填充功能。在使用时，须对SQL按一对多关系排序
+ *              v5.1  2017-07-17  修正：在SQL结构改变时(只发生在超级SQL上)，须重新解释字段信息时，未能重新设置 dbMetaData 的问题。
  */
 public final class XSQLResult 
 {
@@ -378,6 +379,7 @@ public final class XSQLResult
 				// 老的元数据与新的元数据不同时，必须重新"全量解释"
 				if ( !this.dbMetaData.equals(v_NewMetaData) )
 				{
+				    this.dbMetaData = v_NewMetaData;
 					this.isAgainParse = true;
 				}
 			}
