@@ -103,7 +103,7 @@ public abstract class BaseInterface
 		} 
 		catch (Exception e) 
 		{
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 	
