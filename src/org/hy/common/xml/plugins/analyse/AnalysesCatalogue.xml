@@ -91,7 +91,7 @@
 	        
 	        <item>
 	            <name>查看系统缓存</name>
-				<comment>可手工执行定时任务</comment>
+				<comment></comment>
 				<value><![CDATA[ /analyseObject?xid=$* ]]></value>
 	        </item>
 	        
