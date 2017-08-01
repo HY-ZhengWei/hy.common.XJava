@@ -40,15 +40,12 @@
 	        
 	        
 	        <item>
-<<<<<<< HEAD
 	            <name>查看数据库连接池组状态</name>
 				<comment></comment>
 				<value><![CDATA[ /analyseObject?xid=DSG* ]]></value>
 	        </item>
 	        
 	        <item>
-=======
->>>>>>> branch 'master' of https://github.com/HY-ZhengWei/XJava
 	            <name>查看SQL执行日志</name>
 				<comment>最新执行的SQL排在最前</comment>
 				<value><![CDATA[ /analyseObject?xid=$SQLBusway ]]></value>
