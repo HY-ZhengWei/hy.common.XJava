@@ -1,4 +1,4 @@
-Manifest-Version: 3.7.41
+Manifest-Version: 3.7.42
 Created-By: HY.ZhengWei@qq.com  2011
-Specification-Version: 3.7.41 2017-08-01
+Specification-Version: 3.7.42 2017-08-01
 SourceCode: https://github.com/HY-ZhengWei/XJava

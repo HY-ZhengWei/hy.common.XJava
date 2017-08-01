@@ -151,6 +151,48 @@ public class AnalyseBase
     
     
     /**
+     * 功能1. 显示大纲目录
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-08-01
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject
+     * @return
+     */
+    public String showCatalogue(String i_BasePath ,String i_ObjectValuePath)
+    {
+        List<Param>   v_Objects = AnalysesCatalogue.getCatalogue();
+        StringBuilder v_Buffer  = new StringBuilder();
+        int           v_Index   = 0;
+        String        v_Content = this.getTemplateShowObjectsContent();
+        
+        for (Param v_Item : v_Objects)
+        {
+            v_Buffer.append(StringHelp.replaceAll(v_Content 
+                                                 ,new String[]{":No" 
+                                                              ,":Name" 
+                                                              ,":Info"
+                                                              ,":OperateURL" 
+                                                              ,":OperateTitle"} 
+                                                 ,new String[]{String.valueOf(++v_Index)
+                                                              ,v_Item.getName()
+                                                              ,Help.NVL(v_Item.getComment())
+                                                              ,i_ObjectValuePath + v_Item.getValue().trim()
+                                                              ,"查看详情"
+                                                              })
+                           );
+        }
+        
+        return StringHelp.replaceAll(this.getTemplateShowObjects()
+                                    ,new String[]{":Title"  ,":Column01Title" ,":Column02Title"  ,":HttpBasePath" ,":Content"}
+                                    ,new String[]{"控制中心" ,"功能"            ,"说明"            ,i_BasePath      ,v_Buffer.toString()});
+    }
+    
+    
+    
+    /**
      * 获取数据库组合SQL访问量的概要统计数据（支持集群）
      * 
      * @author      ZhengWei(HY)
