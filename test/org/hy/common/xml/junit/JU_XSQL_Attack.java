@@ -73,7 +73,7 @@ public class JU_XSQL_Attack
     {
         Map<String ,String> v_Params = new HashMap<String ,String>();
         
-        v_Params.put("userName" ,"' TRUNCATE '");
+        v_Params.put("userName" ,"' TRUNCATE Table ...");
         v_Params.put("password" ,"2");
         
         long v_BeginTime = Date.getNowTime().getTime();
