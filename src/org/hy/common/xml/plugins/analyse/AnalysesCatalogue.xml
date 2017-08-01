@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="xconfig"         class="java.util.ArrayList" />
+	<import name="xparam"          class="java.util.ArrayList" />
+	<import name="item"            class="org.hy.common.app.Param" />
+	
+	
+	
+	<!-- 大纲目录 -->
+	<xconfig>
+		
+	    <xparam id="AnalysesCatalogue">
+	    
+	    	<item>
+	            <name>数据库访问量（本机的）</name>
+				<comment>可查看异常的SQL</comment>
+				<value><![CDATA[ /analyseDB ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>数据库访问量（集群的）</name>
+				<comment>可查看异常的SQL</comment>
+				<value><![CDATA[ /analyseDB?cluster=Y ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>数据库组合SQL访问量（本机的）</name>
+				<comment></comment>
+				<value><![CDATA[ /analyseDB?type=Group ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>数据库组合SQL访问量（集群的）</name>
+				<comment></comment>
+				<value><![CDATA[ /analyseDB?type=Group&cluster=Y ]]></value>
+	        </item>
+	        
+	        
+	        
+	        <item>
+<<<<<<< HEAD
+	            <name>查看数据库连接池组状态</name>
+				<comment></comment>
+				<value><![CDATA[ /analyseObject?xid=DSG* ]]></value>
+	        </item>
+	        
+	        <item>
+=======
+>>>>>>> branch 'master' of https://github.com/HY-ZhengWei/XJava
+	            <name>查看SQL执行日志</name>
+				<comment>最新执行的SQL排在最前</comment>
+				<value><![CDATA[ /analyseObject?xid=$SQLBusway ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>查看SQL执行异常日志</name>
+				<comment>最新执行的SQL排在最前</comment>
+				<value><![CDATA[ /analyseObject?xid=$SQLBuswayError ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>查看页面访问所对应的执行SQL</name>
+				<comment>最新执行的SQL排在最前</comment>
+				<value><![CDATA[ /analyseObject?xid=XSQLFilter ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>清空页面访问所对应的执行SQL</name>
+				<comment>辅助调试用</comment>
+				<value><![CDATA[ /analyseObject?xid=XSQLFilter&call=clearLogs ]]></value>
+	        </item>
+	        
+	        
+	    
+	    	<item>
+	            <name>查看配置文件</name>
+				<comment>可动态重新加载配置</comment>
+				<value><![CDATA[ /analyseObject ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>查看集群服务状态</name>
+				<comment>需开启集群服务</comment>
+				<value><![CDATA[ /analyseObject?cluster=Y ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>查看系统参数</name>
+				<comment></comment>
+				<value><![CDATA[ /analyseObject?xid=SYSParam ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>查看系统缓存</name>
+				<comment>可手工执行定时任务</comment>
+				<value><![CDATA[ /analyseObject?xid=$* ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>查看定时任务</name>
+				<comment>可手工执行定时任务</comment>
+				<value><![CDATA[ /analyseObject?xid=JOB* ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>查看单点登陆用户</name>
+				<comment>需开启单点登陆服务</comment>
+				<value><![CDATA[ /analyseObject?xid=USID* ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>查看对象池中的所有对象</name>
+				<comment>xid前缀模板匹配。如xid=A*，即查看以A开头的所有对象</comment>
+				<value><![CDATA[ /analyseObject?xid=* ]]></value>
+	        </item>
+
+		</xparam>
+		
+	</xconfig>
+	
+</config>
