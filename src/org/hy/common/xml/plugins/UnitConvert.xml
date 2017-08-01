@@ -3,11 +3,20 @@
 <config>
 
 	<import name="uceConfig"   class="java.util.ArrayList" />
+	<import name="item"        class="org.hy.common.app.Param" />
 	<import name="expressions" class="org.hy.common.TablePartitionRID" />
 
 
 	<!-- 单位转换的表达式配置 -->
 	<uceConfig>
+		
+		<item id="UnitConvertPrecision">
+			<name>UnitConvertPrecision</name>
+			<value>9</value>
+			<comment>单位转换的精度。默认的保留小数的位数</comment>
+		</item>
+		
+		
     
 		<expressions id="UnitConvertExpressions" this="UnitConvertExpressions">
 			

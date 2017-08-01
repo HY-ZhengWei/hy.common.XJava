@@ -2,6 +2,7 @@ package org.hy.common.xml.plugins;
 
 import org.hy.common.Help;
 import org.hy.common.TablePartitionRID;
+import org.hy.common.app.Param;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.Xjava;
@@ -24,6 +25,8 @@ import com.greenpineyu.fel.context.FelContext;
  * @author      ZhengWei(HY)
  * @createDate  2016-02-29
  * @version     v1.0
+ *              v2.0  2017-08-01  添加：默认精度为9位小数。在配置文件中设定。
+ *                                     原因是：0.45MPa.g转为MPa.a时，当无精度要求时为：0.5513250000000001。发现人：向以前同学
  */
 @Xjava(XType.XML) 
 public class UnitConvert
@@ -53,7 +56,16 @@ public class UnitConvert
      */
     public static Number convert(String i_SourceUnit ,String i_TargetUnit ,String i_Value)
     {
-        return convert(i_SourceUnit ,i_TargetUnit ,null ,Double.valueOf(i_Value));
+        Param v_Precision = XJava.getParam("UnitConvertPrecision");
+        
+        if ( v_Precision == null || !Help.isNumber(v_Precision.getValue()) )
+        {
+            return convert(i_SourceUnit ,i_TargetUnit ,null ,Double.valueOf(i_Value));
+        }
+        else
+        {
+            return convert(i_SourceUnit ,i_TargetUnit ,Integer.parseInt(v_Precision.getValue()) ,Double.valueOf(i_Value));
+        }
     }
     
     
@@ -93,7 +105,16 @@ public class UnitConvert
      */
     public static Number convert(String i_SourceUnit ,String i_TargetUnit ,String i_Value ,String ... i_Others)
     {
-        return convert(i_SourceUnit ,i_TargetUnit ,null ,i_Value ,i_Others);
+        Param v_Precision = XJava.getParam("UnitConvertPrecision");
+        
+        if ( v_Precision == null || !Help.isNumber(v_Precision.getValue()) )
+        {
+            return convert(i_SourceUnit ,i_TargetUnit ,null ,i_Value ,i_Others);
+        }
+        else
+        {
+            return convert(i_SourceUnit ,i_TargetUnit ,Integer.parseInt(v_Precision.getValue()) ,i_Value ,i_Others);
+        }
     }
     
     
@@ -153,7 +174,16 @@ public class UnitConvert
      */
     public static <N extends Number> Number convert(String i_SourceUnit ,String i_TargetUnit ,N i_Value)
     {
-        return convert(i_SourceUnit ,i_TargetUnit ,null ,i_Value ,new Number[]{});
+        Param v_Precision = XJava.getParam("UnitConvertPrecision");
+        
+        if ( v_Precision == null || !Help.isNumber(v_Precision.getValue()) )
+        {
+            return convert(i_SourceUnit ,i_TargetUnit ,null ,i_Value ,new Number[]{});
+        }
+        else
+        {
+            return convert(i_SourceUnit ,i_TargetUnit ,Integer.parseInt(v_Precision.getValue()) ,i_Value ,new Number[]{});
+        }
     }
     
     
