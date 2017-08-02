@@ -783,9 +783,9 @@ public class AnalyseBase
                     v_OperateTitle2 = "集群顺次执行SQL组";
                     v_OperateURL3   = v_OperateURL2 + "&sameTime=Y";
                     v_OperateTitle3 = "集群同时执行SQL组";
-                    v_OperateURL4   = v_OperateURL1 + "&call=openLog";
+                    v_OperateURL4   = i_ObjectValuePath + "?xid=" + i_XJavaObjectID + "&call=openLog";
                     v_OperateTitle4 = "开启日志";
-                    v_OperateURL5   = v_OperateURL1 + "&call=closeLog";
+                    v_OperateURL5   = i_ObjectValuePath + "?xid=" + i_XJavaObjectID + "&call=closeLog";
                     v_OperateTitle5 = "关闭日志";
                 }
                 
