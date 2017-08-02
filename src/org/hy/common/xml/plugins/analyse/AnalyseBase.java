@@ -187,7 +187,7 @@ public class AnalyseBase
         
         return StringHelp.replaceAll(this.getTemplateShowObjects()
                                     ,new String[]{":Title"  ,":Column01Title" ,":Column02Title"  ,":HttpBasePath" ,":Content"}
-                                    ,new String[]{"控制中心" ,"功能"            ,"说明"            ,i_BasePath      ,v_Buffer.toString()});
+                                    ,new String[]{"分析中心" ,"功能"            ,"说明"            ,i_BasePath      ,v_Buffer.toString()});
     }
     
     
