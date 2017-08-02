@@ -1687,6 +1687,36 @@ public final class XSQLGroup
     
     
     /**
+     * 输出执行日志
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-08-02
+     * @version     v1.0
+     *
+     */
+    public void openLog()
+    {
+        this.setLog(true);
+    }
+    
+    
+    
+    /**
+     * 不输出执行日志
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-08-02
+     * @version     v1.0
+     *
+     */
+    public void closeLog()
+    {
+        this.setLog(false);
+    }
+    
+    
+    
+    /**
      * 获取：描述
      */
     public String getDesc()

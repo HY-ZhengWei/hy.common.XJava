@@ -37,6 +37,11 @@
 				<value><![CDATA[ /analyseDB?type=Group&cluster=Y ]]></value>
 	        </item>
 	        
+	        <item>
+	            <name>数据库组合SQL的调试页面</name>
+				<comment><![CDATA[ 请自行编写URL：http://../analyseObject?xid=XSQL组ID ]]></comment>
+	        </item>
+	        
 	        
 	        
 	        <item>

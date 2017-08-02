@@ -744,6 +744,10 @@ public class AnalyseBase
             String v_OperateTitle2 = "";
             String v_OperateURL3   = "#";
             String v_OperateTitle3 = "";
+            String v_OperateURL4   = "#";
+            String v_OperateTitle4 = "";
+            String v_OperateURL5   = "#";
+            String v_OperateTitle5 = "";
             XJSON  v_XJSON         = new XJSON();
             v_XJSON.setReturnNVL(true);
             v_XJSON.setAccuracy(true);
@@ -779,11 +783,15 @@ public class AnalyseBase
                     v_OperateTitle2 = "集群顺次执行SQL组";
                     v_OperateURL3   = v_OperateURL2 + "&sameTime=Y";
                     v_OperateTitle3 = "集群同时执行SQL组";
+                    v_OperateURL4   = v_OperateURL1 + "&call=openLog";
+                    v_OperateTitle4 = "开启日志";
+                    v_OperateURL5   = v_OperateURL1 + "&call=closeLog";
+                    v_OperateTitle5 = "关闭日志";
                 }
                 
                 return StringHelp.replaceAll(this.getTemplateShowObject() 
-                                            ,new String[]{":HttpBasePath" ,":TitleInfo"  ,":XJavaObjectID" ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3"} 
-                                            ,new String[]{i_BasePath      ,"对象信息"     ,i_XJavaObjectID  ,v_Content  ,v_OperateURL1  ,v_OperateTitle1  ,v_OperateURL2  ,v_OperateTitle2  ,v_OperateURL3  ,v_OperateTitle3});
+                                            ,new String[]{":HttpBasePath" ,":TitleInfo"  ,":XJavaObjectID" ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3" ,":OperateURL4"  ,":OperateTitle4" ,":OperateURL5" ,":OperateTitle5"} 
+                                            ,new String[]{i_BasePath      ,"对象信息"     ,i_XJavaObjectID  ,v_Content  ,v_OperateURL1  ,v_OperateTitle1  ,v_OperateURL2  ,v_OperateTitle2  ,v_OperateURL3  ,v_OperateTitle3  ,v_OperateURL4   ,v_OperateTitle4  ,v_OperateURL5  ,v_OperateTitle5});
             }
             // 功能2. 执行对象方法 
             else
