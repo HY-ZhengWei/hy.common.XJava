@@ -14,7 +14,7 @@ import org.hy.common.xml.XJava;
 
 
 /**
- * 大纲目录
+ * 分析中心
  * 
  *  配置web.xml如下代码
     <servlet>
