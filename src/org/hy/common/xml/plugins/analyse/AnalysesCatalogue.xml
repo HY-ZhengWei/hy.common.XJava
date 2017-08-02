@@ -120,7 +120,7 @@
 	        
 	        <item>
 	            <name>查看对象池中对象的详情</name>
-				<comment><![CDATA[ 请自行编写URL：http:/../analyseObject?xid=对象ID ]]></comment>
+				<comment><![CDATA[ 请自行编写URL：http://../analyseObject?xid=对象ID ]]></comment>
 	        </item>
 	        
 	        <item>
