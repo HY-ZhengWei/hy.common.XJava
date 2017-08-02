@@ -26,6 +26,8 @@ import org.hy.common.xml.XJava;
         <url-pattern>/analyses</url-pattern>
     </servlet-mapping>
  *
+ *  提议做此页面的人为：邹德福
+ *
  * @author      ZhengWei(HY)
  * @createDate  2017-08-01
  * @version     v1.0
