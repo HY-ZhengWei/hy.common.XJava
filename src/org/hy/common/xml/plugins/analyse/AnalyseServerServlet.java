@@ -24,6 +24,16 @@ import org.hy.common.Help;
  * 
  * 功能5：查看XSQL对象执行错误的SQL语句            http://IP:Port/WebService/../analyseDB?xsqloid=xxxxx&xsqlxid=xxxxx
  *
+ *  配置web.xml如下代码
+    <servlet>
+        <servlet-name>AnalyseServerServlet</servlet-name>
+        <servlet-class>org.hy.common.xml.plugins.analyse.AnalyseServerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AnalyseServerServlet</servlet-name>
+        <url-pattern>/analyses/analyseDB</url-pattern>
+    </servlet-mapping>
+ *
  * @author      ZhengWei(HY)
  * @createDate  2015-12-15
  * @version     v1.0

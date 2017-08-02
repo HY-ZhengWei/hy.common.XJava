@@ -15,6 +15,16 @@ import org.hy.common.xml.XJava;
 
 /**
  * 大纲目录
+ * 
+ *  配置web.xml如下代码
+    <servlet>
+        <servlet-name>AnalysesServlet</servlet-name>
+        <servlet-class>org.hy.common.xml.plugins.analyse.AnalysesServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AnalysesServlet</servlet-name>
+        <url-pattern>/analyses</url-pattern>
+    </servlet-mapping>
  *
  * @author      ZhengWei(HY)
  * @createDate  2017-08-01

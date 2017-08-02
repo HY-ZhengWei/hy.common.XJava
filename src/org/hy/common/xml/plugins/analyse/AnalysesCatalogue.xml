@@ -72,14 +72,14 @@
 	        
 	    
 	    	<item>
-	            <name>查看配置文件</name>
+	            <name>查看配置文件（支持集群）</name>
 				<comment>可动态重新加载配置</comment>
 				<value><![CDATA[ /analyseObject ]]></value>
 	        </item>
 	        
 	        <item>
 	            <name>查看集群服务状态</name>
-				<comment>需开启集群服务</comment>
+				<comment>需开启集群服务。可查看服务启动时间及正常与否信息</comment>
 				<value><![CDATA[ /analyseObject?cluster=Y ]]></value>
 	        </item>
 	        
@@ -96,14 +96,14 @@
 	        </item>
 	        
 	        <item>
-	            <name>查看定时任务</name>
+	            <name>查看定时任务（支持集群）</name>
 				<comment>可手工执行定时任务</comment>
 				<value><![CDATA[ /analyseObject?xid=JOB* ]]></value>
 	        </item>
 	        
 	        <item>
 	            <name>查看单点登陆用户</name>
-				<comment>需开启单点登陆服务</comment>
+				<comment>需开启单点登陆服务。可查看在线用户</comment>
 				<value><![CDATA[ /analyseObject?xid=USID* ]]></value>
 	        </item>
 	        
@@ -111,6 +111,16 @@
 	            <name>查看对象池中的所有对象</name>
 				<comment>xid前缀模板匹配。如xid=A*，即查看以A开头的所有对象</comment>
 				<value><![CDATA[ /analyseObject?xid=* ]]></value>
+	        </item>
+	        
+	        <item>
+	            <name>查看对象池中对象的详情</name>
+				<comment><![CDATA[ 请自行编写URL：http:/../analyseObject?xid=对象ID ]]></comment>
+	        </item>
+	        
+	        <item>
+	            <name>执行对象池中对象的方法（支持集群）</name>
+				<comment><![CDATA[ 请自行编写URL：http://../analyseObject?xid=对象ID&call=方法名 ]]></comment>
 	        </item>
 
 		</xparam>

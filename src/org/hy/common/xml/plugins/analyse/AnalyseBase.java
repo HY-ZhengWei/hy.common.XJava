@@ -168,8 +168,31 @@ public class AnalyseBase
         int           v_Index   = 0;
         String        v_Content = this.getTemplateShowObjectsContent();
         
+        v_Buffer.append(StringHelp.replaceAll(v_Content 
+                ,new String[]{":No" 
+                             ,":Name" 
+                             ,":Info"
+                             ,":OperateURL" 
+                             ,":OperateTitle"} 
+                ,new String[]{String.valueOf(++v_Index)
+                             ,"系统启动时间"
+                             ,$ServerStartTime.getFull()
+                             ,""
+                             ,""
+                             })
+                );
+        
         for (Param v_Item : v_Objects)
         {
+            String v_URL     = "";
+            String v_Command = "";
+            
+            if ( !Help.isNull(v_Item.getValue()) )
+            {
+                v_URL     = i_ObjectValuePath + v_Item.getValue().trim();
+                v_Command = "查看详情";
+            }
+            
             v_Buffer.append(StringHelp.replaceAll(v_Content 
                                                  ,new String[]{":No" 
                                                               ,":Name" 
@@ -179,8 +202,8 @@ public class AnalyseBase
                                                  ,new String[]{String.valueOf(++v_Index)
                                                               ,v_Item.getName()
                                                               ,Help.NVL(v_Item.getComment())
-                                                              ,i_ObjectValuePath + v_Item.getValue().trim()
-                                                              ,"查看详情"
+                                                              ,v_URL
+                                                              ,v_Command
                                                               })
                            );
         }
