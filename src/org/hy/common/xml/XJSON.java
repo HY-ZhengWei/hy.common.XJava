@@ -53,6 +53,7 @@ import net.minidev.json.parser.JSONParser;
  * @author      ZhengWei(HY)
  * @version     v1.0  
  * @createDate  2013-08-13
+ *              2017-08-18  V2.0  修复：对于对象的getClass()方法，不进行转Json处理。
  */
 public final class XJSON
 {
@@ -1145,6 +1146,11 @@ public final class XJSON
                 {
                     for (int i=0; i<v_MethodArr.length; i++)
                     {
+                        if ( "getClass".equals(v_MethodArr[i].getName()) )
+                        {
+                            continue;
+                        }
+                        
                         String v_Name  = null;
                         Object v_Value = null;
                         
