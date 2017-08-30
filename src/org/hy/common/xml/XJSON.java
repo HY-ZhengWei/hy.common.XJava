@@ -54,6 +54,8 @@ import net.minidev.json.parser.JSONParser;
  * @version     v1.0  
  * @createDate  2013-08-13
  *              2017-08-18  V2.0  修复：对于对象的getClass()方法，不进行转Json处理。
+ *              2017-08-30  V3.0  修复：对于Json字符串去除回车符\n，特别是最后一个回车符会影响net.minidev.json.JSONObject的解释出错。
+ *                                     发现人：李浩
  */
 public final class XJSON
 {
@@ -695,7 +697,7 @@ public final class XJSON
         
         try
         {
-            v_JSONRoot = new XJSONObject((JSONObject) v_JsonParser.parse(i_JSONString));
+            v_JSONRoot = new XJSONObject((JSONObject) v_JsonParser.parse(i_JSONString.replaceAll("\n" ,"")));
         }
         catch (Exception exce)
         {
@@ -739,7 +741,7 @@ public final class XJSON
         
         try
         {
-            v_JSONRoot = new XJSONObject((JSONObject) v_JsonParser.parse(i_JSONString));
+            v_JSONRoot = new XJSONObject((JSONObject) v_JsonParser.parse(i_JSONString.replaceAll("\n" ,"")));
             v_Object   = v_JSONRoot.get(i_JSONKey);
         }
         catch (Exception exce)

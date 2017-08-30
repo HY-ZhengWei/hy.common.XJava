@@ -266,12 +266,12 @@ public final class AppInterfaces
             }
             else
             {
-                return null;
+                return "";
             }
         }
         else
         {
-            return null;
+            return "";
         }
     }
     
