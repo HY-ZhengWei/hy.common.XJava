@@ -4895,11 +4895,18 @@ public final class XSQL implements Comparable<XSQL>
     {
         if ( this.domain != null )
         {
-            DataSourceGroup v_DomainDBG = this.domain.getDataSourceGroup();
-            
-            if ( v_DomainDBG != null )
+            try
             {
-                return v_DomainDBG;
+                DataSourceGroup v_DomainDBG = this.domain.getDataSourceGroup();
+                
+                if ( v_DomainDBG != null )
+                {
+                    return v_DomainDBG;
+                }
+            }
+            catch (Exception exce)
+            {
+                exce.printStackTrace();
             }
         }
         
