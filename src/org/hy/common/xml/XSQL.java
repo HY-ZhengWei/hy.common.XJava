@@ -84,6 +84,8 @@ import org.hy.common.xml.event.BLobEvent;
  *                                       1. 原生态的SQL文本是动态不确定的SQL，可比喻为临时写的SQL语言，是不用建立触发器的。
  *                                       2. BLob类型的不太常用，业务逻辑也较为单一，暂时就不建立触发器了。
  *              v6.1  2017-07-06  修正：当预处理 this.executeUpdatesPrepared_Inner() 执行异常时，未记录异常SQL的问题。
+ *              v7.0  2017-09-18  添加：数据库连接的域。实现相同数据库结构下的，多个数据库间的分域功能。
+ *                                     多个数据库间的相同SQL语句，不用重复写多次，只须通过"分域"动态改变数据库连接池组即可。
  */
 /*
  * 游标类型的说明
@@ -135,6 +137,14 @@ public final class XSQL implements Comparable<XSQL>
 	
 	/** 数据库连接池组 */
 	private DataSourceGroup                dataSourceGroup;
+	
+	/** 
+	 * 数据库连接的域。
+	 * 
+	 * 它可与 this.dataSourceGroup 同时存在值，但 this.domain 的优先级高。
+	 * 当"域"存在时，使用域的数据库连接池组。其它情况，使用默认的数据库连接池组。
+	 */
+	private XSQLDomain                     domain;
 	
 	/** 数据库占位符SQL的信息 */
 	private DBSQL                          content;
@@ -207,6 +217,7 @@ public final class XSQL implements Comparable<XSQL>
 	public XSQL()
 	{
 		this.dataSourceGroup   = new DataSourceGroup();
+		this.domain            = null;
 		this.content           = new DBSQL();
 		this.result            = new XSQLResult();
 		this.trigger           = null;
@@ -977,7 +988,7 @@ public final class XSQL implements Comparable<XSQL>
 			throw new NullPointerException("Result is null of XSQL.");
 		}
 		
-		if ( !this.dataSourceGroup.isValid() )
+		if ( !this.getDataSourceGroup().isValid() )
 		{
 			throw new RuntimeException("DataSourceGroup is not valid.");
 		}
@@ -1036,7 +1047,7 @@ public final class XSQL implements Comparable<XSQL>
             throw new NullPointerException("Result is null of XSQL.");
         }
         
-        if ( !this.dataSourceGroup.isValid() )
+        if ( !this.getDataSourceGroup().isValid() )
         {
             throw new RuntimeException("DataSourceGroup is not valid.");
         }
@@ -1241,7 +1252,7 @@ public final class XSQL implements Comparable<XSQL>
             throw new NullPointerException("Result is null of XSQL.");
         }
         
-        if ( !this.dataSourceGroup.isValid() )
+        if ( !this.getDataSourceGroup().isValid() )
         {
             throw new RuntimeException("DataSourceGroup is not valid.");
         }
@@ -1298,7 +1309,7 @@ public final class XSQL implements Comparable<XSQL>
 			throw new NullPointerException("Result is null of XSQL.");
 		}
 		
-		if ( !this.dataSourceGroup.isValid() )
+		if ( !this.getDataSourceGroup().isValid() )
 		{
 			throw new RuntimeException("DataSourceGroup is not valid.");
 		}
@@ -1355,7 +1366,7 @@ public final class XSQL implements Comparable<XSQL>
 			throw new NullPointerException("Result is null of XSQL.");
 		}
 		
-		if ( !this.dataSourceGroup.isValid() )
+		if ( !this.getDataSourceGroup().isValid() )
 		{
 			throw new RuntimeException("DataSourceGroup is not valid.");
 		}
@@ -1668,7 +1679,7 @@ public final class XSQL implements Comparable<XSQL>
 			throw new NullPointerException("Result is null of XSQL.");
 		}
 		
-		if ( !this.dataSourceGroup.isValid() )
+		if ( !this.getDataSourceGroup().isValid() )
 		{
 			throw new RuntimeException("DataSourceGroup is not valid.");
 		}
@@ -1732,7 +1743,7 @@ public final class XSQL implements Comparable<XSQL>
 			throw new NullPointerException("Result is null of XSQL.");
 		}
 		
-		if ( !this.dataSourceGroup.isValid() )
+		if ( !this.getDataSourceGroup().isValid() )
 		{
 			throw new RuntimeException("DataSourceGroup is not valid.");
 		}
@@ -1796,7 +1807,7 @@ public final class XSQL implements Comparable<XSQL>
 			throw new NullPointerException("Result is null of XSQL.");
 		}
 		
-		if ( !this.dataSourceGroup.isValid() )
+		if ( !this.getDataSourceGroup().isValid() )
 		{
 			throw new RuntimeException("DataSourceGroup is not valid.");
 		}
@@ -1940,7 +1951,7 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public long getSQLCount(String i_SQL)
 	{
-        if ( !this.dataSourceGroup.isValid() )
+        if ( !this.getDataSourceGroup().isValid() )
         {
             throw new RuntimeException("DataSourceGroup is not valid.");
         }
@@ -2118,7 +2129,7 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public int executeUpdate(String i_SQL)
 	{
-		if ( !this.dataSourceGroup.isValid() )
+		if ( !this.getDataSourceGroup().isValid() )
 		{
 			throw new RuntimeException("DataSourceGroup is not valid.");
 		}
@@ -2292,7 +2303,7 @@ public final class XSQL implements Comparable<XSQL>
      */
     public int executeUpdate(String i_SQL ,Connection i_Conn)
     {
-        if ( !this.dataSourceGroup.isValid() )
+        if ( !this.getDataSourceGroup().isValid() )
         {
             throw new RuntimeException("DataSourceGroup is not valid.");
         }
@@ -2452,7 +2463,7 @@ public final class XSQL implements Comparable<XSQL>
             throw new NullPointerException("Content is null of XSQL.");
         }
         
-        if ( !this.dataSourceGroup.isValid() )
+        if ( !this.getDataSourceGroup().isValid() )
         {
             throw new RuntimeException("DataSourceGroup is not valid.");
         }
@@ -2798,7 +2809,7 @@ public final class XSQL implements Comparable<XSQL>
             throw new NullPointerException("Content is null of XSQL.");
         }
         
-        if ( !this.dataSourceGroup.isValid() )
+        if ( !this.getDataSourceGroup().isValid() )
         {
             throw new RuntimeException("DataSourceGroup is not valid.");
         }
@@ -3079,7 +3090,7 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("Content is null of XSQL.");
             }
             
-            if ( !v_XSQL.dataSourceGroup.isValid() )
+            if ( !v_XSQL.getDataSourceGroup().isValid() )
             {
                 throw new RuntimeException("DataSourceGroup is not valid.");
             }
@@ -3328,7 +3339,7 @@ public final class XSQL implements Comparable<XSQL>
 	@SuppressWarnings("deprecation")
     public int executeUpdateBLob(String i_SQL ,File i_File)
 	{
-		if ( !this.dataSourceGroup.isValid() )
+		if ( !this.getDataSourceGroup().isValid() )
 		{
 			throw new RuntimeException("DataSourceGroup is not valid.");
 		}
@@ -3556,7 +3567,7 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public boolean executeGetBLob(String i_SQL ,File io_SaveFile)
 	{
-		if ( !this.dataSourceGroup.isValid() )
+		if ( !this.getDataSourceGroup().isValid() )
 		{
 			throw new RuntimeException("DataSourceGroup is not valid.");
 		}
@@ -3817,7 +3828,7 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public boolean execute(String i_SQL)
 	{
-		if ( !this.dataSourceGroup.isValid() )
+		if ( !this.getDataSourceGroup().isValid() )
 		{
 			throw new RuntimeException("DataSourceGroup is not valid.");
 		}
@@ -3991,7 +4002,7 @@ public final class XSQL implements Comparable<XSQL>
      */
     public boolean execute(String i_SQL ,Connection i_Conn)
     {
-        if ( !this.dataSourceGroup.isValid() )
+        if ( !this.getDataSourceGroup().isValid() )
         {
             throw new RuntimeException("DataSourceGroup is not valid.");
         }
@@ -4050,7 +4061,7 @@ public final class XSQL implements Comparable<XSQL>
             throw new IllegalArgumentException("Type is not 'P' or 'F' of XSQL.");
         }
         
-        if ( !this.dataSourceGroup.isValid() )
+        if ( !this.getDataSourceGroup().isValid() )
         {
             throw new RuntimeException("DataSourceGroup is not valid.");
         }
@@ -4196,7 +4207,7 @@ public final class XSQL implements Comparable<XSQL>
             throw new NullPointerException("Result is null of XSQL.");
         }
         
-        if ( !this.dataSourceGroup.isValid() )
+        if ( !this.getDataSourceGroup().isValid() )
         {
             throw new RuntimeException("DataSourceGroup is not valid.");
         }
@@ -4407,7 +4418,7 @@ public final class XSQL implements Comparable<XSQL>
             throw new NullPointerException("Result is null of XSQL.");
         }
         
-        if ( !this.dataSourceGroup.isValid() )
+        if ( !this.getDataSourceGroup().isValid() )
         {
             throw new RuntimeException("DataSourceGroup is not valid.");
         }
@@ -4801,7 +4812,7 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public Connection getConnection()
 	{
-		return this.dataSourceGroup.getConnection();
+		return this.getDataSourceGroup().getConnection();
 	}
     
     
@@ -4874,21 +4885,69 @@ public final class XSQL implements Comparable<XSQL>
     }
 
 	
+    
+    /**
+     * 获取：数据库连接池组
+     * 
+     * 当"域"存在时，使用域的数据库连接池组。其它情况，使用默认的数据库连接池组。
+     */
+    public DataSourceGroup getDataSourceGroup()
+    {
+        if ( this.domain != null )
+        {
+            DataSourceGroup v_DomainDBG = this.domain.getDataSourceGroup();
+            
+            if ( v_DomainDBG != null )
+            {
+                return v_DomainDBG;
+            }
+        }
+        
+        return dataSourceGroup;
+    }
 
-	public DataSourceGroup getDataSourceGroup() 
-	{
-		return dataSourceGroup;
-	}
+    
+    
+    /**
+     * 设置：数据库连接池组
+     * 
+     * @param dataSourceGroup 
+     */
+    public void setDataSourceGroup(DataSourceGroup dataSourceGroup)
+    {
+        this.dataSourceGroup = dataSourceGroup;
+    }
+    
+    
+    
+    /**
+     * 获取：数据库连接的域
+     * 
+     * 它可与 this.dataSourceGroup 同时存在值，但 this.domain 的优先级高。
+     * 当"域"存在时，使用域的数据库连接池组。其它情况，使用默认的数据库连接池组。
+     */
+    public XSQLDomain getDomain()
+    {
+        return domain;
+    }
+
+    
+    
+    /**
+     * 设置：数据库连接的域
+     * 
+     * 它可与 this.dataSourceGroup 同时存在值，但 this.domain 的优先级高。
+     * 当"域"存在时，使用域的数据库连接池组。其它情况，使用默认的数据库连接池组。
+     * 
+     * @param domain 
+     */
+    public void setDomain(XSQLDomain domain)
+    {
+        this.domain = domain;
+    }
+    
 
 
-
-	public void setDataSourceGroup(DataSourceGroup dataSourceGroup) 
-	{
-		this.dataSourceGroup = dataSourceGroup;
-	}
-	
-	
-	
     /**
      * 获取：XSQL的触发器
      */
