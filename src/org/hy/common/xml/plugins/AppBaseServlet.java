@@ -1,8 +1,6 @@
 package org.hy.common.xml.plugins;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
@@ -11,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.hy.common.StringHelp;
+import org.hy.common.file.FileHelp;
 
 
 
@@ -79,40 +78,7 @@ public class AppBaseServlet extends HttpServlet
      */
     protected String getPostInfo(HttpServletRequest i_Request)
     {
-        BufferedReader v_Input = null;
-        try
-        {
-            StringBuilder v_Buffer = new StringBuilder();
-            String        v_Line   = "";
-            v_Input  = new BufferedReader(new InputStreamReader(i_Request.getInputStream()));
-            while ( (v_Line = v_Input.readLine())!= null )
-            {
-                v_Buffer.append(v_Line);
-            }
-            
-            return v_Buffer.toString();
-        }
-        catch (Exception exce)
-        {
-            exce.printStackTrace();
-        }
-        finally
-        {
-            if ( v_Input != null )
-            {
-                try
-                {
-                    v_Input.close();
-                }
-                catch (Exception exce)
-                {
-                    exce.printStackTrace();
-                }
-            }
-            v_Input = null;
-        }
-        
-        return null;
+        return FileHelp.getContent(i_Request);
     }
     
     
