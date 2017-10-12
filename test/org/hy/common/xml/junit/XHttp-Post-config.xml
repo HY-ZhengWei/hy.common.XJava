@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="xobjects"        class="java.util.ArrayList" />
+	<import name="http"            class="org.hy.common.xml.XHttp" />
+	<import name="xparam"          class="org.hy.common.app.Param" />
+	
+	
+	
+	<xobjects>
+	
+		<http id="XHTTP_User_Logon" new="true">
+			<ip>133.64.153.158</ip>
+			<port>8080</port>
+			<url>/360skill/app</url>
+			<contentType>application/json</contentType>
+			<charset>UTF-8</charset>
+			<requestType ref="this.$Request_Type_Post" />
+			
+			<addParam>
+			    <paramName>i</paramName>
+			</addParam>
+		</http>
+		
+
+        <xparam id="SendInfo">
+            <name>SendInfo</name>
+			<value>
+			<![CDATA[{"sign":"C634099C201237F34C67B756F2D435F2","sid":"I001U001","sidv":"1","body":{"loginTime":"2013-11-15 17:46:01","email":"a","encryptPWD":"true","propertySize":"7","accountNo":"20131115174601785","telNo":"a","password":"DMF1ucDxtqgxw5niaXcmYQ__","logonTime":"2013-11-15 17:46:01"},"sysid":"HY01","tokenSec":"9E122719915F07E2CC11AA4D0476D351"}]]>
+			</value>
+			<comment>发送信息</comment>
+        </xparam>
+		
+	</xobjects>
+
+</config>
