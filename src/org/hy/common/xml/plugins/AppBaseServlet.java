@@ -1,7 +1,6 @@
 package org.hy.common.xml.plugins;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
