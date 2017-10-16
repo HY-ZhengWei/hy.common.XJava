@@ -93,7 +93,7 @@ public class AppBaseServlet extends HttpServlet
      */
     protected void responseJson(HttpServletRequest i_Request, HttpServletResponse i_Response ,String i_JsonData) throws ServletException, IOException
     {
-        FileHelp.writeHttp(i_JsonData ,i_Response);
+        FileHelp.writeHttp(i_JsonData ,i_Response ,"UTF-8" ,"application/json; charset=utf-8");
     }
     
 }
