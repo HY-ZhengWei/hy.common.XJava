@@ -1,7 +1,7 @@
 package org.hy.common.xml.junit.app.bean;
 
 import org.hy.common.Date;
-import org.hy.common.xml.junit.app.common.BaseBean;
+import org.hy.common.xml.junit.app.common.BaseModelApp;
 
 
 
@@ -14,7 +14,7 @@ import org.hy.common.xml.junit.app.common.BaseBean;
  * @createDate  2017-10-19
  * @version     v1.0
  */
-public class BarcodeGun extends BaseBean
+public class BarcodeGun extends BaseModelApp
 {
 
     private static final long serialVersionUID = 3192286494348848621L;
