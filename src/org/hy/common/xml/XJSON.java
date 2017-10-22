@@ -216,7 +216,6 @@ public final class XJSON
             throw new NullPointerException("JSON Parser Object Class is null.");
         }
         
-        
         Object v_NewObj = null;
         try
         {
@@ -226,7 +225,6 @@ public final class XJSON
         {
             throw new NullPointerException(i_ObjectClass.getName() + " newInstance() is error.");
         }
-        
         
         Iterator<?> v_Iter  = i_JSONObject.keySet().iterator();
         if ( MethodReflect.isExtendImplement(i_ObjectClass ,Map.class) )

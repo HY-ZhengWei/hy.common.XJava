@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="xconfig"         class="java.util.ArrayList" />
+	<import name="startupConfig"   class="java.util.ArrayList" />
+	<import name="item"            class="org.hy.common.app.Param" />
+	
+	
+	
+	<!-- 启动加载XML配置信息的列表 -->
+	<xconfig>
+		
+	    <startupConfig id="StartupConfig">
+	        
+			<item>
+				<value>sys.Messages.xml</value>
+			</item>
+			
+			<item>
+				<value>sys.AppInterfaces.xml</value>
+			</item>
+
+			<item>
+				<value>sys.Services.xml</value>
+			</item>
+		</startupConfig>
+		
+	</xconfig>
+	
+</config>

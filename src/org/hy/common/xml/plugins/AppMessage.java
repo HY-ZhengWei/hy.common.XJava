@@ -292,10 +292,10 @@ public class AppMessage<O> implements Cloneable ,Serializable
 
     public String bodytoString()
     {
+        StringBuilder v_Buffer = new StringBuilder();
+        
         try
         {
-            StringBuilder v_Buffer = new StringBuilder();
-            
             if ( this.body instanceof List )
             {
                 List<?> v_List = (List<?>)this.body;
@@ -311,15 +311,13 @@ public class AppMessage<O> implements Cloneable ,Serializable
                     v_Buffer.append(this.body.toString());
                 }
             }
-            
-            return v_Buffer.toString();
         }
         catch (Exception exce)
         {
             exce.printStackTrace();
         }
         
-        return "";
+        return v_Buffer.toString();
     }
     
     

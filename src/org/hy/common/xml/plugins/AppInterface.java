@@ -152,6 +152,8 @@ public class AppInterface
                 {
                     v_Msg.setRc(exce.getMessage());
                     v_Msg.setBody(null);
+                    v_Msg.setSid("ERROR-01：" + exce.getMessage());
+                    return v_Msg;
                 }
                 
                 // 当消息加密码的密钥为空时，不进行判断加密

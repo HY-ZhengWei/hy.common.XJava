@@ -77,7 +77,17 @@ public abstract class BaseMessage
             }
             
             AppMessage<?> v_AppMsg = AppInterfaces.getAppMessage(StringHelp.unescape_toUnicode(v_Response.paramStr));
-            if ( v_AppMsg != null && i_SID.equals(v_AppMsg.getSid()) )
+            if ( v_AppMsg == null )
+            {
+                v_Ret.paramStr = "";
+                return v_Ret.paramInt(22);
+            }
+            else if ( !i_SID.equals(v_AppMsg.getSid()) )
+            {
+                v_Ret.paramStr = v_AppMsg.getSid();
+                return v_Ret.paramInt(22);
+            }
+            else
             {
                 // 成功标记
                 if ( "0".equals(v_AppMsg.getRc()) )
@@ -98,10 +108,6 @@ public abstract class BaseMessage
                     v_Ret.paramStr = v_AppMsg.getRc() + "=" + v_AppMsg.getRi();
                     return v_Ret.paramInt(Integer.valueOf(v_AppMsg.getRc()));
                 }
-            }
-            else
-            {
-                return v_Ret.paramInt(22);
             }
         }
         catch (Exception exce)

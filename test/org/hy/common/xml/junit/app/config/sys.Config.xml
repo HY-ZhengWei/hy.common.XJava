@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="xconfig"         class="java.util.ArrayList" />
+	<import name="xparam"          class="java.util.Hashtable" />
+	<import name="item"            class="org.hy.common.app.Param" />
+	
+	
+	
+	<!-- 系统配置参数信息 -->
+	<xconfig>
+		
+	    <xparam id="SYSParam" key="name">
+
+	        <item id="ServerIP">
+	            <name>ServerIP</name>
+				<value>218.21.3.26</value>
+				<!--<value>192.168.1.185</value>-->
+				<comment>服务接口的IP地址</comment>
+	        </item>
+	        
+	        <item id="ServerPort">
+	            <name>ServerPort</name>
+				<value>5042</value>
+				<!--<value>80</value>-->
+				<comment>服务接口的IP地址</comment>
+	        </item>
+
+			<item id="BarcodeGunServerIP">
+				<name>BarcodeGunServerIP</name>
+				<value>192.168.1.15</value>
+				<comment>扫码枪服务接口的IP地址</comment>
+			</item>
+
+			<item id="BarcodeGunServerPort">
+				<name>BarcodeGunServerPort</name>
+				<value>8081</value>
+				<comment>扫码枪服务接口的IP地址</comment>
+			</item>
+	        
+	        <item id="SYSID">
+	            <name>SYSID</name>
+				<value>XXApp</value>
+				<comment>与服务端间发消息时，服务端对我们系统的编号</comment>
+	        </item>
+
+			<item id="MsgPWD">
+				<name>MsgPWD</name>
+				<value>ZhengWei(HY)</value>
+				<comment>与服务端间发消息的加密密码</comment>
+			</item>
+
+		</xparam>
+		
+	</xconfig>
+	
+</config>

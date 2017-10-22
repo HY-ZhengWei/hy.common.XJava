@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="xconfig"         class="java.util.ArrayList" />
+	<import name="interfaces"      class="java.util.Hashtable" />
+	<import name="appInterface"    class="org.hy.common.xml.plugins.AppInterface" />
+	
+	
+	
+	<xconfig>
+	
+		<interfaces id="AppInterfaces" key="name">
+			
+			<!-- 扫码枪接口 -->
+			<appInterface>
+				<name>I005B001</name>
+				<className>org.hy.common.xml.junit.app.bean.BarcodeGun</className>
+			</appInterface>
+
+		</interfaces>
+
+	</xconfig>
+	
+</config>

@@ -178,6 +178,8 @@ public final class AppInterfaces
     
     private AppMessage<?> getAppMsg(String i_Message)
     {
+        AppMessage<?> v_ErrorMsg = null;
+        
         try
         {
             Map<? ,?> v_Mes = (Map<? ,?>)$XJson.parser(i_Message);
@@ -191,7 +193,8 @@ public final class AppInterfaces
             }
             else
             {
-                return null;
+                v_ErrorMsg = new AppMessage<Object>();
+                v_ErrorMsg.setSid("Not containsKey[" + v_SID + "]");
             }
         }
         catch (Exception exce)
@@ -200,7 +203,7 @@ public final class AppInterfaces
             // 为了安全，不报错，直接返回空
         }
         
-        return null;
+        return v_ErrorMsg;
     }
     
     

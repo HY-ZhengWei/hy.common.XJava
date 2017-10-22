@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="xobjects"        class="java.util.ArrayList" />
+	
+	
+	
+	<xobjects>
+	    
+		<msg id="BarcodeGunMSG" class="org.hy.common.xml.junit.app.msg.BarcodeGunMSG" />
+
+		<service id="BarcodeGunService" class="org.hy.common.xml.junit.app.services.BarcodeGunService">
+			<barcodeGunMSG ref="BarcodeGunMSG" />
+		</service>
+
+	</xobjects>
+
+</config>
