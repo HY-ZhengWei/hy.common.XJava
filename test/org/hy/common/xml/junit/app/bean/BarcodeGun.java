@@ -1,5 +1,6 @@
 package org.hy.common.xml.junit.app.bean;
 
+import org.hy.common.Date;
 import org.hy.common.xml.junit.app.common.BaseBean;
 
 
@@ -24,7 +25,16 @@ public class BarcodeGun extends BaseBean
     
     /** 数据类型 */
     private String dataType;
-
+    
+    /** 数据时间 */
+    private Date   dataTime;
+    
+    
+    
+    public BarcodeGun()
+    {
+        this.dataTime = new Date();
+    }
     
     
     /**
@@ -67,6 +77,28 @@ public class BarcodeGun extends BaseBean
     public void setDataType(String dataType)
     {
         this.dataType = dataType;
+    }
+
+
+    
+    /**
+     * 获取：数据时间
+     */
+    public Date getDataTime()
+    {
+        return dataTime;
+    }
+
+    
+    
+    /**
+     * 设置：数据时间
+     * 
+     * @param dataTime 
+     */
+    public void setDataTime(Date dataTime)
+    {
+        this.dataTime = dataTime;
     }
     
 }
