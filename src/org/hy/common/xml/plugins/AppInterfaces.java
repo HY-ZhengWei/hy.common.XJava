@@ -16,8 +16,12 @@ import org.hy.common.Help;
  * App接口工厂(通用)
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0
  * @createDate  2013-11-17
+ * @version     v1.0
+ *              v2.0  2017-10-25  emn支持两种模式
+ *                                   1：对象.方法 的模式。对象为XJava对象，可以配置文件中自定义。
+ *                                   2：方法 的模式。这是之前的模式，为具体的实例类this.方法的调用。
+ *                                以模式1为优先级别。
  */
 public final class AppInterfaces
 {
@@ -70,8 +74,17 @@ public final class AppInterfaces
         
         try
         {
-            Method v_Method = i_Obj.getClass().getDeclaredMethod(getInstace().getEMN(i_AppMessage) ,AppMessage.class);
+            String [] v_EMN    = getInstace().getEMN(i_AppMessage).replace("." ,"@").split("@");
+            Method    v_Method = null;
             
+            if ( v_EMN.length >= 2 )
+            {
+                v_Method = XJava.getObject(v_EMN[0].trim()).getClass().getDeclaredMethod(v_EMN[1].trim() ,AppMessage.class);
+            }
+            else
+            {
+                v_Method = i_Obj.getClass().getDeclaredMethod(v_EMN[0].trim() ,AppMessage.class);
+            }
             v_Ret = (AppMessage<?>)v_Method.invoke(i_Obj ,i_AppMessage);
         }
         catch (Exception exce)

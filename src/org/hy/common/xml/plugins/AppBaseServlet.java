@@ -28,6 +28,13 @@ public class AppBaseServlet extends HttpServlet
     
     
     
+    protected void doGet(HttpServletRequest i_Request ,HttpServletResponse i_Response) throws ServletException ,IOException
+    {
+        doPost(i_Request ,i_Response);
+    }
+    
+    
+    
     public void doPost(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException 
     {
         AppMessage<?> v_AppMsg = AppInterfaces.executeMessage(this ,this.getI(i_Request));
