@@ -20,6 +20,33 @@ import org.hy.common.file.FileHelp;
  * @author      ZhengWei(HY)
  * @createDate  2013-12-19
  * @version     v1.0
+ *              v2.0  2017-10-25  emn模式1：对象.方法 的模式时，本类可取代Strust框架。
+ *                                只须三步配置即可：
+ *                                  1. web.xml中添加。(注：只用配置一个即可。当然，也支持配置多个)
+                                        <servlet>
+                                            <servlet-name>AppBaseServlet</servlet-name>
+                                            <servlet-class>org.hy.common.xml.plugins.AppBaseServlet</servlet-class>
+                                        </servlet>
+                                        <servlet-mapping>
+                                            <servlet-name>AppBaseServlet</servlet-name>
+                                            <url-pattern>/app</url-pattern>
+                                        </servlet-mapping>
+                                        
+                                     2. 添加配置文件 sys.AppInterfaces.xml
+                                        <appInterface>
+                                            <name>接口编码</name>
+                                            <className>接口参数对象</className>
+                                            <emName>XJava对象名称.方法名称</emName>
+                                        </appInterface>
+                                        
+                                     3. Java方法实现
+                                        public class XJava对象名称
+                                        {
+                                            public AppMessage<Object> 方法名称(AppMessage<接口参数对象> i_AppMsg)
+                                            {
+                                                ...
+                                            }
+                                        }
  */
 public class AppBaseServlet extends HttpServlet
 {

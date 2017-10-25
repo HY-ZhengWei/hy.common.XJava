@@ -27,6 +27,10 @@ import org.hy.common.TablePartitionRID;
  *                            外界可有两种选择的确定消息密钥的适应权限粒度
  *                               1. 接口级：i_SID + i_SysID 组合才能确定的消息密钥。       适应"每个系统的每个接口"的消息密钥都可以不同。
  *                               2. 系统级：i_SysID         系统编号一项就能确定的消息密钥。适应"每个系统"的消息密钥都可以不同，此系统调用的所有接口都是同一个消息密钥。
+ *          v2.0  2017-10-25  emName支持两种模式
+ *                                   1：对象.方法 的模式。对象为XJava对象，可以配置文件中自定义。
+ *                                   2：方法 的模式。这是之前的模式，为具体的实例类this.方法的调用。
+ *                                以模式1为优先级别。
  */
 public class AppInterface
 {
@@ -42,7 +46,14 @@ public class AppInterface
     /** 接口消息解释出的对象的元类型 */
     private String          className;
     
-    /** 执行方法的方法名称(只用于服务端：如Web服务) */
+    /** 
+     * 执行方法的方法名称(只用于服务端：如Web服务)
+     *  
+     * emName支持两种模式
+     *   1：对象.方法 的模式。对象为XJava对象，可以配置文件中自定义。
+     *   2：方法 的模式。这是之前的模式，为具体的实例类this.方法的调用。
+     * 以模式1为优先级别。
+     */
     private String          emName;
     
     private XJSON           xjson;
@@ -231,6 +242,16 @@ public class AppInterface
 
 
     
+    /**
+     * 执行方法的方法名称(只用于服务端：如Web服务)
+     *  
+     * emName支持两种模式
+     *   1：对象.方法 的模式。对象为XJava对象，可以配置文件中自定义。
+     *   2：方法 的模式。这是之前的模式，为具体的实例类this.方法的调用。
+     * 以模式1为优先级别。
+     * 
+     * @return
+     */
     public String getEmName()
     {
         return emName;
@@ -238,6 +259,16 @@ public class AppInterface
 
 
     
+    /**
+     * 执行方法的方法名称(只用于服务端：如Web服务)
+     *  
+     * emName支持两种模式
+     *   1：对象.方法 的模式。对象为XJava对象，可以配置文件中自定义。
+     *   2：方法 的模式。这是之前的模式，为具体的实例类this.方法的调用。
+     * 以模式1为优先级别。
+     * 
+     * @param emName
+     */
     public void setEmName(String emName)
     {
         this.emName = emName;
