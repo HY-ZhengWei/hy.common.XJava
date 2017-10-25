@@ -40,6 +40,7 @@ import org.hy.common.file.FileHelp;
                                         </appInterface>
                                         
                                      3. Java方法实现
+                                        @Xjava
                                         public class XJava对象名称
                                         {
                                             public AppMessage<Object> 方法名称(AppMessage<接口参数对象> i_AppMsg)

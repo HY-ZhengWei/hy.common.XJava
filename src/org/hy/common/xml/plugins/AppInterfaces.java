@@ -74,18 +74,21 @@ public final class AppInterfaces
         
         try
         {
-            String [] v_EMN    = getInstace().getEMN(i_AppMessage).replace("." ,"@").split("@");
-            Method    v_Method = null;
+            String [] v_EMN     = getInstace().getEMN(i_AppMessage).replace("." ,"@").split("@");
+            Object    v_Instace = null;
+            Method    v_Method  = null;
             
             if ( v_EMN.length >= 2 )
             {
-                v_Method = XJava.getObject(v_EMN[0].trim()).getClass().getDeclaredMethod(v_EMN[1].trim() ,AppMessage.class);
+                v_Instace = XJava.getObject(v_EMN[0].trim());
+                v_Method  = v_Instace.getClass().getDeclaredMethod(v_EMN[1].trim() ,AppMessage.class);
             }
             else
             {
-                v_Method = i_Obj.getClass().getDeclaredMethod(v_EMN[0].trim() ,AppMessage.class);
+                v_Instace = i_Obj;
+                v_Method  = v_Instace.getClass().getDeclaredMethod(v_EMN[0].trim() ,AppMessage.class);
             }
-            v_Ret = (AppMessage<?>)v_Method.invoke(i_Obj ,i_AppMessage);
+            v_Ret = (AppMessage<?>)v_Method.invoke(v_Instace ,i_AppMessage);
         }
         catch (Exception exce)
         {
