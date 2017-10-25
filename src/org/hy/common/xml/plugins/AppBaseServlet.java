@@ -20,7 +20,7 @@ import org.hy.common.file.FileHelp;
  * @author      ZhengWei(HY)
  * @createDate  2013-12-19
  * @version     v1.0
- *              v2.0  2017-10-25  emn模式1：对象.方法 的模式时，本类可取代Strust框架。
+ *              v2.0  2017-10-25  emn模式1：对象.方法 的模式时，本类可在接口层面取代Strust框架。
  *                                只须三步配置即可：
  *                                  1. web.xml中添加。(注：只用配置一个即可。当然，也支持配置多个)
                                         <servlet>
