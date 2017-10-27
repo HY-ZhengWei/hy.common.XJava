@@ -1160,7 +1160,7 @@ public final class XJava
 		this.xmlURL          = null;
 		this.treeNodeRootKey = i_TreeNodeRootKey;
 		
-		this.xmlClassPath    = i_ClassPath == null ? "" : i_ClassPath;
+		this.xmlClassPath    = Help.NVL(i_ClassPath);
 		this.parserType      = 2;
 		this.xmlString       = i_XMLString;
         this.packageNames    = null;

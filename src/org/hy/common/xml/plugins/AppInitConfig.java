@@ -26,6 +26,7 @@ import org.hy.common.file.FileHelp;
  *              v2.0  2016-01-04  将所有初始化过的XJava配置文件都保存在XJava对象池中。
  *                                保存类型为LinkedHashMap，map.key为配置文件的名称，map.value为AppInitConfig的实例对象
  *              v3.0  2016-12-26  支持对目录（包含子目录）下的所有配置文件都遍历加载的功能。
+ *              v3.1  2017-10-27  修复：classpath:解释时的入参为空的问题。
  */
 public class AppInitConfig
 {
@@ -215,7 +216,8 @@ public class AppInitConfig
                         {
                             if ( !Help.isNull(i_XmlRootPath) )
                             {
-                                XJava.parserXml(v_FileHelp.getContent(v_FFullName                                      ,this.enCode) ,""                     ,v_Param.getValue());
+                                // ZhengWei(HY) Edit 2017-10-27 i_XmlRootPath处原先的传值为：""
+                                XJava.parserXml(v_FileHelp.getContent(v_FFullName                                      ,this.enCode) ,i_XmlRootPath          ,v_Param.getValue());
                             }
                             else
                             {
@@ -239,7 +241,8 @@ public class AppInitConfig
                         v_Param = i_Params.get(i);
                         if ( !Help.isNull(i_XmlRootPath) )
                         {
-                            XJava.parserXml(v_FileHelp.getXD(i_XmlRootPath + i_XDName ,v_Param.getValue() ,this.enCode)                                                    ,""                     ,v_Param.getValue());
+                            // ZhengWei(HY) Edit 2017-10-27 i_XmlRootPath处原先的传值为：""
+                            XJava.parserXml(v_FileHelp.getXD(i_XmlRootPath + i_XDName ,v_Param.getValue() ,this.enCode)                                                    ,i_XmlRootPath          ,v_Param.getValue());
                         }
                         else
                         {
