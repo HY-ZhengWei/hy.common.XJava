@@ -27,7 +27,7 @@
 		<http id="XHTTP_BarcodeGun" new="true">
 			<ip   ref="BarcodeGunServerIP.getValue"   />
 			<port ref="BarcodeGunServerPort.getValue" />
-			<url>/mes/barcodeGun</url>
+			<url>/brp/app</url>
 			<contentType>application/json</contentType>
 			<charset>UTF-8</charset>
 			<requestType ref="this.$Request_Type_Post" />

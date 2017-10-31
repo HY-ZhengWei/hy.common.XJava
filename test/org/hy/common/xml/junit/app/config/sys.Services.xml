@@ -13,6 +13,14 @@
 		<service id="BarcodeGunService" class="org.hy.common.xml.junit.app.services.BarcodeGunService">
 			<barcodeGunMSG ref="BarcodeGunMSG" />
 		</service>
+		
+		
+		
+		<msg id="AppUserMSG" class="org.hy.common.xml.junit.app.msg.AppUserMSG" />
+
+		<service id="AppUserService" class="org.hy.common.xml.junit.app.services.AppUserService">
+			<appUserMSG ref="AppUserMSG" />
+		</service>
 
 	</xobjects>
 

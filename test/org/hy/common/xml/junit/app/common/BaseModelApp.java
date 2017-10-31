@@ -22,7 +22,7 @@ public class BaseModelApp extends SerializableDef
     private String deviceNo;
 
     /** 设备类型 */
-    private String deviceType;
+    private String deviceType = "android";
 
     
     

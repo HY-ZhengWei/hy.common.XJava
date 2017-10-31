@@ -32,6 +32,9 @@ public class BaseMSG extends BaseMessage
     /** 接口编码：扫码枪 */
     protected static final String $SID_BarcodeGun          = "I005B001";
     
+    /** 接口编码：用户登录 */
+    protected static final String $SID_Login               = "I006U001";
+    
 
 
     public BaseMSG()

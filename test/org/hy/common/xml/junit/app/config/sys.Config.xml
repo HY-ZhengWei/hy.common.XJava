@@ -29,7 +29,7 @@
 
 			<item id="BarcodeGunServerIP">
 				<name>BarcodeGunServerIP</name>
-				<value>192.168.1.15</value>
+				<value>192.168.1.127</value>
 				<comment>扫码枪服务接口的IP地址</comment>
 			</item>
 
@@ -47,7 +47,7 @@
 
 			<item id="MsgPWD">
 				<name>MsgPWD</name>
-				<value>ZhengWei(HY)</value>
+				<value>@20170801</value>
 				<comment>与服务端间发消息的加密密码</comment>
 			</item>
 

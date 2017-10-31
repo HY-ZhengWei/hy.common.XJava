@@ -17,6 +17,12 @@
 				<name>I005B001</name>
 				<className>org.hy.common.xml.junit.app.bean.BarcodeGun</className>
 			</appInterface>
+			
+			<!-- 用户登录接口 -->
+			<appInterface>
+				<name>I006U001</name>
+				<className>org.hy.common.xml.junit.app.bean.AppLoginUser</className>
+			</appInterface>
 
 		</interfaces>
 
