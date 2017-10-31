@@ -59,10 +59,11 @@ import org.hy.common.xml.plugins.XSQLGroup;
  * @author      ZhengWei(HY) 
  * @createDate  2012-09-13
  * @version     v1.0
- * @version     v1.1  2015-10-27  添加：XJava给对象赋值时，入参是Java元类型(Class.class)的功能
- * @version     v1.2  2016-02-16  添加：填充Web服务根目录的标记 "webhome:"
- * @version     v1.3  2017-01-16  添加：$SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
- * @version     v1.4  2017-02-13  修正：对构造器的参数类型判定方法上，引用 MethodReflect.isExtendImplement(...) 方法提高识别的准确性。
+ *              v1.1  2015-10-27  添加：XJava给对象赋值时，入参是Java元类型(Class.class)的功能
+ *              v1.2  2016-02-16  添加：填充Web服务根目录的标记 "webhome:"
+ *              v1.3  2017-01-16  添加：$SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
+ *              v1.4  2017-02-13  修正：对构造器的参数类型判定方法上，引用 MethodReflect.isExtendImplement(...) 方法提高识别的准确性。
+ *              v1.5  2017-10-31  添加：支持枚举名称的匹配 
  */
 public final class XJava
 {
@@ -2249,11 +2250,27 @@ public final class XJava
 								else if ( MethodReflect.isExtendImplement(v_ParamType ,Enum.class) )
                                 {
 						            Enum<?> [] v_EnumValues = StaticReflect.getEnums((Class<? extends Enum<?>>) v_ParamType);
+						            boolean    v_EnumOK     = false;
 						            
-						            int v_ParamValueInt = Integer.parseInt(v_ParamValue.toString());
-						            if ( 0 <= v_ParamValueInt && v_ParamValueInt < v_EnumValues.length )
+						            // ZhengWei(HY) Add 2017-10-31  支持枚举名称的匹配 
+						            for (Enum<?> v_Enum : v_EnumValues)
 						            {
-						                v_SetMethod.invoke(io_SuperInstance ,v_EnumValues[v_ParamValueInt]);
+						                if ( v_Enum.name().equalsIgnoreCase(v_ParamValue.toString()) )
+						                {
+						                    v_SetMethod.invoke(io_SuperInstance ,v_Enum);
+						                    v_EnumOK = true;
+						                    break;
+						                }
+						            }
+						            
+						            // 尝试用枚举值匹配 
+						            if ( !v_EnumOK && Help.isNumber(v_ParamValue.toString()) )
+						            {
+						                int v_ParamValueInt = Integer.parseInt(v_ParamValue.toString());
+						                if ( 0 <= v_ParamValueInt && v_ParamValueInt < v_EnumValues.length )
+						                {
+						                    v_SetMethod.invoke(io_SuperInstance ,v_EnumValues[v_ParamValueInt]);
+						                }
 						            }
                                 }
 								else if ( Date.class == v_ParamType )
