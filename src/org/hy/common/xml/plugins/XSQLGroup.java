@@ -93,6 +93,7 @@ import org.hy.common.thread.TaskGroup;
  *                                  此建议来自于：谈闻同学
  *              v14.1 2017-07-06  1.修正：当预处理 XSQLNode.$Type_CollectionToExecuteUpdate 执行异常时，输出的SQL日志不正确的问题。
  *                                  发现人：向以前同学
+ *              v14.2 2017-10-31  1.修正：getConnection()未添加同步锁，造成XSQL组在发起多线程执行时，遇会出现挂死的问题。
  */
 public final class XSQLGroup
 {
@@ -1323,7 +1324,7 @@ public final class XSQLGroup
      * @return
      * @throws SQLException
      */
-    private Connection getConnection(XSQLNode i_Node ,Map<DataSourceGroup ,XConnection> io_DSGConns) throws SQLException
+    private synchronized Connection getConnection(XSQLNode i_Node ,Map<DataSourceGroup ,XConnection> io_DSGConns) throws SQLException
     {
         XConnection v_Conn = io_DSGConns.get(i_Node.getSql().getDataSourceGroup());
         
