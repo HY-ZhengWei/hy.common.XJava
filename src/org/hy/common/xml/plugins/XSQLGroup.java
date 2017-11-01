@@ -94,6 +94,7 @@ import org.hy.common.thread.TaskGroup;
  *              v14.1 2017-07-06  1.修正：当预处理 XSQLNode.$Type_CollectionToExecuteUpdate 执行异常时，输出的SQL日志不正确的问题。
  *                                  发现人：向以前同学
  *              v14.2 2017-10-31  1.修正：getConnection()未添加同步锁，造成XSQL组在发起多线程执行时，遇会出现挂死的问题。
+ *                                  发现人：邹德福
  */
 public final class XSQLGroup
 {
