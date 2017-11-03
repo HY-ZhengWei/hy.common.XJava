@@ -41,12 +41,13 @@ import org.hy.common.thread.TaskGroup;
  *           1. beforeCommit   操作节点前提交；
  *           2. afterCommit    操作节点后提交；
  *           3. perAfterCommit 每获取结果集一条记录前提交。
- *   特点12：支持简单的统计功能（请求整体执行的次数、成功次数、成功累计用时时长）。
- *   特点13：支持组嵌套组的执行：实现XSQLGroup组中嵌套另一个XSQLGroup组嵌套执行的功能。
- *   特点14：支持返回多个查询结果集。returnID标记的查询XSQL节点，一次性返回所有记录，并按XSQLResult定义的规则生成一个结果集对象。
- *   特点15：支持查询结果当作其后节点的SQL入参的同时，还返回查询结果。将查询XSQL节点每次循环遍历出的每一行记录，用 PartitionMap<String ,Object> 类型的行转列保存的数据结构，并返回查询结果集。
- *   特点16：支持执行Java代码，对查询结果集进行二次加工处理等Java操作。
- *   特点17：查询SQL语句有两种使用数据库连接的方式
+ *   特点12： 由外界决定是否提交、是否回滚的功能。
+ *   特点13：支持简单的统计功能（请求整体执行的次数、成功次数、成功累计用时时长）。
+ *   特点14：支持组嵌套组的执行：实现XSQLGroup组中嵌套另一个XSQLGroup组嵌套执行的功能。
+ *   特点15：支持返回多个查询结果集。returnID标记的查询XSQL节点，一次性返回所有记录，并按XSQLResult定义的规则生成一个结果集对象。
+ *   特点16：支持查询结果当作其后节点的SQL入参的同时，还返回查询结果。将查询XSQL节点每次循环遍历出的每一行记录，用 PartitionMap<String ,Object> 类型的行转列保存的数据结构，并返回查询结果集。
+ *   特点17：支持执行Java代码，对查询结果集进行二次加工处理等Java操作。
+ *   特点18：查询SQL语句有两种使用数据库连接的方式
  *           1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
  *           2. 读写同事务：查询SQL与更新修改SQL共用一个连接，达到读、写在同一个事务中进行。
  *   
@@ -85,16 +86,19 @@ import org.hy.common.thread.TaskGroup;
  *              v12.0 2017-05-05  1.添加：XSQLNode.oneConnection 查询SQL数据库连接的占用模式。
  *              v13.0 2017-05-17  1.添加：this.returnQuery，针对 this.returnID 属性，定义返回查询结果集是 "返回结果集"？还是 "查询并返回"。
  *                                  提供一种好理解的数据结构(与this.queryReturnID属性返回的数据结构相比)。
- *                                  此建议来自于：向以前同学
+ *                                  建议来自于：向以前同学
  *                                2.准备放弃this.queryReturnID属性，只少是不再建议使用此属性。
  *              v14.0 2017-06-22  1.添加：XSQLGroup也同样支持在执行前的条件检查，只有检查通过时才允许执行。
  *                                2.添加：XSQLGroup也同样支持在执行前的提交BeforeCommit。
  *                                3.添加：XSQLGroup也同样支持在执行前的提交AfterCommit。
- *                                  此建议来自于：谈闻同学
+ *                                  建议来自于：谈闻同学
  *              v14.1 2017-07-06  1.修正：当预处理 XSQLNode.$Type_CollectionToExecuteUpdate 执行异常时，输出的SQL日志不正确的问题。
  *                                  发现人：向以前同学
  *              v14.2 2017-10-31  1.修正：getConnection()未添加同步锁，造成XSQL组在发起多线程执行时，会出现挂死的问题。
  *                                  发现人：邹德福
+ *              v15.0 2017-11-03  1.添加：由外界决定是否提交、是否回滚的功能。
+ *                                       通过 this.executes(...) 执行结果 XSQLGroupResult 来手工提交、回滚。
+ *                                  建议来自于：向以前同学
  */
 public final class XSQLGroup
 {
@@ -138,6 +142,18 @@ public final class XSQLGroup
     /** 是否打印执行轨迹日志。默认为：false */
     private boolean                  isLog;
     
+    /** 
+     * 是否自动提交。默认为： true
+     * 
+     * 当为false时，须外界手工执行提交或回滚，及关闭数据库连接。
+     * 
+     * 注：此属性对以下情况无效，以下情况相当于手工提交。
+     *           1. beforeCommit   操作节点前提交；
+     *           2. afterCommit    操作节点后提交；
+     *           3. perAfterCommit 每获取结果集一条记录前提交。
+     */
+    private boolean                  isAutoCommit;
+    
     /** 请求整体执行的次数 */
     private long                     requestCount;
     
@@ -167,6 +183,7 @@ public final class XSQLGroup
         this.superGroup     = null;
         this.xsqlNodes      = new ArrayList<XSQLNode>();
         this.isLog          = false;
+        this.isAutoCommit   = true;
         this.requestCount   = 0;
         this.successCount   = 0;
         this.successTimeLen = 0D;
@@ -367,19 +384,28 @@ public final class XSQLGroup
         // 当为子级的嵌套SQL组时，不关闭数据库连接，而是交给父组SQL组来统一关闭。ZhengWei(HY) 2016-07-30
         if ( this.superGroup == null )
         {
-            // 统一提交、统一回滚的事务功能
-            if ( v_Ret.isSuccess() )
+            if ( this.isAutoCommit )
             {
-                this.commits(v_DSGConns ,v_Ret.getExecSumCount());
-                this.success(Date.getNowTime().getTime() - v_BeginTime);
+                // 统一提交、统一回滚的事务功能
+                if ( v_Ret.isSuccess() )
+                {
+                    this.commits(v_DSGConns ,v_Ret.getExecSumCount());
+                    this.success(Date.getNowTime().getTime() - v_BeginTime);
+                }
+                else
+                {
+                    this.rollbacks(v_DSGConns);
+                }
+                
+                // 统一关闭数据库连接
+                this.closeConnections(v_DSGConns);
             }
             else
             {
-                this.rollbacks(v_DSGConns);
+                // 这里不能记录成功时间及次数信息，因为外界可能手工回滚。 ZhengWei(HY) Add 2017-11-03
+                v_Ret.setXsqlGroup(this);
+                v_Ret.setDsgConns(v_DSGConns);
             }
-            
-            // 统一关闭数据库连接
-            this.closeConnections(v_DSGConns);
         }
         else
         {
@@ -1353,7 +1379,7 @@ public final class XSQLGroup
      * @param io_DSGConns
      * @param i_ExecSumCount    累计总行数
      */
-    private synchronized void commits(Map<DataSourceGroup ,XConnection> io_DSGConns ,Counter<String> i_ExecSumCount)
+    protected synchronized void commits(Map<DataSourceGroup ,XConnection> io_DSGConns ,Counter<String> i_ExecSumCount)
     {
         if ( !Help.isNull(io_DSGConns) )
         {
@@ -1396,7 +1422,7 @@ public final class XSQLGroup
      *
      * @param io_DSGConns
      */
-    private synchronized void rollbacks(Map<DataSourceGroup ,XConnection> io_DSGConns)
+    protected synchronized void rollbacks(Map<DataSourceGroup ,XConnection> io_DSGConns)
     {
         if ( !Help.isNull(io_DSGConns) )
         {
@@ -1439,7 +1465,7 @@ public final class XSQLGroup
      *
      * @param io_DSGConns
      */
-    private synchronized void closeConnections(Map<DataSourceGroup ,XConnection> io_DSGConns)
+    protected synchronized void closeConnections(Map<DataSourceGroup ,XConnection> io_DSGConns)
     {
         if ( !Help.isNull(io_DSGConns) )
         {
@@ -1714,6 +1740,42 @@ public final class XSQLGroup
     public void closeLog()
     {
         this.setLog(false);
+    }
+    
+    
+    
+    /**
+     * 获取：是否自动提交。默认为： true
+     * 
+     * 当为false时，须外界手工执行提交或回滚，及关闭数据库连接
+     * 
+     * 注：此属性对以下情况无效，以下情况相当于手工提交。
+     *           1. beforeCommit   操作节点前提交；
+     *           2. afterCommit    操作节点后提交；
+     *           3. perAfterCommit 每获取结果集一条记录前提交。
+     */
+    public boolean isAutoCommit()
+    {
+        return isAutoCommit;
+    }
+    
+    
+    
+    /**
+     * 设置：否自动提交。默认为： true
+     * 
+     * 当为false时，须外界手工执行提交或回滚，及关闭数据库连接
+     * 
+     * 注：此属性对以下情况无效，以下情况相当于手工提交。
+     *           1. beforeCommit   操作节点前提交；
+     *           2. afterCommit    操作节点后提交；
+     *           3. perAfterCommit 每获取结果集一条记录前提交。
+     * 
+     * @param isAutoCommit 
+     */
+    public void setAutoCommit(boolean isAutoCommit)
+    {
+        this.isAutoCommit = isAutoCommit;
     }
     
     
