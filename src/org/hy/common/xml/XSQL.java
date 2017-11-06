@@ -86,6 +86,8 @@ import org.hy.common.xml.event.BLobEvent;
  *              v6.1  2017-07-06  修正：当预处理 this.executeUpdatesPrepared_Inner() 执行异常时，未记录异常SQL的问题。
  *              v7.0  2017-09-18  添加：数据库连接的域。实现相同数据库结构下的，多个数据库间的分域功能。
  *                                     多个数据库间的相同SQL语句，不用重复写多次，只须通过"分域"动态改变数据库连接池组即可。
+ *              v7.1  2017-11-06  修正：当预处理 this.executeUpdatesPrepared_Inner() 执行的同时 batchCommit >= 1时，可能出现未"执行executeBatch"情况。
+ *                                     发现人：向以前同学
  */
 /*
  * 游标类型的说明
@@ -2822,10 +2824,10 @@ public final class XSQL implements Comparable<XSQL>
         
         Connection        v_Conn       = null;
         PreparedStatement v_PStatement = null;
-        boolean    v_AutoCommit = false;
-        int        v_Ret        = 0;
-        long       v_BeginTime  = this.request().getTime();
-        String     v_SQL        = null;
+        boolean           v_AutoCommit = false;
+        int               v_Ret        = 0;
+        long              v_BeginTime  = this.request().getTime();
+        String            v_SQL        = null;
         
         try
         {
@@ -2881,7 +2883,7 @@ public final class XSQL implements Comparable<XSQL>
             }
             else
             {
-                boolean v_IsExecute = true;
+                boolean v_IsExecute = false;  // 2017-11-06  修正：当预处理 this.executeUpdatesPrepared_Inner() 执行的同时 batchCommit >= 1时，可能出现未"执行executeBatch"情况
                 
                 for (int i=0 ,v_EC=0; i<i_ObjList.size(); i++)
                 {
