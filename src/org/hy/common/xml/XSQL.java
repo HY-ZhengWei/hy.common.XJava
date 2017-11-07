@@ -2502,13 +2502,12 @@ public final class XSQL implements Comparable<XSQL>
                     }
                 }
                 
-                if ( i_Conn == null )
-                {
-                    v_Conn.commit();
-                }
+                v_Conn.commit();  // 它与i_Conn.commit();同作用
             }
             else
             {
+                boolean v_IsCommit = true;
+                
                 for (int i=0 ,v_EC=0; i<i_ObjList.size(); i++)
                 {
                     if ( i_ObjList.get(i) != null )
@@ -2520,15 +2519,17 @@ public final class XSQL implements Comparable<XSQL>
                         
                         if ( v_EC % this.batchCommit == 0 )
                         {
-                            if ( i_Conn == null )
-                            {
-                                v_Conn.commit();
-                            }
+                            v_Conn.commit();
+                            v_IsCommit = true;
+                        }
+                        else
+                        {
+                            v_IsCommit = false;
                         }
                     }
                 }
                 
-                if ( i_Conn == null )
+                if ( !v_IsCommit )
                 {
                     v_Conn.commit();
                 }
@@ -2876,14 +2877,11 @@ public final class XSQL implements Comparable<XSQL>
                     v_Ret += v_Count;
                 }
                 
-                if ( i_Conn == null )
-                {
-                    v_Conn.commit();
-                }
+                v_Conn.commit();  // 它与i_Conn.commit();同作用
             }
             else
             {
-                boolean v_IsExecute = false;  // 2017-11-06  修正：当预处理 this.executeUpdatesPrepared_Inner() 执行的同时 batchCommit >= 1时，可能出现未"执行executeBatch"情况
+                boolean v_IsCommit = true;  // 2017-11-06  修正：当预处理 this.executeUpdatesPrepared_Inner() 执行的同时 batchCommit >= 1时，可能出现未"执行executeBatch"情况
                 
                 for (int i=0 ,v_EC=0; i<i_ObjList.size(); i++)
                 {
@@ -2922,28 +2920,26 @@ public final class XSQL implements Comparable<XSQL>
                                 v_Ret += v_Count;
                             }
                             
-                            if ( i_Conn == null )
-                            {
-                                v_Conn.commit();
-                            }
+                            v_Conn.commit();
                             
                             v_PStatement.clearBatch();
-                            v_IsExecute = true;
+                            v_IsCommit = true;
+                        }
+                        else
+                        {
+                            v_IsCommit = false;
                         }
                     }
                 }
                 
-                if ( !v_IsExecute )
+                if ( !v_IsCommit )
                 {
                     int [] v_CountArr = v_PStatement.executeBatch();
                     for (int v_Count : v_CountArr)
                     {
                         v_Ret += v_Count;
                     }
-                }
-                
-                if ( i_Conn == null )
-                {
+                    
                     v_Conn.commit();
                 }
             }
@@ -3148,9 +3144,13 @@ public final class XSQL implements Comparable<XSQL>
                         }
                     }
                 }
+                
+                v_Conn.commit();
             }
             else
             {
+                boolean v_IsCommit = true;
+                
                 for (XSQL v_XSQLTemp : i_XSQLs.keySet())
                 {
                     v_XSQLError = v_XSQLTemp;
@@ -3174,13 +3174,21 @@ public final class XSQL implements Comparable<XSQL>
                             if ( v_Totals.size() % i_BatchCommit == 0 )
                             {
                                 v_Conn.commit();
+                                v_IsCommit = true;
+                            }
+                            else
+                            {
+                                v_IsCommit = false;
                             }
                         }
                     }
                 }
+                
+                if ( !v_IsCommit )
+                {
+                    v_Conn.commit();
+                }
             }
-            
-            v_Conn.commit();
             
             // 计算出总用时与每段SQL累计用时之差，后平摊到每段SQL的用时时长上。
             v_TimeLenTotal = Date.getNowTime().getTime() - v_BeginTimeTotal;
