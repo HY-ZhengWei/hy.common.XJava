@@ -94,7 +94,7 @@ public class AppBaseServlet extends HttpServlet
             // 2017-11-10 修正 v_Infos.length == 2 
             if ( v_Infos.length >= 2 && "i".equals(v_Infos[0]) )
             {
-                return v_Infos[1];
+                return v_Info.substring(v_Infos[0].length() + 1);
             }
             else
             {
