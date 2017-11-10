@@ -23,6 +23,12 @@
 				<name>I006U001</name>
 				<className>org.hy.common.xml.junit.app.bean.AppLoginUser</className>
 			</appInterface>
+			
+			<!-- 记录日志接口 -->
+			<appInterface>
+				<name>Log.Create.A001</name>
+				<className>org.hy.common.xml.junit.app.bean.LogInfo</className>
+			</appInterface>
 
 		</interfaces>
 
