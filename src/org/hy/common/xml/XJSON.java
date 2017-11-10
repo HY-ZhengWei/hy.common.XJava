@@ -695,7 +695,7 @@ public final class XJSON
         
         try
         {
-            v_JSONRoot = new XJSONObject((JSONObject) v_JsonParser.parse(i_JSONString.replaceAll("\n" ,"")));
+            v_JSONRoot = new XJSONObject((JSONObject) v_JsonParser.parse(StringHelp.replaceAll(i_JSONString ,new String[]{"\n"} ,new String[]{""})));
         }
         catch (Exception exce)
         {
@@ -739,7 +739,7 @@ public final class XJSON
         
         try
         {
-            v_JSONRoot = new XJSONObject((JSONObject) v_JsonParser.parse(i_JSONString.replaceAll("\n" ,"")));
+            v_JSONRoot = new XJSONObject((JSONObject) v_JsonParser.parse(StringHelp.replaceAll(i_JSONString ,new String[]{"\n"} ,new String[]{""})));
             v_Object   = v_JSONRoot.get(i_JSONKey);
         }
         catch (Exception exce)

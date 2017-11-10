@@ -48,6 +48,7 @@ import org.hy.common.file.FileHelp;
                                                 ...
                                             }
                                         }
+ *              v2.1  2017-11-10  修正：解释客户端i=信息的异常。
  */
 public class AppBaseServlet extends HttpServlet
 {
@@ -90,7 +91,8 @@ public class AppBaseServlet extends HttpServlet
             v_Info = StringHelp.unescape_toUnicode(v_Info);
             String [] v_Infos = v_Info.split("=");
             
-            if ( v_Infos.length == 2 && "i".equals(v_Infos[0]) )
+            // 2017-11-10 修正 v_Infos.length == 2 
+            if ( v_Infos.length >= 2 && "i".equals(v_Infos[0]) )
             {
                 return v_Infos[1];
             }

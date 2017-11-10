@@ -7,7 +7,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.db"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.file"/>
 	<classpathentry kind="lib" path="lib/fel.jar"/>
-	<classpathentry kind="lib" path="lib/json-smart-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.11.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
 	<classpathentry kind="lib" path="lib/xwork-core-2.3.15.1.jar"/>
@@ -18,5 +17,6 @@
 	<classpathentry kind="lib" path="lib/jersey-common-2.9.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-server-2.9.jar"/>
 	<classpathentry kind="lib" path="lib/javax.inject-2.3.0-b05.jar"/>
+	<classpathentry kind="lib" path="lib/json-smart-2.0-RC3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
