@@ -99,6 +99,7 @@ import org.hy.common.thread.TaskGroup;
  *              v15.0 2017-11-03  1.添加：由外界决定是否提交、是否回滚的功能。
  *                                       通过 this.executes(...) 执行结果 XSQLGroupResult 来手工提交、回滚。
  *                                  建议来自于：向以前同学
+ *              v15.1 2017-11-20  1.优化：提升getCollectionToDB()方法的执行性能。
  */
 public final class XSQLGroup
 {
@@ -1298,6 +1299,7 @@ public final class XSQLGroup
      * @author      ZhengWei(HY)
      * @createDate  2016-08-02
      * @version     v1.0
+     *              v2.0  减少if语句的执行次数，提升执行性能。
      *
      * @param i_CollectionList
      * @param io_Params
@@ -1310,23 +1312,31 @@ public final class XSQLGroup
     private List<Map<String ,Object>> getCollectionToDB(List<Object> i_CollectionList ,Map<String ,Object> io_Params) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         List<Map<String ,Object>> v_CollectionMap = new ArrayList<Map<String ,Object>>();
+        Object                    v_OneObject     = i_CollectionList.get(0);
         
-        for (Object v_Item : i_CollectionList)
+        if ( MethodReflect.isExtendImplement(v_OneObject ,Map.class) )
         {
-            Map<String ,Object> v_ItemMap = new HashMap<String ,Object>();
-            
-            if ( MethodReflect.isExtendImplement(v_Item ,Map.class) )
+            for (Object v_Item : i_CollectionList)
             {
+                Map<String ,Object> v_ItemMap = new HashMap<String ,Object>();
+                
                 v_ItemMap.putAll(io_Params);
                 v_ItemMap.putAll((Map<String ,Object>)v_Item);
+                
+                v_CollectionMap.add(v_ItemMap);
             }
-            else
+        }
+        else
+        {
+            for (Object v_Item : i_CollectionList)
             {
+                Map<String ,Object> v_ItemMap = new HashMap<String ,Object>();
+                
                 v_ItemMap.putAll(io_Params);
                 v_ItemMap.putAll(Help.toMap(v_Item));
+                
+                v_CollectionMap.add(v_ItemMap);
             }
-            
-            v_CollectionMap.add(v_ItemMap);
         }
         
         return v_CollectionMap;
