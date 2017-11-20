@@ -2490,7 +2490,7 @@ public final class XSQL implements Comparable<XSQL>
             v_Conn.setAutoCommit(false);
             v_Statement  = v_Conn.createStatement();
             
-            if ( this.batchCommit <= 0 || i_Conn != null )
+            if ( this.batchCommit <= 0 )
             {
                 for (int i=0; i<i_ObjList.size(); i++)
                 {
@@ -2838,7 +2838,7 @@ public final class XSQL implements Comparable<XSQL>
             v_SQL        = this.content.getPreparedSQL().getSQL();
             v_PStatement = v_Conn.prepareStatement(v_SQL);
             
-            if ( this.batchCommit <= 0 || i_Conn != null )
+            if ( this.batchCommit <= 0 )
             {
                 for (int i=0; i<i_ObjList.size(); i++)
                 {
