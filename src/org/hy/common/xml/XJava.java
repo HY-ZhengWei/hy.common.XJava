@@ -64,6 +64,7 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *              v1.3  2017-01-16  添加：$SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
  *              v1.4  2017-02-13  修正：对构造器的参数类型判定方法上，引用 MethodReflect.isExtendImplement(...) 方法提高识别的准确性。
  *              v1.5  2017-10-31  添加：支持枚举名称的匹配 
+ *              v1.6  2017-11-23  添加：支持注解赋值时，对无Setter方法的成员属性赋值。
  */
 public final class XJava
 {
@@ -1469,17 +1470,6 @@ public final class XJava
                             Xjava  v_AnnoRef   = v_Field.getAnnotation(Xjava.class);
                             Object v_ObjectRef = null; 
                             
-                            if ( v_Method == null )
-                            {
-                                // 属性没有对应的Setter方法
-                                throw new NoSuchMethodException("Field's[" + v_Field.getName() + "] Setter Method is not exist of Class[" + v_ClassInfo.getClassObj().toString() + "].  Annotation name is ref[" + v_AnnoRef.ref() + "]");
-                            }
-                            else if ( v_Method.getParameterTypes().length != 1 )
-                            {
-                                // ref注解的方法入参参数应当只能是一个
-                                throw new NoSuchMethodException("Field's[" + v_Field.getName() + "] Setter Method[" + v_Method.getName() + "] parameter count is only one of Class[" + v_ClassInfo.getClassObj().toString() + "].  Annotation name is ref[" + v_AnnoRef.ref() + "]");
-                            }
-                            
                             // 无命名注解
                             if ( Help.isNull(v_AnnoRef.ref()) )
                             {
@@ -1508,14 +1498,42 @@ public final class XJava
                             }
                             else
                             {
-                                try
+                                // 1. 属性没有对应的Setter方法
+                                // 2. ref注解的方法入参参数应当只能是一个
+                                if ( v_Method == null || v_Method.getParameterTypes().length != 1 )
                                 {
-                                    v_Method.invoke(v_Object ,v_ObjectRef);
+                                    // ZhengWei(HY) Add 2017-11-23 支持无Setter方法时，对属性赋值
+                                    try
+                                    {
+                                        if ( !v_Field.isAccessible() )
+                                        {
+                                            v_Field.setAccessible(true);
+                                            v_Field.set(v_Object ,v_ObjectRef);
+                                            v_Field.setAccessible(false);
+                                        }
+                                        else
+                                        {
+                                            v_Field.set(v_Object ,v_ObjectRef);
+                                        }
+                                    }
+                                    catch (Exception exce)
+                                    {
+                                        throw new IllegalAccessError("Set Field's[" + v_Field.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "].");
+                                    }
+                                    // throw new NoSuchMethodException("Field's[" + v_Field.getName() + "] Setter Method is not exist of Class[" + v_ClassInfo.getClassObj().toString() + "].  Annotation name is ref[" + v_AnnoRef.ref() + "]");
+                                    // throw new NoSuchMethodException("Field's[" + v_Field.getName() + "] Setter Method[" + v_Method.getName() + "] parameter count is only one of Class[" + v_ClassInfo.getClassObj().toString() + "].  Annotation name is ref[" + v_AnnoRef.ref() + "]");
                                 }
-                                catch (Exception exce)
+                                else
                                 {
-                                    // 执行属性的Setter方法注入参数异常
-                                    throw new NullPointerException("Call Field's[" + v_Field.getName() + "] Setter Method[" + v_Method.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "].");
+                                    try
+                                    {
+                                        v_Method.invoke(v_Object ,v_ObjectRef);
+                                    }
+                                    catch (Exception exce)
+                                    {
+                                        // 执行属性的Setter方法注入参数异常
+                                        throw new IllegalAccessError("Call Field's[" + v_Field.getName() + "] Setter Method[" + v_Method.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "].");
+                                    }
                                 }
                             }
                         }
