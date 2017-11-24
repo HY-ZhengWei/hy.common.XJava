@@ -69,6 +69,8 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *                                     当成员属性有Setter方法时，用Setter方法优先。
  *              v1.7  2017-11-24  添加：支持XML赋值时，对无Setter方法的成员属性赋值，即使是private属性也能赋值。
  *                                     当成员属性有Setter方法时，用Setter方法优先。
+ *                                优化：getObject(Class)方法，在if语句判定时，不创建全新对象实例进行判定。
+ *                                添加：扩展getObject(Class)方法的功能，尝试在实现类、子类中查找匹配的对象。
  */
 public final class XJava
 {
@@ -592,7 +594,9 @@ public final class XJava
     /**
      * 按 Class 元类型获取对象实例
      * 
-     * 2017-01-16 Add $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
+     * 2017-01-16 Add   $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
+     * 2017-11-24 Edit  优化：在if语句判定时，不创建全新对象实例进行判定。
+     * 2017-11-24 Add   尝试在实现类、子类中查找匹配的对象
      * 
      * @param i_ID
      * @return
@@ -607,6 +611,7 @@ public final class XJava
         {
             Iterator<TreeNode<XJavaObject>> v_Iterator = $XML_OBJECTS.valuesNodeID();
             TreeNode<XJavaObject>           v_TreeNode = null;
+            Map<XJavaObject ,Object>        v_Maybe    = new HashMap<XJavaObject ,Object>(1); // 有可能是的对象 ZhengWei(HY) Add 2017-11-24
             
             try
             {
@@ -614,11 +619,18 @@ public final class XJava
                 {
                     v_TreeNode = v_Iterator.next();
                     
-                    if ( null    != v_TreeNode.getInfo()
-                      && null    != v_TreeNode.getInfo().getObject() 
-                      && i_Class == v_TreeNode.getInfo().getObject().getClass() )
+                    if ( null != v_TreeNode.getInfo()
+                      && null != v_TreeNode.getInfo().getObject(false) )
                     {
-                        return v_TreeNode.getInfo().getObject();
+                        if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
+                        {
+                            return v_TreeNode.getInfo().getObject();
+                        }
+                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
+                        {
+                            // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2017-11-24
+                            v_Maybe.put(v_TreeNode.getInfo() ,null);
+                        }
                     }
                 }
             }
@@ -639,6 +651,18 @@ public final class XJava
                     return v_Ret;
                 }
             }
+            
+            if ( v_Maybe.size() == 1 )
+            {
+                try
+                {
+                    return v_Maybe.keySet().iterator().next().getObject();
+                }
+                catch (Exception e)
+                {
+                    throw new NullPointerException(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().object.getClass().getName() + "] is " + e.getMessage() + ".");
+                }
+            }
         }
         
         return null;
@@ -649,7 +673,9 @@ public final class XJava
     /**
      * 按 Class 元类型获取对象实例
      * 
-     * 2017-01-16 Add $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
+     * 2017-01-16 Add   $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
+     * 2017-11-24 Edit  优化：在if语句判定时，不创建全新对象实例进行判定。
+     * 2017-11-24 Add   尝试在实现类、子类中查找匹配的对象
      * 
      * @param i_ID
      * @param i_IsNew   是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
@@ -665,6 +691,7 @@ public final class XJava
         {
             Iterator<TreeNode<XJavaObject>> v_Iterator = $XML_OBJECTS.valuesNodeID();
             TreeNode<XJavaObject>           v_TreeNode = null;
+            Map<XJavaObject ,Object>        v_Maybe    = new HashMap<XJavaObject ,Object>(1); // 有可能是的对象 ZhengWei(HY) Add 2017-11-24
             
             try
             {
@@ -672,9 +699,18 @@ public final class XJava
                 {
                     v_TreeNode = v_Iterator.next();
                     
-                    if ( i_Class == v_TreeNode.getInfo().getObject().getClass() )
+                    if ( null != v_TreeNode.getInfo()
+                      && null != v_TreeNode.getInfo().getObject(false) )
                     {
-                        return v_TreeNode.getInfo().getObject(i_IsNew);
+                        if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
+                        {
+                            return v_TreeNode.getInfo().getObject(i_IsNew);
+                        }
+                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
+                        {
+                            // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2017-11-24
+                            v_Maybe.put(v_TreeNode.getInfo() ,null);
+                        }
                     }
                 }
             }
@@ -708,6 +744,18 @@ public final class XJava
             catch (Exception e)
             {
                 throw new NullPointerException("[" + v_TreeNode.getNodeID() + "] is " + e.getMessage());
+            }
+            
+            if ( v_Maybe.size() == 1 )
+            {
+                try
+                {
+                    return v_Maybe.keySet().iterator().next().getObject(i_IsNew);
+                }
+                catch (Exception e)
+                {
+                    throw new NullPointerException(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().object.getClass().getName() + "] is " + e.getMessage() + ".");
+                }
             }
         }
         
@@ -1492,6 +1540,12 @@ public final class XJava
                                     if ( v_ObjectRef == null )
                                     {
                                         v_ObjectRef = getObject(v_Field.getName().substring(0, 1).toUpperCase() + v_Field.getName().substring(1));
+                                        
+                                        // 尝试按类型匹配查找  ZhengWei(HY) Add 2017-11-24
+                                        if ( v_ObjectRef == null )
+                                        {
+                                            v_ObjectRef = getObject(v_Field.getType());
+                                        }
                                     }
                                 }
                             }
