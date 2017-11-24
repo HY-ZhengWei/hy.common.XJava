@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="xconfig"         class="java.util.ArrayList" />
+	<import name="item"            class="org.hy.common.xml.junit.JU_PrivateField" />
+	
+	
+	
+	<xconfig>
+		
+	    <item id="PrivateField01">
+	    	<longValue>1024</longValue>
+	    	<longObject>2048</longObject>
+	    	<byteValue>1</byteValue>
+	    	<intValue>8</intValue>
+	    	<booleanValue>true</booleanValue>
+	    	<stringValue>ZhengWei(HY)</stringValue>
+    	</item>
+		
+	</xconfig>
+	
+</config>

@@ -27,6 +27,7 @@ import org.xml.sax.InputSource;
 import org.hy.common.ClassInfo;
 import org.hy.common.Date;
 import org.hy.common.ExpireMap;
+import org.hy.common.FieldReflect;
 import org.hy.common.Help;
 import org.hy.common.ListMap;
 import org.hy.common.MethodReflect;
@@ -64,7 +65,10 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *              v1.3  2017-01-16  添加：$SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
  *              v1.4  2017-02-13  修正：对构造器的参数类型判定方法上，引用 MethodReflect.isExtendImplement(...) 方法提高识别的准确性。
  *              v1.5  2017-10-31  添加：支持枚举名称的匹配 
- *              v1.6  2017-11-23  添加：支持注解赋值时，对无Setter方法的成员属性赋值。
+ *              v1.6  2017-11-23  添加：支持注解赋值时，对无Setter方法的成员属性赋值，即使是private属性也能赋值。
+ *                                     当成员属性有Setter方法时，用Setter方法优先。
+ *              v1.7  2017-11-24  添加：支持XML赋值时，对无Setter方法的成员属性赋值，即使是private属性也能赋值。
+ *                                     当成员属性有Setter方法时，用Setter方法优先。
  */
 public final class XJava
 {
@@ -228,6 +232,9 @@ public final class XJava
     
     /** 包名信息。只有当 parserType=3 时才生效。 */
     private List<String>               packageNames;
+    
+    /** 须替换的关键字。与$XML_Replace_Keys同义，但集合元素多一个$XML_CLASSPATH */
+    private Map<String ,String>        replaces;
 	
 	
     
@@ -1145,6 +1152,9 @@ public final class XJava
 		this.parserType      = 1;
 		this.xmlString       = null;
         this.packageNames    = null;
+        
+        this.replaces        = new LinkedHashMap<String ,String>($XML_Replace_Keys);
+        this.replaces.put($XML_CLASSPATH ,this.xmlClassPath);
 	}
 	
 	
@@ -1166,6 +1176,9 @@ public final class XJava
 		this.parserType      = 2;
 		this.xmlString       = i_XMLString;
         this.packageNames    = null;
+        
+        this.replaces        = new LinkedHashMap<String ,String>($XML_Replace_Keys);
+        this.replaces.put($XML_CLASSPATH ,this.xmlClassPath);
 	}
     
     
@@ -1179,12 +1192,9 @@ public final class XJava
         this.xmlClassPath    = "";
         this.parserType      = 3;
         this.xmlString       = null;
-        this.packageNames    = i_PackageNames;
+        this.packageNames    = Help.NVL(i_PackageNames ,new ArrayList<String>());
         
-        if ( this.packageNames == null )
-        {
-            this.packageNames = new ArrayList<String>();
-        }
+        this.replaces        = new LinkedHashMap<String ,String>($XML_Replace_Keys);
     }
     
     
@@ -1518,7 +1528,7 @@ public final class XJava
                                     }
                                     catch (Exception exce)
                                     {
-                                        throw new IllegalAccessError("Set Field's[" + v_Field.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "].");
+                                        throw new IllegalAccessException("Set Field's[" + v_Field.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "].");
                                     }
                                     // throw new NoSuchMethodException("Field's[" + v_Field.getName() + "] Setter Method is not exist of Class[" + v_ClassInfo.getClassObj().toString() + "].  Annotation name is ref[" + v_AnnoRef.ref() + "]");
                                     // throw new NoSuchMethodException("Field's[" + v_Field.getName() + "] Setter Method[" + v_Method.getName() + "] parameter count is only one of Class[" + v_ClassInfo.getClassObj().toString() + "].  Annotation name is ref[" + v_AnnoRef.ref() + "]");
@@ -1890,7 +1900,7 @@ public final class XJava
 					    }
 					    else
 					    {
-					        // ZhengWei(HY) Del 2016-01-04 删除下的重复抛错，改为重复覆盖 
+					        // ZhengWei(HY) Del 2016-01-04 删除下面的重复抛错，改为重复覆盖 
 					        // throw new Exception("ID[" + v_ID + "] is exist of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
 					        $XML_OBJECTS.put(v_TreeNode);
 					    }
@@ -2247,184 +2257,32 @@ public final class XJava
 							}
 						}
 						
-						if ( v_SetMethod != null )
+						if ( v_SetMethod == null )
 						{
-							Class<?> v_ParamType = v_SetMethod.getParameterTypes()[0];
-							
+						    // 对无Setter方法的成员属性赋值  ZhengWei(HY) Add 2017-11-24
+						    Field v_Field = FieldReflect.get(i_SuperClass ,v_Node.getNodeName());
+						    
+						    if ( v_Field != null )
+						    {
+						        try
+						        {
+						            FieldReflect.set(v_Field ,io_SuperInstance ,v_ParamValue ,this.replaces);
+						        }
+						        catch (Exception exce)
+	                            {
+	                                throw new IllegalAccessException("Field setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].");
+	                            }
+						    }
+						}
+						else
+						{
 							try
 							{
-							    // 这里只对String、枚举、日期等特殊的类进行处理，其它的都是类型，而不是类
-								if ( String.class == v_ParamType )
-								{
-									if ( v_ParamValue != null )
-									{
-										v_SetMethod.invoke(io_SuperInstance ,StringHelp.replaceAll(v_ParamValue.toString() ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath));
-									}
-									else
-									{
-										
-									}
-								}
-								else if ( MethodReflect.isExtendImplement(v_ParamType ,Enum.class) )
-                                {
-						            Enum<?> [] v_EnumValues = StaticReflect.getEnums((Class<? extends Enum<?>>) v_ParamType);
-						            boolean    v_EnumOK     = false;
-						            
-						            // ZhengWei(HY) Add 2017-10-31  支持枚举名称的匹配 
-						            for (Enum<?> v_Enum : v_EnumValues)
-						            {
-						                if ( v_Enum.name().equalsIgnoreCase(v_ParamValue.toString()) )
-						                {
-						                    v_SetMethod.invoke(io_SuperInstance ,v_Enum);
-						                    v_EnumOK = true;
-						                    break;
-						                }
-						            }
-						            
-						            // 尝试用枚举值匹配 
-						            if ( !v_EnumOK && Help.isNumber(v_ParamValue.toString()) )
-						            {
-						                int v_ParamValueInt = Integer.parseInt(v_ParamValue.toString());
-						                if ( 0 <= v_ParamValueInt && v_ParamValueInt < v_EnumValues.length )
-						                {
-						                    v_SetMethod.invoke(io_SuperInstance ,v_EnumValues[v_ParamValueInt]);
-						                }
-						            }
-                                }
-								else if ( Date.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,new Date(v_ParamValue.toString()));
-                                    }
-                                }
-                                else if ( java.util.Date.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,(new Date(v_ParamValue.toString()).getDateObject()));
-                                    }
-                                }
-								else if ( int.class == v_ParamType )
-								{
-									if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-									{
-										v_SetMethod.invoke(io_SuperInstance ,Integer.parseInt(v_ParamValue.toString()));
-									}
-								}
-								else if ( Integer.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,Integer.valueOf(v_ParamValue.toString()));
-                                    }
-                                }
-								else if ( boolean.class == v_ParamType )
-								{
-									if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-									{
-										v_SetMethod.invoke(io_SuperInstance ,Boolean.parseBoolean(v_ParamValue.toString()));
-									}
-								}
-								else if ( Boolean.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,Boolean.valueOf(v_ParamValue.toString()));
-                                    }
-                                }
-								else if ( double.class == v_ParamType )
-								{
-									if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-									{
-										v_SetMethod.invoke(io_SuperInstance ,Double.parseDouble(v_ParamValue.toString()));
-									}
-								}
-								else if ( Double.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,Double.valueOf(v_ParamValue.toString()));
-                                    }
-                                }
-								else if ( float.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,Float.parseFloat(v_ParamValue.toString()));
-                                    }
-                                }
-								else if ( Float.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,Float.valueOf(v_ParamValue.toString()));
-                                    }
-                                }
-								else if ( long.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,Long.parseLong(v_ParamValue.toString()));
-                                    }
-                                }
-								else if ( Long.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,Long.valueOf(v_ParamValue.toString()));
-                                    }
-                                }
-								else if ( short.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,Short.parseShort(v_ParamValue.toString()));
-                                    }
-                                }
-								else if ( Short.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,Short.valueOf(v_ParamValue.toString()));
-                                    }
-                                }
-								else if ( byte.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,Byte.parseByte(v_ParamValue.toString()));
-                                    }
-                                }
-								else if ( Byte.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,Byte.valueOf(v_ParamValue.toString()));
-                                    }
-                                }
-								else if ( char.class == v_ParamType || Character.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,v_ParamValue.toString().charAt(0));
-                                    }
-                                }
-								else if ( Class.class == v_ParamType )
-                                {
-                                    if ( v_ParamValue != null && !"".equals(v_ParamValue.toString().trim()) )
-                                    {
-                                        v_SetMethod.invoke(io_SuperInstance ,Help.forName(v_ParamValue.toString()));
-                                    }
-                                }
-								else
-								{
-									v_SetMethod.invoke(io_SuperInstance ,v_ParamValue);
-								}
+								MethodReflect.invokeSet(v_SetMethod ,io_SuperInstance ,v_ParamValue ,this.replaces);
 							}
 							catch (Exception exce)
 							{
-								throw new NoSuchMethodException("Execute setter value of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+							    throw new NoSuchMethodException("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].");
 							}
 						}
 					}
