@@ -25,26 +25,28 @@ import java.lang.annotation.Target;
         </appInterface>
      </interfaces>
  *
+ *  
+ *  1. 与 AppBaseServlet.java 配合使用。
  * 
- *  服务端接口的定义如下：
+ *  2. 服务端接口的定义如下：
 
-    @Xjava
-    public class 类名
-    {
-        @XRequest("接口标识")
-        public AppMessage<Object> 方法名称(AppMessage<实际传参的对象类型> i_AppMsg)
+        @Xjava
+        public class 类名
         {
-            ...
+            @XRequest("接口标识")
+            public AppMessage<Object> 方法名称(AppMessage<实际传参的对象类型> i_AppMsg)
+            {
+                ...
+            }
         }
-    }
  * 
  * 
- *  客户端接口的调用如下：
+ *  3. 客户端接口的调用如下：
  
-    Retrun<响应的对象类型> v_Ret = BaseMessage的实现类.sendMsg("XHttp对象的ID" 
-                                                           ,"@XRequest接口标识" 
-                                                           ,版本号 
-                                                           ,实际传参的对象实例);
+        Retrun<响应的对象类型> v_Ret = BaseMessage的实现类.sendMsg("XHttp对象的ID" 
+                                                               ,"@XRequest接口标识" 
+                                                               ,版本号 
+                                                               ,实际传参的对象实例);
  * 
  * 
  * @author      ZhengWei(HY)

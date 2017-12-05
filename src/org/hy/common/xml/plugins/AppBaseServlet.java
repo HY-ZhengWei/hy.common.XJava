@@ -39,6 +39,8 @@ import org.hy.common.file.FileHelp;
                                             <emName>XJava对象名称.方法名称</emName>
                                         </appInterface>
                                         
+                                                                                 或使用 @XRequest 注解代替 sys.AppInterfaces.xml。
+                                        
                                      3. Java方法实现
                                         @Xjava
                                         public class XJava对象名称
