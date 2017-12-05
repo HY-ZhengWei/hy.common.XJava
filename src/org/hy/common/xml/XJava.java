@@ -39,7 +39,7 @@ import org.hy.common.StringHelp;
 import org.hy.common.TreeMap;
 import org.hy.common.TreeNode;
 import org.hy.common.app.Param;
-import org.hy.common.xml.annotation.XInterface;
+import org.hy.common.xml.annotation.XRequest;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.XTypeAnno;
 import org.hy.common.xml.annotation.Xjava;
@@ -74,7 +74,7 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *                                     当成员属性有Setter方法时，用Setter方法优先。
  *                                优化：getObject(Class)方法，在if语句判定时，不创建全新对象实例进行判定。
  *                                添加：扩展getObject(Class)方法的功能，尝试在实现类、子类中查找匹配的对象。
- *              v1.8  2017-12-05  添加：@XInterface注解 Web接口的解释功能。
+ *              v1.8  2017-12-05  添加：@XRequest注解 Web请求接口的解释功能。
  */
 public final class XJava
 {
@@ -1685,13 +1685,13 @@ public final class XJava
             }
         }
         
-        parserAnnotations_XInterface(v_Classes);
+        parserAnnotations_XRequest(v_Classes);
     }
     
     
     
     /**
-     * 解释XInterface注解
+     * 解释XRequest注解
      * 
      * @author      ZhengWei(HY)
      * @createDate  2017-12-04
@@ -1701,7 +1701,7 @@ public final class XJava
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
-    private synchronized void parserAnnotations_XInterface(List<Class<?>> i_Classes) throws Exception
+    private synchronized void parserAnnotations_XRequest(List<Class<?>> i_Classes) throws Exception
     {
         if ( Help.isNull(i_Classes) )
         {
@@ -1709,10 +1709,10 @@ public final class XJava
         }
         
         String                    v_AppIFsXID     = "AppInterfaces";       
-        List<ClassInfo>           v_XInterfaces   = ClassReflect.getAnnotationMethods(i_Classes ,XInterface.class);
+        List<ClassInfo>           v_XRequests     = ClassReflect.getAnnotationMethods(i_Classes ,XRequest.class);
         Map<String ,AppInterface> v_AppInterfaces = (Map<String ,AppInterface>)XJava.getObject(v_AppIFsXID);
         
-        if ( Help.isNull(v_XInterfaces) )
+        if ( Help.isNull(v_XRequests) )
         {
             return;
         }
@@ -1723,7 +1723,7 @@ public final class XJava
             XJava.putObject(v_AppIFsXID ,v_AppInterfaces);
         }
         
-        for (ClassInfo v_ClassInfo : v_XInterfaces)
+        for (ClassInfo v_ClassInfo : v_XRequests)
         {
             // 存在方法注解的情况
             if ( Help.isNull(v_ClassInfo.getMethods()) )
@@ -1765,7 +1765,7 @@ public final class XJava
             {
                 for (Method v_Method : v_ClassInfo.getMethods())
                 {
-                    XInterface v_XInterface = v_Method.getAnnotation(XInterface.class);
+                    XRequest v_XRequest = v_Method.getAnnotation(XRequest.class);
                     
                     if ( v_Method.getParameterTypes().length != 1 )
                     {
@@ -1775,13 +1775,13 @@ public final class XJava
                     
                     AppInterface v_AppInterface = new AppInterface();
                     
-                    if ( Help.isNull(v_XInterface.value()) )
+                    if ( Help.isNull(v_XRequest.value()) )
                     {
                         v_AppInterface.setName(v_Method.getName());
                     }
                     else
                     {
-                        v_AppInterface.setName(v_XInterface.value());
+                        v_AppInterface.setName(v_XRequest.value());
                     }
                     
                     v_AppInterface.setEmName(v_XID + "." + v_Method.getName());
