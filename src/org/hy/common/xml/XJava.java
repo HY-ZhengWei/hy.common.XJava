@@ -25,6 +25,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.hy.common.ClassInfo;
+import org.hy.common.ClassReflect;
 import org.hy.common.Date;
 import org.hy.common.ExpireMap;
 import org.hy.common.FieldReflect;
@@ -38,9 +39,11 @@ import org.hy.common.StringHelp;
 import org.hy.common.TreeMap;
 import org.hy.common.TreeNode;
 import org.hy.common.app.Param;
+import org.hy.common.xml.annotation.XInterface;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.XTypeAnno;
 import org.hy.common.xml.annotation.Xjava;
+import org.hy.common.xml.plugins.AppInterface;
 import org.hy.common.xml.plugins.XSQLGroup;
 
 
@@ -71,6 +74,7 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *                                     当成员属性有Setter方法时，用Setter方法优先。
  *                                优化：getObject(Class)方法，在if语句判定时，不创建全新对象实例进行判定。
  *                                添加：扩展getObject(Class)方法的功能，尝试在实现类、子类中查找匹配的对象。
+ *              v1.8  2017-12-05  添加：@XInterface注解 Web接口的解释功能。
  */
 public final class XJava
 {
@@ -587,6 +591,74 @@ public final class XJava
             // 多数为Clone方法异常
             throw new NullPointerException("[" + i_ID + "] is " + e.getMessage());
         }
+    }
+    
+    
+    
+    /**
+     * 按 Class 元类型获取对象实例的XID
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-04
+     * @version     v1.0
+     *
+     * @param i_Class
+     * @return
+     */
+    public static String getObjectID(Class<?> i_Class)
+    {
+        if ( i_Class == null )
+        {
+            return null;
+        }
+        else
+        {
+            Iterator<TreeNode<XJavaObject>>    v_Iterator = $XML_OBJECTS.valuesNodeID();
+            TreeNode<XJavaObject>              v_TreeNode = null;
+            Map<TreeNode<XJavaObject> ,Object> v_Maybe    = new HashMap<TreeNode<XJavaObject> ,Object>(1); // 有可能是的对象 ZhengWei(HY) Add 2017-11-24
+            
+            try
+            {
+                while ( v_Iterator.hasNext() )
+                {
+                    v_TreeNode = v_Iterator.next();
+                    
+                    if ( null != v_TreeNode.getInfo()
+                      && null != v_TreeNode.getInfo().getObject(false) )
+                    {
+                        if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
+                        {
+                            return v_TreeNode.getNodeID();
+                        }
+                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
+                        {
+                            // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2017-11-24
+                            v_Maybe.put(v_TreeNode ,null);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                throw new NullPointerException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + e.getMessage() + ".");
+            }
+            
+            
+            for (Map.Entry<String ,Object> v_Item : $SessionMap.entrySet())
+            {
+                if ( null != v_Item && i_Class == v_Item.getValue().getClass() )
+                {
+                    return v_Item.getKey();
+                }
+            }
+            
+            if ( v_Maybe.size() == 1 )
+            {
+                return v_Maybe.keySet().iterator().next().getNodeID();
+            }
+        }
+        
+        return null;
     }
     
     
@@ -1288,10 +1360,11 @@ public final class XJava
      */
     private void parserAnnotations() throws Exception
     {
-        PartitionMap<ElementType ,ClassInfo>   v_Annotations = XAnnotation.getAnnotations(parserPackageName());
-        List<ClassInfo>                        v_ClassInfos  = null;
-        ClassInfo                              v_ClassInfo   = null;
-        Xjava                                  v_AnnoID      = null;
+        List<Class<?>>                       v_Classes     = parserPackageName();
+        PartitionMap<ElementType ,ClassInfo> v_Annotations = XAnnotation.getAnnotations(v_Classes);
+        List<ClassInfo>                      v_ClassInfos  = null;
+        ClassInfo                            v_ClassInfo   = null;
+        Xjava                                v_AnnoID      = null;
         
         if ( Help.isNull(v_Annotations) )
         {
@@ -1611,9 +1684,121 @@ public final class XJava
                 }
             }
         }
+        
+        parserAnnotations_XInterface(v_Classes);
     }
-	
-	
+    
+    
+    
+    /**
+     * 解释XInterface注解
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-04
+     * @version     v1.0
+     *
+     * @param i_Classes
+     * @throws Exception
+     */
+    @SuppressWarnings("unchecked")
+    private synchronized void parserAnnotations_XInterface(List<Class<?>> i_Classes) throws Exception
+    {
+        if ( Help.isNull(i_Classes) )
+        {
+            return;
+        }
+        
+        String                    v_AppIFsXID     = "AppInterfaces";       
+        List<ClassInfo>           v_XInterfaces   = ClassReflect.getAnnotationMethods(i_Classes ,XInterface.class);
+        Map<String ,AppInterface> v_AppInterfaces = (Map<String ,AppInterface>)XJava.getObject(v_AppIFsXID);
+        
+        if ( Help.isNull(v_XInterfaces) )
+        {
+            return;
+        }
+        
+        if ( Help.isNull(v_AppInterfaces) )
+        {
+            v_AppInterfaces = new Hashtable<String ,AppInterface>();
+            XJava.putObject(v_AppIFsXID ,v_AppInterfaces);
+        }
+        
+        for (ClassInfo v_ClassInfo : v_XInterfaces)
+        {
+            // 存在方法注解的情况
+            if ( Help.isNull(v_ClassInfo.getMethods()) )
+            {
+                continue;
+            }
+            
+            Object v_Object = null;
+            Xjava  v_AnnoID = v_ClassInfo.getClassObj().getAnnotation(Xjava.class);
+            String v_XID    = "";
+            
+            // ref 注解依赖于："id 注解" 或 "XJava配置文件中id关键字实例化的对象"。
+            if ( v_AnnoID == null || Help.isNull(v_AnnoID.id()) )
+            {
+                v_Object = getObject(v_ClassInfo.getClassObj());
+                
+                if ( v_Object == null )
+                {
+                    if ( v_AnnoID == null )
+                    {
+                        throw new NullPointerException("Annotation ID is not exist of Class[" + v_ClassInfo.getClassObj().toString() + "].");
+                    }
+                    else
+                    {
+                        // ID为空异常
+                        throw new NullPointerException("Annotation ID is null of Class[" + v_ClassInfo.getClassObj().toString() + "].");
+                    }
+                }
+                
+                v_XID = getObjectID(v_ClassInfo.getClassObj());
+            }
+            else
+            {
+                v_Object = getObject(v_AnnoID.id()); 
+                v_XID    = v_AnnoID.id();
+            }
+            
+            if ( v_Object != null )
+            {
+                for (Method v_Method : v_ClassInfo.getMethods())
+                {
+                    XInterface v_XInterface = v_Method.getAnnotation(XInterface.class);
+                    
+                    if ( v_Method.getParameterTypes().length != 1 )
+                    {
+                        // 方法入参参数应当只能是一个
+                        throw new NoSuchMethodException("Method[" + v_Method.getName() + "] parameter count is only one of Class[" + v_ClassInfo.getClassObj().toString() + "]. ");
+                    }
+                    
+                    AppInterface v_AppInterface = new AppInterface();
+                    
+                    if ( Help.isNull(v_XInterface.value()) )
+                    {
+                        v_AppInterface.setName(v_Method.getName());
+                    }
+                    else
+                    {
+                        v_AppInterface.setName(v_XInterface.value());
+                    }
+                    
+                    v_AppInterface.setEmName(v_XID + "." + v_Method.getName());
+                    v_AppInterface.setClassName(MethodReflect.getGenerics(v_Method).getName());
+                    
+                    v_AppInterfaces.put(v_AppInterface.getName() ,v_AppInterface);
+                }
+            }
+            else
+            {
+                // ID对应的对象还没有被实例化，或者不存在
+                throw new NullPointerException("Annotation ID instance object is null of Class[" + v_ClassInfo.getClassObj().toString() + "].");
+            }
+        }
+    }
+    
+    
 	
 	/**
 	 * 解释Xml文件，并且可以直接将Xml文件内容转为Java对象实例
