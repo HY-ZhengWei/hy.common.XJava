@@ -4,9 +4,11 @@ import org.hy.common.Date;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.junit.app.bean.AppLoginUser;
 import org.hy.common.xml.junit.app.bean.BarcodeGun;
+import org.hy.common.xml.junit.app.bean.Version2;
 import org.hy.common.xml.junit.app.config.InitConfig;
 import org.hy.common.xml.junit.app.interfaces.IAppUserService;
 import org.hy.common.xml.junit.app.interfaces.IBarcodeGunService;
+import org.hy.common.xml.junit.app.interfaces.IVersionService;
 import org.junit.Test;
 
 
@@ -38,7 +40,6 @@ public class JU_App
     
     
     
-    @Test
     public void test_AppLogin() throws InterruptedException
     {
         AppLoginUser v_Data = new AppLoginUser();
@@ -50,6 +51,20 @@ public class JU_App
         v_Data.setLoginTime(new Date());
         
         ((IAppUserService) XJava.getObject("AppUserService")).execute_Login(v_Data);
+        
+        Thread.sleep(1000 * 60);
+    }
+    
+    
+    
+    @Test
+    public void test_Version() throws InterruptedException
+    {
+        Version2 v_Data = new Version2();
+
+        v_Data.setDeviceNo("867246023785125");
+        
+        ((IVersionService) XJava.getObject("VersionService")).execute_Version(v_Data);
         
         Thread.sleep(1000 * 60);
     }

@@ -36,7 +36,7 @@ public class AppUserMSG extends BaseMSG implements IAppUserMSG
      *         返回成功信息
      *             paramObj  为用户对象
      */
-    public Return login(AppLoginUser i_AppUser)
+    public Return<?> login(AppLoginUser i_AppUser)
     {
         return this.sendMsg("XHTTP_BarcodeGun" ,$SID_Login ,1 ,i_AppUser);
     }

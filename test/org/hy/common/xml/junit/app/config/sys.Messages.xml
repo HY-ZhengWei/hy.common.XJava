@@ -36,6 +36,21 @@
 				<paramName>i</paramName>
 			</addParam>
 		</http>
+		
+		
+		
+		<http id="XHTTP_Avplan" new="true">
+			<ip   ref="BarcodeGunServerIP.getValue"   />
+			<port ref="BarcodeGunServerPort.getValue" />
+			<url>/avplan/app</url>
+			<contentType>application/json</contentType>
+			<charset>UTF-8</charset>
+			<requestType ref="this.$Request_Type_Post" />
+
+			<addParam>
+				<paramName>i</paramName>
+			</addParam>
+		</http>
 
 	</xobjects>
 

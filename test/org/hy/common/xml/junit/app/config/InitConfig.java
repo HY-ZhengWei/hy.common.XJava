@@ -52,6 +52,7 @@ public final class InitConfig extends AppInitConfig
                 this.init("sys.Config.xml");
                 this.init("startup.Config.xml");
                 this.init((List<Param>)XJava.getObject("StartupConfig"));
+                this.init(((Param)XJava.getObject("RootPackageName")).getValue());
             }
             catch (Exception exce)
             {

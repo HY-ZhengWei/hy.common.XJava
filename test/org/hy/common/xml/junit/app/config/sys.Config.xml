@@ -15,27 +15,27 @@
 
 	        <item id="ServerIP">
 	            <name>ServerIP</name>
-				<value>218.21.3.26</value>
+				<value>192.168.1.107</value>
 				<!--<value>192.168.1.185</value>-->
 				<comment>服务接口的IP地址</comment>
 	        </item>
 	        
 	        <item id="ServerPort">
 	            <name>ServerPort</name>
-				<value>5042</value>
+				<value>8891</value>
 				<!--<value>80</value>-->
 				<comment>服务接口的IP地址</comment>
 	        </item>
 
 			<item id="BarcodeGunServerIP">
 				<name>BarcodeGunServerIP</name>
-				<value>192.168.1.127</value>
+				<value>192.168.1.107</value>
 				<comment>扫码枪服务接口的IP地址</comment>
 			</item>
 
 			<item id="BarcodeGunServerPort">
 				<name>BarcodeGunServerPort</name>
-				<value>8081</value>
+				<value>8891</value>
 				<comment>扫码枪服务接口的IP地址</comment>
 			</item>
 	        
@@ -47,9 +47,15 @@
 
 			<item id="MsgPWD">
 				<name>MsgPWD</name>
-				<value>@20170801</value>
+				<value></value>
 				<comment>与服务端间发消息的加密密码</comment>
 			</item>
+			
+			<item id="RootPackageName">
+	            <name>RootPackageName</name>
+				<value>org.hy.common.xml.junit.app</value>
+				<comment>顶级包的路径。用于初始化。一般不修改</comment>
+	        </item>
 
 		</xparam>
 		
