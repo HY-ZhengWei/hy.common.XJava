@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="sqls"            class="java.util.ArrayList" />
+	<import name="sql"             class="org.hy.common.xml.XSQL" />
+	<import name="sqlGroup"        class="org.hy.common.xml.plugins.XSQLGroup" />
+
+
+
+	<sqls>
+
+		<sql id="XSQL_XSQLProxy_001"> 
+		
+			<content>
+				<![CDATA[
+				SELECT  A.userName
+				       ,A.pwd
+				  FROM  SYS_user  A
+				]]>
+			</content>
+			
+		</sql>
+		
+		
+		
+		<sql id="queryDefaultXID"> 
+		
+			<content>
+				<![CDATA[
+				SELECT  A.userName
+				       ,A.pwd
+				  FROM  SYS_user  A
+				 WHERE  A.userName = ':userName'
+				   AND  A.pwd      = ':password'
+				]]>
+			</content>
+			
+		</sql>
+		
+	</sqls>
+	
+</config>

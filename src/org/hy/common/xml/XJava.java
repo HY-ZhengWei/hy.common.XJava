@@ -74,7 +74,8 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *                                     当成员属性有Setter方法时，用Setter方法优先。
  *                                优化：getObject(Class)方法，在if语句判定时，不创建全新对象实例进行判定。
  *                                添加：扩展getObject(Class)方法的功能，尝试在实现类、子类中查找匹配的对象。
- *              v1.8  2017-12-05  添加：@XRequest注解 Web请求接口的解释功能。
+ *              v1.8  2017-12-05  添加：@XRequest注解，Web请求接口的解释功能。
+ *              v1.9  2017-12-15  添加：@Xsql注解，XSQL、XSQLGroup的注解。用于 xml配置 + Java接口类(无须实现类)的组合实现持久层的功能。
  */
 public final class XJava
 {
@@ -1395,6 +1396,30 @@ public final class XJava
                     
                     v_XTypeAnno.init();
                 }
+                // 2017-12-15 XSQL、XSQLGroup的注解。用于 xml配置 + Java接口类(无须实现类)的组合实现持久层的功能。
+                else if ( XType.XSQL == v_AnnoID.value() )
+                {
+                    String v_ID = null;
+                    
+                    // 命名注解
+                    if ( !Help.isNull(v_AnnoID.id()) )
+                    {
+                        v_ID = v_AnnoID.id().trim();
+                    }
+                    // 无命名注解
+                    else
+                    {
+                        v_ID = v_ClassInfo.getClassObj().getSimpleName();
+                    }
+                    
+                    TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(v_ID ,v_ID);
+                    Object                v_Obj      = null;
+                    
+                    v_Obj = XSQLProxy.newProxy(v_ClassInfo.getClassObj());
+                    
+                    v_TreeNode.setInfo(new XJavaObject(v_Obj ,v_AnnoID.isNew()));
+                    $XML_OBJECTS.put(v_TreeNode);
+                }
             }
         }
         
@@ -1411,6 +1436,11 @@ public final class XJava
                 v_ClassInfo = v_ClassInfos.get(i);
                 v_AnnoID    = v_ClassInfo.getClassObj().getAnnotation(Xjava.class);
                 
+                if ( XType.XSQL == v_AnnoID.value() )
+                {
+                    continue;
+                }
+                
                 // 命名注解
                 if ( !Help.isNull(v_AnnoID.id()) )
                 {
@@ -1422,28 +1452,44 @@ public final class XJava
                     v_ID = v_ClassInfo.getClassObj().getSimpleName();
                 }
                 
-                if ( getObject(v_ID) == null )
+                Object v_TempObject = getObject(v_ID);
+                if ( v_TempObject == null  )
                 {
                     try
                     {
-                        Object v_Obj = v_ClassInfo.getClassObj().newInstance();
-                        
                         TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(v_ID ,v_ID);
+                        Object                v_Obj      = null;
+                        
+                        v_Obj = v_ClassInfo.getClassObj().newInstance();
                         
                         v_TreeNode.setInfo(new XJavaObject(v_Obj ,v_AnnoID.isNew()));
-                        
                         $XML_OBJECTS.put(v_TreeNode);
                     }
                     catch (Exception exce)
                     {
                         // 没有默认构造器异常
-                        throw new ClassNotFoundException("New instance Annotation ID[" + v_ID + "] exception of Class[" + v_ClassInfo.getClassObj().toString() + "].");
+                        throw new ClassNotFoundException("New instance Annotation ID[" + v_ID + "] exception of Class[" + v_ClassInfo.getClassObj().toString() + "].\n" + exce.getMessage());
                     }
                 }
                 else
                 {
                     // ID重复定义
                     // 不报错。原因是：允许在XML文件中定义的ID对象已被实现化后，再被"注解"定义东东使用
+                    
+                    // 2017-12-15 XSQL、XSQLGroup的注解。用于 xml配置 + Java接口类(无须实现类)的组合实现持久层的功能。
+                    XSQLProxy v_XSQLProxy = XSQLProxy.getXSQLProxy(v_TempObject);
+                    if ( v_XSQLProxy != null )
+                    {
+                        try
+                        {
+                            v_XSQLProxy.setXsqlInstace(v_ClassInfo.getClassObj().newInstance());
+                        }
+                        catch (Exception exce)
+                        {
+                            // 没有默认构造器异常
+                            throw new ClassNotFoundException("New instance Annotation ID[" + v_ID + "] exception of Class[" + v_ClassInfo.getClassObj().toString() + "].");
+                        }
+                    }
                 }
             }
         }

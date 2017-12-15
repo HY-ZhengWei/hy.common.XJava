@@ -34,7 +34,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
     private static final long serialVersionUID = -4219520889151933542L;
     
     /** 代理的接口类 */
-    private final Class<?>          xsqlInterface;
+    private final Class<?>                    xsqlInterface;
     
     /** 
      * 代理接口的实现类。
@@ -47,24 +47,42 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      *    接口中被@Xsql注释的方法用代理实现。
      *    同时，接口的实现类，也可实现其中未被@Xsql注释的方法。
      */
-    private Object                  xsqlInstace;
+    private Object                            xsqlInstace;
+    
+    /** 被@Xsql注解的方法集合 */
+    private final Map<Method ,XSQLAnnotation> methods;
+    
+    
     
     /**
-     * Map.key    为Java方法对象
-     * Map.value  为Java方法对象上的@Xsql注释信息 
+     * 创建代理实例
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-15
+     * @version     v1.0
+     *
+     * @param i_XSQLInterface
+     * @return
      */
-    private final Map<Method ,Xsql> methods;
-    
-    
-    
-    public static Object newInstace(Class<?> i_XSQLInterface)
+    public static Object newProxy(Class<?> i_XSQLInterface)
     {
-        return newInstace(i_XSQLInterface ,null);
+        return newProxy(i_XSQLInterface ,null);
     }
     
     
     
-    public static Object newInstace(Class<?> i_XSQLInterface ,Object i_XSQLInstace)
+    /**
+     * 创建代理实例
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-15
+     * @version     v1.0
+     *
+     * @param i_XSQLInterface
+     * @param i_XSQLInstace
+     * @return
+     */
+    public static Object newProxy(Class<?> i_XSQLInterface ,Object i_XSQLInstace)
     {
         XSQLProxy v_XSQLProxy = new XSQLProxy(i_XSQLInterface);
         
@@ -75,17 +93,44 @@ public class XSQLProxy implements InvocationHandler ,Serializable
     
     
     
+    /**
+     * 通过代理实例，获取XSQL代理实例（即本类实例）。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-15
+     * @version     v1.0
+     *
+     * @param i_Proxy
+     * @return
+     */
+    public static XSQLProxy getXSQLProxy(Object i_Proxy)
+    {
+        if ( i_Proxy instanceof Proxy )
+        {
+            InvocationHandler v_Invocation = Proxy.getInvocationHandler(i_Proxy);
+            
+            if ( v_Invocation instanceof XSQLProxy )
+            {
+                return (XSQLProxy)v_Invocation;
+            }
+        }
+        
+        return null;
+    }
+    
+    
+    
     public XSQLProxy(Class<?> i_XSQLInterface)
     {
         this.xsqlInterface     = i_XSQLInterface;
-        this.methods           = new HashMap<Method ,Xsql>();
+        this.methods           = new HashMap<Method ,XSQLAnnotation>();
         List<Method> v_Methods = MethodReflect.getAnnotationMethods(i_XSQLInterface ,Xsql.class);
         
         if ( !Help.isNull(v_Methods) )
         {
             for (Method v_Method : v_Methods)
             {
-                this.methods.put(v_Method ,v_Method.getAnnotation(Xsql.class));
+                this.methods.put(v_Method ,new XSQLAnnotation(v_Method.getAnnotation(Xsql.class)));
             }
         }
     }
@@ -101,43 +146,70 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         }
         else
         {
-            Xsql v_Xsql = this.methods.get(i_Method);
+            XSQLAnnotation v_Anno = this.methods.get(i_Method);
             
-            if ( v_Xsql == null )
+            if ( v_Anno == null )
             {
                 return i_Method.invoke(this ,i_Args);
             }
-            // 方法入参个数大于1，应设置@Xsql(paramNames)
-            else if ( Help.isNull(v_Xsql.names()) && i_Method.getParameterTypes().length >= 2 )
-            {
-                return errorLog(i_Method ,"Method parameter count >= 2 ,but @Xsql(paramNames) count is 0.");
-            }
-            // @Xsql中设置的参数名称个数，应于方法入参个数数量相同
-            else if ( !Help.isNull(v_Xsql.names()) 
-                   && v_Xsql.names().length > i_Method.getParameterTypes().length )
-            {
-                return errorLog(i_Method ,"@Xsql(paramNames) count greater than method parameter count.");
-            }
             else
             {
-                String v_XID     = Help.NVL(v_Xsql.id() ,Help.NVL(v_Xsql.value() ,i_Method.getName()));
-                Object v_XObject = XJava.getObject(v_XID);
-                
-                if ( v_XObject == null )
+                // 第二次执行时，就不用重复检查了
+                if ( v_Anno.isCheckOK() )
                 {
-                    return errorLog(i_Method ,"XID [" + v_XID + "] is not exists.");
-                }
-                else if ( v_XObject instanceof XSQL )
-                {
-                    return executeXSQL(i_Method ,v_Xsql ,(XSQL)v_XObject ,i_Args);
-                }
-                else if ( v_XObject instanceof XSQLGroup )
-                {
-                    return executeXSQLGroup(i_Method ,v_Xsql ,(XSQLGroup)v_XObject ,i_Args);
+                    Object v_XObject = XJava.getObject(v_Anno.getXid());
+                    
+                    if ( v_XObject instanceof XSQL )
+                    {
+                        return execute(i_Method ,v_Anno ,(XSQL)v_XObject ,i_Args);
+                    }
+                    else if ( v_XObject instanceof XSQLGroup )
+                    {
+                        return execute(i_Method ,v_Anno ,(XSQLGroup)v_XObject ,i_Args);
+                    }
+                    else
+                    {
+                        // 按理，此句不会被执行的。
+                        return null;
+                    }
                 }
                 else
                 {
-                    return errorLog(i_Method ,"XID [" + v_XID + "] java class type is not XSQL or XSQLGroup.");
+                    // 方法入参个数大于1，应设置@Xsql(paramNames)
+                    if ( Help.isNull(v_Anno.getXsql().names()) && i_Method.getParameterTypes().length >= 2 )
+                    {
+                        return errorLog(i_Method ,"Method parameter count >= 2 ,but @Xsql(paramNames) count is 0.");
+                    }
+                    // @Xsql中设置的参数名称个数，应于方法入参个数数量相同
+                    else if ( !Help.isNull(v_Anno.getXsql().names()) 
+                           && v_Anno.getXsql().names().length > i_Method.getParameterTypes().length )
+                    {
+                        return errorLog(i_Method ,"@Xsql(paramNames) count greater than method parameter count.");
+                    }
+                    else
+                    {
+                        v_Anno.setXid(Help.NVL(v_Anno.getXsql().id() ,Help.NVL(v_Anno.getXsql().value() ,i_Method.getName())));
+                        Object v_XObject = XJava.getObject(v_Anno.getXid());
+                        
+                        if ( v_XObject == null )
+                        {
+                            return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] is not exists.");
+                        }
+                        else if ( v_XObject instanceof XSQL )
+                        {
+                            v_Anno.setCheckOK(true);
+                            return execute(i_Method ,v_Anno ,(XSQL)v_XObject ,i_Args);
+                        }
+                        else if ( v_XObject instanceof XSQLGroup )
+                        {
+                            v_Anno.setCheckOK(true);
+                            return execute(i_Method ,v_Anno ,(XSQLGroup)v_XObject ,i_Args);
+                        }
+                        else
+                        {
+                            return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] java class type is not XSQL or XSQLGroup.");
+                        }
+                    }
                 }
             }
         }
@@ -180,6 +252,92 @@ public class XSQLProxy implements InvocationHandler ,Serializable
     
     
     /**
+     * 执行XSQL组
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-15
+     * @version     v1.0
+     *
+     * @param i_Method
+     * @param i_Anno
+     * @param i_XSQLGroup
+     * @param i_Args
+     * @return
+     */
+    private Object execute(Method i_Method ,XSQLAnnotation i_Anno ,XSQLGroup i_XSQLGroup ,Object [] i_Args)
+    {
+        Object          v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
+        XSQLGroupResult v_Ret    = null;
+        
+        if ( i_Args == null || i_Args.length == 0 )
+        {
+            v_Ret = i_XSQLGroup.executes();
+        }
+        else
+        {
+            v_Ret = i_XSQLGroup.executes(v_Params);
+        }
+        
+        // 异常时输出执行日志
+        if ( !v_Ret.isSuccess() )
+        {
+            i_XSQLGroup.logReturn(v_Ret);
+        }
+        
+        // 定义的方法无返回类型：void
+        if ( Void.TYPE == i_Method.getReturnType() )
+        {
+            return null;
+        }
+        // 返回指定ID的数据结果集
+        else if ( !Help.isNull(i_Anno.getXsql().returnID()) )
+        {
+            if ( v_Ret.isSuccess() )
+            {
+                return v_Ret.getReturns().get(i_Anno.getXsql().returnID());
+            }
+            else
+            {
+                return null;
+            }
+        }
+        // 返回多个数据结果集
+        else if ( Map.class == i_Method.getReturnType() )
+        {
+            if ( v_Ret.isSuccess() )
+            {
+                return v_Ret.getReturns();
+            }
+            else
+            {
+                return null;
+            }
+        }
+        // 返回执行成功与否标记
+        else if ( Boolean.class == i_Method.getReturnType() 
+               || boolean.class == i_Method.getReturnType() )
+        {
+            return v_Ret.isSuccess();
+        }
+        // 返回XSQL组的执行结果。可由外部控制提交、回滚等操作，及多个数据结果集的返回。
+        else if ( XSQLGroupResult.class == i_Method.getReturnType() )
+        {
+            return v_Ret;
+        }
+        // 默认返回XSQL组的执行结果
+        else if ( Object.class == i_Method.getReturnType() )
+        {
+            return v_Ret;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    
+    
+    /**
      * 执行XSQL
      * 
      * @author      ZhengWei(HY)
@@ -187,34 +345,34 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @version     v1.0
      *
      * @param i_Method
-     * @param i_Xsql
+     * @param i_Anno
      * @param i_XSQL
      * @param i_Args
      * @return
      */
-    private Object executeXSQL(Method i_Method ,Xsql i_Xsql ,XSQL i_XSQL ,Object [] i_Args)
+    private Object execute(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
         if ( i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_SELECT )
         {
-            return executeXSQL_Query(i_Method ,i_Xsql ,i_XSQL ,i_Args);
+            return executeXSQL_Query(i_Method ,i_Anno ,i_XSQL ,i_Args);
         }
         else if ( i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_INSERT
                || i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_UPDATE
                || i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_DELETE )
         {
-            return executeXSQL_ExecuteUpdate(i_Method ,i_Xsql ,i_XSQL ,i_Args);
+            return executeXSQL_ExecuteUpdate(i_Method ,i_Anno ,i_XSQL ,i_Args);
         }
         else if ( i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_DDL )
         {
-            return executeXSQL_Execute(i_Method ,i_Xsql ,i_XSQL ,i_Args);
+            return executeXSQL_Execute(i_Method ,i_Anno ,i_XSQL ,i_Args);
         }
         else if ( i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_CALL )
         {
-            return executeXSQL_Call(i_Method ,i_Xsql ,i_XSQL ,i_Args);
+            return executeXSQL_Call(i_Method ,i_Anno ,i_XSQL ,i_Args);
         }
         else if ( i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_UNKNOWN )
         {
-            return executeXSQL_Execute(i_Method ,i_Xsql ,i_XSQL ,i_Args);
+            return executeXSQL_Execute(i_Method ,i_Anno ,i_XSQL ,i_Args);
         }
         
         return null;
@@ -230,14 +388,14 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @version     v1.0
      *
      * @param i_Method
-     * @param i_Xsql
+     * @param i_Anno
      * @param i_XSQL
      * @param i_Args
      * @return
      */
-    private Object executeXSQL_Query(Method i_Method ,Xsql i_Xsql ,XSQL i_XSQL ,Object [] i_Args)
+    private Object executeXSQL_Query(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
-        Object v_Params = getExecuteParams(i_Xsql ,i_Args);
+        Object v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
         Object v_Ret    = null;
         
         if ( i_Args == null || i_Args.length == 0 )
@@ -256,7 +414,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                 return null;
             }
             
-            if ( i_Xsql.returnOne() )
+            if ( i_Anno.getXsql().returnOne() )
             {
                 if ( MethodReflect.isExtendImplement(v_Ret ,List.class) )
                 {
@@ -287,14 +445,14 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @version     v1.0
      *
      * @param i_Method
-     * @param i_Xsql
+     * @param i_Anno
      * @param i_XSQL
      * @param i_Args
      * @return
      */
-    private Object executeXSQL_ExecuteUpdate(Method i_Method ,Xsql i_Xsql ,XSQL i_XSQL ,Object [] i_Args)
+    private Object executeXSQL_ExecuteUpdate(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
-        Object v_Params = getExecuteParams(i_Xsql ,i_Args);
+        Object v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
         int    v_Ret    = -1;
         
         if ( i_Args == null || i_Args.length == 0 )
@@ -336,14 +494,14 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @version     v1.0
      *
      * @param i_Method
-     * @param i_Xsql
+     * @param i_Anno
      * @param i_XSQL
      * @param i_Args
      * @return
      */
-    private Boolean executeXSQL_Execute(Method i_Method ,Xsql i_Xsql ,XSQL i_XSQL ,Object [] i_Args)
+    private Boolean executeXSQL_Execute(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
-        Object  v_Params = getExecuteParams(i_Xsql ,i_Args);
+        Object  v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
         boolean v_Ret    = false;
         
         if ( i_Args == null || i_Args.length == 0 )
@@ -380,14 +538,14 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @version     v1.0
      *
      * @param i_Method
-     * @param i_Xsql
+     * @param i_Anno
      * @param i_XSQL
      * @param i_Args
      * @return
      */
-    private Object executeXSQL_Call(Method i_Method ,Xsql i_Xsql ,XSQL i_XSQL ,Object [] i_Args)
+    private Object executeXSQL_Call(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
-        Object v_Params = getExecuteParams(i_Xsql ,i_Args);
+        Object v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
         Object v_Ret    = null;
         
         if ( i_Args == null || i_Args.length == 0 )
@@ -406,92 +564,6 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         else
         {
             return v_Ret;
-        }
-    }
-    
-    
-    
-    /**
-     * 执行XSQL组
-     * 
-     * @author      ZhengWei(HY)
-     * @createDate  2017-12-15
-     * @version     v1.0
-     *
-     * @param i_Method
-     * @param i_Xsql
-     * @param i_XSQLGroup
-     * @param i_Args
-     * @return
-     */
-    private Object executeXSQLGroup(Method i_Method ,Xsql i_Xsql ,XSQLGroup i_XSQLGroup ,Object [] i_Args)
-    {
-        Object          v_Params = getExecuteParams(i_Xsql ,i_Args);
-        XSQLGroupResult v_Ret    = null;
-        
-        if ( i_Args == null || i_Args.length == 0 )
-        {
-            v_Ret = i_XSQLGroup.executes();
-        }
-        else
-        {
-            v_Ret = i_XSQLGroup.executes(v_Params);
-        }
-        
-        // 异常时输出执行日志
-        if ( !v_Ret.isSuccess() )
-        {
-            i_XSQLGroup.logReturn(v_Ret);
-        }
-        
-        // 定义的方法无返回类型：void
-        if ( Void.TYPE == i_Method.getReturnType() )
-        {
-            return null;
-        }
-        // 返回指定ID的数据结果集
-        else if ( !Help.isNull(i_Xsql.returnID()) )
-        {
-            if ( v_Ret.isSuccess() )
-            {
-                return v_Ret.getReturns().get(i_Xsql.returnID());
-            }
-            else
-            {
-                return null;
-            }
-        }
-        // 返回多个数据结果集
-        else if ( Map.class == i_Method.getReturnType() )
-        {
-            if ( v_Ret.isSuccess() )
-            {
-                return v_Ret.getReturns();
-            }
-            else
-            {
-                return null;
-            }
-        }
-        // 返回执行成功与否标记
-        else if ( Boolean.class == i_Method.getReturnType() 
-               || boolean.class == i_Method.getReturnType() )
-        {
-            return v_Ret.isSuccess();
-        }
-        // 返回XSQL组的执行结果。可由外部控制提交、回滚等操作，及多个数据结果集的返回。
-        else if ( XSQLGroupResult.class == i_Method.getReturnType() )
-        {
-            return v_Ret;
-        }
-        // 默认返回XSQL组的执行结果
-        else if ( Object.class == i_Method.getReturnType() )
-        {
-            return v_Ret;
-        }
-        else
-        {
-            return null;
         }
     }
     
