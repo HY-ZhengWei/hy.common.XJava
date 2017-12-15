@@ -9,6 +9,7 @@ package org.hy.common.xml.annotation;
  * 
  * @author  ZhengWei(HY)
  * @version 2014-04-17
+ *          2017-12-15  添加：XSQL代理
  */
 public enum XType 
 {
@@ -20,6 +21,8 @@ public enum XType
     XML,
 
     /** 使用XD文件配置XJava */
-    XD
+    XD,
     
+    /** 使用XSQL代理配置XJava。只能用于接口Interface */
+    XSQL
 }
