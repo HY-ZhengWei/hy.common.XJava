@@ -35,7 +35,9 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
 public class XSQLProxy implements InvocationHandler ,Serializable
 {
 
-    private static final long serialVersionUID = -4219520889151933542L;
+    private static final long serialVersionUID   = -4219520889151933542L;
+    
+    public  static final String $ParamName_ToMap = "ToMap";
     
     /** 代理的接口类 */
     private final Class<?>                    xsqlInterface;
@@ -885,7 +887,28 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                 String v_ParamName = i_Xsql.names()[v_PIndex];
                 if ( !Help.isNull(v_ParamName) )
                 {
-                    v_Params.put(v_ParamName ,i_Args[v_PIndex]);
+                    if ( $ParamName_ToMap.equalsIgnoreCase(v_ParamName) )
+                    {
+                        if ( MethodReflect.isExtendImplement(i_Args[v_PIndex] ,SerializableClass.class) )
+                        {
+                            v_Params.putAll(((SerializableClass)i_Args[v_PIndex]).toMap());
+                        }
+                        else
+                        {
+                            try
+                            {
+                                v_Params.putAll(Help.toMap(i_Args[v_PIndex]));
+                            }
+                            catch (Exception exce)
+                            {
+                                throw new RuntimeException(exce);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        v_Params.put(v_ParamName ,i_Args[v_PIndex]);
+                    }
                 }
             }
             

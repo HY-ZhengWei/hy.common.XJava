@@ -53,7 +53,8 @@ public @interface Xsql
      * 1. 如果设定此属性，应小于等于方法的入参个数，否则报异常。
      * 2. 方法入参个数小于等于1时，可不设定此属性。
      * 3. 方法入参个数大于1时，必须设定此属性，否则报异常。
-     * 4. paramNames()[x] 为空字符串时，表示跳过第x个方法入参，x位置的入参将不作为XSQL、XSQLGroup的执行入参传递。
+     * 4. names()[x] 为空字符串时，表示跳过第x个方法入参，x位置的入参将不作为XSQL、XSQLGroup的执行入参传递。
+     * 5. names()[x] 值为"ToMap"时，表示将方法入参转为Map集合后再putAll()整合后的大Map集合中。
      */
     public String [] names() default {};
     
