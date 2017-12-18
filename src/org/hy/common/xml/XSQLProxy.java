@@ -7,9 +7,13 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
+import org.hy.common.PartitionMap;
+import org.hy.common.TablePartitionRID;
+import org.hy.common.TablePartitionSet;
 import org.hy.common.db.DBSQL;
 import org.hy.common.xml.annotation.Xsql;
 import org.hy.common.xml.plugins.XSQLGroup;
@@ -252,6 +256,142 @@ public class XSQLProxy implements InvocationHandler ,Serializable
     
     
     /**
+     * 成功时输出的日志，当 @Xsql.log 有值时。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-18
+     * @version     v1.0
+     *
+     * @param i_Method
+     * @param i_Anno
+     * @param i_Return
+     */
+    private void succeedLog(Method i_Method ,XSQLAnnotation i_Anno ,Object i_Return)
+    {
+        if ( Help.isNull(i_Anno.getXsql().log()) )
+        {
+            return;
+        }
+        
+        if ( i_Return instanceof List )
+        {
+            System.out.println(i_Anno.getXsql().log() + "共 " + ((List<?>)i_Return).size() + " 个记录。");
+        }
+        else if ( i_Return instanceof Set )
+        {
+            System.out.println(i_Anno.getXsql().log() + "共 " + ((Set<?>)i_Return).size() + " 个记录。");
+        }
+        else if ( MethodReflect.isExtendImplement(i_Return ,PartitionMap.class) )
+        {
+            System.out.println(i_Anno.getXsql().log() + "共 " + ((PartitionMap<? ,?>)i_Return).size() + " 个分区，" + ((PartitionMap<? ,?>)i_Return).rowCount() + " 个记录。");
+        }
+        else if ( i_Return instanceof TablePartitionRID )
+        {
+            System.out.println(i_Anno.getXsql().log() + "共 " + ((TablePartitionRID<? ,?>)i_Return).size() + " 个分区，" + ((TablePartitionRID<? ,?>)i_Return).rowCount() + " 个记录。");
+        }
+        else if ( i_Return instanceof TablePartitionSet )
+        {
+            System.out.println(i_Anno.getXsql().log() + "共 " + ((TablePartitionSet<? ,?>)i_Return).size() + " 个分区，" + ((TablePartitionSet<? ,?>)i_Return).rowCount() + " 个记录。");
+        }
+        else if ( i_Return instanceof Map )
+        {
+            System.out.println(i_Anno.getXsql().log() + "共 " + ((Map<? ,?>)i_Return).size() + " 个记录。");
+        }
+        else if ( i_Return instanceof Boolean )
+        {
+            System.out.println(i_Anno.getXsql().log() + "返回 " + i_Return + " 。");
+        }
+        else if ( i_Return instanceof XSQLGroupResult )
+        {
+            System.out.println(i_Anno.getXsql().log() + "执行成功。");
+        }
+        else
+        {
+            System.out.println(i_Anno.getXsql().log() + "返回 " + i_Return.toString() + " 。");
+        }
+    }
+    
+    
+    
+    /**
+     * 执行XSQL组
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-18
+     * @version     v1.0
+     *
+     * @param i_Method
+     * @param i_Anno
+     * @param i_XSQLGroup
+     * @param i_Args
+     * @return
+     */
+    private Object execute(Method i_Method ,XSQLAnnotation i_Anno ,XSQLGroup i_XSQLGroup ,Object [] i_Args)
+    {
+        if ( !Help.isNull(i_Anno.getXsql().updateCacheID()) )
+        {
+            return execute_XSQLGroup_UpdateCache(i_Method ,i_Anno ,i_XSQLGroup ,i_Args);
+        }
+        else if ( !Help.isNull(i_Anno.getXsql().cacheID()) )
+        {
+            return execute_XSQLGroup_Cache      (i_Method ,i_Anno ,i_XSQLGroup ,i_Args);
+        }
+        else
+        {
+            return execute_XSQLGroup_Normal     (i_Method ,i_Anno ,i_XSQLGroup ,i_Args);
+        }
+    }
+    
+    
+    
+    /**
+     * 执行XSQL组（带同步锁的，用于高速缓存的更新功能）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-18
+     * @version     v1.0
+     *
+     * @param i_Method
+     * @param i_Anno
+     * @param i_XSQLGroup
+     * @param i_Args
+     * @return
+     */
+    private synchronized Object execute_XSQLGroup_UpdateCache(Method i_Method ,XSQLAnnotation i_Anno ,XSQLGroup i_XSQLGroup ,Object [] i_Args)
+    {
+        return execute_XSQLGroup_Normal(i_Method ,i_Anno ,i_XSQLGroup ,i_Args);
+    }
+    
+    
+    
+    /**
+     * 执行XSQL组（带同步锁的，用于高速缓存功能）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-18
+     * @version     v1.0
+     *
+     * @param i_Method
+     * @param i_Anno
+     * @param i_XSQLGroup
+     * @param i_Args
+     * @return
+     */
+    private synchronized Object execute_XSQLGroup_Cache(Method i_Method ,XSQLAnnotation i_Anno ,XSQLGroup i_XSQLGroup ,Object [] i_Args)
+    {
+        Object v_Ret = XJava.getObject(i_Anno.getXsql().cacheID());
+        
+        if ( v_Ret != null )
+        {
+            return v_Ret;
+        }
+        
+        return execute_XSQLGroup_Normal(i_Method ,i_Anno ,i_XSQLGroup ,i_Args);
+    }
+    
+    
+    
+    /**
      * 执行XSQL组
      * 
      * @author      ZhengWei(HY)
@@ -264,7 +404,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @param i_Args
      * @return
      */
-    private Object execute(Method i_Method ,XSQLAnnotation i_Anno ,XSQLGroup i_XSQLGroup ,Object [] i_Args)
+    private Object execute_XSQLGroup_Normal(Method i_Method ,XSQLAnnotation i_Anno ,XSQLGroup i_XSQLGroup ,Object [] i_Args)
     {
         Object          v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
         XSQLGroupResult v_Ret    = null;
@@ -287,6 +427,11 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         // 定义的方法无返回类型：void
         if ( Void.TYPE == i_Method.getReturnType() )
         {
+            if ( v_Ret.isSuccess() )
+            {
+                cacheData(i_Anno ,v_Ret.getReturns().get(i_Anno.getXsql().returnID()));
+                succeedLog(i_Method ,i_Anno ,v_Ret);
+            }
             return null;
         }
         // 返回指定ID的数据结果集
@@ -294,6 +439,8 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( v_Ret.isSuccess() )
             {
+                cacheData(i_Anno ,v_Ret.getReturns().get(i_Anno.getXsql().returnID()));
+                succeedLog(i_Method ,i_Anno ,v_Ret.getReturns().get(i_Anno.getXsql().returnID()));
                 return v_Ret.getReturns().get(i_Anno.getXsql().returnID());
             }
             else
@@ -306,6 +453,8 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( v_Ret.isSuccess() )
             {
+                cacheData(i_Anno ,v_Ret.getReturns());
+                succeedLog(i_Method ,i_Anno ,v_Ret.getReturns());
                 return v_Ret.getReturns();
             }
             else
@@ -317,20 +466,40 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         else if ( Boolean.class == i_Method.getReturnType() 
                || boolean.class == i_Method.getReturnType() )
         {
+            if ( v_Ret.isSuccess() )
+            {
+                succeedLog(i_Method ,i_Anno ,v_Ret.getReturns());
+                cacheData(i_Anno ,v_Ret.getReturns());
+            }
             return v_Ret.isSuccess();
         }
         // 返回XSQL组的执行结果。可由外部控制提交、回滚等操作，及多个数据结果集的返回。
         else if ( XSQLGroupResult.class == i_Method.getReturnType() )
         {
+            if ( v_Ret.isSuccess() )
+            {
+                succeedLog(i_Method ,i_Anno ,v_Ret.getReturns());
+                cacheData(i_Anno ,v_Ret.getReturns());
+            }
             return v_Ret;
         }
         // 默认返回XSQL组的执行结果
         else if ( Object.class == i_Method.getReturnType() )
         {
+            if ( v_Ret.isSuccess() )
+            {
+                succeedLog(i_Method ,i_Anno ,v_Ret.getReturns());
+                cacheData(i_Anno ,v_Ret.getReturns());
+            }
             return v_Ret;
         }
         else
         {
+            if ( v_Ret.isSuccess() )
+            {
+                succeedLog(i_Method ,i_Anno ,v_Ret.getReturns());
+                cacheData(i_Anno ,v_Ret.getReturns());
+            }
             return null;
         }
     }
@@ -395,8 +564,86 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      */
     private Object executeXSQL_Query(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
-        Object v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
+        if ( !Help.isNull(i_Anno.getXsql().updateCacheID()) )
+        {
+            return executeXSQL_Query_UpdateCache(i_Method ,i_Anno ,i_XSQL ,i_Args);
+        }
+        else if ( !Help.isNull(i_Anno.getXsql().cacheID()) )
+        {
+            return executeXSQL_Query_Cache      (i_Method ,i_Anno ,i_XSQL ,i_Args);
+        }
+        else
+        {
+            return executeXSQL_Query_Normal     (i_Method ,i_Anno ,i_XSQL ,i_Args);
+        }
+    }
+    
+    
+    
+    /**
+     * 执行XSQL -- 查询（带同步锁的，用于高速缓存的更新功能）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-18
+     * @version     v1.0
+     *
+     * @param i_Method
+     * @param i_Anno
+     * @param i_XSQL
+     * @param i_Args
+     * @return
+     */
+    private synchronized Object executeXSQL_Query_UpdateCache(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
+    {
+        return executeXSQL_Query_Normal(i_Method ,i_Anno ,i_XSQL ,i_Args);
+    }
+    
+    
+    
+    /**
+     * 执行XSQL -- 查询（带同步锁的，用于高速缓存功能）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-18
+     * @version     v1.0
+     *
+     * @param i_Method
+     * @param i_Anno
+     * @param i_XSQL
+     * @param i_Args
+     * @return
+     */
+    private synchronized Object executeXSQL_Query_Cache(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
+    {
+        Object v_Ret = XJava.getObject(i_Anno.getXsql().cacheID());
+        
+        if ( v_Ret != null )
+        {
+            return v_Ret;
+        }
+        
+        return executeXSQL_Query_Normal(i_Method ,i_Anno ,i_XSQL ,i_Args);
+    }
+    
+    
+    
+    /**
+     * 执行XSQL -- 查询
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-15
+     * @version     v1.0
+     *
+     * @param i_Method
+     * @param i_Anno
+     * @param i_XSQL
+     * @param i_Args
+     * @return
+     */
+    private Object executeXSQL_Query_Normal(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
+    {
         Object v_Ret    = null;
+        Object v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
         
         if ( i_Args == null || i_Args.length == 0 )
         {
@@ -411,6 +658,8 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( Void.TYPE == i_Method.getReturnType() )
             {
+                cacheData(i_Anno ,v_Ret);
+                succeedLog(i_Method ,i_Anno ,v_Ret);
                 return null;
             }
             
@@ -422,16 +671,41 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                     
                     if ( v_List.size() >= 1 )
                     {
-                        return v_List.get(0);
+                        v_Ret = v_List.get(0);
                     }
                 }
             }
+            
+            cacheData(i_Anno ,v_Ret);
+            succeedLog(i_Method ,i_Anno ,v_Ret);
             
             return v_Ret;
         }
         else
         {
             return null;
+        }
+    }
+    
+    
+    
+    /**
+     * 向缓存中保存或更新数据
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-18
+     * @version     v1.0
+     *
+     */
+    private void cacheData(XSQLAnnotation i_Anno ,Object v_CacheData)
+    {
+        if ( !Help.isNull(i_Anno.getXsql().updateCacheID()) )
+        {
+            XJava.putObject(i_Anno.getXsql().updateCacheID() ,v_CacheData);
+        }
+        else if ( !Help.isNull(i_Anno.getXsql().cacheID()) )
+        {
+            XJava.putObject(i_Anno.getXsql().cacheID()       ,v_CacheData);
         }
     }
     
@@ -463,6 +737,8 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             v_Ret = i_XSQL.executeUpdate(v_Params);
         }
+        
+        succeedLog(i_Method ,i_Anno ,v_Ret);
         
         if ( Void.TYPE == i_Method.getReturnType() )
         {
@@ -513,6 +789,8 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             v_Ret = i_XSQL.execute(v_Params);
         }
         
+        succeedLog(i_Method ,i_Anno ,v_Ret);
+        
         if ( Void.TYPE == i_Method.getReturnType() )
         {
             return null;
@@ -556,6 +834,8 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             v_Ret = i_XSQL.call(v_Params);
         }
+        
+        succeedLog(i_Method ,i_Anno ,v_Ret);
         
         if ( Void.TYPE == i_Method.getReturnType() )
         {
