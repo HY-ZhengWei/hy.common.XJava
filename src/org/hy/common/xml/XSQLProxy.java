@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.PartitionMap;
@@ -277,39 +278,39 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         
         if ( i_Return instanceof List )
         {
-            System.out.println(i_Anno.getXsql().log() + "共 " + ((List<?>)i_Return).size() + " 个记录。");
+            System.out.println("-- " + Date.getNowTime().getFullMilli() + "  " + i_Anno.getXsql().log() + "，共 " + ((List<?>)i_Return).size() + " 个记录。");
         }
         else if ( i_Return instanceof Set )
         {
-            System.out.println(i_Anno.getXsql().log() + "共 " + ((Set<?>)i_Return).size() + " 个记录。");
+            System.out.println("-- " + Date.getNowTime().getFullMilli() + "  " +i_Anno.getXsql().log() + "，共 " + ((Set<?>)i_Return).size() + " 个记录。");
         }
         else if ( MethodReflect.isExtendImplement(i_Return ,PartitionMap.class) )
         {
-            System.out.println(i_Anno.getXsql().log() + "共 " + ((PartitionMap<? ,?>)i_Return).size() + " 个分区，" + ((PartitionMap<? ,?>)i_Return).rowCount() + " 个记录。");
+            System.out.println("-- " + Date.getNowTime().getFullMilli() + "  " +i_Anno.getXsql().log() + "，共 " + ((PartitionMap<? ,?>)i_Return).size() + " 个分区，" + ((PartitionMap<? ,?>)i_Return).rowCount() + " 个记录。");
         }
         else if ( i_Return instanceof TablePartitionRID )
         {
-            System.out.println(i_Anno.getXsql().log() + "共 " + ((TablePartitionRID<? ,?>)i_Return).size() + " 个分区，" + ((TablePartitionRID<? ,?>)i_Return).rowCount() + " 个记录。");
+            System.out.println("-- " + Date.getNowTime().getFullMilli() + "  " +i_Anno.getXsql().log() + "，共 " + ((TablePartitionRID<? ,?>)i_Return).size() + " 个分区，" + ((TablePartitionRID<? ,?>)i_Return).rowCount() + " 个记录。");
         }
         else if ( i_Return instanceof TablePartitionSet )
         {
-            System.out.println(i_Anno.getXsql().log() + "共 " + ((TablePartitionSet<? ,?>)i_Return).size() + " 个分区，" + ((TablePartitionSet<? ,?>)i_Return).rowCount() + " 个记录。");
+            System.out.println("-- " + Date.getNowTime().getFullMilli() + "  " +i_Anno.getXsql().log() + "，共 " + ((TablePartitionSet<? ,?>)i_Return).size() + " 个分区，" + ((TablePartitionSet<? ,?>)i_Return).rowCount() + " 个记录。");
         }
         else if ( i_Return instanceof Map )
         {
-            System.out.println(i_Anno.getXsql().log() + "共 " + ((Map<? ,?>)i_Return).size() + " 个记录。");
+            System.out.println("-- " + Date.getNowTime().getFullMilli() + "  " +i_Anno.getXsql().log() + "，共 " + ((Map<? ,?>)i_Return).size() + " 个记录。");
         }
         else if ( i_Return instanceof Boolean )
         {
-            System.out.println(i_Anno.getXsql().log() + "返回 " + i_Return + " 。");
+            System.out.println("-- " + Date.getNowTime().getFullMilli() + "  " +i_Anno.getXsql().log() + "，返回 " + i_Return + " 。");
         }
         else if ( i_Return instanceof XSQLGroupResult )
         {
-            System.out.println(i_Anno.getXsql().log() + "执行成功。");
+            System.out.println("-- " + Date.getNowTime().getFullMilli() + "  " +i_Anno.getXsql().log() + "，执行成功。");
         }
         else
         {
-            System.out.println(i_Anno.getXsql().log() + "返回 " + i_Return.toString() + " 。");
+            System.out.println("-- " + Date.getNowTime().getFullMilli() + "  " +i_Anno.getXsql().log() + "，返回 " + i_Return.toString() + " 。");
         }
     }
     
