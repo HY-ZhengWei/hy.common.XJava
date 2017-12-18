@@ -269,7 +269,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @param i_Anno
      * @param i_Return
      */
-    private void succeedLog(Method i_Method ,XSQLAnnotation i_Anno ,Object i_Return)
+    private void succeedLog(XSQLAnnotation i_Anno ,Object i_Return)
     {
         if ( Help.isNull(i_Anno.getXsql().log()) )
         {
@@ -306,7 +306,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         }
         else if ( i_Return instanceof XSQLGroupResult )
         {
-            System.out.println("-- " + Date.getNowTime().getFullMilli() + "  " +i_Anno.getXsql().log() + "，执行成功。");
+            System.out.println("-- " + Date.getNowTime().getFullMilli() + "  " +i_Anno.getXsql().log() + "，执行成功，共影响 " + ((XSQLGroupResult)i_Return).getExecSumCount().getSumValue() + "行。");
         }
         else
         {
@@ -432,8 +432,14 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( v_Ret.isSuccess() )
             {
-                cacheData(i_Anno ,v_Ret.getReturns().get(i_Anno.getXsql().returnID()));
-                succeedLog(i_Method ,i_Anno ,v_Ret);
+                if ( !Help.isNull(i_Anno.getXsql().returnID()) )
+                {
+                    cacheData(i_Anno ,v_Ret.getReturns().get(i_Anno.getXsql().returnID()) ,v_Ret);
+                }
+                else
+                {
+                    cacheData(i_Anno ,v_Ret.getReturns() ,v_Ret);
+                }
             }
             return null;
         }
@@ -442,8 +448,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( v_Ret.isSuccess() )
             {
-                cacheData(i_Anno ,v_Ret.getReturns().get(i_Anno.getXsql().returnID()));
-                succeedLog(i_Method ,i_Anno ,v_Ret.getReturns().get(i_Anno.getXsql().returnID()));
+                cacheData(i_Anno ,v_Ret.getReturns().get(i_Anno.getXsql().returnID()) ,v_Ret);
                 return v_Ret.getReturns().get(i_Anno.getXsql().returnID());
             }
             else
@@ -456,8 +461,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( v_Ret.isSuccess() )
             {
-                cacheData(i_Anno ,v_Ret.getReturns());
-                succeedLog(i_Method ,i_Anno ,v_Ret.getReturns());
+                cacheData(i_Anno ,v_Ret.getReturns() ,v_Ret);
                 return v_Ret.getReturns();
             }
             else
@@ -471,8 +475,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( v_Ret.isSuccess() )
             {
-                succeedLog(i_Method ,i_Anno ,v_Ret.getReturns());
-                cacheData(i_Anno ,v_Ret.getReturns());
+                cacheData(i_Anno ,v_Ret.getReturns() ,v_Ret);
             }
             return v_Ret.isSuccess();
         }
@@ -481,8 +484,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( v_Ret.isSuccess() )
             {
-                succeedLog(i_Method ,i_Anno ,v_Ret.getReturns());
-                cacheData(i_Anno ,v_Ret.getReturns());
+                cacheData(i_Anno ,v_Ret.getReturns() ,v_Ret);
             }
             return v_Ret;
         }
@@ -491,8 +493,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( v_Ret.isSuccess() )
             {
-                succeedLog(i_Method ,i_Anno ,v_Ret.getReturns());
-                cacheData(i_Anno ,v_Ret.getReturns());
+                cacheData(i_Anno ,v_Ret.getReturns() ,v_Ret);
             }
             return v_Ret;
         }
@@ -500,8 +501,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( v_Ret.isSuccess() )
             {
-                succeedLog(i_Method ,i_Anno ,v_Ret.getReturns());
-                cacheData(i_Anno ,v_Ret.getReturns());
+                cacheData(i_Anno ,v_Ret.getReturns() ,v_Ret);
             }
             return null;
         }
@@ -661,8 +661,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( Void.TYPE == i_Method.getReturnType() )
             {
-                cacheData(i_Anno ,v_Ret);
-                succeedLog(i_Method ,i_Anno ,v_Ret);
+                cacheData(i_Anno ,v_Ret ,null);
                 return null;
             }
             
@@ -679,8 +678,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                 }
             }
             
-            cacheData(i_Anno ,v_Ret);
-            succeedLog(i_Method ,i_Anno ,v_Ret);
+            cacheData(i_Anno ,v_Ret ,null);
             
             return v_Ret;
         }
@@ -700,15 +698,21 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @version     v1.0
      *
      */
-    private void cacheData(XSQLAnnotation i_Anno ,Object v_CacheData)
+    private void cacheData(XSQLAnnotation i_Anno ,Object v_CacheData ,XSQLGroupResult i_XSQLGroupResult)
     {
         if ( !Help.isNull(i_Anno.getXsql().updateCacheID()) )
         {
             XJava.putObject(i_Anno.getXsql().updateCacheID() ,v_CacheData);
+            succeedLog(i_Anno ,v_CacheData);
         }
         else if ( !Help.isNull(i_Anno.getXsql().cacheID()) )
         {
             XJava.putObject(i_Anno.getXsql().cacheID()       ,v_CacheData);
+            succeedLog(i_Anno ,v_CacheData);
+        }
+        else
+        {
+            succeedLog(i_Anno ,i_XSQLGroupResult == null ? v_CacheData : i_XSQLGroupResult);
         }
     }
     
@@ -741,7 +745,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             v_Ret = i_XSQL.executeUpdate(v_Params);
         }
         
-        succeedLog(i_Method ,i_Anno ,v_Ret);
+        succeedLog(i_Anno ,v_Ret);
         
         if ( Void.TYPE == i_Method.getReturnType() )
         {
@@ -792,7 +796,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             v_Ret = i_XSQL.execute(v_Params);
         }
         
-        succeedLog(i_Method ,i_Anno ,v_Ret);
+        succeedLog(i_Anno ,v_Ret);
         
         if ( Void.TYPE == i_Method.getReturnType() )
         {
@@ -838,7 +842,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             v_Ret = i_XSQL.call(v_Params);
         }
         
-        succeedLog(i_Method ,i_Anno ,v_Ret);
+        succeedLog(i_Anno ,v_Ret);
         
         if ( Void.TYPE == i_Method.getReturnType() )
         {
