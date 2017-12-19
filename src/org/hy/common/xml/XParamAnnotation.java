@@ -29,10 +29,10 @@ public class XParamAnnotation implements Serializable
     /** 对应 @Xparam.name */
     private String              name;
     
-    /** 对应 @Xparam.name */
+    /** 对应 @Xparam.notNull */
     private boolean             notNull;
     
-    /** 对应 @Xparam.name */
+    /** 对应 @Xparam.notNulls */
     private List<MethodReflect> notNulls;
 
     
@@ -97,7 +97,7 @@ public class XParamAnnotation implements Serializable
 
     
     /**
-     * 获取：对应 @Xparam.name
+     * 获取：对应 @Xparam.notNull
      */
     public boolean isNotNull()
     {
@@ -107,7 +107,7 @@ public class XParamAnnotation implements Serializable
 
     
     /**
-     * 获取：对应 @Xparam.name
+     * 获取：对应 @Xparam.notNulls
      */
     public List<MethodReflect> getNotNulls()
     {
@@ -129,7 +129,7 @@ public class XParamAnnotation implements Serializable
 
     
     /**
-     * 设置：对应 @Xparam.name
+     * 设置：对应 @Xparam.notNull
      * 
      * @param notNull 
      */
@@ -141,7 +141,7 @@ public class XParamAnnotation implements Serializable
 
     
     /**
-     * 设置：对应 @Xparam.name
+     * 设置：对应 @Xparam.notNulls
      * 
      * @param notNulls 
      */
