@@ -945,18 +945,10 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                 
                 if ( v_XParamAnno.isNotNull() )
                 {
-                    if ( i_Args[v_PIndex] == null )
+                    if ( Help.isNull(i_Args[v_PIndex]) )
                     {
                         // 必要参数的非空验证。无须写异常描述。
                         throw new Exception("");
-                    }
-                    else if ( i_Args[v_PIndex].getClass() == String.class )
-                    {
-                        if ( Help.isNull(i_Args[v_PIndex].toString()) )
-                        {
-                            // 必要参数字符串类型的非空验证。无须写异常描述。
-                            throw new Exception("");
-                        }
                     }
                     else
                     {
@@ -966,18 +958,10 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                             {
                                 Object v_MethodRet = v_MethodReflect.invokeForInstance(i_Args[v_PIndex]);
                                 
-                                if ( v_MethodRet == null )
+                                if ( Help.isNull(v_MethodRet) )
                                 {
                                     // 必要参数属性的非空验证。无须写异常描述。
                                     throw new Exception("");
-                                }
-                                else if ( v_MethodRet.getClass() == String.class )
-                                {
-                                    if ( Help.isNull(v_MethodRet.toString()) )
-                                    {
-                                        // 必要参数属性的非空验证。无须写异常描述。
-                                        throw new Exception("");
-                                    }
                                 }
                             }
                         }

@@ -47,14 +47,20 @@ public @interface Xparam
     
     
     /**
-     * 验证参数是否为null。如果是 String 类型，还将验证是否为空字符串。
+     * 验证参数是否为null。
+     * 
+     *   1. 当参数是String时，还将验证对象的哪些属性是否为null(及空字符串)。
+     *   2. 当参数是Set、List、Map时，还将验证集合元素是否小于等于0。
      */
     public boolean notNull() default false;
     
     
     
     /**
-     * 除了验证参数自身是否为null外。当参数是一个对象时，还将验证对象的哪些属性是否为null(及空字符串)。
+     * 除了验证参数自身是否为null外，还将验证对象的多个属性。
+     * 
+     *  1. 当参数对象的属性是String时，还将验证对象的哪些属性是否为null(及空字符串)。
+     *  2. 当参数对象的属性是Set、List、Map时，还将验证集合元素是否小于等于0。
      */
     public String [] notNulls() default {};
     
