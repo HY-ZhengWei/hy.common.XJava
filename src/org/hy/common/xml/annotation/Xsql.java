@@ -55,6 +55,8 @@ public @interface Xsql
      * 3. 方法入参个数大于1时，必须设定此属性，否则报异常。
      * 4. names()[x] 为空字符串时，表示跳过第x个方法入参，x位置的入参将不作为XSQL、XSQLGroup的执行入参传递。
      * 5. names()[x] 值为"ToMap"时，表示将方法入参转为Map集合后再putAll()整合后的大Map集合中。
+     * 
+     * 更多丰富的参数配置，建议使用：@Xparam -- org.hy.common.xml.annotation.Xparam
      */
     public String [] names() default {};
     
@@ -71,7 +73,9 @@ public @interface Xsql
      * 只用于方法。
      * 只对查询XSQL，及XSQLGroup生效。
      * 
-     * 注：第二次从缓存中取数据时，方法入参无效，方法入参只对数据库操作的XSQL、XSQLGroup生效。
+     * 注：
+     *   1. 第二次从缓存中取数据时，方法入参无效，方法入参只对数据库操作的XSQL、XSQLGroup生效。
+     *   2. 标记有缓存ID的方法，其实现类的实现方法，自动带同步锁 synchronized 。
      */
     public String cacheID() default "";
     
@@ -86,6 +90,9 @@ public @interface Xsql
      * 
      * 只用于方法。
      * 只对查询XSQL，及XSQLGroup生效。
+     * 
+     * 注：
+     *   1. 标记有更新缓存ID的方法，其实现类的实现方法，自动带同步锁 synchronized 。
      */
     public String updateCacheID() default "";
     

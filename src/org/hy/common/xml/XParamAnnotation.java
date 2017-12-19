@@ -13,7 +13,9 @@ import org.hy.common.xml.annotation.Xparam;
 
 
 /**
- * @Xparam 注解反射信息的操作类
+ * @Xparam 注解反射信息的操作类。
+ * 
+ * 同时，整合 @Xsql(names{}) 属性。
  *
  * @author      ZhengWei(HY)
  * @createDate  2017-12-18
@@ -26,7 +28,7 @@ public class XParamAnnotation implements Serializable
     
     
 
-    /** 对应 @Xparam.name */
+    /** 对应 @Xparam.name 及 @Xsql(names{}) */
     private String              name;
     
     /** 对应 @Xparam.notNull */
@@ -87,7 +89,7 @@ public class XParamAnnotation implements Serializable
     
     
     /**
-     * 获取：对应 @Xparam.name
+     * 获取：对应 @Xparam.name 及 @Xsql(names{})
      */
     public String getName()
     {
@@ -117,7 +119,7 @@ public class XParamAnnotation implements Serializable
 
     
     /**
-     * 设置：对应 @Xparam.name
+     * 设置：对应 @Xparam.name 及 @Xsql(names{})
      * 
      * @param name 
      */

@@ -11,7 +11,9 @@ import java.lang.annotation.Target;
 
 
 /**
- * 方法的参数注解
+ * 方法的参数注解。
+ * 
+ * 比 @Xsql(names{}) 属性更为丰富的配置。
  *
  * @author      ZhengWei(HY)
  * @createDate  2017-12-18
