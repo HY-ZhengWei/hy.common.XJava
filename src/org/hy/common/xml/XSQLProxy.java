@@ -173,40 +173,49 @@ public class XSQLProxy implements InvocationHandler ,Serializable
     @Override
     public Object invoke(Object i_Proxy ,Method i_Method ,Object [] i_Args) throws Throwable
     {
-        if ( Object.class.equals(i_Method.getDeclaringClass()) )
+        try
         {
-            return i_Method.invoke(this ,i_Args);
-        }
-        else
-        {
-            XSQLAnnotation v_Anno = this.methods.get(i_Method);
-            
-            if ( v_Anno == null )
+            if ( Object.class.equals(i_Method.getDeclaringClass()) )
             {
                 return i_Method.invoke(this ,i_Args);
             }
             else
             {
-                v_Anno.setXid(Help.NVL(v_Anno.getXsql().id() ,Help.NVL(v_Anno.getXsql().value() ,i_Method.getName())));
-                Object v_XObject = XJava.getObject(v_Anno.getXid());
+                XSQLAnnotation v_Anno = this.methods.get(i_Method);
                 
-                if ( v_XObject == null )
+                if ( v_Anno == null )
                 {
-                    return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] is not exists.");
-                }
-                else if ( v_XObject instanceof XSQL )
-                {
-                    return execute(i_Method ,v_Anno ,(XSQL)v_XObject ,i_Args);
-                }
-                else if ( v_XObject instanceof XSQLGroup )
-                {
-                    return execute(i_Method ,v_Anno ,(XSQLGroup)v_XObject ,i_Args);
+                    return i_Method.invoke(this ,i_Args);
                 }
                 else
                 {
-                    return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] java class type is not XSQL or XSQLGroup.");
+                    v_Anno.setXid(Help.NVL(v_Anno.getXsql().id() ,Help.NVL(v_Anno.getXsql().value() ,i_Method.getName())));
+                    Object v_XObject = XJava.getObject(v_Anno.getXid());
+                    
+                    if ( v_XObject == null )
+                    {
+                        return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] is not exists.");
+                    }
+                    else if ( v_XObject instanceof XSQL )
+                    {
+                        return execute(i_Method ,v_Anno ,(XSQL)v_XObject ,i_Args);
+                    }
+                    else if ( v_XObject instanceof XSQLGroup )
+                    {
+                        return execute(i_Method ,v_Anno ,(XSQLGroup)v_XObject ,i_Args);
+                    }
+                    else
+                    {
+                        return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] java class type is not XSQL or XSQLGroup.");
+                    }
                 }
             }
+        }
+        catch (Exception exce)
+        {
+            // 输出异常后，并断续向外抛
+            exce.printStackTrace();
+            throw exce;
         }
     }
     
