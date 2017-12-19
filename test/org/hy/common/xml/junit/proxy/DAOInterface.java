@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.Xjava;
+import org.hy.common.xml.annotation.Xparam;
 import org.hy.common.xml.annotation.Xsql;
 
 
@@ -26,5 +27,10 @@ public interface DAOInterface
     
     @Xsql(id="XSQL_XSQLProxy_002" ,names={"userName"} ,returnOne=true)
     public Object queryByNamePwd(String i_Name);
+    
+    
+    
+    @Xsql(id="XSQL_XSQLProxy_002" ,names={"userName"} ,returnOne=true)
+    public Object queryByNamePwd(@Xparam("username") String i_Name ,String i_Test ,@Xparam("password") String i_Pwd);
     
 }

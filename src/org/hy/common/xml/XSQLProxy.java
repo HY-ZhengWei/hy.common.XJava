@@ -16,6 +16,7 @@ import org.hy.common.PartitionMap;
 import org.hy.common.TablePartitionRID;
 import org.hy.common.TablePartitionSet;
 import org.hy.common.db.DBSQL;
+import org.hy.common.xml.annotation.Xparam;
 import org.hy.common.xml.annotation.Xsql;
 import org.hy.common.xml.plugins.XSQLGroup;
 import org.hy.common.xml.plugins.XSQLGroupResult;
@@ -28,6 +29,7 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  * XSQL代理。
  * 
  * 详见 @see org.hy.common.xml.annotation.Xsql
+ * 详见 @see org.hy.common.xml.annotation.XParam
  *
  * @author      ZhengWei(HY)
  * @createDate  2017-12-14
@@ -137,7 +139,31 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             for (Method v_Method : v_Methods)
             {
-                this.methods.put(v_Method ,new XSQLAnnotation(v_Method.getAnnotation(Xsql.class)));
+                try
+                {
+                    List<Xparam>   v_XParams = MethodReflect.getParameterAnnotations(v_Method ,Xparam.class);
+                    XSQLAnnotation v_Anno    = new XSQLAnnotation(v_Method ,v_Method.getAnnotation(Xsql.class) ,v_XParams);
+                    
+                    this.methods.put(v_Method ,v_Anno);
+                    
+                    // 方法入参个数大于1，应设置@Xsql(names)
+                    if ( Help.isNull(v_Anno.getXsql().names()) && v_Method.getParameterTypes().length >= 2 )
+                    {
+                        this.errorLog(v_Method ,"Method parameter count >= 2 ,but @Xsql(names) count is 0.");
+                        return;
+                    }
+                    // @Xsql中设置的参数名称个数，应于方法入参个数数量相同
+                    else if ( !Help.isNull(v_Anno.getXsql().names()) 
+                           && v_Anno.getXsql().names().length > v_Method.getParameterTypes().length )
+                    {
+                        this.errorLog(v_Method ,"@Xsql(names) count greater than method parameter count.");
+                        return;
+                    }
+                }
+                catch (Exception exce)
+                {
+                    this.errorLog(v_Method ,exce.toString());
+                }
             }
         }
     }
@@ -161,62 +187,24 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             }
             else
             {
-                // 第二次执行时，就不用重复检查了
-                if ( v_Anno.isCheckOK() )
+                v_Anno.setXid(Help.NVL(v_Anno.getXsql().id() ,Help.NVL(v_Anno.getXsql().value() ,i_Method.getName())));
+                Object v_XObject = XJava.getObject(v_Anno.getXid());
+                
+                if ( v_XObject == null )
                 {
-                    Object v_XObject = XJava.getObject(v_Anno.getXid());
-                    
-                    if ( v_XObject instanceof XSQL )
-                    {
-                        return execute(i_Method ,v_Anno ,(XSQL)v_XObject ,i_Args);
-                    }
-                    else if ( v_XObject instanceof XSQLGroup )
-                    {
-                        return execute(i_Method ,v_Anno ,(XSQLGroup)v_XObject ,i_Args);
-                    }
-                    else
-                    {
-                        // 按理，此句不会被执行的。
-                        return null;
-                    }
+                    return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] is not exists.");
+                }
+                else if ( v_XObject instanceof XSQL )
+                {
+                    return execute(i_Method ,v_Anno ,(XSQL)v_XObject ,i_Args);
+                }
+                else if ( v_XObject instanceof XSQLGroup )
+                {
+                    return execute(i_Method ,v_Anno ,(XSQLGroup)v_XObject ,i_Args);
                 }
                 else
                 {
-                    // 方法入参个数大于1，应设置@Xsql(paramNames)
-                    if ( Help.isNull(v_Anno.getXsql().names()) && i_Method.getParameterTypes().length >= 2 )
-                    {
-                        return errorLog(i_Method ,"Method parameter count >= 2 ,but @Xsql(paramNames) count is 0.");
-                    }
-                    // @Xsql中设置的参数名称个数，应于方法入参个数数量相同
-                    else if ( !Help.isNull(v_Anno.getXsql().names()) 
-                           && v_Anno.getXsql().names().length > i_Method.getParameterTypes().length )
-                    {
-                        return errorLog(i_Method ,"@Xsql(paramNames) count greater than method parameter count.");
-                    }
-                    else
-                    {
-                        v_Anno.setXid(Help.NVL(v_Anno.getXsql().id() ,Help.NVL(v_Anno.getXsql().value() ,i_Method.getName())));
-                        Object v_XObject = XJava.getObject(v_Anno.getXid());
-                        
-                        if ( v_XObject == null )
-                        {
-                            return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] is not exists.");
-                        }
-                        else if ( v_XObject instanceof XSQL )
-                        {
-                            v_Anno.setCheckOK(true);
-                            return execute(i_Method ,v_Anno ,(XSQL)v_XObject ,i_Args);
-                        }
-                        else if ( v_XObject instanceof XSQLGroup )
-                        {
-                            v_Anno.setCheckOK(true);
-                            return execute(i_Method ,v_Anno ,(XSQLGroup)v_XObject ,i_Args);
-                        }
-                        else
-                        {
-                            return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] java class type is not XSQL or XSQLGroup.");
-                        }
-                    }
+                    return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] java class type is not XSQL or XSQLGroup.");
                 }
             }
         }
@@ -232,12 +220,15 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @version     v1.0
      *
      * @param i_Method
-     * @param i_ErrorInfo
+     * @param i_ErrorInfo  为空，表示只返回不输出日志
      * @return
      */
     private Object errorLog(Method i_Method ,String i_ErrorInfo)
     {
-        System.err.println("Call " + this.xsqlInterface.getName() + "." + i_Method.getName() + "：" + i_ErrorInfo);
+        if ( !Help.isNull(i_ErrorInfo) )
+        {
+            System.err.println("Call " + this.xsqlInterface.getName() + "." + i_Method.getName() + "：" + i_ErrorInfo);
+        }
         
         // 定义的方法无返回类型：void
         if ( Void.TYPE == i_Method.getReturnType() )
@@ -249,6 +240,11 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                || boolean.class == i_Method.getReturnType() )
         {
             return Boolean.FALSE;
+        }
+        else if ( Integer.class == i_Method.getReturnType() 
+               || int    .class == i_Method.getReturnType() )
+        {
+            return -1;
         }
         else
         {
@@ -409,8 +405,17 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      */
     private Object execute_XSQLGroup_Normal(Method i_Method ,XSQLAnnotation i_Anno ,XSQLGroup i_XSQLGroup ,Object [] i_Args)
     {
-        Object          v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
+        Object          v_Params = null;
         XSQLGroupResult v_Ret    = null;
+        
+        try
+        {
+            v_Params = getExecuteParams(i_Anno ,i_Args);
+        }
+        catch (Exception exce)
+        {
+            return this.errorLog(i_Method ,null);
+        }
         
         if ( i_Args == null || i_Args.length == 0 )
         {
@@ -645,8 +650,17 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      */
     private Object executeXSQL_Query_Normal(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
+        Object v_Params = null;
         Object v_Ret    = null;
-        Object v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
+        
+        try
+        {
+            v_Params = getExecuteParams(i_Anno ,i_Args);
+        }
+        catch (Exception exce)
+        {
+            return this.errorLog(i_Method ,null);
+        }
         
         if ( i_Args == null || i_Args.length == 0 )
         {
@@ -733,8 +747,17 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      */
     private Object executeXSQL_ExecuteUpdate(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
-        Object v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
+        Object v_Params = null;
         int    v_Ret    = -1;
+        
+        try
+        {
+            v_Params = getExecuteParams(i_Anno ,i_Args);
+        }
+        catch (Exception exce)
+        {
+            return this.errorLog(i_Method ,null);
+        }
         
         if ( i_Args == null || i_Args.length == 0 )
         {
@@ -782,10 +805,19 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @param i_Args
      * @return
      */
-    private Boolean executeXSQL_Execute(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
+    private Object executeXSQL_Execute(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
-        Object  v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
+        Object  v_Params = null;
         boolean v_Ret    = false;
+        
+        try
+        {
+            v_Params = getExecuteParams(i_Anno ,i_Args);
+        }
+        catch (Exception exce)
+        {
+            return this.errorLog(i_Method ,null);
+        }
         
         if ( i_Args == null || i_Args.length == 0 )
         {
@@ -830,8 +862,17 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      */
     private Object executeXSQL_Call(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
-        Object v_Params = getExecuteParams(i_Anno.getXsql() ,i_Args);
+        Object v_Params = null;
         Object v_Ret    = null;
+        
+        try
+        {
+            v_Params = getExecuteParams(i_Anno ,i_Args);
+        }
+        catch (Exception exce)
+        {
+            return this.errorLog(i_Method ,null);
+        }
         
         if ( i_Args == null || i_Args.length == 0 )
         {
@@ -861,19 +902,21 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * 
      * 当方法入参个数大于1时，需要整合成一个Map集合。
      * 
-     * 详见 @Xsql.paramNames
+     * 详见 @Xsql.names
+     * 详见 @Xparam
      * 
      * @author      ZhengWei(HY)
      * @createDate  2017-12-15
      * @version     v1.0
      *
-     * @param i_Xsql
+     * @param i_Anno
      * @param i_Args
      * @return
+     * @throws Exception 
      */
-    private Object getExecuteParams(Xsql i_Xsql ,Object [] i_Args)
+    private Object getExecuteParams(XSQLAnnotation i_Anno ,Object [] i_Args) throws Exception
     {
-        if ( Help.isNull(i_Xsql.names()) )
+        if ( Help.isNull(i_Anno.getXparams()) )
         {
             if ( i_Args == null || i_Args.length == 0 )
             {
@@ -887,12 +930,54 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         else
         {
             Map<String ,Object> v_Params = new HashMap<String ,Object>();
-            for (int v_PIndex=0; v_PIndex<i_Xsql.names().length; v_PIndex++)
+            for (int v_PIndex=0; v_PIndex<i_Anno.getXparams().size(); v_PIndex++)
             {
-                String v_ParamName = i_Xsql.names()[v_PIndex];
-                if ( !Help.isNull(v_ParamName) )
+                XParamAnnotation v_XParamAnno = i_Anno.getXparams().get(v_PIndex);
+                
+                if ( v_XParamAnno.isNotNull() )
                 {
-                    if ( $ParamName_ToMap.equalsIgnoreCase(v_ParamName) )
+                    if ( i_Args[v_PIndex] == null )
+                    {
+                        // 必要参数的非空验证。无须写异常描述。
+                        throw new Exception("");
+                    }
+                    else if ( i_Args[v_PIndex].getClass() == String.class )
+                    {
+                        if ( Help.isNull(i_Args[v_PIndex].toString()) )
+                        {
+                            // 必要参数字符串类型的非空验证。无须写异常描述。
+                            throw new Exception("");
+                        }
+                    }
+                    else
+                    {
+                        if ( !Help.isNull(v_XParamAnno.getNotNulls()) )
+                        {
+                            for (MethodReflect v_MethodReflect : v_XParamAnno.getNotNulls())
+                            {
+                                Object v_MethodRet = v_MethodReflect.invokeForInstance(i_Args[v_PIndex]);
+                                
+                                if ( v_MethodRet == null )
+                                {
+                                    // 必要参数属性的非空验证。无须写异常描述。
+                                    throw new Exception("");
+                                }
+                                else if ( v_MethodRet.getClass() == String.class )
+                                {
+                                    if ( Help.isNull(v_MethodRet.toString()) )
+                                    {
+                                        // 必要参数属性的非空验证。无须写异常描述。
+                                        throw new Exception("");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if ( !Help.isNull(v_XParamAnno.getName()) )
+                {
+                    if ( $ParamName_ToMap.equalsIgnoreCase(v_XParamAnno.getName()) )
                     {
                         if ( MethodReflect.isExtendImplement(i_Args[v_PIndex] ,SerializableClass.class) )
                         {
@@ -912,7 +997,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                     }
                     else
                     {
-                        v_Params.put(v_ParamName ,i_Args[v_PIndex]);
+                        v_Params.put(v_XParamAnno.getName() ,i_Args[v_PIndex]);
                     }
                 }
             }
