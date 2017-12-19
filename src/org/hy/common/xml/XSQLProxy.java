@@ -1002,7 +1002,15 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                 }
             }
             
-            return v_Params;
+            if ( Help.isNull(v_Params) && i_Args.length == 1 )
+            {
+                // 当未说明参数的占符名称，但要求参数为必须的时
+                return i_Args[0];
+            }
+            else
+            {
+                return v_Params;
+            }
         }
     }
 
