@@ -803,13 +803,25 @@ public class XSQLNode
     /**
      * 执行Java代码的执行方法。
      * 
+     * 被执行的Java方法定义如下：
+     * 
+     * public boolean 方法名称(Map<String ,Object> io_Params ,Map<String ,Object> io_Returns)
+     * {
+     *      ...
+     *      
+     *      return true;
+     * }
+     * 
+     * 上面方法的入参与executeJava()方法的入参意思相同。
+     * 上面方法的返回值与executeJava()方法的返回值意思相同。
+     * 
      * @author      ZhengWei(HY)
      * @createDate  2016-05-17
      * @version     v1.0
      *
      * @param io_Params    执行或查询参数。同XSQLGroup.executeGroup()方法的入参参数io_Params同义。
      * @param io_Returns   通过returnID标记的，返回出去的多个查询结果集。同XSQLGroupResult.returns属性同义。
-     * @return             表示是否执行成功
+     * @return             表示是否执行成功。当返回false时，其后的XSQLNode节点将不再执行。
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      * @throws InvocationTargetException

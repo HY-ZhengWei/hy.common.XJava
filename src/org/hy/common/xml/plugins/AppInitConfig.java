@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.hy.common.xml.XJava;
 import org.hy.common.Help;
+import org.hy.common.StringHelp;
 import org.hy.common.app.Param;
 import org.hy.common.file.FileHelp;
 
@@ -27,6 +28,9 @@ import org.hy.common.file.FileHelp;
  *                                保存类型为LinkedHashMap，map.key为配置文件的名称，map.value为AppInitConfig的实例对象
  *              v3.0  2016-12-26  支持对目录（包含子目录）下的所有配置文件都遍历加载的功能。
  *              v3.1  2017-10-27  修复：classpath:解释时的入参为空的问题。
+ *              v3.2  2017-12-20  修复：无论Windows、Linux系统，统一均使用 / 符号分隔路径。
+ *                                     防止Tomcat 7.0.82+ 版本以上出现如下异常的问题
+ *                                     Invalid character found in the request target. The valid characters are defined in RFC 7230 and RFC 3986
  */
 public class AppInitConfig
 {
@@ -152,6 +156,7 @@ public class AppInitConfig
         int                 v_Count      = 0;
         int                 v_OK         = 0;
         Param               v_Param      = null;
+        String              v_XmlName    = "";
         String              v_FFullName  = null;
         File                v_FObject    = null;
         Map<String ,Object> v_XFileNames = (Map<String ,Object>)XJava.getObject($XFileNames_XID);
@@ -175,7 +180,8 @@ public class AppInitConfig
                     for (int i=0; i<i_Params.size(); i++)
                     {
                         v_Param     = i_Params.get(i);
-                        v_FFullName = (!Help.isNull(i_XmlRootPath) ? i_XmlRootPath : Help.NVL(this.xmlClassPath)) + v_Param.getValue().trim();
+                        v_XmlName   = v_Param.getValue().trim();
+                        v_FFullName = (!Help.isNull(i_XmlRootPath) ? i_XmlRootPath : Help.NVL(this.xmlClassPath)) + StringHelp.replaceAll(v_XmlName ,"/" ,Help.getSysPathSeparator());
                         v_FObject   = new File(v_FFullName);
                         
                         // 遍历目录（包含子目录）下的所有配置文件 2016-12-26
@@ -192,13 +198,17 @@ public class AppInitConfig
                                 
                                 Param v_ChildParam = new Param();
                                 
-                                if ( v_Param.getValue().trim().endsWith(Help.getSysPathSeparator()) )
+                                if ( v_XmlName.endsWith("\\")
+                                  || v_XmlName.endsWith("/") )
                                 {
-                                    v_ChildParam.setValue(v_Param.getValue().trim()                              + v_ChildFile.getName());  
+                                    // ZhengWei(HY) Add 2017-12-20
+                                    // 无论Windows、Linux系统，统一均使用 / 符号分隔路径。防止Tomcat 7.0.82+ 版本以上出现如下异常的问题
+                                    // Invalid character found in the request target. The valid characters are defined in RFC 7230 and RFC 3986
+                                    v_ChildParam.setValue(v_XmlName.substring(0 ,v_XmlName.length() - 1) + "/" + v_ChildFile.getName());  
                                 }
                                 else
                                 {
-                                    v_ChildParam.setValue(v_Param.getValue().trim() + Help.getSysPathSeparator() + v_ChildFile.getName());  
+                                    v_ChildParam.setValue(v_XmlName                                      + "/" + v_ChildFile.getName());
                                 }
                                 
                                 v_ChildParam.setName(v_ChildParam.getValue());
@@ -217,15 +227,15 @@ public class AppInitConfig
                             if ( !Help.isNull(i_XmlRootPath) )
                             {
                                 // ZhengWei(HY) Edit 2017-10-27 i_XmlRootPath处原先的传值为：""
-                                XJava.parserXml(v_FileHelp.getContent(v_FFullName                                      ,this.enCode) ,i_XmlRootPath          ,v_Param.getValue());
+                                XJava.parserXml(v_FileHelp.getContent(v_FFullName                                      ,this.enCode) ,i_XmlRootPath          ,v_XmlName);
                             }
                             else
                             {
-                                XJava.parserXml(v_FileHelp.getContent(this.getClass().getResourceAsStream(v_FFullName) ,this.enCode) ,this.xjavaXmlClassPath ,v_Param.getValue());
+                                XJava.parserXml(v_FileHelp.getContent(this.getClass().getResourceAsStream(v_FFullName) ,this.enCode) ,this.xjavaXmlClassPath ,v_XmlName);
                             }
                             
                             v_OK++;
-                            v_XFileNames.put(v_Param.getValue() ,this);
+                            v_XFileNames.put(v_XmlName ,this);
                             
                             if ( this.isLog )
                             {
