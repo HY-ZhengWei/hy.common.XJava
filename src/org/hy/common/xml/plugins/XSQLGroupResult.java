@@ -102,7 +102,7 @@ public class XSQLGroupResult
      * @version     v1.0
      *
      */
-    public void commits()
+    public synchronized void commits()
     {
         if ( this.xsqlGroup != null && !Help.isNull(this.dsgConns) )
         {
@@ -123,7 +123,7 @@ public class XSQLGroupResult
      * @version     v1.0
      *
      */
-    public void rollbacks()
+    public synchronized void rollbacks()
     {
         if ( this.xsqlGroup != null && !Help.isNull(this.dsgConns) )
         {

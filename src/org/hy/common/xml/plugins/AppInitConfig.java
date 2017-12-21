@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.hy.common.xml.XJava;
 import org.hy.common.Help;
-import org.hy.common.StringHelp;
 import org.hy.common.app.Param;
 import org.hy.common.file.FileHelp;
 
@@ -181,7 +180,7 @@ public class AppInitConfig
                     {
                         v_Param     = i_Params.get(i);
                         v_XmlName   = v_Param.getValue().trim();
-                        v_FFullName = (!Help.isNull(i_XmlRootPath) ? i_XmlRootPath : Help.NVL(this.xmlClassPath)) + StringHelp.replaceAll(v_XmlName ,"/" ,Help.getSysPathSeparator());
+                        v_FFullName = (!Help.isNull(i_XmlRootPath) ? i_XmlRootPath : Help.NVL(this.xmlClassPath)) + v_XmlName;
                         v_FObject   = new File(v_FFullName);
                         
                         // 遍历目录（包含子目录）下的所有配置文件 2016-12-26
