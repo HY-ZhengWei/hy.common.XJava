@@ -812,6 +812,7 @@ public class XSQLNode
      * @author      ZhengWei(HY)
      * @createDate  2016-05-17
      * @version     v1.0
+     *              v2.0  2017-12-22  添加XSQLGroupControl参数
      *
      * @param i_Control    XSQL组的控制中心。如，统一事务提交、统一事务回滚。
      * @param io_Params    执行或查询参数。同XSQLGroup.executeGroup()方法的入参参数io_Params同义。
