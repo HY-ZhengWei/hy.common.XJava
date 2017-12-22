@@ -23,6 +23,7 @@ import com.greenpineyu.fel.context.FelContext;
  * 
  *   1. 对条件占位符命名无大小写要求
  *   2. 当占位符对应的值为null时，设置在FelContext.set()中的值为"NULL"
+ *   3. XSQL组执行的Java方法的定义模板 @see org.hy.common.xml.plugins.XSQLGroupExecuteJava
  * 
  * @author      ZhengWei(HY)
  * @createDate  2016-01-20
@@ -47,6 +48,7 @@ import com.greenpineyu.fel.context.FelContext;
  *                                  此建议来自于：向以前同学
  *                                2.准备放弃this.queryReturnID属性，只少是不再建议使用此属性。
  *              v10.0 2017-05-23  1.添加：节点的执行条件this.condition中的占位符支持xx.yy.ww的面向对象的形式。此建议来自于：向以前同学
+ *              v11.0 2017-12-22  1.添加：XSQL组执行的Java方法的入参参数中增加控制中心XSQLGroupControl，实现事务统一提交、回滚。
  */
 public class XSQLNode
 {
@@ -78,6 +80,8 @@ public class XSQLNode
      *   相关针对性属性有：
      *     1. xjavaID
      *     2. methodName
+     *     
+     * 方法的定义模板 @see org.hy.common.xml.plugins.XSQLGroupExecuteJava
      */
     public static final String  $Type_ExecuteJava                = "ExecuteJava";
     
@@ -803,22 +807,13 @@ public class XSQLNode
     /**
      * 执行Java代码的执行方法。
      * 
-     * 被执行的Java方法定义如下：
-     * 
-     * public boolean 方法名称(Map<String ,Object> io_Params ,Map<String ,Object> io_Returns)
-     * {
-     *      ...
-     *      
-     *      return true;
-     * }
-     * 
-     * 上面方法的入参与executeJava()方法的入参意思相同。
-     * 上面方法的返回值与executeJava()方法的返回值意思相同。
+     * @see org.hy.common.xml.plugins.XSQLGroupExecuteJava
      * 
      * @author      ZhengWei(HY)
      * @createDate  2016-05-17
      * @version     v1.0
      *
+     * @param i_Control    XSQL组的控制中心。如，统一事务提交、统一事务回滚。
      * @param io_Params    执行或查询参数。同XSQLGroup.executeGroup()方法的入参参数io_Params同义。
      * @param io_Returns   通过returnID标记的，返回出去的多个查询结果集。同XSQLGroupResult.returns属性同义。
      * @return             表示是否执行成功。当返回false时，其后的XSQLNode节点将不再执行。
@@ -827,7 +822,7 @@ public class XSQLNode
      * @throws InvocationTargetException
      * @throws NoSuchMethodException
      */
-    public boolean executeJava(Map<String ,Object> io_Params ,Map<String ,Object> io_Returns) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException
+    public boolean executeJava(XSQLGroupControl i_Control ,Map<String ,Object> io_Params ,Map<String ,Object> io_Returns) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException
     {
         // 已经解释成功的，不在二次解释
         if ( this.xjavaMethod != null )
@@ -844,7 +839,7 @@ public class XSQLNode
             this.parserMethod();
         }
         
-        Object v_Ret = this.xjavaMethod.invoke(this.xjavaIntance ,io_Params ,io_Returns);
+        Object v_Ret = this.xjavaMethod.invoke(this.xjavaIntance ,i_Control ,io_Params ,io_Returns);
         return (Boolean)v_Ret;
     }
     

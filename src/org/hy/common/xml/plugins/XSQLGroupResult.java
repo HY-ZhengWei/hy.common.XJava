@@ -4,9 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hy.common.Counter;
-import org.hy.common.Help;
-import org.hy.common.db.DataSourceGroup;
-import org.hy.common.xml.plugins.XSQLGroup.XConnection;
 
 
 
@@ -19,7 +16,7 @@ import org.hy.common.xml.plugins.XSQLGroup.XConnection;
  * @createDate  2016-03-04
  * @version     v1.0
  */
-public class XSQLGroupResult
+public class XSQLGroupResult extends XSQLGroupControl
 {
     
     /** 执行结果是否成功 */
@@ -27,9 +24,6 @@ public class XSQLGroupResult
     
     /** 返回多个查询结果集 */
     private Map<String ,Object>               returns;
-    
-    /** 累计影响(Insert、Update、Delete)的总行数 */
-    private Counter<String>                   execSumCount;
     
     /** 
      * 成功时：为最后一个有效执行XSQL的索引位置。下标从0开始。
@@ -42,18 +36,6 @@ public class XSQLGroupResult
     
     /** 为异常对象 */
     private Exception                         exception;
-    
-    
-    
-    /** SQL组 */
-    private XSQLGroup                         xsqlGroup;
-    
-    /** 
-     * 数据库连接池控制(提交、回滚、关闭)集合。
-     * 
-     * 当 XSQLGroup.isAutoCommit = false 时有效：由外界决定是否提交、是否回滚的功能。
-     */
-    private Map<DataSourceGroup ,XConnection> dsgConns;
     
     
     
@@ -88,50 +70,6 @@ public class XSQLGroupResult
         this.execLastNode = i_XResult.execLastNode;
         this.exceptionSQL = i_XResult.exceptionSQL;
         this.exception    = i_XResult.exception;
-        this.xsqlGroup    = null;
-        this.dsgConns     = null;
-    }
-    
-    
-    
-    /**
-     * 统一提交的事务功能
-     * 
-     * @author      ZhengWei(HY)
-     * @createDate  2017-11-03
-     * @version     v1.0
-     *
-     */
-    public synchronized void commits()
-    {
-        if ( this.xsqlGroup != null && !Help.isNull(this.dsgConns) )
-        {
-            this.xsqlGroup.commits(this.dsgConns ,this.execSumCount);
-            
-            // 统一关闭数据库连接
-            this.xsqlGroup.closeConnections(this.dsgConns);
-        }
-    }
-    
-    
-    
-    /**
-     * 统一回滚的事务功能
-     * 
-     * @author      ZhengWei(HY)
-     * @createDate  2017-11-03
-     * @version     v1.0
-     *
-     */
-    public synchronized void rollbacks()
-    {
-        if ( this.xsqlGroup != null && !Help.isNull(this.dsgConns) )
-        {
-            this.xsqlGroup.rollbacks(this.dsgConns);
-            
-            // 统一关闭数据库连接
-            this.xsqlGroup.closeConnections(this.dsgConns);
-        }
     }
     
     
@@ -174,27 +112,6 @@ public class XSQLGroupResult
     public XSQLGroupResult setReturns(Map<String ,Object> returns)
     {
         this.returns = returns;
-        return this;
-    }
-
-    
-    /**
-     * 获取：累计影响(Insert、Update、Delete)的总行数
-     */
-    public Counter<String> getExecSumCount()
-    {
-        return execSumCount;
-    }
-
-    
-    /**
-     * 设置：累计影响(Insert、Update、Delete)的总行数
-     * 
-     * @param execSumCount 
-     */
-    public XSQLGroupResult setExecSumCount(Counter<String> execSumCount)
-    {
-        this.execSumCount = execSumCount;
         return this;
     }
 
@@ -285,36 +202,6 @@ public class XSQLGroupResult
         this.exception = exception;
         this.success   = false;
         return this;
-    }
-
-
-    
-    /**
-     * 设置：SQL组
-     * 
-     * 为了安全不提供 getter() 方法 
-     * 
-     * @param xsqlGroup 
-     */
-    public void setXsqlGroup(XSQLGroup xsqlGroup)
-    {
-        this.xsqlGroup = xsqlGroup;
-    }
-    
-
-    
-    /**
-     * 设置：数据库连接池控制(提交、回滚、关闭)集合。
-     * 
-     * 当 XSQLGroup.isAutoCommit = false 时有效：由外界决定是否提交、是否回滚的功能。
-     * 
-     * 为了安全不提供 getter() 方法 
-     * 
-     * @param dsgConns 
-     */
-    public void setDsgConns(Map<DataSourceGroup ,XConnection> dsgConns)
-    {
-        this.dsgConns = dsgConns;
     }
     
 }

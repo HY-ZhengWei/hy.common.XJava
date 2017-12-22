@@ -56,6 +56,10 @@ import org.hy.common.thread.TaskGroup;
  *   注意03：节点检查条件的占位符命名无大小写要求。
  *   注意04：如果前一个节点做了更新操作(Update、Delete等)，但没有提交，后一个节点对同一张表的查询，是会死锁的（一直等待上个更新节点的提交）。
  *          但设置 XSQLNode.oneConnection=true 后，同一张表的查询是OK的。
+ *          
+ *   
+ *   XSQL组执行的Java方法的定义模板 @see org.hy.common.xml.plugins.XSQLGroupExecuteJava
+ *   
  *   
  * 此类的原始构想来源于：2013-12-16开发的名为DBTask（数据库任务执行程序）的程序。
  * 本类比起DBTask而言，功能单一，但更加专注，去掉了Mail、FTP、File、系统命令等相关复杂操作。
@@ -100,6 +104,7 @@ import org.hy.common.thread.TaskGroup;
  *                                       通过 this.executes(...) 执行结果 XSQLGroupResult 来手工提交、回滚。
  *                                  建议来自于：向以前同学
  *              v15.1 2017-11-20  1.优化：提升getCollectionToDB()方法的执行性能。
+ *              v16.0 2017-12-22  1.添加：XSQL组执行的Java方法的入参参数中增加控制中心XSQLGroupControl，实现事务统一提交、回滚。
  */
 public final class XSQLGroup
 {
@@ -630,7 +635,7 @@ public final class XSQLGroup
                 }
                 else 
                 {
-                    v_ExecRet = v_Node.executeJava(io_Params ,v_Ret.getReturns());
+                    v_ExecRet = v_Node.executeJava(new XSQLGroupControl(this ,io_DSGConns ,v_Ret.getExecSumCount()) ,io_Params ,v_Ret.getReturns());
                 }
                 
                 this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
@@ -1151,7 +1156,7 @@ public final class XSQLGroup
                 }
                 else 
                 {
-                    v_ExecRet = v_Node.executeJava(io_Params ,v_Ret.getReturns());
+                    v_ExecRet = v_Node.executeJava(new XSQLGroupControl(this ,io_DSGConns ,v_Ret.getExecSumCount()) ,io_Params ,v_Ret.getReturns());
                 }
                 
                 this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
@@ -1387,7 +1392,7 @@ public final class XSQLGroup
      * @version     v1.0
      *
      * @param io_DSGConns
-     * @param i_ExecSumCount    累计总行数
+     * @param i_ExecSumCount    累计总行数（可选参数，可为null）
      */
     protected synchronized void commits(Map<DataSourceGroup ,XConnection> io_DSGConns ,Counter<String> i_ExecSumCount)
     {
@@ -1409,7 +1414,14 @@ public final class XSQLGroup
                         
                         if ( this.isLog )
                         {
-                            System.out.println("  " + i_ExecSumCount.getSumValue() + " rows affected.");
+                            if ( i_ExecSumCount != null )
+                            {
+                                System.out.println("  " + i_ExecSumCount.getSumValue() + " rows affected.");
+                            }
+                            else
+                            {
+                                System.out.println("  OK.");
+                            }
                         }
                     }
                 }
