@@ -49,6 +49,7 @@ import com.greenpineyu.fel.context.FelContext;
  *                                2.准备放弃this.queryReturnID属性，只少是不再建议使用此属性。
  *              v10.0 2017-05-23  1.添加：节点的执行条件this.condition中的占位符支持xx.yy.ww的面向对象的形式。此建议来自于：向以前同学
  *              v11.0 2017-12-22  1.添加：XSQL组执行的Java方法的入参参数中增加控制中心XSQLGroupControl，实现事务统一提交、回滚。
+ *                                2.添加：XSQLNode.isNoUpdateRollbacks()方法，当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作。
  */
 public class XSQLNode
 {
@@ -173,6 +174,17 @@ public class XSQLNode
      */
     private boolean             perAfterCommit;
     
+    /**
+     * 专用于更新类型的XSQL节点($Type_ExecuteUpdate、$Type_CollectionToExecuteUpdate)。
+     * 
+     * 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作。
+     * 1. noUpdateRollbacks=true时，操作影响的数据量为0条时，回滚。
+     * 2. 事务统一回滚后，XSQL组将按整体执行失败处理。
+     * 
+     * 默认为：false
+     */
+    private boolean             noUpdateRollbacks;
+    
     /** 
      * 在整个组合XSQLGroup的最后执行，并只执行一次。就算查询节点查无数据(无检查条件的情况下)，也会被执行。
      * 即，标记为lastOnce=true的节点，不在查询类型XSQL节点的循环之中执行。
@@ -294,7 +306,7 @@ public class XSQLNode
     /**
      * 对于查询语句有两种使用数据库连接的方式
      *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
-     *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，达到读、写在同一个事务中进行。
+     *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，做到读、写在同一个事务中进行。
      */
     private boolean            oneConnection;
     
@@ -302,23 +314,24 @@ public class XSQLNode
     
     public XSQLNode()
     {
-        this.noPassContinue = true;
-        this.beforeCommit   = false;
-        this.afterCommit    = false;
-        this.perAfterCommit = false;
-        this.lastOnce       = false;
-        this.returnID       = null;
-        this.returnAppend   = false;
-        this.returnQuery    = false;
-        this.queryReturnID  = null;
-        this.sqlGroup       = null;
-        this.xjavaID        = null;
-        this.methodName     = null;
-        this.xjavaIntance   = null;
-        this.xjavaMethod    = null;
-        this.collectionID   = null;
-        this.thread         = false;
-        this.oneConnection  = false;
+        this.noPassContinue    = true;
+        this.beforeCommit      = false;
+        this.afterCommit       = false;
+        this.perAfterCommit    = false;
+        this.noUpdateRollbacks = false;
+        this.lastOnce          = false;
+        this.returnID          = null;
+        this.returnAppend      = false;
+        this.returnQuery       = false;
+        this.queryReturnID     = null;
+        this.sqlGroup          = null;
+        this.xjavaID           = null;
+        this.methodName        = null;
+        this.xjavaIntance      = null;
+        this.xjavaMethod       = null;
+        this.collectionID      = null;
+        this.thread            = false;
+        this.oneConnection     = false;
     }
     
     
@@ -500,6 +513,40 @@ public class XSQLNode
     public void setPerAfterCommit(boolean perAfterCommit)
     {
         this.perAfterCommit = perAfterCommit;
+    }
+    
+    
+    
+    /**
+     * 获取：专用于更新类型的XSQL节点($Type_ExecuteUpdate、$Type_CollectionToExecuteUpdate)。
+     * 
+     * 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作。
+     * 1. noUpdateRollbacks=true时，操作影响的数据量为0条时，回滚。
+     * 2. 事务统一回滚后，XSQL组将按整体执行失败处理。
+     * 
+     * 默认为：false
+     */
+    public boolean isNoUpdateRollbacks()
+    {
+        return this.noUpdateRollbacks;
+    }
+    
+    
+    
+    /**
+     * 设置：专用于更新类型的XSQL节点($Type_ExecuteUpdate、$Type_CollectionToExecuteUpdate)。
+     * 
+     * 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作。
+     * 1. noUpdateRollbacks=true时，操作影响的数据量为0条时，回滚。
+     * 2. 事务统一回滚后，XSQL组将按整体执行失败处理。
+     * 
+     * 默认为：false
+     * 
+     * @param perAfterCommit 
+     */
+    public void setNoUpdateRollbacks(boolean i_NoUpdateRollbacks)
+    {
+        this.noUpdateRollbacks = i_NoUpdateRollbacks;
     }
 
 
@@ -1013,7 +1060,7 @@ public class XSQLNode
     /**
      * 获取：对于查询语句有两种使用数据库连接的方式
      *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
-     *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，达到读、写在同一个事务中进行。
+     *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，做到读、写在同一个事务中进行。
      */
     public boolean isOneConnection()
     {
@@ -1025,7 +1072,7 @@ public class XSQLNode
     /**
      * 设置：对于查询语句有两种使用数据库连接的方式
      *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
-     *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，达到读、写在同一个事务中进行。
+     *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，做到读、写在同一个事务中进行。
      * 
      * @param oneConnection 
      */

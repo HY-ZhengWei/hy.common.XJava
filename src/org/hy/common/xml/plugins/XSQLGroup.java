@@ -41,15 +41,16 @@ import org.hy.common.thread.TaskGroup;
  *           1. beforeCommit   操作节点前提交；
  *           2. afterCommit    操作节点后提交；
  *           3. perAfterCommit 每获取结果集一条记录前提交。
- *   特点12： 由外界决定是否提交、是否回滚的功能。
- *   特点13：支持简单的统计功能（请求整体执行的次数、成功次数、成功累计用时时长）。
- *   特点14：支持组嵌套组的执行：实现XSQLGroup组中嵌套另一个XSQLGroup组嵌套执行的功能。
- *   特点15：支持返回多个查询结果集。returnID标记的查询XSQL节点，一次性返回所有记录，并按XSQLResult定义的规则生成一个结果集对象。
- *   特点16：支持查询结果当作其后节点的SQL入参的同时，还返回查询结果。将查询XSQL节点每次循环遍历出的每一行记录，用 PartitionMap<String ,Object> 类型的行转列保存的数据结构，并返回查询结果集。
- *   特点17：支持执行Java代码，对查询结果集进行二次加工处理等Java操作。
- *   特点18：查询SQL语句有两种使用数据库连接的方式
+ *   特点12： 当未更新任何数据（操作影响的数据量为0条）时，可控制是否执行事务统一回滚操作XSQLNode.isNoUpdateRollbacks()
+ *   特点13： 由外界决定是否提交、是否回滚的功能。
+ *   特点14：支持简单的统计功能（请求整体执行的次数、成功次数、成功累计用时时长）。
+ *   特点15：支持组嵌套组的执行：实现XSQLGroup组中嵌套另一个XSQLGroup组嵌套执行的功能。
+ *   特点16：支持返回多个查询结果集。returnID标记的查询XSQL节点，一次性返回所有记录，并按XSQLResult定义的规则生成一个结果集对象。
+ *   特点17：支持查询结果当作其后节点的SQL入参的同时，还返回查询结果。将查询XSQL节点每次循环遍历出的每一行记录，用 PartitionMap<String ,Object> 类型的行转列保存的数据结构，并返回查询结果集。
+ *   特点18：支持执行Java代码，对查询结果集进行二次加工处理等Java操作。
+ *   特点19：查询SQL语句有两种使用数据库连接的方式
  *           1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
- *           2. 读写同事务：查询SQL与更新修改SQL共用一个连接，达到读、写在同一个事务中进行。
+ *           2. 读写同事务：查询SQL与更新修改SQL共用一个连接，做到读、写在同一个事务中进行。
  *   
  *   注意01：查询类型XSQL节点的查询结果使用List<Object>结构保存。List元素也可以是Map类型的。如果元素是JavaBean，是会被内部自动转为Map的。
  *   注意02：XSQL中占位符的命名，无大小写要求。但那怕是为了一点点儿的性能，都写成大写的要好些（或前后关系中写法一致）。
@@ -105,6 +106,7 @@ import org.hy.common.thread.TaskGroup;
  *                                  建议来自于：向以前同学
  *              v15.1 2017-11-20  1.优化：提升getCollectionToDB()方法的执行性能。
  *              v16.0 2017-12-22  1.添加：XSQL组执行的Java方法的入参参数中增加控制中心XSQLGroupControl，实现事务统一提交、回滚。
+ *                                2.添加：XSQLNode.isNoUpdateRollbacks()方法，当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作。
  */
 public final class XSQLGroup
 {
@@ -603,8 +605,21 @@ public final class XSQLGroup
                         io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
                         v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_RCount);
                     }
+                    else
+                    {
+                        v_RCount = 1; // 防止被回滚 v_Node.isNoUpdateRollbacks();
+                    }
                     
-                    v_ExecRet = true;
+                    // 2017-12-22 Add 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作
+                    if ( v_RCount <= 0 && v_Node.isNoUpdateRollbacks() )
+                    {
+                        v_ExecRet = false;
+                        this.rollbacks(io_DSGConns);
+                    }
+                    else
+                    {
+                        v_ExecRet = true;
+                    }
                 }
                 else if ( XSQLNode.$Type_ExecuteUpdate.equals(v_Node.getType()) )
                 {
@@ -620,7 +635,16 @@ public final class XSQLGroup
                     io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
                     v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_RCount);
                     
-                    v_ExecRet = true;
+                    // 2017-12-22 Add 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作
+                    if ( v_RCount <= 0 && v_Node.isNoUpdateRollbacks() )
+                    {
+                        v_ExecRet = false;
+                        this.rollbacks(io_DSGConns);
+                    }
+                    else
+                    {
+                        v_ExecRet = true;
+                    }
                 }
                 else if ( XSQLNode.$Type_Execute.equals(v_Node.getType()) )
                 {
@@ -1124,8 +1148,21 @@ public final class XSQLGroup
                         io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
                         v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_RCount);
                     }
+                    else
+                    {
+                        v_RCount = 1; // 防止被回滚 v_Node.isNoUpdateRollbacks();
+                    }
                     
-                    v_ExecRet = true;
+                    // 2017-12-22 Add 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作
+                    if ( v_RCount <= 0 && v_Node.isNoUpdateRollbacks() )
+                    {
+                        v_ExecRet = false;
+                        this.rollbacks(io_DSGConns);
+                    }
+                    else
+                    {
+                        v_ExecRet = true;
+                    }
                 }
                 else if ( XSQLNode.$Type_ExecuteUpdate.equals(v_Node.getType()) )
                 {
@@ -1141,7 +1178,16 @@ public final class XSQLGroup
                     io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
                     v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_RCount);
                     
-                    v_ExecRet = true;
+                    // 2017-12-22 Add 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作
+                    if ( v_RCount <= 0 && v_Node.isNoUpdateRollbacks() )
+                    {
+                        v_ExecRet = false;
+                        this.rollbacks(io_DSGConns);
+                    }
+                    else
+                    {
+                        v_ExecRet = true;
+                    }
                 }
                 else if ( XSQLNode.$Type_Execute.equals(v_Node.getType()) )
                 {
