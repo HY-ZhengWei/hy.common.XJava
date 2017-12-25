@@ -870,7 +870,7 @@ public class XSQLNode
      * @throws InvocationTargetException
      * @throws NoSuchMethodException
      */
-    public boolean executeJava(XSQLGroupControl i_Control ,Map<String ,Object> io_Params ,Map<String ,Object> io_Returns) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException
+    public synchronized boolean executeJava(XSQLGroupControl i_Control ,Map<String ,Object> io_Params ,Map<String ,Object> io_Returns) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException
     {
         // 已经解释成功的，不在二次解释
         if ( this.xjavaMethod != null )
@@ -927,10 +927,11 @@ public class XSQLNode
         {
             if ( v_Methods[i].getName().equals(this.methodName) )
             {
-                if ( v_Methods[i].getParameterTypes().length == 2 )
+                if ( v_Methods[i].getParameterTypes().length == 3 )
                 {
-                    if ( Map.class.equals(v_Methods[i].getParameterTypes()[0]) 
-                      && Map.class.equals(v_Methods[i].getParameterTypes()[1]) )
+                    if ( XSQLGroupControl.class.equals(v_Methods[i].getParameterTypes()[0])
+                      && Map.class.equals(v_Methods[i].getParameterTypes()[1]) 
+                      && Map.class.equals(v_Methods[i].getParameterTypes()[2]) )
                     {
                         if ( v_Methods[i].getReturnType() != null )
                         {
