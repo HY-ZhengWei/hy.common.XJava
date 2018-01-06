@@ -3,6 +3,8 @@
 <config>
 
 	<import name="uceConfig"   class="java.util.ArrayList" />
+	<import name="alias"       class="java.util.HashMap" />
+	<import name="standards"   class="java.util.HashMap" />
 	<import name="item"        class="org.hy.common.app.Param" />
 	<import name="expressions" class="org.hy.common.TablePartitionRID" />
 
@@ -17,26 +19,125 @@
 		</item>
 		
 		
+		
+		<!-- 单位别名 -->
+		<alias id="UnitConvertAlias" key="name">
+		
+			<!-- 温度单位 -->
+			<item><name>摄氏度</name><value>°C</value></item>
+			<item><name>华氏度</name><value>°F</value></item>
+			<item><name>开氏度</name><value>K</value></item>
+			
+			
+			<!-- 长度单位 -->
+			<item><name>米</name><value>m</value></item>
+			<item><name>毫米</name><value>mm</value></item>
+			
+			
+			<!-- 压力单位 -->
+			<item><name>兆帕(绝压)</name><value>MPa.a</value></item>
+			<item><name>巴(绝压)</name><value>bar.a</value></item>
+			<item><name>千克力/平方厘米(绝压)</name><value>kgf/cm^2.a</value></item>
+			<item><name>标准大气压(绝压)</name><value>atm.a</value></item>
+			<item><name>磅力/平方英寸(绝压)</name><value>psi.a</value></item>
+			<item><name>毫米汞柱(0°C)(绝压)</name><value>mmHg.a</value></item>
+			<item><name>毫米水柱(15°C)(绝压)</name><value>mmH2O.a</value></item>
+			<item><name>帕斯卡(绝压)</name><value>Pa.a</value></item>
+			<item><name>千帕(绝压)</name><value>KPa.a</value></item>
+			
+			<item><name>兆帕(表压)</name><value>MPa.g</value></item>
+			<item><name>巴(表压)</name><value>bar.g</value></item>
+			<item><name>千克力/平方厘米(表压)</name><value>kgf/cm^2.g</value></item>
+			<item><name>标准大气压(表压)</name><value>atm.g</value></item>
+			<item><name>磅力/平方英寸(表压)</name><value>psi.g</value></item>
+			<item><name>毫米汞柱(0°C)(表压)</name><value>mmHg.g</value></item>
+			<item><name>毫米水柱(15°C)(表压)</name><value>mmH2O.g</value></item>
+			<item><name>帕斯卡(表压)</name><value>Pa.g</value></item>
+			<item><name>千帕(表压)</name><value>KPa.g</value></item>
+			
+			
+			<!-- 流量单位 -->
+			<item><name>千克/小时</name><value>kg/h</value></item>
+			<item><name>吨/小时</name><value>t/h</value></item>
+			<item><name>磅/小时</name><value>lb/h</value></item>
+			<item><name>千克/秒</name><value>kg/s</value></item>
+		</alias>
+		
+		
+		
+		<!-- 基准单位 -->
+		<standards id="UnitConvertStandards" key="name">
+		
+			<!-- 额定流量系数 -->
+			<item><value>Cv</value><name>Cv</name></item>
+			<item><value>Cv</value><name>Kv</name></item>
+			
+		
+			<!-- 温度单位 -->
+			<item><value>°C</value><name>°C</name></item>
+			<item><value>°C</value><name>°F</name></item>
+			<item><value>°C</value><name>K</name></item>
+			
+			
+			<!-- 长度单位 -->
+			<item><value>m</value><name>m</name></item>
+			<item><value>m</value><name>mm</name></item>
+			
+			
+			<!-- 压力单位 -->
+			<item><value>MPa.a</value><name>MPa.a</name></item>
+			<item><value>MPa.a</value><name>bar.a</name></item>
+			<item><value>MPa.a</value><name>kgf/cm^2.a</name></item>
+			<item><value>MPa.a</value><name>atm.a</name></item>
+			<item><value>MPa.a</value><name>psi.a</name></item>
+			<item><value>MPa.a</value><name>mmHg.a</name></item>
+			<item><value>MPa.a</value><name>mmH2O.a</name></item>
+			<item><value>MPa.a</value><name>Pa.a</name></item>
+			<item><value>MPa.a</value><name>KPa.a</name></item>
+			
+			<item><value>MPa.a</value><name>MPa.g</name></item>
+			<item><value>MPa.a</value><name>bar.g</name></item>
+			<item><value>MPa.a</value><name>kgf/cm^2.g</name></item>
+			<item><value>MPa.a</value><name>atm.g</name></item>
+			<item><value>MPa.a</value><name>psi.g</name></item>
+			<item><value>MPa.a</value><name>mmHg.g</name></item>
+			<item><value>MPa.a</value><name>mmH2O.g</name></item>
+			<item><value>MPa.a</value><name>Pa.g</name></item>
+			<item><value>MPa.a</value><name>KPa.g</name></item>
+			
+			
+			<!-- 流量单位 -->
+			<item><value>kg/h</value><name>kg/h</name></item>
+			<item><value>kg/h</value><name>t/h</name></item>
+			<item><value>kg/h</value><name>lb/h</name></item>
+			<item><value>kg/h</value><name>kg/s</name></item>
+			
+		</standards>
+		
+		
     
 		<expressions id="UnitConvertExpressions" this="UnitConvertExpressions">
 			
-			<!-- 温度单位 -->
+			<!-- 额定流量系数 -->
 			<call name="putRow">
-				<String>摄氏度</String>
-				<String>华氏度</String>
-				<String>UCE * 9 / 5 + 32</String>
+				<String>Kv</String>
+				<String>Cv</String>
+				<String>UCE * 1.167</String>
 			</call>
 			
+			<call name="putRow">
+				<String>Cv</String>
+				<String>Kv</String>
+				<String>UCE / 1.167</String>
+			</call>
+			
+			
+			
+			<!-- 温度单位 -->
 			<call name="putRow">
 				<String>°C</String>
 				<String>°F</String>
 				<String>UCE * 9 / 5 + 32</String>               <!-- 摄氏度 to 华氏度 -->
-			</call>
-			
-			<call name="putRow">
-				<String>华氏度</String>
-				<String>摄氏度</String>
-				<String>(UCE - 32) * 5 / 9</String>
 			</call>
 			
 			<call name="putRow">
@@ -46,21 +147,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>摄氏度</String>
-				<String>开氏度</String>
-				<String>UCE + 273.15</String>
-			</call>
-			
-			<call name="putRow">
 				<String>°C</String>
 				<String>K</String>
 				<String>UCE + 273.15</String>                   <!-- 摄氏度 to 开氏度 -->
-			</call>
-			
-			<call name="putRow">
-				<String>开氏度</String>
-				<String>摄氏度</String>
-				<String>UCE - 273.15</String>
 			</call>
 			
 			<call name="putRow">
@@ -73,21 +162,9 @@
 			
 			<!-- 长度单位 -->
 			<call name="putRow">
-				<String>毫米</String>
-				<String>米</String>
-				<String>UCE * 0.001</String>
-			</call>
-			
-			<call name="putRow">
 				<String>mm</String>
 				<String>m</String>
 				<String>UCE * 0.001</String>                    <!-- 毫米 to 米 -->
-			</call>
-			
-			<call name="putRow">
-				<String>米</String>
-				<String>毫米</String>
-				<String>UCE * 1000</String>
 			</call>
 			
 			<call name="putRow">
@@ -100,21 +177,9 @@
 			
 			<!-- 压力单位：绝压to表压的部 -->
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>兆帕(表压)</String>
-				<String>UCE - 0.101325</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>MPa.g</String>
 				<String>UCE - 0.101325</String>                 <!-- 兆帕(绝压) to 兆帕(表压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>兆帕(表压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE + 0.101325</String>
 			</call>
 			
 			<call name="putRow">
@@ -124,21 +189,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>巴(表压)</String>
-				<String>UCE * 10 - 1.01325</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>bar.g</String>
 				<String>UCE * 10 - 1.01325</String>             <!-- 兆帕(绝压) to 巴(表压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>巴(表压)</String>
-				<String>兆帕(绝压)</String>
-				<String>(UCE + 1.01325) / 10</String>
 			</call>
 			
 			<call name="putRow">
@@ -148,21 +201,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>千克力/平方厘米(表压)</String>
-				<String>UCE * 10.1972 - 1.01325</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>kgf/cm^2.g</String>
 				<String>UCE * 10.1972 - 1.01325</String>        <!-- 兆帕(绝压) to 千克力/平方厘米(表压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>千克力/平方厘米(表压)</String>
-				<String>兆帕(绝压)</String>
-				<String>(UCE + 1.01325) / 10.1972</String>
 			</call>
 			
 			<call name="putRow">
@@ -172,21 +213,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>标准大气压(表压)</String>
-				<String>UCE * 9.86923 - 1.01325</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>atm.g</String>
 				<String>UCE * 9.86923 - 1.01325</String>        <!-- 兆帕(绝压) to 标准大气压(表压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>标准大气压(表压)</String>
-				<String>兆帕(绝压)</String>
-				<String>(UCE + 1.01325) / 9.86923</String>
 			</call>
 			
 			<call name="putRow">
@@ -196,21 +225,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>磅力/平方英寸(表压)</String>
-				<String>(UCE - 0.101325) * 145.036</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>psi.g</String>
 				<String>(UCE - 0.101325) * 145.036</String>     <!-- 兆帕(绝压) to 磅力/平方英寸(表压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>磅力/平方英寸(表压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 145.036 + 0.101325</String>
 			</call>
 			
 			<call name="putRow">
@@ -220,21 +237,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>毫米汞柱(0°C)(表压)</String>
-				<String>(UCE - 0.101325) * 7500.62</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>mmHg.g</String>
 				<String>(UCE - 0.101325) * 7500.62</String>     <!-- 兆帕(绝压) to 毫米汞柱(0°C)(表压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>毫米汞柱(0°C)(表压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 7500.62 + 0.101325</String>
 			</call>
 			
 			<call name="putRow">
@@ -244,21 +249,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>毫米水柱(15°C)(表压)</String>
-				<String>(UCE - 0.101325) * 102074</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>mmH2O.g</String>
 				<String>(UCE - 0.101325) * 102074</String>      <!-- 兆帕(绝压) to 毫米水柱(15°C)(表压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>毫米水柱(15°C)(表压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 102074 + 0.101325</String>
 			</call>
 			
 			<call name="putRow">
@@ -268,21 +261,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>帕斯卡(表压)</String>
-				<String>(UCE - 0.101325) * 1000000</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>Pa.g</String>
 				<String>(UCE - 0.101325) * 1000000</String>     <!-- 兆帕(绝压) to 帕斯卡(表压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>帕斯卡(表压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 1000000 + 0.101325</String>
 			</call>
 			
 			<call name="putRow">
@@ -292,21 +273,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>千帕(表压)</String>
-				<String>(UCE - 0.101325) * 1000</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>KPa.g</String>
 				<String>(UCE - 0.101325) * 1000</String>        <!-- 兆帕(绝压) to 千帕(表压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>千帕(表压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 1000 + 0.101325</String>
 			</call>
 			
 			<call name="putRow">
@@ -319,21 +288,9 @@
 			
 			<!-- 压力单位：绝压to绝压的部 -->
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>巴(绝压)</String>
-				<String>UCE * 10</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>bar.a</String>
 				<String>UCE * 10</String>                       <!-- 兆帕(绝压) to 巴(绝压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>巴(绝压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 10</String>
 			</call>
 			
 			<call name="putRow">
@@ -343,21 +300,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>千克力/平方厘米(绝压)</String>
-				<String>UCE * 10.1972</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>kgf/cm^2.a</String>
 				<String>UCE * 10.1972</String>                  <!-- 兆帕(绝压) to 千克力/平方厘米(绝压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>千克力/平方厘米(绝压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 10.1972</String>
 			</call>
 			
 			<call name="putRow">
@@ -367,21 +312,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>标准大气压(绝压)</String>
-				<String>UCE * 9.86923</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>atm.a</String>
 				<String>UCE * 9.86923</String>                  <!-- 兆帕(绝压) to 标准大气压(绝压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>标准大气压(绝压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 9.86923</String>
 			</call>
 			
 			<call name="putRow">
@@ -391,21 +324,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>磅力/平方英寸(绝压)</String>
-				<String>UCE * 145.036</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>psi.a</String>
 				<String>UCE * 145.036</String>                  <!-- 兆帕(绝压) to 磅力/平方英寸(绝压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>磅力/平方英寸(绝压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 145.036</String>
 			</call>
 			
 			<call name="putRow">
@@ -415,21 +336,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>毫米汞柱(0°C)(绝压)</String>
-				<String>UCE * 7500.62</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>mmHg.a</String>
 				<String>UCE * 7500.62</String>                  <!-- 兆帕(绝压) to 毫米汞柱(0°C)(绝压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>毫米汞柱(0°C)(绝压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 7500.62</String>
 			</call>
 			
 			<call name="putRow">
@@ -439,21 +348,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>毫米水柱(15°C)(绝压)</String>
-				<String>UCE * 102074</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>mmH2O.a</String>
 				<String>UCE * 102074</String>                   <!-- 兆帕(绝压) to 毫米水柱(15°C)(绝压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>毫米水柱(15°C)(绝压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 102074</String>
 			</call>
 			
 			<call name="putRow">
@@ -463,21 +360,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>帕斯卡(绝压)</String>
-				<String>UCE * 1000000</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>Pa.a</String>
 				<String>UCE * 1000000</String>                  <!-- 兆帕(绝压) to 帕斯卡(绝压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>帕斯卡(绝压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 1000000</String>
 			</call>
 			
 			<call name="putRow">
@@ -487,21 +372,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>兆帕(绝压)</String>
-				<String>千帕(绝压)</String>
-				<String>UCE * 1000</String>
-			</call>
-			
-			<call name="putRow">
 				<String>MPa.a</String>
 				<String>KPa.a</String>
 				<String>UCE * 1000</String>                     <!-- 兆帕(绝压) to 千帕(绝压) -->
-			</call>
-			
-			<call name="putRow">
-				<String>千帕(绝压)</String>
-				<String>兆帕(绝压)</String>
-				<String>UCE / 1000</String>
 			</call>
 			
 			<call name="putRow">
@@ -613,21 +486,9 @@
 			
 			<!-- 流量单位 -->
 			<call name="putRow">
-				<String>千克/小时</String>
-				<String>吨/小时</String>
-				<String>UCE / 1000</String>
-			</call>
-			
-			<call name="putRow">
 				<String>kg/h</String>
 				<String>t/h</String>
 				<String>UCE / 1000</String>                     <!-- 千克/小时 to 吨/小时 -->
-			</call>
-			
-			<call name="putRow">
-				<String>吨/小时</String>
-				<String>千克/小时</String>
-				<String>UCE * 1000</String>
 			</call>
 			
 			<call name="putRow">
@@ -637,21 +498,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>千克/小时</String>
-				<String>磅/小时</String>
-				<String>UCE * 2.2046</String>
-			</call>
-			
-			<call name="putRow">
 				<String>kg/h</String>
 				<String>lb/h</String>
 				<String>UCE * 2.2046</String>                   <!-- 千克/小时 to 磅/小时 -->
-			</call>
-			
-			<call name="putRow">
-				<String>磅/小时</String>
-				<String>千克/小时</String>
-				<String>UCE / 2.2046</String>
 			</call>
 			
 			<call name="putRow">
@@ -661,21 +510,9 @@
 			</call>
 			
 			<call name="putRow">
-				<String>千克/小时</String>
-				<String>千克/秒</String>
-				<String>UCE / 3600</String>
-			</call>
-			
-			<call name="putRow">
 				<String>kg/h</String>
 				<String>kg/s</String>
 				<String>UCE / 3600</String>                     <!-- 千克/小时 to 千克/秒 -->
-			</call>
-			
-			<call name="putRow">
-				<String>千克/秒</String>
-				<String>千克/小时</String>
-				<String>UCE * 3600</String>
 			</call>
 			
 			<call name="putRow">

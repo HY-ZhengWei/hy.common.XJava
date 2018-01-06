@@ -1,5 +1,7 @@
 package org.hy.common.xml.plugins;
 
+import java.util.Map;
+
 import org.hy.common.Help;
 import org.hy.common.TablePartitionRID;
 import org.hy.common.app.Param;
@@ -27,6 +29,8 @@ import com.greenpineyu.fel.context.FelContext;
  * @version     v1.0
  *              v2.0  2017-08-01  添加：默认精度为9位小数。在配置文件中设定。
  *                                     原因是：0.45MPa.g转为MPa.a时，当无精度要求时为：0.5513250000000001。发现人：向以前同学
+ *              v3.0  2018-01-06  添加：1.单位别名转换功能。
+ *                                添加：2.基准单位，使同一类的单位间均能无限制的相互转换。
  */
 @Xjava(XType.XML) 
 public class UnitConvert
@@ -39,6 +43,12 @@ public class UnitConvert
      * 分区记录为：转换表达式
      */
     private static TablePartitionRID<String ,String> $UnitConvert;
+    
+    /** 单位别名 */
+    private static Map<String ,Param>                $Alias;
+    
+    /** 基准单位 */
+    private static Map<String ,Param>                $Standards;
     
     
     
@@ -258,7 +268,20 @@ public class UnitConvert
         
         init();
         
-        String v_Expression = $UnitConvert.getRow(i_SourceUnit ,i_TargetUnit);
+        String v_SourceUnit = alias(i_SourceUnit);
+        String v_TargetUnit = alias(i_TargetUnit);
+        Number v_Value      = i_Value;
+        
+        // 两个非基准单位间的转换，将基准单位这个中介机构间接转换  ZhengWei(HY) Add 2018-01-06
+        if ( !isStandardUnit(v_SourceUnit) 
+          && !isStandardUnit(v_TargetUnit) )
+        {
+            String v_StandardUnit = toStandardUnit(v_SourceUnit);
+            v_Value = UnitConvert.convert(v_SourceUnit ,v_StandardUnit ,i_Digit ,v_Value ,i_Others);
+            v_SourceUnit = v_StandardUnit;
+        }
+        
+        String v_Expression = $UnitConvert.getRow(v_SourceUnit ,v_TargetUnit);
         
         if ( Help.isNull(v_Expression) )
         {
@@ -267,7 +290,7 @@ public class UnitConvert
         
         FelEngine  v_Fel        = new FelEngineImpl();
         FelContext v_FelContext = v_Fel.getContext();
-        v_FelContext.set("UCE" ,i_Value);
+        v_FelContext.set("UCE" ,v_Value);
         if ( !Help.isNull(i_Others) )
         {
             for (int i=0; i<i_Others.length; i++)
@@ -286,6 +309,84 @@ public class UnitConvert
         else
         {
             return Help.round((Number)v_Fel.eval(v_Expression) ,i_Digit);
+        }
+    }
+    
+    
+    
+    /**
+     * 单位别名转换
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-06
+     * @version     v1.0
+     *
+     * @param i_Unit
+     * @return
+     */
+    private static String alias(String i_Unit)
+    {
+        Param v_Alias = $Alias.get(i_Unit);
+        
+        if ( v_Alias == null )
+        {
+            return i_Unit;
+        }
+        else
+        {
+            return v_Alias.getValue();
+        }
+    }
+    
+    
+    
+    /**
+     * 是否为基准单位
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-06
+     * @version     v1.0
+     *
+     * @param i_Unit
+     * @return
+     */
+    private static boolean isStandardUnit(String i_Unit)
+    {
+        Param v_Unit = $Standards.get(i_Unit);
+        
+        if ( v_Unit == null )
+        {
+            return true;
+        }
+        else
+        {
+            return v_Unit.getValue().equalsIgnoreCase(i_Unit);
+        }
+    }
+    
+    
+    
+    /**
+     * 获取基准单位
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-06
+     * @version     v1.0
+     *
+     * @param i_Unit
+     * @return
+     */
+    private static String toStandardUnit(String i_Unit)
+    {
+        Param v_Unit = $Standards.get(i_Unit);
+        
+        if ( v_Unit == null )
+        {
+            return i_Unit;
+        }
+        else
+        {
+            return v_Unit.getValue();
         }
     }
     
@@ -339,6 +440,8 @@ public class UnitConvert
             }
             
             $UnitConvert = (TablePartitionRID<String ,String>)XJava.getObject("UnitConvertExpressions");
+            $Alias       = (Map<String ,Param>)               XJava.getObject("UnitConvertAlias");
+            $Standards   = (Map<String ,Param>)               XJava.getObject("UnitConvertStandards");
         }
     }
     
