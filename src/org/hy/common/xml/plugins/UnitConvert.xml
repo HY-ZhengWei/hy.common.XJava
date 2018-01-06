@@ -646,6 +646,21 @@
 			
 			
 			
+			<!-- 分子量相关 -->
+			<call name="putRow">
+				<String>标准密度</String>
+				<String>分子量</String>
+				<String>UCE * 22.4</String>
+			</call>
+			
+			<call name="putRow">
+				<String>kg/Nm^3</String>
+				<String>Dalton</String>
+				<String>UCE * 22.4</String>   <!-- 分子量：标准密度 to 分子量 -->
+			</call>
+			
+			
+			
 			<!-- 分子量相关的流量单位（有三个入参） -->
 			<!-- P01: 入口温度 -->
 			<!-- P02: 阀前压力 -->
