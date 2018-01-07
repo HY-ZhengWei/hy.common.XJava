@@ -30,8 +30,14 @@
 			
 			
 			<!-- 长度单位 -->
-			<item><name>米</name><value>m</value></item>
+			<item><name>纳米</name><value>nm</value></item>
+			<item><name>微米</name><value>um</value></item>
 			<item><name>毫米</name><value>mm</value></item>
+			<item><name>厘米</name><value>cm</value></item>
+			<item><name>米</name><value>m</value></item>
+			<item><name>千米</name><value>km</value></item>
+			<item><name>英寸</name><value>in</value></item>
+			<item><name>inch</name><value>in</value></item>
 			
 			
 			<!-- 压力单位 -->
@@ -80,8 +86,13 @@
 			
 			
 			<!-- 长度单位 -->
-			<item><value>m</value><name>m</name></item>
-			<item><value>m</value><name>mm</name></item>
+			<item><value>mm</value><name>mm</name></item>
+			<item><value>mm</value><name>um</name></item>
+			<item><value>mm</value><name>nm</name></item>
+			<item><value>mm</value><name>cm</name></item>
+			<item><value>mm</value><name>m</name></item>
+			<item><value>mm</value><name>km</name></item>
+			<item><value>mm</value><name>in</name></item>
 			
 			
 			<!-- 压力单位 -->
@@ -163,6 +174,18 @@
 			<!-- 长度单位 -->
 			<call name="putRow">
 				<String>mm</String>
+				<String>km</String>
+				<String>UCE * 0.000001</String>                 <!-- 毫米 to 千米 -->
+			</call>
+			
+			<call name="putRow">
+				<String>km</String>
+				<String>mm</String>
+				<String>UCE * 1000000</String>                  <!-- 千米 to 毫米 -->
+			</call>
+			
+			<call name="putRow">
+				<String>mm</String>
 				<String>m</String>
 				<String>UCE * 0.001</String>                    <!-- 毫米 to 米 -->
 			</call>
@@ -171,6 +194,54 @@
 				<String>m</String>
 				<String>mm</String>
 				<String>UCE * 1000</String>                     <!-- 米 to 毫米 -->
+			</call>
+			
+			<call name="putRow">
+				<String>mm</String>
+				<String>cm</String>
+				<String>UCE * 0.1</String>                      <!-- 毫米 to 厘米 -->
+			</call>
+			
+			<call name="putRow">
+				<String>cm</String>
+				<String>mm</String>
+				<String>UCE * 10</String>                       <!-- 厘米 to 毫米 -->
+			</call>
+			
+			<call name="putRow">
+				<String>mm</String>
+				<String>um</String>
+				<String>UCE * 1000</String>                     <!-- 毫米 to 微米 -->
+			</call>
+			
+			<call name="putRow">
+				<String>um</String>
+				<String>mm</String>
+				<String>UCE * 0.001</String>                    <!-- 微米 to 毫米 -->
+			</call>
+			
+			<call name="putRow">
+				<String>mm</String>
+				<String>nm</String>
+				<String>UCE * 1000000</String>                  <!-- 毫米 to 纳米 -->
+			</call>
+			
+			<call name="putRow">
+				<String>nm</String>
+				<String>mm</String>
+				<String>UCE * 0.000001</String>                 <!-- 纳米 to 毫米 -->
+			</call>
+			
+			<call name="putRow">
+				<String>mm</String>
+				<String>in</String>
+				<String>UCE / 25.4</String>                     <!-- 毫米 to 英寸 -->
+			</call>
+			
+			<call name="putRow">
+				<String>in</String>
+				<String>mm</String>
+				<String>UCE * 25.4</String>                     <!-- 英寸 to 毫米 -->
 			</call>
 			
 			
