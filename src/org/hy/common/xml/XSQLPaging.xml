@@ -11,6 +11,7 @@
 	<sqls>
 		
 		<!-- 查询MYSQL的分页模板SQL -->
+		<!-- :StartIndex  下标从0开始 -->
 		<sql id="XSQLPaging_MYSQL">
 		
 			<value>
@@ -23,6 +24,7 @@
 		
 		
 		<!-- 查询SQLite的分页模板SQL -->
+		<!-- :StartIndex  下标从0开始 -->
 		<sql id="XSQLPaging_SQLITE">
 		
 			<value>
@@ -35,6 +37,7 @@
 		
 		
 		<!-- 查询PostgreSQL的分页模板SQL -->
+		<!-- :StartIndex  下标从0开始 -->
 		<sql id="XSQLPaging_POSTGRESQL">
 		
 			<value>
@@ -47,6 +50,7 @@
 		
 		
 		<!-- 查询Oracle的分页模板SQL -->
+		<!-- :StartIndex  下标从0开始 -->
 		<sql id="XSQLPaging_ORACLE">
 		
 			<value>
@@ -75,6 +79,8 @@
 		      
 		      此分页只支持SQL2005后的版本
 		-->
+		<!-- :StartIndex  下标从0开始 -->
+		<!-- 2018-01-08 李浩发现未添加 ORDER BY 时排序不正确的问题  -->
 		<sql id="XSQLPaging_SQLSERVER">
 		
 			<value>
@@ -82,6 +88,7 @@
 					SELECT  TOP :PagePerCount HYPaging.*
 					  FROM ( :SQLPaging )  HYPaging
 					 WHERE  HYPaging.rowNumber > :StartIndex
+					 ORDER  BY HYPaging.rowNumber
 				]]>
 			</value>
 			
@@ -97,6 +104,7 @@
 		      
 		      同时，:SQLPaging的最外层SQL不能有ORDER BY，因为排序已写在 OVER(...)中了。
 		-->
+		<!-- :StartIndex  下标从0开始 -->
 		<sql id="XSQLPaging_DB2">
 		
 			<value>

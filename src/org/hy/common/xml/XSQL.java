@@ -431,6 +431,8 @@ public final class XSQL implements Comparable<XSQL>
      * 
      * 与游标分页查询相比，其性能是很高的。
      * 
+     * SQL语句中的占位符 :StartIndex 下标从0开始
+     * 
      * @author      ZhengWei(HY)
      * @createDate  2016-02-22
      * @version     v1.0
@@ -452,6 +454,8 @@ public final class XSQL implements Comparable<XSQL>
      * 
      * 与游标分页查询相比，其性能是很高的。
      * 
+     * SQL语句中的占位符 :StartIndex 下标从0开始
+     * 
      * @author      ZhengWei(HY)
      * @createDate  2016-02-22
      * @version     v1.0
@@ -472,6 +476,8 @@ public final class XSQL implements Comparable<XSQL>
      * 本方法并不真的执行查询，而是获取一个分页查询的XSQL对象。
      * 
      * 与游标分页查询相比，其性能是很高的。
+     * 
+     * SQL语句中的占位符 :StartIndex 下标从0开始
      * 
      * @author      ZhengWei(HY)
      * @createDate  2016-02-22
@@ -496,6 +502,8 @@ public final class XSQL implements Comparable<XSQL>
      * 本方法并不真的执行查询，而是获取一个分页查询的XSQL对象。
      * 
      * 与游标分页查询相比，其性能是很高的。
+     * 
+     * SQL语句中的占位符 :StartIndex 下标从0开始
      * 
      * @author      ZhengWei(HY)
      * @createDate  2016-02-22
