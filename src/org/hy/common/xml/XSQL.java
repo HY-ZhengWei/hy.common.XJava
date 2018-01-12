@@ -91,6 +91,7 @@ import org.hy.common.xml.event.BLobEvent;
  *              v8.0  2017-12-19  添加：将参数效验检查抛出的异常，也包括在try{}cacth{}内，自己抛出自己捕获，并记录在统计数据中。
  *                                     记录完成后再向外抛出。
  *                                     方便异常定位页面统计数据：http://IP:Port/服务名/analyses/analyseDB
+ *              v9.0  2018-01-12  添加：实现服务启动时检查并创建数据库对象(如数据库表)，已存在不创建。
  */
 /*
  * 游标类型的说明
@@ -111,6 +112,9 @@ public final class XSQL implements Comparable<XSQL>
     
     /** SQL类型。F: 函数 */
     public  static final String            $Type_Function  = "F";
+    
+    /** SQL类型。C：DML创建表，创建对象等 */
+    public  static final String            $Type_Create    = "C";
     
     /** SQL执行日志。默认只保留1000条执行过的SQL语句 */
     public  static final Busway<XSQLLog>   $SQLBusway      = new Busway<XSQLLog>(1000);
@@ -172,8 +176,19 @@ public final class XSQL implements Comparable<XSQL>
      * N: 增、删、改、查的普通SQL语句  (默认值)
      * P: 存储过程
      * F: 函数
+     * C: DML创建表，创建对象等
      */
     private String                         type;
+    
+    /** 
+     * 创建对象的名称。如表名称。
+     * 
+     * 此属性为动作方法，即this.setCreate(...)时，将尝试创建对象(当对象不存在时)。
+     * 也因为是动作方法，所以在设置本属性前dataSourceGroup、content它两属性应当已设置OK。
+     * 
+     * 实现服务启动时检查并创建数据库对象(如数据库表)，已存在不创建。
+     */
+    private String                         create;
     
     /** 当调用存储过程或函数时的参数对象 */
     private List<XSQLCallParam>            callParams;
@@ -228,6 +243,7 @@ public final class XSQL implements Comparable<XSQL>
 		this.trigger           = null;
 		this.blobSafe          = false;
         this.type              = $Type_NormalSQL;
+        this.create            = null;
         this.callParamInCount  = 0;
         this.callParamOutCount = 0;
         this.batchCommit       = 0;
@@ -3372,6 +3388,10 @@ public final class XSQL implements Comparable<XSQL>
 		}
 		catch (Exception exce)
 		{
+		    if ( v_Event == null )
+		    {
+		        v_Event = new DefaultBLobEvent(this ,0);
+		    }
 			v_Event.setEndTime();
 			erroring(i_SQL ,exce ,this);
 			throw new RuntimeException(exce.getMessage());
@@ -3510,7 +3530,7 @@ public final class XSQL implements Comparable<XSQL>
 	    byte []             v_ByteBuffer  = new byte[$BufferSize];
 		int                 v_DataLen     = 0;
 		boolean             v_ExecResult  = false;
-		DefaultBLobEvent    v_Event       = null;
+		DefaultBLobEvent    v_Event       = new DefaultBLobEvent(this);
 		long                v_BLobingSize = 0;
 		boolean             v_IsContinue  = true;
 		long                v_BeginTime   = this.request().getTime();
@@ -3533,7 +3553,6 @@ public final class XSQL implements Comparable<XSQL>
 	            throw new NullPointerException("SaveFile is null of XSQL.");
 	        }
 		    
-	        v_Event     = new DefaultBLobEvent(this);
 			v_Conn      = this.getConnection();
 			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 			v_ResultSet = v_Statement.executeQuery(i_SQL);
@@ -4842,6 +4861,75 @@ public final class XSQL implements Comparable<XSQL>
     
     
     /**
+     * 获取：创建对象的名称。如表名称。
+     * 
+     * 此属性为动作方法，即this.setCreate(...)时，将尝试创建对象(当对象不存在时)。
+     * 也因为是动作方法，所以在设置本属性前dataSourceGroup、content它两属性应当已设置OK。
+     */
+    public String getCreateObjectName()
+    {
+        return create;
+    }
+    
+    
+    
+    /**
+     * 创建对象。如创建表。
+     * 
+     * 此属性为动作方法，即this.setCreate(...)时，将尝试创建对象(当对象不存在时)。
+     * 也因为是动作方法，所以在设置本属性前dataSourceGroup、content它两属性应当已设置OK。
+     * 
+     * 实现服务启动时检查并创建数据库对象(如数据库表)，已存在不创建。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-12
+     * @version     v1.0
+     *
+     * @param i_CreateObjectName
+     */
+    public synchronized void setCreate(String i_CreateObjectName)
+    {
+        this.create = i_CreateObjectName.trim();
+        this.type   = $Type_Create;
+        
+        
+        if ( null == this.dataSourceGroup )
+        {
+            throw new NullPointerException("DataSourceGroup is null.");
+        }
+        else if ( null == this.content )
+        {
+            throw new NullPointerException("SQL content(DBSQL) is null.");
+        }
+        else if ( Help.isNull(this.create) )
+        {
+            throw new NullPointerException("CreateObjectName is null.");
+        }
+        else if ( !this.getContent().getSqlText().toUpperCase().contains(this.create.toUpperCase()) )
+        {
+            // 简单的检查创建的对象名称，是否在执行SQL语句中存在
+            throw new RuntimeException("CreateObjectName is invalid.");
+        }
+        
+        try
+        {
+            XSQLDBMetadata v_XSQLDBMetadata = new XSQLDBMetadata();
+            boolean        v_IsExistsTable  = v_XSQLDBMetadata.isExistsTable(this);
+            
+            if ( !v_IsExistsTable )
+            {
+                this.execute();
+            }
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+        }
+    }
+    
+
+
+    /**
      * 获取：数据库连接的域
      * 
      * 它可与 this.dataSourceGroup 同时存在值，但 this.domain 的优先级高。
@@ -4921,9 +5009,10 @@ public final class XSQL implements Comparable<XSQL>
         
         if ( !$Type_NormalSQL.equals(i_Type)
           && !$Type_Procedure.equals(i_Type)
-          && !$Type_Function.equals(i_Type) )
+          && !$Type_Function .equals(i_Type)
+          && !$Type_Create   .equals(i_Type) )
         {
-            throw new IllegalArgumentException("Type is not 'N' or 'P' or 'F' of XSQL.");
+            throw new IllegalArgumentException("Type is not 'N' or 'P' or 'F' or 'C' of XSQL.");
         }
         
         this.type = i_Type;

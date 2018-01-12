@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="sqls"            class="java.util.ArrayList" />
+	<import name="sql"             class="org.hy.common.xml.XSQL" />
+
+
+
+    <!-- 数据库元数据模块的相关SQL -->
+	<sqls>
+		
+		<!-- 查询数据库ORACLE表的元数据信息（按表名称） -->
+		<sql id="XSQL_DBMetadata_QueryByName_ORACLE" new="true">
+		
+			<content>
+				<![CDATA[
+					SELECT  COUNT(1)
+					  FROM  User_Tables   A
+					 WHERE  UPPER(A.Table_Name) = UPPER(':objectName')
+				]]>
+			</content>
+			
+		</sql>
+		
+		
+		
+		<!-- 查询数据库MYSQL表的元数据信息（按表名称） -->
+		<sql id="XSQL_DBMetadata_QueryByName_MYSQL" new="true">
+		
+			<content>
+				<![CDATA[
+					SELECT  COUNT(1)
+                      FROM  INFORMATION_SCHEMA.Tables  A
+                     WHERE  UPPER(A.Table_Name) = UPPER(':objectName')
+				]]>
+			</content>
+			
+		</sql>
+		
+		
+		
+		<!-- 查询数据库SQLSERVER表的元数据信息（按表名称） -->
+		<sql id="XSQL_DBMetadata_QueryByName_SQLSERVER" new="true">
+		
+			<content>
+				<![CDATA[
+					SELECT  COUNT(1)
+                      FROM  SysObjects  A
+                     WHERE  A.XType       = 'U' 
+                       AND  UPPER(A.Name) = UPPER(':objectName')
+				]]>
+			</content>
+			
+		</sql>
+		
+		
+		
+		<!-- 查询数据库DB2表的元数据信息（按表名称） -->
+		<sql id="XSQL_DBMetadata_QueryByName_DB2" new="true">
+		
+			<content>
+				<![CDATA[
+					SELECT  COUNT(1)
+                      FROM  SysCat.Tables  A
+                     WHERE  A.TabSchema      = Current Schema 
+                       AND  UPPER(A.TabName) = UPPER(':objectName')
+				]]>
+			</content>
+			
+		</sql>
+		
+		
+		
+		<!-- 查询数据库SQLITE表的元数据信息（按表名称） -->
+		<sql id="XSQL_DBMetadata_QueryByName_SQLITE" new="true">
+		
+			<content>
+				<![CDATA[
+					SELECT  COUNT(1)
+                      FROM  Sqlite_Master  A
+                     WHERE  A.type        = 'table'
+                       AND  UPPER(A.name) = UPPER(':objectName')
+				]]>
+			</content>
+			
+		</sql>
+		
+		
+		
+		<!-- 查询数据库POSTGRESQL表的元数据信息（按表名称） -->
+		<sql id="XSQL_DBMetadata_QueryByName_POSTGRESQL" new="true">
+		
+			<content>
+				<![CDATA[
+					SELECT  COUNT(1)
+                      FROM  PG_Tables  A
+                     WHERE  A.schemaname       = 'public'
+                       AND  UPPER(A.tablename) = UPPER(':objectName')
+				]]>
+			</content>
+			
+		</sql>
+		
+	</sqls>
+	
+</config>
