@@ -92,6 +92,7 @@ import org.hy.common.xml.event.BLobEvent;
  *                                     记录完成后再向外抛出。
  *                                     方便异常定位页面统计数据：http://IP:Port/服务名/analyses/analyseDB
  *              v9.0  2018-01-12  添加：实现服务启动时检查并创建数据库对象(如数据库表)，已存在不创建。
+ *                                添加：execute()方法支持多条SQL语句的执行。
  */
 /*
  * 游标类型的说明
@@ -115,6 +116,9 @@ public final class XSQL implements Comparable<XSQL>
     
     /** SQL类型。C：DML创建表，创建对象等 */
     public  static final String            $Type_Create    = "C";
+    
+    /** execute()方法中执行多条SQL语句的分割符 */
+    public  static final String            $Executes_Split = ";/";
     
     /** SQL执行日志。默认只保留1000条执行过的SQL语句 */
     public  static final Busway<XSQLLog>   $SQLBusway      = new Busway<XSQLLog>(1000);
@@ -3776,6 +3780,7 @@ public final class XSQL implements Comparable<XSQL>
 		Connection v_Conn      = null;
 		Statement  v_Statement = null;
 		long       v_BeginTime = this.request().getTime();
+		String     v_SQL       = i_SQL;
 		
 		try
 		{
@@ -3784,7 +3789,7 @@ public final class XSQL implements Comparable<XSQL>
 	            throw new RuntimeException("DataSourceGroup is not valid.");
 	        }
 	        
-	        if ( Help.isNull(i_SQL) )
+	        if ( Help.isNull(v_SQL) )
 	        {
 	            throw new NullPointerException("SQL is null of XSQL.");
 	        }
@@ -3792,15 +3797,21 @@ public final class XSQL implements Comparable<XSQL>
 			v_Conn      = this.getConnection();
 			v_Statement = v_Conn.createStatement();
 			
-			v_Statement.execute(i_SQL);
-			$SQLBusway.put(new XSQLLog(i_SQL));
+			String [] v_SQLs = v_SQL.split($Executes_Split);
+			for (int i=0; i<v_SQLs.length; i++)
+			{
+			    v_SQL = v_SQLs[i];
+			    v_Statement.execute(v_SQL.trim());
+			    $SQLBusway.put(new XSQLLog(v_SQL.trim()));
+			}
+			
 			this.success(Date.getNowTime().getTime() - v_BeginTime);
 			
 			return true;
 		}
 		catch (Exception exce)
 		{
-		    erroring(i_SQL ,exce ,this);
+		    erroring(v_SQL ,exce ,this);
 			throw new RuntimeException(exce.getMessage());
 		}
 		finally
@@ -4918,11 +4929,21 @@ public final class XSQL implements Comparable<XSQL>
             
             if ( !v_IsExistsTable )
             {
-                this.execute();
+                boolean v_Ret = this.execute();
+                
+                if ( v_Ret )
+                {
+                    System.out.println("Create object[" + this.create + "] OK.");
+                }
+                else
+                {
+                    System.err.println("Create object[" + this.create + "] Error.");
+                }
             }
         }
         catch (Exception exce)
         {
+            System.err.println("Create object[" + this.create + "] Error.");
             exce.printStackTrace();
         }
     }
