@@ -3800,9 +3800,9 @@ public final class XSQL implements Comparable<XSQL>
 			String [] v_SQLs = v_SQL.split($Executes_Split);
 			for (int i=0; i<v_SQLs.length; i++)
 			{
-			    v_SQL = v_SQLs[i];
-			    v_Statement.execute(v_SQL.trim());
-			    $SQLBusway.put(new XSQLLog(v_SQL.trim()));
+			    v_SQL = v_SQLs[i].trim();
+			    v_Statement.execute(v_SQL);
+			    $SQLBusway.put(new XSQLLog(v_SQL));
 			}
 			
 			this.success(Date.getNowTime().getTime() - v_BeginTime);
@@ -4925,9 +4925,9 @@ public final class XSQL implements Comparable<XSQL>
         try
         {
             XSQLDBMetadata v_XSQLDBMetadata = new XSQLDBMetadata();
-            boolean        v_IsExistsTable  = v_XSQLDBMetadata.isExistsTable(this);
+            boolean        v_IsExists       = v_XSQLDBMetadata.isExists(this);
             
-            if ( !v_IsExistsTable )
+            if ( !v_IsExists )
             {
                 boolean v_Ret = this.execute();
                 

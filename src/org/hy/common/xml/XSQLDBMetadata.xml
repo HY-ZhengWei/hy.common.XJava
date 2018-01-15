@@ -10,14 +10,14 @@
     <!-- 数据库元数据模块的相关SQL -->
 	<sqls>
 		
-		<!-- 查询数据库ORACLE表的元数据信息（按表名称） -->
+		<!-- 查询数据库ORACLE表、视图、索引、函数、过程、触发器、序列的元数据信息（按名称） -->
 		<sql id="XSQL_DBMetadata_QueryByName_ORACLE" new="true">
 		
 			<content>
 				<![CDATA[
 					SELECT  COUNT(1)
-					  FROM  User_Tables   A
-					 WHERE  UPPER(A.Table_Name) = UPPER(':objectName')
+					  FROM  User_Objects  A
+					 WHERE  UPPER(A.Object_Name) = UPPER(':objectName')
 				]]>
 			</content>
 			
@@ -25,14 +25,31 @@
 		
 		
 		
-		<!-- 查询数据库MYSQL表的元数据信息（按表名称） -->
+		<!-- 查询数据库MYSQL表、视图、函数、过程、触发器的元数据信息（按名称） -->
 		<sql id="XSQL_DBMetadata_QueryByName_MYSQL" new="true">
 		
 			<content>
 				<![CDATA[
-					SELECT  COUNT(1)
-                      FROM  INFORMATION_SCHEMA.Tables  A
-                     WHERE  UPPER(A.Table_Name) = UPPER(':objectName')
+                SELECT  COUNT(1)
+                  FROM  (
+                          SELECT  Table_Name      AS ObjectName
+                                 ,Table_Schema    AS DBName 
+                           FROM  INFORMATION_SCHEMA.Tables  
+                          UNION  ALL
+                          SELECT  Table_Name      AS ObjectName
+                                 ,Table_Schema    AS DBName 
+                           FROM  INFORMATION_SCHEMA.Views  
+                          UNION  ALL
+                          SELECT  Trigger_Name    AS ObjectName
+                                 ,Trigger_Schema  AS DBName 
+                           FROM  INFORMATION_SCHEMA.Triggers 
+                          UNION  ALL
+                          SELECT  Routine_Name    AS ObjectName
+                                 ,Routine_Schema  AS DBName 
+                           FROM  INFORMATION_SCHEMA.Routines
+                        )  A
+                 WHERE  A.DBName            = Database()
+                   AND  UPPER(A.ObjectName) = UPPER(':objectName')
 				]]>
 			</content>
 			
@@ -40,15 +57,14 @@
 		
 		
 		
-		<!-- 查询数据库SQLSERVER表的元数据信息（按表名称） -->
+		<!-- 查询数据库SQLSERVER表、视图、函数、过程、触发器、Check约束、外键约束、主键约束的元数据信息（按名称） -->
 		<sql id="XSQL_DBMetadata_QueryByName_SQLSERVER" new="true">
 		
 			<content>
 				<![CDATA[
 					SELECT  COUNT(1)
                       FROM  SysObjects  A
-                     WHERE  A.XType       = 'U' 
-                       AND  UPPER(A.Name) = UPPER(':objectName')
+                     WHERE  UPPER(A.Name) = UPPER(':objectName')
 				]]>
 			</content>
 			
@@ -56,15 +72,31 @@
 		
 		
 		
-		<!-- 查询数据库DB2表的元数据信息（按表名称） -->
+		<!-- 查询数据库DB2表、视图、函数、过程、触发器的元数据信息（按名称） -->
 		<sql id="XSQL_DBMetadata_QueryByName_DB2" new="true">
 		
 			<content>
 				<![CDATA[
-					SELECT  COUNT(1)
-                      FROM  SysCat.Tables  A
-                     WHERE  A.TabSchema      = Current Schema 
-                       AND  UPPER(A.TabName) = UPPER(':objectName')
+                SELECT  COUNT(1)
+                  FROM  (
+                          SELECT  TabName         AS ObjectName
+                                 ,TabSchema       AS DBName 
+                           FROM  SysCat.Tables
+                          UNION  ALL
+                          SELECT  ViewName        AS ObjectName
+                                 ,ViewSchema      AS DBName 
+                           FROM  SysCat.Views  
+                          UNION  ALL
+                          SELECT  TriggerName     AS ObjectName
+                                 ,TriggerSchema   AS DBName 
+                           FROM  SysCat.Triggers 
+                          UNION  ALL
+                          SELECT  RoutineName     AS ObjectName
+                                 ,RoutineSchema   AS DBName 
+                           FROM  SysCat.Routines
+                        )  A
+                 WHERE  A.DBName            = Current Schema
+                   AND  UPPER(A.ObjectName) = UPPER(':objectName')
 				]]>
 			</content>
 			
@@ -72,15 +104,14 @@
 		
 		
 		
-		<!-- 查询数据库SQLITE表的元数据信息（按表名称） -->
+		<!-- 查询数据库SQLITE表、索引、唯一约束、主键约束的元数据信息（按名称） -->
 		<sql id="XSQL_DBMetadata_QueryByName_SQLITE" new="true">
 		
 			<content>
 				<![CDATA[
 					SELECT  COUNT(1)
                       FROM  Sqlite_Master  A
-                     WHERE  A.type        = 'table'
-                       AND  UPPER(A.name) = UPPER(':objectName')
+                     WHERE  UPPER(A.name) = UPPER(':objectName')
 				]]>
 			</content>
 			

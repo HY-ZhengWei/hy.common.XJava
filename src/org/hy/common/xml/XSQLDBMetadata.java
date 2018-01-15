@@ -37,7 +37,7 @@ public class XSQLDBMetadata
     
     
     /**
-     * 判定表是否存在。
+     * 判定对象是否存在。
      * 
      * 此不作过多的验证，交给使用者如XSQL.setCreate(...)来验证。
      * 
@@ -48,7 +48,7 @@ public class XSQLDBMetadata
      * @param i_XSQL
      * @return
      */
-    public boolean isExistsTable(XSQL i_XSQL)
+    public boolean isExists(XSQL i_XSQL)
     {
         XSQL                v_XSQLMetdata = XJava.getXSQL("XSQL_DBMetadata_QueryByName_" + i_XSQL.getDataSourceGroup().getDbProductType());
         Map<String ,String> v_Params      = new HashMap<String ,String>();

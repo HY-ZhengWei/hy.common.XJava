@@ -1,5 +1,5 @@
 Manifest-Version: 3.9.6
 Created-By: HY.ZhengWei@qq.com  2011
-Specification-Version: 3.9.6 2018-01-12
+Specification-Version: 3.9.6 2018-01-15
 SourceCode: https://github.com/HY-ZhengWei/XJava
 Build-JDK: 1.6
