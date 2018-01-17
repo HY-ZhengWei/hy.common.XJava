@@ -34,6 +34,7 @@ import org.hy.common.StringHelp;
  *              v4.0  2016-01-26  添加：行级对象填充到表级对象时，在填充之前触发的事件接口（fillEvent）
  *              v5.0  2017-03-02  添加：支持一对多关系的对象填充功能。在使用时，须对SQL按一对多关系排序
  *              v5.1  2017-07-17  修正：在SQL结构改变时(只发生在超级SQL上)，须重新解释字段信息时，未能重新设置 dbMetaData 的问题。
+ *              v6.0  2018-01-17  添加：getBigDatas()系列关于大数据操作的方法
  */
 public final class XSQLResult 
 {
@@ -282,6 +283,24 @@ public final class XSQLResult
 	}
 	
 	
+	
+	/**
+	 * 将数据库结果集转化为Java实例对象（大数据）
+	 * 
+	 * @author      ZhengWei(HY)
+	 * @createDate  2018-01-17
+	 * @version     v1.0
+	 *
+	 * @param i_ResultSet
+	 * @param i_XSQLBigData
+	 * @return
+	 */
+    public synchronized Object getBigDatas(ResultSet i_ResultSet ,XSQLBigData<?> i_XSQLBigData)
+    {
+        return this.getBigDatas(i_ResultSet ,0 ,null ,null  ,0 ,0 ,i_XSQLBigData);
+    }
+    
+    
 	
 	/**
 	 * 将数据库结果集转化为Java实例对象 -- 超级大结果集的转换
@@ -717,6 +736,608 @@ public final class XSQLResult
 		
 		return v_Table;
 	}
+	
+	
+	
+	/**
+     * 将数据库结果集转化为Java实例对象(私有的)
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-17
+     * @version     v1.0
+     * 
+     * @param i_ResultSet
+     * @param i_FilterType       过滤类型。0: 无过滤填充
+     *                                   1: 按输出字段名称过滤填充
+     *                                   2: 按输出字段位置过滤填充
+     *                             
+     * @param i_FilterColNames   过滤输出字段。只对结果集输出字段在这个集合 i_FilterColNames 中的字段才进行填充动作，即输出列可选择。
+     * @param i_FilterColNoArr   过滤输出字段的位置。字段位置下标从零开始。只对结果集输出字段在这个数组 i_FilterColNoArr 中的字段才进行填充动作，即输出列可选择。
+     * @param i_StartRow         开始读取的行号。下标从0开始。
+     * @param i_PagePerSize      每页显示多少条数据。只有大于0时，游标分页功能才生效。
+     * @param i_XSQLBigData      大数据接口
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private Object getBigDatas(ResultSet      i_ResultSet 
+                              ,int            i_FilterType 
+                              ,List<String>   i_FilterColNames 
+                              ,int []         i_FilterColNoArr
+                              ,int            i_StartRow
+                              ,int            i_PagePerSize
+                              ,XSQLBigData<?> i_XSQLBigData
+                              )
+    {
+        if ( i_ResultSet == null )
+        {
+            throw new NullPointerException("ResultSet is null.");
+        }
+        
+        
+        Object v_Table       = null;
+        int [] v_ColArr      = null;
+        long   v_RowNo       = 0;
+        int    v_ColNo       = 0;
+        this.initTotalInfo();
+        
+        try
+        {
+            v_Table = this.newTableObject();
+            
+            if ( this.dbMetaData.getColumnSize() == 0 )
+            {
+                // 解释数据集元数据
+                this.dbMetaData.set(i_ResultSet.getMetaData());
+                
+                if ( this.cfillMethodType == $CFILL_METHOD_VARY )
+                {
+                    this.isAgainParse = true;
+                }
+            }
+            else
+            {
+                DBTableMetaData v_NewMetaData = new DBTableMetaData(this.cstyle);
+                v_NewMetaData.set(i_ResultSet.getMetaData());
+                
+                // 老的元数据与新的元数据不同时，必须重新"全量解释"
+                if ( !this.dbMetaData.equals(v_NewMetaData) )
+                {
+                    this.dbMetaData = v_NewMetaData;
+                    this.isAgainParse = true;
+                }
+            }
+            
+            
+            if ( this.isAgainParse )
+            {
+                this.parse();
+            }
+            
+            
+            
+            // 无输出字段过滤的情况
+            if ( i_FilterType == 0 || ((i_FilterColNames == null || i_FilterColNames.size() == 0) && (i_FilterColNoArr == null || i_FilterColNoArr.length == 0)) )
+            {
+                if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
+                {
+                    v_ColArr = new int[this.dbMetaData.getColumnSize()];
+                    for (int i=0; i<this.dbMetaData.getColumnSize(); i++)
+                    {
+                        v_ColArr[i] = i;
+                    }
+                }
+                else
+                {
+                    v_ColArr = new int[this.cfillMethodArr_ValidIndex.length];
+                    for (int i=0; i<this.cfillMethodArr_ValidIndex.length; i++)
+                    {
+                        v_ColArr[i] = this.cfillMethodArr_ValidIndex[i];
+                    }
+                }
+            }
+            else
+            {
+                // 解释用户指定的输出字段 -- 固定方法过滤
+                List<Integer> v_Temp_ColList = new ArrayList<Integer>();
+                
+                // 按输出字段名称过滤填充
+                if ( i_FilterType == 1 )
+                {
+                    for (int i=0; i<i_FilterColNames.size(); i++)
+                    {
+                        int v_Temp_ColNo = this.dbMetaData.getColumnIndex(i_FilterColNames.get(i).trim().toUpperCase());
+                        
+                        if ( v_Temp_ColNo != -1 )
+                        {
+                            v_Temp_ColList.add(Integer.valueOf(v_Temp_ColNo));
+                        }
+                    }
+                }
+                // 按输出字段位置过滤填充
+                else if ( i_FilterType == 2 )
+                {
+                    for (int i=0; i<i_FilterColNoArr.length; i++)
+                    {
+                        int v_Temp_ColNo = i_FilterColNoArr[i];
+                        if ( 0 <= v_Temp_ColNo && v_Temp_ColNo < this.dbMetaData.getColumnSize() )
+                        {
+                            v_Temp_ColList.add(Integer.valueOf(v_Temp_ColNo));
+                        }
+                    }
+                }
+                else
+                {
+                    // 如果代码执行到此，表示我的代码开发的有问题。
+                    throw new java.lang.RuntimeException("Inner code error.");
+                }
+                
+                
+                // 解释用户指定的输出字段 -- 变化方法过滤
+                if ( this.cfillMethodType == $CFILL_METHOD_VARY )
+                {
+                    for (int i=0; i<v_Temp_ColList.size(); i++)
+                    {
+                        int     v_Temp_ColNo   = v_Temp_ColList.get(i).intValue();
+                        boolean v_Temp_IsExist = false; 
+                        
+                        for (int j=0; j<this.cfillMethodArr_ValidIndex.length && !v_Temp_IsExist; j++)
+                        {
+                            if ( v_Temp_ColNo == this.cfillMethodArr_ValidIndex[j] )
+                            {
+                                v_Temp_IsExist = true;
+                            }
+                        }
+                        
+                        if ( !v_Temp_IsExist )
+                        {
+                            v_Temp_ColList.remove(i);
+                        }
+                    }
+                }
+                
+                // 解释用户指定的输出字段 -- 生成最终的过滤字段数组
+                v_ColArr = new int[v_Temp_ColList.size()];
+                for (int i=0; i<v_Temp_ColList.size(); i++)
+                {
+                    v_ColArr[i] = v_Temp_ColList.get(i).intValue();
+                }
+            }
+            
+            
+            
+            this.getDatasColSize      = v_ColArr.length;
+            Date    v_ExecBeginTime   = new Date();
+            Object  v_RowPrevious     = null;
+            Object  v_RowNext         = null;
+            Object  v_Row             = null;
+            boolean v_FillEventBefore = true;
+            
+            // 游标分页功能。那怕是一丁点的性能，不性代码的冗余
+            if ( i_PagePerSize > 0 )
+            {
+                int v_Count = 0;
+                /*
+                while ( v_Count < i_StartRow && i_ResultSet.next() ) 
+                {
+                    v_Count++;
+                }
+                v_Count = 0;
+                */
+                i_ResultSet.absolute(i_StartRow);
+                
+                // 不存在，行级对象填充到表级对象时的事件接口
+                if ( null == fillEvent )
+                {
+                    // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
+                    if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
+                    {
+                        if ( v_Count < i_PagePerSize && i_ResultSet.next() )
+                        {
+                            v_Row = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                Object v_ColValue = i_ResultSet.getObject(v_ColNo + 1);
+                                
+                                this.cfillMethodArr[0].invoke(v_Row ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
+                            }
+                            
+                            this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
+                            v_Count++;
+                        }
+                        
+                        while ( v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        {
+                            v_RowNext = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                Object v_ColValue = i_ResultSet.getObject(v_ColNo + 1);
+                                
+                                this.cfillMethodArr[0].invoke(v_RowNext ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
+                            }
+                            
+                            i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                            v_RowPrevious = v_Row;
+                            v_Row         = v_RowNext;
+                            
+                            this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
+                            v_Count++;
+                        }
+                    }
+                    // 列级对象填充到行级对象中行级对象的方法类型: 变化方法 -- setter(colValue)
+                    else
+                    {
+                        if ( v_Count < i_PagePerSize && i_ResultSet.next() )
+                        {
+                            v_Row = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                    
+                                Object v_ColValue = this.cfillMethodArr[v_ColNo].getResultSet_Getter().invoke(i_ResultSet ,v_ColNo + 1);
+                                    
+                                v_ColValue = this.cfillMethodArr[v_ColNo].getMachiningValue().getValue(v_ColValue);
+                                    
+                                // 最后的入参可是为null。原因是 setter(colValue) 方法的入参只有一个，且只能是 colValue，所以不需要字段名称
+                                this.cfillMethodArr[v_ColNo].invoke(v_Row ,v_ColValue ,v_ColNo ,null);
+                            }
+                            
+                            this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
+                            v_Count++;
+                        }
+                        
+                        while ( v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        {
+                            v_RowNext = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                    
+                                Object v_ColValue = this.cfillMethodArr[v_ColNo].getResultSet_Getter().invoke(i_ResultSet ,v_ColNo + 1);
+                                    
+                                v_ColValue = this.cfillMethodArr[v_ColNo].getMachiningValue().getValue(v_ColValue);
+                                    
+                                // 最后的入参可是为null。原因是 setter(colValue) 方法的入参只有一个，且只能是 colValue，所以不需要字段名称
+                                this.cfillMethodArr[v_ColNo].invoke(v_RowNext ,v_ColValue ,v_ColNo ,null);
+                            }
+                            
+                            i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                            v_RowPrevious = v_Row;
+                            v_Row         = v_RowNext;
+                            
+                            this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
+                            v_Count++;
+                        }
+                    }
+                }
+                // 外界用户定义了，行级对象填充到表级对象时的事件接口
+                else
+                {
+                    // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
+                    if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
+                    {
+                        v_FillEventBefore = false;
+                        while ( !v_FillEventBefore && v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        {
+                            v_Row = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                Object v_ColValue = i_ResultSet.getObject(v_ColNo + 1);
+                                
+                                this.cfillMethodArr[0].invoke(v_Row ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
+                            }
+                            
+                            v_FillEventBefore = this.fillEvent.before(v_Table ,v_Row ,v_RowNo ,v_RowPrevious);
+                            if ( v_FillEventBefore )
+                            {
+                                this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
+                            }
+                            v_Count++;
+                        }
+                        
+                        while ( v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        {
+                            v_RowNext = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                Object v_ColValue = i_ResultSet.getObject(v_ColNo + 1);
+                                
+                                this.cfillMethodArr[0].invoke(v_RowNext ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
+                            }
+                            
+                            v_FillEventBefore= this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
+                            if ( v_FillEventBefore )
+                            {
+                                i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                                v_RowPrevious = v_Row;
+                                v_Row         = v_RowNext;
+                                
+                                this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
+                            }
+                            v_Count++;
+                        }
+                    }
+                    // 列级对象填充到行级对象中行级对象的方法类型: 变化方法 -- setter(colValue)
+                    else
+                    {
+                        v_FillEventBefore = false;
+                        while ( !v_FillEventBefore && v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        {
+                            v_Row = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                    
+                                Object v_ColValue = this.cfillMethodArr[v_ColNo].getResultSet_Getter().invoke(i_ResultSet ,v_ColNo + 1);
+                                    
+                                v_ColValue = this.cfillMethodArr[v_ColNo].getMachiningValue().getValue(v_ColValue);
+                                    
+                                // 最后的入参可是为null。原因是 setter(colValue) 方法的入参只有一个，且只能是 colValue，所以不需要字段名称
+                                this.cfillMethodArr[v_ColNo].invoke(v_Row ,v_ColValue ,v_ColNo ,null);
+                            }
+                            
+                            v_FillEventBefore = this.fillEvent.before(v_Table ,v_Row ,v_RowNo ,v_RowPrevious);
+                            if ( v_FillEventBefore )
+                            {
+                                this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
+                            }
+                            v_Count++;
+                        }
+                        
+                        while ( v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        {
+                            v_RowNext = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                    
+                                Object v_ColValue = this.cfillMethodArr[v_ColNo].getResultSet_Getter().invoke(i_ResultSet ,v_ColNo + 1);
+                                    
+                                v_ColValue = this.cfillMethodArr[v_ColNo].getMachiningValue().getValue(v_ColValue);
+                                    
+                                // 最后的入参可是为null。原因是 setter(colValue) 方法的入参只有一个，且只能是 colValue，所以不需要字段名称
+                                this.cfillMethodArr[v_ColNo].invoke(v_RowNext ,v_ColValue ,v_ColNo ,null);
+                            }
+                            
+                            v_FillEventBefore = this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
+                            if ( v_FillEventBefore )
+                            {
+                                i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                                v_RowPrevious = v_Row;
+                                v_Row         = v_RowNext;
+
+                                this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
+                            }
+                            v_Count++;
+                        }
+                    }
+                }
+            }
+            // 非游标分页功能。那怕是一丁点的性能，不性代码的冗余
+            else
+            {
+                // 不存在，行级对象填充到表级对象时的事件接口
+                if ( null == fillEvent )
+                {
+                    // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
+                    if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
+                    {
+                        if ( i_ResultSet.next() ) 
+                        {
+                            v_Row = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                Object v_ColValue = i_ResultSet.getObject(v_ColNo + 1);
+                                
+                                this.cfillMethodArr[0].invoke(v_Row ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
+                            }
+                            
+                            this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
+                        }
+                        
+                        while ( i_ResultSet.next() ) 
+                        {
+                            v_RowNext = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                Object v_ColValue = i_ResultSet.getObject(v_ColNo + 1);
+                                
+                                this.cfillMethodArr[0].invoke(v_RowNext ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
+                            }
+                            
+                            i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                            v_RowPrevious = v_Row;
+                            v_Row         = v_RowNext;
+                            
+                            this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
+                        }
+                    }
+                    // 列级对象填充到行级对象中行级对象的方法类型: 变化方法 -- setter(colValue)
+                    else
+                    {
+                        if ( i_ResultSet.next() ) 
+                        {
+                            v_Row = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                    
+                                Object v_ColValue = this.cfillMethodArr[v_ColNo].getResultSet_Getter().invoke(i_ResultSet ,v_ColNo + 1);
+                                    
+                                v_ColValue = this.cfillMethodArr[v_ColNo].getMachiningValue().getValue(v_ColValue);
+                                    
+                                // 最后的入参可是为null。原因是 setter(colValue) 方法的入参只有一个，且只能是 colValue，所以不需要字段名称
+                                this.cfillMethodArr[v_ColNo].invoke(v_Row ,v_ColValue ,v_ColNo ,null);
+                            }
+                            
+                            this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
+                        }
+                        
+                        while ( i_ResultSet.next() ) 
+                        {
+                            v_RowNext = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                    
+                                Object v_ColValue = this.cfillMethodArr[v_ColNo].getResultSet_Getter().invoke(i_ResultSet ,v_ColNo + 1);
+                                    
+                                v_ColValue = this.cfillMethodArr[v_ColNo].getMachiningValue().getValue(v_ColValue);
+                                    
+                                // 最后的入参可是为null。原因是 setter(colValue) 方法的入参只有一个，且只能是 colValue，所以不需要字段名称
+                                this.cfillMethodArr[v_ColNo].invoke(v_RowNext ,v_ColValue ,v_ColNo ,null);
+                            }
+                            
+                            i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                            v_RowPrevious = v_Row;
+                            v_Row         = v_RowNext;
+                            
+                            this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
+                        }
+                    }
+                }
+                // 外界用户定义了，行级对象填充到表级对象时的事件接口
+                else
+                {
+                    // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
+                    if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
+                    {
+                        v_FillEventBefore = false;
+                        while ( !v_FillEventBefore && i_ResultSet.next() ) 
+                        {
+                            v_Row = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                Object v_ColValue = i_ResultSet.getObject(v_ColNo + 1);
+                                
+                                this.cfillMethodArr[0].invoke(v_Row ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
+                            }
+                            
+                            v_FillEventBefore = this.fillEvent.before(v_Table ,v_Row ,v_RowNo ,v_RowPrevious);
+                            if ( v_FillEventBefore )
+                            {
+                                this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
+                            }
+                        }
+                        
+                        while ( i_ResultSet.next() ) 
+                        {
+                            v_RowNext = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                Object v_ColValue = i_ResultSet.getObject(v_ColNo + 1);
+                                
+                                this.cfillMethodArr[0].invoke(v_RowNext ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
+                            }
+                            
+                            v_FillEventBefore= this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
+                            if ( v_FillEventBefore )
+                            {
+                                i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                                v_RowPrevious = v_Row;
+                                v_Row         = v_RowNext;
+                                
+                                this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
+                            }
+                        }
+                    }
+                    // 列级对象填充到行级对象中行级对象的方法类型: 变化方法 -- setter(colValue)
+                    else
+                    {
+                        v_FillEventBefore = false;
+                        while ( !v_FillEventBefore && i_ResultSet.next() ) 
+                        {
+                            v_Row = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                    
+                                Object v_ColValue = this.cfillMethodArr[v_ColNo].getResultSet_Getter().invoke(i_ResultSet ,v_ColNo + 1);
+                                    
+                                v_ColValue = this.cfillMethodArr[v_ColNo].getMachiningValue().getValue(v_ColValue);
+                                    
+                                // 最后的入参可是为null。原因是 setter(colValue) 方法的入参只有一个，且只能是 colValue，所以不需要字段名称
+                                this.cfillMethodArr[v_ColNo].invoke(v_Row ,v_ColValue ,v_ColNo ,null);
+                            }
+                            
+                            v_FillEventBefore = this.fillEvent.before(v_Table ,v_Row ,v_RowNo ,v_RowPrevious);
+                            if ( v_FillEventBefore )
+                            {
+                                this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
+                            }
+                        }
+                        
+                        while ( i_ResultSet.next() ) 
+                        {
+                            v_RowNext = this.newRowObject();
+                            
+                            for (int i=0; i<v_ColArr.length; i++)
+                            {
+                                v_ColNo = v_ColArr[i];
+                                    
+                                Object v_ColValue = this.cfillMethodArr[v_ColNo].getResultSet_Getter().invoke(i_ResultSet ,v_ColNo + 1);
+                                    
+                                v_ColValue = this.cfillMethodArr[v_ColNo].getMachiningValue().getValue(v_ColValue);
+                                    
+                                // 最后的入参可是为null。原因是 setter(colValue) 方法的入参只有一个，且只能是 colValue，所以不需要字段名称
+                                this.cfillMethodArr[v_ColNo].invoke(v_RowNext ,v_ColValue ,v_ColNo ,null);
+                            }
+                            
+                            v_FillEventBefore = this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
+                            if ( v_FillEventBefore )
+                            {
+                                i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                                v_RowPrevious = v_Row;
+                                v_Row         = v_RowNext;
+                                
+                                this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if ( v_Row != null && v_FillEventBefore )
+            {
+                v_RowNext = null;
+                i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+            }
+            
+            this.getDatasTimes   = (new Date()).getTime() - v_ExecBeginTime.getTime();
+            this.getDatasRowSize = v_RowNo;
+        }
+        catch (Exception exce)
+        {
+            this.getDatasTimes   = -1;
+            this.getDatasRowSize = v_RowNo;
+            
+            throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  " + exce.getMessage());
+        }
+        
+        return v_Table;
+    }
 	
 	
 	

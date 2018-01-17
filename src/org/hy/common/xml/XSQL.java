@@ -93,6 +93,7 @@ import org.hy.common.xml.event.BLobEvent;
  *                                     方便异常定位页面统计数据：http://IP:Port/服务名/analyses/analyseDB
  *              v9.0  2018-01-12  添加：实现服务启动时检查并创建数据库对象(如数据库表)，已存在不创建。
  *                                添加：execute()方法支持多条SQL语句的执行。
+ *              v10.0 2018-01-17  添加：queryBigData()系列关于大数据操作的方法
  */
 /*
  * 游标类型的说明
@@ -1110,9 +1111,9 @@ public final class XSQL implements Comparable<XSQL>
             this.closeDB(v_Resultset ,v_Statement ,v_Conn);
         }
     }
-	
-	
-	
+    
+    
+    
 	/**
      * 占位符SQL的查询。游标的分页查询（可通用于所有数据库）。 -- 无填充值的
      * 
@@ -1417,6 +1418,396 @@ public final class XSQL implements Comparable<XSQL>
 			this.closeDB(v_Resultset ,v_Statement ,v_Conn);
 		}
 	}
+	
+	
+	
+	/**
+     * 占位符SQL的查询。
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-17
+     * @version     v1.0
+     * 
+     * @param i_Values       占位符SQL的填充集合。
+     * @param i_XSQLBigData  大数据处理接口
+     * @return
+     */
+    public Object queryBigData(Map<String ,?> i_Values ,XSQLBigData<?> i_XSQLBigData)
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+        
+        try
+        {
+            return this.queryBigData(this.content.getSQL(i_Values) ,i_XSQLBigData);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes(i_Values);
+            }
+        }
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的查询。（内部不再关闭数据库连接）
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-17
+     * @version     v1.0
+     * 
+     * @param i_Values       占位符SQL的填充集合。
+     * @param i_Conn         数据库连接
+     * @param i_XSQLBigData  大数据处理接口
+     * @return
+     */
+    public Object queryBigData(Map<String ,?> i_Values ,Connection i_Conn ,XSQLBigData<?> i_XSQLBigData)
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+        
+        try
+        {
+            return this.queryBigData(this.content.getSQL(i_Values) ,i_Conn ,i_XSQLBigData);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes(i_Values);
+            }
+        }
+    }
+	
+	
+	
+	/**
+     * 占位符SQL的查询。
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-17
+     * @version     v1.0
+     * 
+     * @param i_Obj          占位符SQL的填充对象。
+     * @param i_XSQLBigData  大数据处理接口
+     * @return
+     */
+    public Object queryBigData(Object i_Obj ,XSQLBigData<?> i_XSQLBigData)
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+
+        try
+        {
+            return this.queryBigData(this.content.getSQL(i_Obj) ,i_XSQLBigData);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes(i_Obj);
+            }
+        }
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的查询。（内部不再关闭数据库连接）
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-17
+     * @version     v1.0
+     * 
+     * @param i_Obj          占位符SQL的填充对象。
+     * @param i_Conn         数据库连接池
+     * @param i_XSQLBigData  大数据处理接口
+     * @return
+     */
+    public Object queryBigData(Object i_Obj ,Connection i_Conn ,XSQLBigData<?> i_XSQLBigData)
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+
+        try
+        {
+            return this.queryBigData(this.content.getSQL(i_Obj) ,i_Conn ,i_XSQLBigData);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes(i_Obj);
+            }
+        }
+    }
+	
+	
+	
+	/**
+     * 占位符SQL的查询。 -- 无填充值的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-17
+     * @version     v1.0
+     * 
+     * @param i_XSQLBigData  大数据处理接口
+     * 
+     * @return
+     */
+    public Object queryBigData(XSQLBigData<?> i_XSQLBigData)
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+
+        try
+        {
+            return this.queryBigData(this.content.getSQL() ,i_XSQLBigData);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes();
+            }
+        }
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的查询。 -- 无填充值的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-17
+     * @version     v1.0
+     * 
+     * @param i_Conn         数据库连接
+     * @param i_XSQLBigData  大数据处理接口
+     * @return
+     */
+    public Object queryBigData(Connection i_Conn ,XSQLBigData<?> i_XSQLBigData)
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+
+        try
+        {
+            return this.queryBigData(this.content.getSQL() ,i_Conn ,i_XSQLBigData);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes();
+            }
+        }
+    }
+    
+    
+    
+    /**
+     * 常规SQL的查询。（内部不再关闭数据库连接）
+     * 
+     * 1. 提交数据库执行 i_SQL ，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-17
+     * @version     v1.0
+     * 
+     * @param i_SQL          常规SQL语句
+     * @param i_Conn         数据库连接
+     * @param i_XSQLBigData  大数据处理接口
+     * @return
+     */
+    public Object queryBigData(String i_SQL ,Connection i_Conn ,XSQLBigData<?> i_XSQLBigData)
+    {
+        Statement  v_Statement = null;
+        ResultSet  v_Resultset = null;
+        long       v_BeginTime = this.request().getTime();
+        
+        try
+        {
+            if ( this.result == null )
+            {
+                throw new NullPointerException("Result is null of XSQL.");
+            }
+            
+            if ( !this.getDataSourceGroup().isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
+            
+            if ( Help.isNull(i_SQL) )
+            {
+                throw new NullPointerException("SQL is null of XSQL.");
+            }
+            
+            if ( null == i_Conn)
+            {
+                throw new NullPointerException("Connection is null of XSQL.");
+            }
+            
+            v_Statement = i_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
+            v_Resultset = v_Statement.executeQuery(i_SQL);
+            $SQLBusway.put(new XSQLLog(i_SQL));
+            
+            Object v_Ret = this.result.getBigDatas(v_Resultset ,i_XSQLBigData);
+            this.success(Date.getNowTime().getTime() - v_BeginTime);
+            
+            return v_Ret;
+        }
+        catch (Exception exce)
+        {
+            erroring(i_SQL ,exce ,this);
+            throw new RuntimeException(exce.getMessage());
+        }
+        finally
+        {
+            this.closeDB(v_Resultset ,v_Statement ,null);
+        }
+    }
+    
+    
+    
+    /**
+     * 常规SQL的查询。
+     * 
+     * 1. 提交数据库执行 i_SQL ，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-17
+     * @version     v1.0
+     * 
+     * @param i_SQL          常规SQL语句
+     * @param i_XSQLBigData  大数据处理接口
+     * @return
+     */
+    public Object queryBigData(String i_SQL ,XSQLBigData<?> i_XSQLBigData)
+    {
+        Connection v_Conn      = null;
+        Statement  v_Statement = null;
+        ResultSet  v_Resultset = null;
+        long       v_BeginTime = this.request().getTime();
+        
+        try
+        {
+            if ( this.result == null )
+            {
+                throw new NullPointerException("Result is null of XSQL.");
+            }
+            
+            if ( !this.getDataSourceGroup().isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
+            
+            if ( Help.isNull(i_SQL) )
+            {
+                throw new NullPointerException("SQL is null of XSQL.");
+            }
+            
+            v_Conn      = this.getConnection();
+            v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
+            v_Resultset = v_Statement.executeQuery(i_SQL);
+            $SQLBusway.put(new XSQLLog(i_SQL));
+            
+            Object v_Ret = this.result.getBigDatas(v_Resultset ,i_XSQLBigData);
+            this.success(Date.getNowTime().getTime() - v_BeginTime);
+            
+            return v_Ret;
+        }
+        catch (Exception exce)
+        {
+            erroring(i_SQL ,exce ,this);
+            throw new RuntimeException(exce.getMessage());
+        }
+        finally
+        {
+            this.closeDB(v_Resultset ,v_Statement ,v_Conn);
+        }
+    }
 	
 	
 	
