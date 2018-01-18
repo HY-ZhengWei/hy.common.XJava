@@ -1435,7 +1435,7 @@ public final class XSQL implements Comparable<XSQL>
      * @param i_XSQLBigData  大数据处理接口
      * @return
      */
-    public Object queryBigData(Map<String ,?> i_Values ,XSQLBigData<?> i_XSQLBigData)
+    public Object queryBigData(Map<String ,?> i_Values ,XSQLBigData i_XSQLBigData)
     {
         checkContent();
         
@@ -1481,7 +1481,7 @@ public final class XSQL implements Comparable<XSQL>
      * @param i_XSQLBigData  大数据处理接口
      * @return
      */
-    public Object queryBigData(Map<String ,?> i_Values ,Connection i_Conn ,XSQLBigData<?> i_XSQLBigData)
+    public Object queryBigData(Map<String ,?> i_Values ,Connection i_Conn ,XSQLBigData i_XSQLBigData)
     {
         checkContent();
         
@@ -1526,7 +1526,7 @@ public final class XSQL implements Comparable<XSQL>
      * @param i_XSQLBigData  大数据处理接口
      * @return
      */
-    public Object queryBigData(Object i_Obj ,XSQLBigData<?> i_XSQLBigData)
+    public Object queryBigData(Object i_Obj ,XSQLBigData i_XSQLBigData)
     {
         checkContent();
         
@@ -1572,7 +1572,7 @@ public final class XSQL implements Comparable<XSQL>
      * @param i_XSQLBigData  大数据处理接口
      * @return
      */
-    public Object queryBigData(Object i_Obj ,Connection i_Conn ,XSQLBigData<?> i_XSQLBigData)
+    public Object queryBigData(Object i_Obj ,Connection i_Conn ,XSQLBigData i_XSQLBigData)
     {
         checkContent();
         
@@ -1614,7 +1614,7 @@ public final class XSQL implements Comparable<XSQL>
      * 
      * @return
      */
-    public Object queryBigData(XSQLBigData<?> i_XSQLBigData)
+    public Object queryBigData(XSQLBigData i_XSQLBigData)
     {
         checkContent();
         
@@ -1656,7 +1656,7 @@ public final class XSQL implements Comparable<XSQL>
      * @param i_XSQLBigData  大数据处理接口
      * @return
      */
-    public Object queryBigData(Connection i_Conn ,XSQLBigData<?> i_XSQLBigData)
+    public Object queryBigData(Connection i_Conn ,XSQLBigData i_XSQLBigData)
     {
         checkContent();
         
@@ -1701,7 +1701,7 @@ public final class XSQL implements Comparable<XSQL>
      * @param i_XSQLBigData  大数据处理接口
      * @return
      */
-    public Object queryBigData(String i_SQL ,Connection i_Conn ,XSQLBigData<?> i_XSQLBigData)
+    public Object queryBigData(String i_SQL ,Connection i_Conn ,XSQLBigData i_XSQLBigData)
     {
         Statement  v_Statement = null;
         ResultSet  v_Resultset = null;
@@ -1764,7 +1764,7 @@ public final class XSQL implements Comparable<XSQL>
      * @param i_XSQLBigData  大数据处理接口
      * @return
      */
-    public Object queryBigData(String i_SQL ,XSQLBigData<?> i_XSQLBigData)
+    public Object queryBigData(String i_SQL ,XSQLBigData i_XSQLBigData)
     {
         Connection v_Conn      = null;
         Statement  v_Statement = null;

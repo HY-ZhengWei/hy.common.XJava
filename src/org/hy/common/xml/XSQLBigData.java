@@ -11,7 +11,7 @@ package org.hy.common.xml;
  * @createDate  2018-01-17
  * @version     v1.0
  */
-public interface XSQLBigData<R>
+public interface XSQLBigData
 {
     
     /**
@@ -32,14 +32,26 @@ public interface XSQLBigData<R>
     
     
     /**
-     * 所有行均处理完成后的结果
+     * 大数据开始处理前的操作。只执行一次
      * 
      * @author      ZhengWei(HY)
-     * @createDate  2018-01-17
+     * @createDate  2018-01-18
      * @version     v1.0
      *
-     * @return
      */
-    public R getResult();
+    public void before();
+    
+    
+    
+    /**
+     * 大数据循环遍历完成时触发。只执行一次
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-18
+     * @version     v1.0
+     *
+     * @param i_IsSucceed  循环遍历是否成功。未成功即出现异常。
+     */
+    public void finish(boolean i_sSucceed);
     
 }

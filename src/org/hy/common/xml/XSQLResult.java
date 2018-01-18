@@ -295,7 +295,7 @@ public final class XSQLResult
 	 * @param i_XSQLBigData
 	 * @return
 	 */
-    public synchronized Object getBigDatas(ResultSet i_ResultSet ,XSQLBigData<?> i_XSQLBigData)
+    public synchronized Object getBigDatas(ResultSet i_ResultSet ,XSQLBigData i_XSQLBigData)
     {
         return this.getBigDatas(i_ResultSet ,0 ,null ,null  ,0 ,0 ,i_XSQLBigData);
     }
@@ -765,7 +765,7 @@ public final class XSQLResult
                               ,int []         i_FilterColNoArr
                               ,int            i_StartRow
                               ,int            i_PagePerSize
-                              ,XSQLBigData<?> i_XSQLBigData
+                              ,XSQLBigData    i_XSQLBigData
                               )
     {
         if ( i_ResultSet == null )
@@ -912,6 +912,8 @@ public final class XSQLResult
             Object  v_Row             = null;
             boolean v_FillEventBefore = true;
             boolean v_BigDataRet      = true;
+            
+            i_XSQLBigData.before();
             
             // 游标分页功能。那怕是一丁点的性能，不性代码的冗余
             if ( i_PagePerSize > 0 )
@@ -1342,6 +1344,8 @@ public final class XSQLResult
                 v_BigDataRet = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
             }
             
+            i_XSQLBigData.finish(v_BigDataRet);
+            
             if ( v_BigDataRet )
             {
                 this.getDatasTimes   = (new Date()).getTime() - v_ExecBeginTime.getTime();
@@ -1357,6 +1361,8 @@ public final class XSQLResult
         }
         catch (Exception exce)
         {
+            i_XSQLBigData.finish(false);
+            
             this.getDatasTimes   = -1;
             this.getDatasRowSize = v_RowNo;
             

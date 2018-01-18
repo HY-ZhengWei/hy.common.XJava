@@ -19,6 +19,7 @@ import org.hy.common.TablePartition;
 import org.hy.common.db.DataSourceGroup;
 import org.hy.common.thread.Task;
 import org.hy.common.thread.TaskGroup;
+import org.hy.common.xml.XSQLBigData;
 
 
 
@@ -709,7 +710,7 @@ public final class XSQLGroup
      * @return
      */
     @SuppressWarnings("unchecked")
-    private XSQLGroupResult executeGroup(int i_SuperNodeIndex ,Map<String ,Object> io_Params ,XSQLGroupResult i_XSQLGroupResult ,Map<DataSourceGroup ,XConnection> io_DSGConns)
+    protected XSQLGroupResult executeGroup(int i_SuperNodeIndex ,Map<String ,Object> io_Params ,XSQLGroupResult i_XSQLGroupResult ,Map<DataSourceGroup ,XConnection> io_DSGConns)
     {
         XSQLGroupResult v_Ret = i_XSQLGroupResult;
         v_Ret.setSuccess(false);
@@ -782,26 +783,33 @@ public final class XSQLGroup
                     }
                     else
                     {
+                        XSQLGroupBigData v_XSQLBigData = new XSQLGroupBigData(this 
+                                                                             ,v_NodeIndex
+                                                                             ,v_Node
+                                                                             ,io_Params
+                                                                             ,v_Ret
+                                                                             ,io_DSGConns);
+                        
                         if ( Help.isNull(io_Params) )
                         {
                             if ( v_Node.isOneConnection() )
                             {
-                                v_QueryRet = (List<Object>)v_Node.getSql().query(this.getConnection(v_Node ,io_DSGConns));
+                                v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(this.getConnection(v_Node ,io_DSGConns) ,v_XSQLBigData);
                             }
                             else
                             {
-                                v_QueryRet = (List<Object>)v_Node.getSql().query();
+                                v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(v_XSQLBigData);
                             }
                         }
                         else
                         {
                             if ( v_Node.isOneConnection() )
                             {
-                                v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                                v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(io_Params ,this.getConnection(v_Node ,io_DSGConns) ,v_XSQLBigData);
                             }
                             else
                             {
-                                v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params);
+                                v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(io_Params ,v_XSQLBigData);
                             }
                         }
                     }
@@ -823,7 +831,9 @@ public final class XSQLGroup
                     this.putReturnID(v_Ret ,v_Node ,v_QueryRet);
                 }
                 
-                if ( !Help.isNull(v_QueryRet) )
+                
+                // 这里只处理内存中的集合循环遍历，因为数据库中的已交于大数据处理接口来处理了  ZhengWei(HY) Add 2018-01-18
+                if ( XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) && !Help.isNull(v_QueryRet) )
                 {
                     TaskGroup v_TaskGroup = null;
                     if ( v_Node.isThread() )
@@ -1575,7 +1585,7 @@ public final class XSQLGroup
      * @param i_Params
      * @return
      */
-    private String getSQL(XSQLNode i_Node ,Map<String ,Object> i_Params)
+    protected String getSQL(XSQLNode i_Node ,Map<String ,Object> i_Params)
     {
         if ( null != i_Node.getSql() )
         {
@@ -2035,6 +2045,232 @@ public final class XSQLGroup
             return xsqlGroupResult;
         }
         
+    }
+    
+    
+    
+    
+    
+    /**
+     * 大数据循环处理类 
+     *
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-18
+     * @version     v1.0
+     */
+    class XSQLGroupBigData implements XSQLBigData
+    {
+        private XSQLGroup                    xsqlGroup;
+        
+        private int                          xsqlNodeIndex;
+        
+        private XSQLNode                     xsqlNode;
+        
+        private Map<String ,Object>          xsqlParams;
+        
+        private XSQLGroupResult              xsqlRet;
+        
+        Map<DataSourceGroup ,XConnection>    xsqlDSGConns;
+        
+        private PartitionMap<String ,Object> queryReturnPart;
+        
+        private TaskGroup                    taskGroup;
+        
+        private Map<String ,Object>          rowPrevious;
+        
+        
+        
+        public XSQLGroupBigData(XSQLGroup                         i_XSQLGroup
+                               ,int                               i_XSQLNodeIndex
+                               ,XSQLNode                          i_XSQLNode
+                               ,Map<String ,Object>               i_XSQLParams
+                               ,XSQLGroupResult                   i_XSQLRet
+                               ,Map<DataSourceGroup ,XConnection> i_XSQLDSGConns)
+        {
+            this.xsqlGroup       = i_XSQLGroup;
+            this.xsqlNodeIndex   = i_XSQLNodeIndex;
+            this.xsqlNode        = i_XSQLNode;
+            this.xsqlParams      = i_XSQLParams;
+            this.xsqlRet         = i_XSQLRet;
+            this.xsqlDSGConns    = i_XSQLDSGConns;
+        }
+        
+        
+        
+        /**
+         * 大数据开始处理前的操作。只执行一次
+         * 
+         * @author      ZhengWei(HY)
+         * @createDate  2018-01-18
+         * @version     v1.0
+         *
+         */
+        @SuppressWarnings("unchecked")
+        public void before()
+        {
+            PartitionMap<String ,Object> v_QueryReturnPart = (PartitionMap<String ,Object>)xsqlRet.getReturns().get(xsqlNode.getQueryReturnID());
+            if ( null == v_QueryReturnPart )
+            {
+                queryReturnPart = new TablePartition<String ,Object>();
+                // put返回查询结果集
+                xsqlRet.getReturns().put(xsqlNode.getQueryReturnID() ,queryReturnPart);
+            }
+            
+            if ( xsqlNode.isThread() )
+            {
+                taskGroup = new TaskGroup(xsqlGroup.getSQL(xsqlNode ,xsqlParams));
+            }
+        }
+        
+        
+        
+        /**
+         * 大数据循环遍历完成时触发。只执行一次
+         * 
+         * @author      ZhengWei(HY)
+         * @createDate  2018-01-18
+         * @version     v1.0
+         *
+         * @param i_IsSucceed  循环遍历是否成功。未成功即出现异常。
+         */
+        public void finish(boolean i_sSucceed)
+        {
+            if ( xsqlNode.isThread() )
+            {
+                while ( !taskGroup.isTasksFinish() )
+                {
+                    // 一直等待并且的执行结果
+                    try
+                    {
+                        Thread.sleep(2);
+                    }
+                    catch (Exception exce)
+                    {
+                        // Nothing.
+                    }
+                }
+                
+                // 获取执行结果
+                XSQLGroupTask v_Task = (XSQLGroupTask)taskGroup.getTask(0);
+                xsqlRet = v_Task.getXsqlGroupResult();
+                for (int v_TaskIndex=0; v_TaskIndex<taskGroup.size(); v_TaskIndex++)
+                {
+                    v_Task = (XSQLGroupTask)taskGroup.getTask(v_TaskIndex);
+                    
+                    if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                    {
+                        xsqlRet = v_Task.getXsqlGroupResult();
+                        break;
+                    }
+                }
+            }
+        }
+        
+        
+        
+        /**
+         * 大数据一行一处理方法 
+         * 
+         * @author      ZhengWei(HY)
+         * @createDate  2018-01-17
+         * @version     v1.0
+         *
+         * @param i_RowNo        行号。下标从0开始
+         * @param i_Row          本行数据
+         * @param i_RowPrevious  上一行数据
+         * @param i_RowNext      下一行数据
+         */
+        @SuppressWarnings("unchecked")
+        @Override
+        public boolean row(long i_RowNo ,Object i_Row ,Object i_RowPrevious ,Object i_RowNext)
+        {
+            try
+            {
+                // 行级对象是：Map<String ,Object>
+                if ( i_Row instanceof Map || MethodReflect.isExtendImplement(i_Row ,Map.class) )
+                {
+                    Map<String ,Object> v_QRItemMap = (Map<String ,Object>)i_Row;
+                    
+                    xsqlParams.putAll(v_QRItemMap);
+                    xsqlParams.put(XSQLGroup.$Param_RowIndex    ,i_RowNo);
+                    xsqlParams.put(XSQLGroup.$Param_RowPrevious ,rowPrevious);
+                    xsqlParams.put(XSQLGroup.$Param_RowNext     ,i_RowNext);
+                    
+                    if ( xsqlNode.isThread() )
+                    {
+                        // 多线程并发执行  Add 2017-02-22
+                        XSQLGroupTask v_Task = new XSQLGroupTask(xsqlGroup ,xsqlNodeIndex ,xsqlParams ,xsqlRet ,xsqlDSGConns);
+                        taskGroup.addTaskAndStart(v_Task);
+                    }
+                    else
+                    {
+                        xsqlRet = xsqlGroup.executeGroup(xsqlNodeIndex ,xsqlParams ,xsqlRet ,xsqlDSGConns);
+                        if ( !xsqlRet.isSuccess() )
+                        {
+                            // 循环执行时，只要有一个执行异常，就全部退出
+                            return false;
+                        }
+                        else if ( xsqlNode.isPerAfterCommit() )
+                        {
+                            xsqlGroup.commits(xsqlDSGConns ,xsqlRet.getExecSumCount());
+                        }
+                    }
+                    
+                    if ( !Help.isNull(xsqlNode.getQueryReturnID()) )
+                    {
+                        queryReturnPart.putRows(v_QRItemMap);  // 只有执行成功后才put返回查询结果集
+                    }
+                    rowPrevious = Help.setMapValues(v_QRItemMap ,xsqlParams);
+                }
+                // 行级对象是：Java Bean。需要转成Map<String ,Object>
+                else
+                {
+                
+                    Map<String ,Object> v_QRItemMap = Help.toMap(i_Row ,null ,false);
+                    
+                    xsqlParams.putAll(v_QRItemMap);
+                    xsqlParams.put(XSQLGroup.$Param_RowIndex    ,i_RowNo);
+                    xsqlParams.put(XSQLGroup.$Param_RowPrevious ,rowPrevious);
+                    xsqlParams.put(XSQLGroup.$Param_RowNext     ,i_RowNext);
+                    
+                    if ( xsqlNode.isThread() )
+                    {
+                        // 多线程并发执行  Add 2017-02-22
+                        XSQLGroupTask v_Task = new XSQLGroupTask(xsqlGroup ,xsqlNodeIndex ,xsqlParams ,xsqlRet ,xsqlDSGConns);
+                        taskGroup.addTaskAndStart(v_Task);
+                    }
+                    else
+                    {
+                        xsqlRet = xsqlGroup.executeGroup(xsqlNodeIndex ,xsqlParams ,xsqlRet ,xsqlDSGConns);
+                        if ( !xsqlRet.isSuccess() )
+                        {
+                            // 循环执行时，只要有一个执行异常，就全部退出
+                            return false;
+                        }
+                        else if ( xsqlNode.isPerAfterCommit() )
+                        {
+                            xsqlGroup.commits(xsqlDSGConns ,xsqlRet.getExecSumCount());
+                        }
+                    }
+                    
+                    if ( !Help.isNull(xsqlNode.getQueryReturnID()) )
+                    {
+                        queryReturnPart.putRows(v_QRItemMap);  // 只有执行成功后才put返回查询结果集
+                    }
+                    rowPrevious = Help.setMapValues(v_QRItemMap ,xsqlParams);
+                }
+            
+                return true;
+            }
+            catch (Exception exce)
+            {
+                xsqlRet.setExceptionNode(xsqlNodeIndex);
+                xsqlRet.setExceptionSQL (xsqlGroup.getSQL(xsqlNode ,xsqlParams));
+                xsqlRet.setException(    exce);
+                xsqlRet.setSuccess(false);
+                return false;
+            }
+        }
     }
     
 }
