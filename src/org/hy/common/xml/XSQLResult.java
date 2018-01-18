@@ -911,6 +911,7 @@ public final class XSQLResult
             Object  v_RowNext         = null;
             Object  v_Row             = null;
             boolean v_FillEventBefore = true;
+            boolean v_BigDataRet      = true;
             
             // 游标分页功能。那怕是一丁点的性能，不性代码的冗余
             if ( i_PagePerSize > 0 )
@@ -959,9 +960,11 @@ public final class XSQLResult
                                 this.cfillMethodArr[0].invoke(v_RowNext ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
                             }
                             
-                            i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                            v_BigDataRet  = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
                             v_RowPrevious = v_Row;
                             v_Row         = v_RowNext;
+                            
+                            if ( !v_BigDataRet ) { break; }
                             
                             this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
                             v_Count++;
@@ -1006,9 +1009,11 @@ public final class XSQLResult
                                 this.cfillMethodArr[v_ColNo].invoke(v_RowNext ,v_ColValue ,v_ColNo ,null);
                             }
                             
-                            i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                            v_BigDataRet  = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
                             v_RowPrevious = v_Row;
                             v_Row         = v_RowNext;
+                            
+                            if ( !v_BigDataRet ) { break; }
                             
                             this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
                             v_Count++;
@@ -1057,9 +1062,11 @@ public final class XSQLResult
                             v_FillEventBefore= this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
                             if ( v_FillEventBefore )
                             {
-                                i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                                v_BigDataRet  = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
                                 v_RowPrevious = v_Row;
                                 v_Row         = v_RowNext;
+                                
+                                if ( !v_BigDataRet ) { break; }
                                 
                                 this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
                             }
@@ -1113,9 +1120,11 @@ public final class XSQLResult
                             v_FillEventBefore = this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
                             if ( v_FillEventBefore )
                             {
-                                i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                                v_BigDataRet  = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
                                 v_RowPrevious = v_Row;
                                 v_Row         = v_RowNext;
+                                
+                                if ( !v_BigDataRet ) { break; }
 
                                 this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
                             }
@@ -1160,9 +1169,11 @@ public final class XSQLResult
                                 this.cfillMethodArr[0].invoke(v_RowNext ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
                             }
                             
-                            i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                            v_BigDataRet  = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
                             v_RowPrevious = v_Row;
                             v_Row         = v_RowNext;
+                            
+                            if ( !v_BigDataRet ) { break; }
                             
                             this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
                         }
@@ -1205,9 +1216,11 @@ public final class XSQLResult
                                 this.cfillMethodArr[v_ColNo].invoke(v_RowNext ,v_ColValue ,v_ColNo ,null);
                             }
                             
-                            i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                            v_BigDataRet  = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
                             v_RowPrevious = v_Row;
                             v_Row         = v_RowNext;
+                            
+                            if ( !v_BigDataRet ) { break; }
                             
                             this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
                         }
@@ -1254,9 +1267,11 @@ public final class XSQLResult
                             v_FillEventBefore= this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
                             if ( v_FillEventBefore )
                             {
-                                i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                                v_BigDataRet  = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
                                 v_RowPrevious = v_Row;
                                 v_Row         = v_RowNext;
+                                
+                                if ( !v_BigDataRet ) { break; }
                                 
                                 this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
                             }
@@ -1308,9 +1323,11 @@ public final class XSQLResult
                             v_FillEventBefore = this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
                             if ( v_FillEventBefore )
                             {
-                                i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                                v_BigDataRet  = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
                                 v_RowPrevious = v_Row;
                                 v_Row         = v_RowNext;
+                                
+                                if ( !v_BigDataRet ) { break; }
                                 
                                 this.fillMethod.invoke(v_Table ,v_RowNext ,v_RowNo ,null);
                             }
@@ -1319,14 +1336,24 @@ public final class XSQLResult
                 }
             }
             
-            if ( v_Row != null && v_FillEventBefore )
+            if ( v_Row != null && v_FillEventBefore && v_BigDataRet )
             {
-                v_RowNext = null;
-                i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
+                v_RowNext    = null;
+                v_BigDataRet = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
             }
             
-            this.getDatasTimes   = (new Date()).getTime() - v_ExecBeginTime.getTime();
-            this.getDatasRowSize = v_RowNo;
+            if ( v_BigDataRet )
+            {
+                this.getDatasTimes   = (new Date()).getTime() - v_ExecBeginTime.getTime();
+                this.getDatasRowSize = v_RowNo;
+            }
+            else
+            {
+                this.getDatasTimes   = -1;
+                this.getDatasRowSize = v_RowNo;
+                
+                throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  XSQLBigData.row(...) return false.");
+            }
         }
         catch (Exception exce)
         {

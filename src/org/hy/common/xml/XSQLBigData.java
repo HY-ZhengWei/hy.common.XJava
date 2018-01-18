@@ -25,8 +25,9 @@ public interface XSQLBigData<R>
      * @param i_Row          本行数据
      * @param i_RowPrevious  上一行数据
      * @param i_RowNext      下一行数据
+     * @return               是否断续。为false时，将中断其后行的处理，如出现异常情况。
      */
-    public void row(long i_RowNo ,Object i_Row ,Object i_RowPrevious ,Object i_RowNext);
+    public boolean row(long i_RowNo ,Object i_Row ,Object i_RowPrevious ,Object i_RowNext);
     
     
     
