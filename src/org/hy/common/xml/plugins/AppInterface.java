@@ -169,7 +169,7 @@ public class AppInterface
                 }
                 
                 // 当消息加密码的密钥为空时，不进行判断加密
-                if ( Help.isNull(this.getMsgKey(i_SID ,v_Msg.getSysid())) )
+                if ( Help.isNull(this.getMsgKey(v_Msg.getSid() ,v_Msg.getSysid())) )
                 {
                     return v_Msg;
                 }
