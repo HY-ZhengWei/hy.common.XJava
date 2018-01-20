@@ -1,6 +1,7 @@
 package org.hy.common.xml;
 
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -483,6 +484,18 @@ public final class XJSON
                             else
                             {
                                 Double v_Null = null;
+                                v_Method.invoke(v_NewObj ,v_Null);
+                            }
+                        }
+                        else if ( BigDecimal.class == v_ParamClass )
+                        {
+                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
+                            {
+                                v_Method.invoke(v_NewObj ,new BigDecimal(v_Value.toString()));
+                            }
+                            else
+                            {
+                                BigDecimal v_Null = null;
                                 v_Method.invoke(v_NewObj ,v_Null);
                             }
                         }

@@ -310,6 +310,9 @@ public class XSQLNode
      */
     private boolean            oneConnection;
     
+    /** 是否采用大数据模式控制循环遍历 */
+    private boolean            bigData;
+    
     
     
     public XSQLNode()
@@ -332,6 +335,7 @@ public class XSQLNode
         this.collectionID      = null;
         this.thread            = false;
         this.oneConnection     = false;
+        this.bigData           = false;
     }
     
     
@@ -1080,6 +1084,28 @@ public class XSQLNode
     public void setOneConnection(boolean oneConnection)
     {
         this.oneConnection = oneConnection;
+    }
+
+
+    
+    /**
+     * 获取：是否采用大数据模式控制循环遍历
+     */
+    public boolean isBigData()
+    {
+        return bigData;
+    }
+    
+
+    
+    /**
+     * 设置：是否采用大数据模式控制循环遍历
+     * 
+     * @param bigData 
+     */
+    public void setBigData(boolean bigData)
+    {
+        this.bigData = bigData;
     }
     
 }

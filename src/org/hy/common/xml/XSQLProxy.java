@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.hy.common.Date;
 import org.hy.common.Help;
+import org.hy.common.MethodInfo;
 import org.hy.common.MethodReflect;
 import org.hy.common.PartitionMap;
 import org.hy.common.TablePartitionRID;
@@ -40,6 +41,11 @@ public class XSQLProxy implements InvocationHandler ,Serializable
 
     private static final long serialVersionUID   = -4219520889151933542L;
     
+    /** 
+     * names()[x] 值为"ToMap"时，表示将方法入参转为Map集合后再putAll()整合后的大Map集合中。 
+     * 
+     * @see org.hy.common.xml.annotation.Xsql.names()
+     */
     public  static final String $ParamName_ToMap = "ToMap";
     
     /** 代理的接口类 */
@@ -59,7 +65,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
     private Object                            xsqlInstace;
     
     /** 被@Xsql注解的方法集合 */
-    private final Map<Method ,XSQLAnnotation> methods;
+    private final Map<MethodInfo ,XSQLAnnotation> methods;
     
     
     
@@ -132,7 +138,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
     public XSQLProxy(Class<?> i_XSQLInterface)
     {
         this.xsqlInterface     = i_XSQLInterface;
-        this.methods           = new HashMap<Method ,XSQLAnnotation>();
+        this.methods           = new HashMap<MethodInfo ,XSQLAnnotation>();
         List<Method> v_Methods = MethodReflect.getAnnotationMethods(i_XSQLInterface ,Xsql.class);
         
         if ( !Help.isNull(v_Methods) )
@@ -144,17 +150,17 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                     List<Xparam>   v_XParams = MethodReflect.getParameterAnnotations(v_Method ,Xparam.class);
                     XSQLAnnotation v_Anno    = new XSQLAnnotation(v_Method ,v_Method.getAnnotation(Xsql.class) ,v_XParams);
                     
-                    this.methods.put(v_Method ,v_Anno);
+                    this.methods.put(new MethodInfo(v_Method) ,v_Anno);
                     
                     // 方法入参个数大于1，应设置@Xsql(names)
-                    if ( Help.isNull(v_Anno.getXsql().names()) && v_Method.getParameterTypes().length >= 2 )
+                    if ( Help.isNull(v_Anno.getXparams()) && v_Method.getParameterTypes().length >= 2 )
                     {
                         this.errorLog(v_Method ,"Method parameter count >= 2 ,but @Xsql(names) count is 0.");
                         return;
                     }
                     // @Xsql中设置的参数名称个数，应于方法入参个数数量相同
-                    else if ( !Help.isNull(v_Anno.getXsql().names()) 
-                           && v_Anno.getXsql().names().length > v_Method.getParameterTypes().length )
+                    else if ( !Help.isNull(v_Anno.getXparams()) 
+                           && v_Anno.getXparams().size() > v_Method.getParameterTypes().length )
                     {
                         this.errorLog(v_Method ,"@Xsql(names) count greater than method parameter count.");
                         return;
@@ -181,7 +187,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             }
             else
             {
-                XSQLAnnotation v_Anno = this.methods.get(i_Method);
+                XSQLAnnotation v_Anno = this.methods.get(new MethodInfo(i_Method));
                 
                 if ( v_Anno == null )
                 {
@@ -236,7 +242,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
     {
         if ( !Help.isNull(i_ErrorInfo) )
         {
-            System.err.println("Call " + this.xsqlInterface.getName() + "." + i_Method.getName() + "：" + i_ErrorInfo);
+            System.err.println("\nError: Call " + this.xsqlInterface.getName() + "." + i_Method.getName() + "：" + i_ErrorInfo + "\n");
         }
         
         // 定义的方法无返回类型：void

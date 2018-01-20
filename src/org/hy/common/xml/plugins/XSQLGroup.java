@@ -781,7 +781,7 @@ public final class XSQLGroup
                     {
                         v_QueryRet = getCollectionToQueryOrDB(v_Node ,io_Params);
                     }
-                    else
+                    else if ( v_Node.isBigData() )
                     {
                         XSQLGroupBigData v_XSQLBigData = new XSQLGroupBigData(this 
                                                                              ,v_NodeIndex
@@ -813,6 +813,31 @@ public final class XSQLGroup
                             }
                         }
                     }
+                    else
+                    {
+                        if ( Help.isNull(io_Params) )
+                        {
+                            if ( v_Node.isOneConnection() )
+                            {
+                                v_QueryRet = (List<Object>)v_Node.getSql().query(this.getConnection(v_Node ,io_DSGConns));
+                            }
+                            else
+                            {
+                                v_QueryRet = (List<Object>)v_Node.getSql().query();
+                            }
+                        }
+                        else
+                        {
+                            if ( v_Node.isOneConnection() )
+                            {
+                                v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                            }
+                            else
+                            {
+                                v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params);
+                            }
+                        }
+                    }
                     
                     this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
                 }
@@ -833,7 +858,7 @@ public final class XSQLGroup
                 
                 
                 // 这里只处理内存中的集合循环遍历，因为数据库中的已交于大数据处理接口来处理了  ZhengWei(HY) Add 2018-01-18
-                if ( XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) && !Help.isNull(v_QueryRet) )
+                if ( (XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) || !v_Node.isBigData()) && !Help.isNull(v_QueryRet) )
                 {
                     TaskGroup v_TaskGroup = null;
                     if ( v_Node.isThread() )

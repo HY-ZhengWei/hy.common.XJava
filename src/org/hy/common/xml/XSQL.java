@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -2993,6 +2994,10 @@ public final class XSQL implements Comparable<XSQL>
         else if ( v_Class == java.util.Date.class )
         {
             io_PStatement.setDate(i_ParamIndex ,(new Date((java.util.Date)i_Value)).getSQLDate());
+        }
+        else if ( v_Class == BigDecimal.class )
+        {
+            io_PStatement.setBigDecimal(i_ParamIndex ,(BigDecimal)i_Value);
         }
         else if ( v_Class == MethodReflect.class )
         {

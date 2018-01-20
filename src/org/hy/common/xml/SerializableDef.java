@@ -1,6 +1,7 @@
 package org.hy.common.xml;
 
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -159,6 +160,10 @@ public abstract class SerializableDef extends SerializableClass implements Seria
                        && float.class == v_SetterMethod.getParameterTypes()[0] )
                 {
                     v_SetterMethod.invoke(i_Obj ,((Float)i_Value).floatValue());
+                }
+                else if ( BigDecimal.class == i_Value.getClass() )
+                {
+                    v_SetterMethod.invoke(i_Obj ,(BigDecimal)i_Value);
                 }
                 else if ( Short.class == i_Value.getClass() 
                        && short.class == v_SetterMethod.getParameterTypes()[0] )
