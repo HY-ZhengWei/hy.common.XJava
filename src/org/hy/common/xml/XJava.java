@@ -36,6 +36,7 @@ import org.hy.common.PartitionMap;
 import org.hy.common.Return;
 import org.hy.common.StaticReflect;
 import org.hy.common.StringHelp;
+import org.hy.common.TablePartitionRID;
 import org.hy.common.TreeMap;
 import org.hy.common.TreeNode;
 import org.hy.common.app.Param;
@@ -76,6 +77,7 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *                                添加：扩展getObject(Class)方法的功能，尝试在实现类、子类中查找匹配的对象。
  *              v1.8  2017-12-05  添加：@XRequest注解，Web请求接口的解释功能。
  *              v1.9  2017-12-15  添加：@Xsql注解，XSQL、XSQLGroup的注解。用于 xml配置 + Java接口类(无须实现类)的组合实现持久层的功能。
+ *              v1.10 2018-01-20  添加：@XRequest注解添加对secrets()属性的支持。用注解定义各个系统的接口级消息密钥。
  */
 public final class XJava
 {
@@ -1754,9 +1756,11 @@ public final class XJava
             return;
         }
         
-        String                    v_AppIFsXID     = "AppInterfaces";       
-        List<ClassInfo>           v_XRequests     = ClassReflect.getAnnotationMethods(i_Classes ,XRequest.class);
-        Map<String ,AppInterface> v_AppInterfaces = (Map<String ,AppInterface>)XJava.getObject(v_AppIFsXID);
+        String                            v_AppIFsXID     = "AppInterfaces"; 
+        String                            v_AppMKXID      = "AppMsgKeySSID";
+        List<ClassInfo>                   v_XRequests     = ClassReflect.getAnnotationMethods(i_Classes ,XRequest.class);
+        Map<String ,AppInterface>         v_AppInterfaces = (Map<String ,AppInterface>)XJava.getObject(v_AppIFsXID);
+        TablePartitionRID<String ,String> v_AppMKs        = (TablePartitionRID<String ,String>)XJava.getObject(v_AppMKXID);
         
         if ( Help.isNull(v_XRequests) )
         {
@@ -1767,6 +1771,12 @@ public final class XJava
         {
             v_AppInterfaces = new Hashtable<String ,AppInterface>();
             XJava.putObject(v_AppIFsXID ,v_AppInterfaces);
+        }
+        
+        if ( Help.isNull(v_AppMKs) )
+        {
+            v_AppMKs = new TablePartitionRID<String ,String>();
+            XJava.putObject(v_AppMKXID ,v_AppMKs);
         }
         
         for (ClassInfo v_ClassInfo : v_XRequests)
@@ -1820,20 +1830,43 @@ public final class XJava
                     }
                     
                     AppInterface v_AppInterface = new AppInterface();
+                    String       v_SID          = Help.NVL(v_XRequest.value() ,v_XRequest.id());
                     
-                    if ( Help.isNull(v_XRequest.value()) )
+                    if ( Help.isNull(v_SID) )
                     {
                         v_AppInterface.setName(v_Method.getName());
                     }
                     else
                     {
-                        v_AppInterface.setName(v_XRequest.value());
+                        v_AppInterface.setName(v_SID);
                     }
                     
                     v_AppInterface.setEmName(v_XID + "." + v_Method.getName());
                     v_AppInterface.setClassName(MethodReflect.getGenerics(v_Method).getName());
-                    
                     v_AppInterfaces.put(v_AppInterface.getName() ,v_AppInterface);
+                    
+                    // ZhengWei(HY) Add 2018-01-20 用注解定义各个系统的接口级消息密钥
+                    if ( !Help.isNull(v_XRequest.secrets()) )
+                    {
+                        for (String v_SysID_Secret : v_XRequest.secrets())
+                        {
+                            if ( Help.isNull(v_SysID_Secret) )
+                            {
+                                continue;
+                            }
+                            
+                            String [] v_Arr = StringHelp.replaceAll(v_SysID_Secret ,"=" ,":").split(":");
+                            if ( v_Arr.length == 1 )
+                            {
+                                v_AppMKs.putRow(v_Arr[0] ,v_AppInterface.getName() ,"");
+                            }
+                            else
+                            {
+                                // 不用trim()方法去除空格，因为空格也可以是密文
+                                v_AppMKs.putRow(v_Arr[0] ,v_AppInterface.getName() ,v_Arr[1]);
+                            }
+                        }
+                    }
                 }
             }
             else

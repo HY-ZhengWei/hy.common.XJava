@@ -31,6 +31,7 @@ import org.hy.common.TablePartitionRID;
  *                                   1：对象.方法 的模式。对象为XJava对象，可以配置文件中自定义。
  *                                   2：方法 的模式。这是之前的模式，为具体的实例类this.方法的调用。
  *                                以模式1为优先级别。
+ *          v3.0  2018-01-20  添加：当系统级密钥有效时，当接口级密钥为空字符串时，支持接口无密钥的访问。
  */
 public class AppInterface
 {
@@ -301,7 +302,8 @@ public class AppInterface
             v_Key = v_SysSIDKeys.getRow(i_SysID ,i_SID);
         }
         
-        if ( Help.isNull(v_Key) )
+        // 接口级消息级密钥可为空字符串，表示无密钥访问  ZhengWei(HY) Edit 2018-01-20
+        if ( v_Key == null ) 
         {
             Map<String ,String> v_SysIDKeys = (Map<String ,String>)XJava.getObject("AppMsgKeySysID");
             

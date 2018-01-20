@@ -48,10 +48,12 @@ import java.lang.annotation.Target;
                                                                ,版本号 
                                                                ,实际传参的对象实例);
  * 
+ * 所有注册的接口可通过它查看： http://IP:Port/服务名/analyses/analyseObject?xid=AppInterfaces
  * 
  * @author      ZhengWei(HY)
  * @createDate  2017-12-04
  * @version     v1.0
+ *              v2.0  2018-01-20  添加：用注解定义各个系统的接口级消息密钥。
  */
 @Documented
 @Target({ElementType.METHOD})
@@ -64,5 +66,28 @@ public @interface XRequest
      * 接口惟一标识
      */
     public String value() default "";  
+    
+    
+    
+    /**
+     * 接口惟一标识。与 this.value() 同义
+     */
+    public String id() default "";
+    
+    
+    
+    /**
+     * 各个系统的接口级消息密钥。
+     * 
+     * 数组中每个元素表示访问接口的访问系统的密钥，即每个调用方的密钥可以各不相同。
+     * 
+     * 格式如下
+     *    1. 用:分号分割系统编号和密钥
+     *       如 this.secret = {["sysID系统编号01:密钥01"] ,["sysID系统编号02:密钥02"]}
+     *       
+     *    2. 用=等号分割系统编号和密钥
+     *       如 this.secret = {["sysID系统编号01=密钥01"] ,["sysID系统编号02=密钥02"]}
+     */
+    public String [] secrets();
     
 }
