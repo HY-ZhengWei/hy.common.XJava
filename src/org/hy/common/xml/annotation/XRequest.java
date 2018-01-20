@@ -87,6 +87,12 @@ public @interface XRequest
      *       
      *    2. 用=等号分割系统编号和密钥
      *       如 this.secret = {["sysID系统编号01=密钥01"] ,["sysID系统编号02=密钥02"]}
+     * 
+     * 可设置各别调用方，无密钥访问。如下格式
+     *       如 this.secret = {["sysID系统编号01="] ,["sysID系统编号02"]}
+     *       上面两调用方法均能无密钥访问
+     *       
+     * 当此属性无值时，表示所有系统均能无密钥访问（前提是：系统级消息密钥也没有定义）。
      */
     public String [] secrets();
     
