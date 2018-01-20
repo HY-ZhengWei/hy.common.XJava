@@ -182,8 +182,8 @@ public final class XSQLGroup
      */
     private Date                     executeTime;
     
-    /** 描述 */
-    private String                   desc;
+    /** 注释。可用于日志的输出等帮助性的信息 */
+    private String                   comment; 
     
     
     
@@ -197,7 +197,7 @@ public final class XSQLGroup
         this.successCount   = 0;
         this.successTimeLen = 0D;
         this.executeTime    = null;
-        this.desc           = null;
+        this.comment        = null;
     }
     
     
@@ -1884,29 +1884,28 @@ public final class XSQLGroup
     
     
     /**
-     * 获取：描述
+     * 获取：注释。可用于日志的输出等帮助性的信息
      */
-    public String getDesc()
+    public String getComment()
     {
-        return desc;
+        return comment;
     }
 
     
     
     /**
-     * 设置：描述
+     * 设置：注释。可用于日志的输出等帮助性的信息
      * 
-     * @param desc 
+     * @param comment 
      */
-    public void setDesc(String desc)
+    public void setComment(String comment)
     {
-        this.desc = desc;
+        this.comment = comment;
     }
 
 
 
     /**
-     * 
      *
      * @author      ZhengWei(HY)
      * @createDate  2017-03-08
@@ -1919,7 +1918,7 @@ public final class XSQLGroup
     @Override
     public String toString()
     {
-        return Help.NVL(this.desc);
+        return Help.NVL(this.comment);
     }
 
 

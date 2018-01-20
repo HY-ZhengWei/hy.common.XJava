@@ -35,6 +35,7 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  * @author      ZhengWei(HY)
  * @createDate  2017-12-14
  * @version     v1.0
+ *              v1.1  2018-01-20  修复：@Xsql.names() 与 @Xparam.name() 在判定合计数量上的问题。
  */
 public class XSQLProxy implements InvocationHandler ,Serializable
 {

@@ -33,8 +33,9 @@ import org.hy.common.Help;
  * XJava与Jersey、Restful两种技术相融合
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0  
  * @createDate  2014-09-25
+ * @version     v1.0  
+ *              v2.0  2018-01-20  添加：当访问路径不存时，服务端也打出日志。
  */
 @Provider
 @Consumes({MediaType.APPLICATION_JSON ,"*/*"})
@@ -84,13 +85,17 @@ public class AppMessageBodyProvider extends AbstractMessageReaderWriterProvider<
                         // 请求次数++
                         if ( v_Ret == null )
                         {
-                            System.out.println(Date.getNowTime().getFullMilli() + "：Request [" + v_Path + "] is fail.\n" + v_MsgInfo);
+                            System.err.println("\nError: " + Date.getNowTime().getFullMilli() + "：Request [" + v_Path + "] is fail.\n" + v_MsgInfo);
                             v_AppInterface.request("");
                         }
                         else
                         {
                             v_AppInterface.request(v_Ret.getSysid());
                         }
+                    }
+                    else
+                    {
+                        System.err.println("\nError: " + Date.getNowTime().getFullMilli() + "  Request path[" + v_Path + "] does not exist.");
                     }
                 }
             }

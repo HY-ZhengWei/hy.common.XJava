@@ -92,9 +92,10 @@ import org.hy.common.xml.event.BLobEvent;
  *              v8.0  2017-12-19  添加：将参数效验检查抛出的异常，也包括在try{}cacth{}内，自己抛出自己捕获，并记录在统计数据中。
  *                                     记录完成后再向外抛出。
  *                                     方便异常定位页面统计数据：http://IP:Port/服务名/analyses/analyseDB
- *              v9.0  2018-01-12  添加：实现服务启动时检查并创建数据库对象(如数据库表)，已存在不创建。
+ *              v9.0  2018-01-12  添加：setCreate()实现服务启动时检查并创建数据库对象(如数据库表)，已存在不创建。
  *                                添加：execute()方法支持多条SQL语句的执行。
  *              v10.0 2018-01-17  添加：queryBigData()系列关于大数据操作的方法
+ *                                添加：setComment()注释。可用于日志的输出等帮助性的信息
  */
 /*
  * 游标类型的说明
@@ -122,11 +123,11 @@ public final class XSQL implements Comparable<XSQL>
     /** execute()方法中执行多条SQL语句的分割符 */
     public  static final String            $Executes_Split = ";/";
     
-    /** SQL执行日志。默认只保留1000条执行过的SQL语句 */
-    public  static final Busway<XSQLLog>   $SQLBusway      = new Busway<XSQLLog>(1000);
+    /** SQL执行日志。默认只保留10000条执行过的SQL语句 */
+    public  static final Busway<XSQLLog>   $SQLBusway      = new Busway<XSQLLog>(10000);
     
-    /** SQL执行异常的日志。默认只保留100条执行异常的SQL语句 */
-    public  static final Busway<XSQLLog>   $SQLBuswayError = new Busway<XSQLLog>(100);
+    /** SQL执行异常的日志。默认只保留1000条执行异常的SQL语句 */
+    public  static final Busway<XSQLLog>   $SQLBuswayError = new Busway<XSQLLog>(1000);
     
     
     
@@ -237,6 +238,9 @@ public final class XSQL implements Comparable<XSQL>
      *   5. 未执行时，此属性为NULL
      */
     private Date                           executeTime;
+    
+    /** 注释。可用于日志的输出等帮助性的信息 */
+    private String                         comment; 
 	
 	
 	
@@ -258,6 +262,7 @@ public final class XSQL implements Comparable<XSQL>
         this.successCount      = 0;
         this.successTimeLen    = 0D;
         this.executeTime       = null;
+        this.comment           = null;
 	}
 	
 	
@@ -1030,7 +1035,7 @@ public final class XSQL implements Comparable<XSQL>
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
-	            throw new NullPointerException("SQL is null of XSQL.");
+	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 	        
 	        if ( null == i_Conn)
@@ -1089,7 +1094,7 @@ public final class XSQL implements Comparable<XSQL>
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
             v_Conn      = this.getConnection();
@@ -1284,7 +1289,7 @@ public final class XSQL implements Comparable<XSQL>
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
             v_Conn      = this.getConnection();
@@ -1340,7 +1345,7 @@ public final class XSQL implements Comparable<XSQL>
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
-	            throw new NullPointerException("SQL is null of XSQL.");
+	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 		    
 			v_Conn      = this.getConnection();
@@ -1396,7 +1401,7 @@ public final class XSQL implements Comparable<XSQL>
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
-	            throw new NullPointerException("SQL is null of XSQL.");
+	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 		    
 			v_Conn      = this.getConnection();
@@ -1722,7 +1727,7 @@ public final class XSQL implements Comparable<XSQL>
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
             if ( null == i_Conn)
@@ -1786,7 +1791,7 @@ public final class XSQL implements Comparable<XSQL>
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
             v_Conn      = this.getConnection();
@@ -2081,7 +2086,7 @@ public final class XSQL implements Comparable<XSQL>
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
-	            throw new NullPointerException("SQL is null of XSQL.");
+	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 		    
 			v_RowSize   = this.getSQLCount("SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
@@ -2144,7 +2149,7 @@ public final class XSQL implements Comparable<XSQL>
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
-	            throw new NullPointerException("SQL is null of XSQL.");
+	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 		    
 			v_RowSize   = this.getSQLCount("SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
@@ -2207,7 +2212,7 @@ public final class XSQL implements Comparable<XSQL>
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
-	            throw new NullPointerException("SQL is null of XSQL.");
+	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 		    
 			v_RowSize   = this.getSQLCount("SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
@@ -2345,7 +2350,7 @@ public final class XSQL implements Comparable<XSQL>
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
-	            throw new NullPointerException("SQL is null of XSQL.");
+	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 	        
 	    	v_Conn      = this.getConnection();
@@ -2511,7 +2516,7 @@ public final class XSQL implements Comparable<XSQL>
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
-	            throw new NullPointerException("SQL is null of XSQL.");
+	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 		    
 			v_Conn      = this.getConnection();
@@ -2674,7 +2679,7 @@ public final class XSQL implements Comparable<XSQL>
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
             if ( null == i_Conn)
@@ -3722,7 +3727,7 @@ public final class XSQL implements Comparable<XSQL>
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
-	            throw new NullPointerException("SQL is null of XSQL.");
+	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 	        
 	        if ( i_File == null )
@@ -3945,7 +3950,7 @@ public final class XSQL implements Comparable<XSQL>
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
-	            throw new NullPointerException("SQL is null of XSQL.");
+	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 	        
 	        if ( io_SaveFile == null )
@@ -4187,7 +4192,7 @@ public final class XSQL implements Comparable<XSQL>
 	        
 	        if ( Help.isNull(v_SQL) )
 	        {
-	            throw new NullPointerException("SQL is null of XSQL.");
+	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 		    
 			v_Conn      = this.getConnection();
@@ -4356,7 +4361,7 @@ public final class XSQL implements Comparable<XSQL>
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
             if ( null == i_Conn )
@@ -5329,17 +5334,17 @@ public final class XSQL implements Comparable<XSQL>
                 
                 if ( v_Ret )
                 {
-                    System.out.println("Create object[" + this.create + "] OK.");
+                    System.out.println("Create object[" + this.create + "] OK. " + Help.NVL(this.comment));
                 }
                 else
                 {
-                    System.err.println("Create object[" + this.create + "] Error.");
+                    System.err.println("Create object[" + this.create + "] Error. " + Help.NVL(this.comment));
                 }
             }
         }
         catch (Exception exce)
         {
-            System.err.println("Create object[" + this.create + "] Error.");
+            System.err.println("Create object[" + this.create + "] Error. " + Help.NVL(this.comment));
             exce.printStackTrace();
         }
     }
@@ -5410,6 +5415,14 @@ public final class XSQL implements Comparable<XSQL>
 	
 	
 	
+	/** 
+     * SQL类型。
+     * 
+     * N: 增、删、改、查的普通SQL语句  (默认值)
+     * P: 存储过程
+     * F: 函数
+     * C: DML创建表，创建对象等
+     */
     public String getType()
     {
         return Help.NVL(this.type ,$Type_NormalSQL);
@@ -5417,6 +5430,14 @@ public final class XSQL implements Comparable<XSQL>
 
 
     
+    /** 
+     * SQL类型。
+     * 
+     * N: 增、删、改、查的普通SQL语句  (默认值)
+     * P: 存储过程
+     * F: 函数
+     * C: DML创建表，创建对象等
+     */
     public void setType(String i_Type)
     {
         if ( Help.isNull(i_Type) )
@@ -5437,6 +5458,14 @@ public final class XSQL implements Comparable<XSQL>
 
 
     
+    /**
+     * 批量执行 Insert、Update、Delete 时，达到提交的提交点
+     * 
+     * 当>=1时，才有效，即分次提交
+     * 当<=0时，在一个事务中执行所有的操作(默认状态)
+     *
+     * @return
+     */
     public int getBatchCommit()
     {
         return batchCommit;
@@ -5444,6 +5473,14 @@ public final class XSQL implements Comparable<XSQL>
 
 
     
+    /**
+     * 批量执行 Insert、Update、Delete 时，达到提交的提交点
+     * 
+     * 当>=1时，才有效，即分次提交
+     * 当<=0时，在一个事务中执行所有的操作(默认状态)
+     *
+     * @param i_BatchCommit
+     */
     public void setBatchCommit(int i_BatchCommit)
     {
         this.batchCommit = i_BatchCommit;
@@ -5451,6 +5488,28 @@ public final class XSQL implements Comparable<XSQL>
     
     
     
+    /**
+     * 获取：注释。可用于日志的输出等帮助性的信息
+     */
+    public String getComment()
+    {
+        return comment;
+    }
+    
+
+    
+    /**
+     * 设置：注释。可用于日志的输出等帮助性的信息
+     * 
+     * @param comment 
+     */
+    public void setComment(String comment)
+    {
+        this.comment = comment;
+    }
+    
+
+
     public String getObjectID()
     {
         return this.uuid;
