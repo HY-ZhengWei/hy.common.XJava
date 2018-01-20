@@ -94,6 +94,6 @@ public @interface XRequest
      *       
      * 当此属性无值时，表示所有系统均能无密钥访问（前提是：系统级消息密钥也没有定义）。
      */
-    public String [] secrets();
+    public String [] secrets() default {};
     
 }
