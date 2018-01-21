@@ -30,6 +30,7 @@ import oracle.sql.BLOB;
 
 import org.hy.common.Busway;
 import org.hy.common.ByteHelp;
+import org.hy.common.CycleNextList;
 import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
@@ -96,6 +97,11 @@ import org.hy.common.xml.event.BLobEvent;
  *                                添加：execute()方法支持多条SQL语句的执行。
  *              v10.0 2018-01-17  添加：queryBigData()系列关于大数据操作的方法
  *                                添加：setComment()注释。可用于日志的输出等帮助性的信息
+ *              v11.0 2018-01-21  添加：executeUpdates(Map<XSQL ,?> ...)系列方法支持不同类型的多个不同数据库的操作。之前，只支持同一数据库的操作。
+ *                                添加：实现多个平行、平等的数据库的负载均衡（简单级的）。
+ *                                     目前建议只用在查询SQL上，当多个相同数据的数据库（如主备数据库），
+ *                                     在高并发的情况下，提高整体查询速度，查询锁、查询阻塞等问题均能得到一定的解决。
+ *                                     在高并发的情况下，突破数据库可分配的连接数量，会话数量将翻数倍（与数据库个数有正相关的关系）。
  */
 /*
  * 游标类型的说明
@@ -151,8 +157,8 @@ public final class XSQL implements Comparable<XSQL>
 	
 	
 	
-	/** 数据库连接池组 */
-	private DataSourceGroup                dataSourceGroup;
+	/** 多个平行、平等的数据库的负载数据库集合 */
+	private CycleNextList<DataSourceGroup> dataSourceGroups;
 	
 	/** 
 	 * 数据库连接的域。
@@ -246,7 +252,7 @@ public final class XSQL implements Comparable<XSQL>
 	
 	public XSQL()
 	{
-		this.dataSourceGroup   = new DataSourceGroup();
+		this.dataSourceGroups  = new CycleNextList<DataSourceGroup>(1);
 		this.domain            = null;
 		this.content           = new DBSQL();
 		this.result            = new XSQLResult();
@@ -1028,11 +1034,6 @@ public final class XSQL implements Comparable<XSQL>
 	            throw new NullPointerException("Result is null of XSQL.");
 	        }
 	        
-	        if ( !this.getDataSourceGroup().isValid() )
-	        {
-	            throw new RuntimeException("DataSourceGroup is not valid.");
-	        }
-	        
 	        if ( Help.isNull(i_SQL) )
 	        {
 	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
@@ -1075,10 +1076,11 @@ public final class XSQL implements Comparable<XSQL>
      */
     public Object query(String i_SQL)
     {
-        Connection v_Conn      = null;
-        Statement  v_Statement = null;
-        ResultSet  v_Resultset = null;
-        long       v_BeginTime = this.request().getTime();
+        DataSourceGroup v_DSG       = null;
+        Connection      v_Conn      = null;
+        Statement       v_Statement = null;
+        ResultSet       v_Resultset = null;
+        long            v_BeginTime = this.request().getTime();
         
         try
         {
@@ -1087,7 +1089,8 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("Result is null of XSQL.");
             }
             
-            if ( !this.getDataSourceGroup().isValid() )
+            v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
             {
                 throw new RuntimeException("DataSourceGroup is not valid.");
             }
@@ -1097,7 +1100,7 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = this.getConnection();
+            v_Conn      = this.getConnection(v_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             $SQLBusway.put(new XSQLLog(i_SQL));
@@ -1270,10 +1273,11 @@ public final class XSQL implements Comparable<XSQL>
 	 */
     public Object query(String i_SQL ,int i_StartRow ,int i_PagePerSize)
     {
-        Connection v_Conn      = null;
-        Statement  v_Statement = null;
-        ResultSet  v_Resultset = null;
-        long       v_BeginTime = this.request().getTime();
+        DataSourceGroup v_DSG       = null;
+        Connection      v_Conn      = null;
+        Statement       v_Statement = null;
+        ResultSet       v_Resultset = null;
+        long            v_BeginTime = this.request().getTime();
         
         try
         {
@@ -1282,7 +1286,8 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("Result is null of XSQL.");
             }
             
-            if ( !this.getDataSourceGroup().isValid() )
+            v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
             {
                 throw new RuntimeException("DataSourceGroup is not valid.");
             }
@@ -1292,7 +1297,7 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = this.getConnection();
+            v_Conn      = this.getConnection(v_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             $SQLBusway.put(new XSQLLog(i_SQL));
@@ -1326,10 +1331,11 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public Object query(String i_SQL ,List<String> i_FilterColNames)
 	{
-		Connection v_Conn      = null;
-		Statement  v_Statement = null;
-	    ResultSet  v_Resultset = null;
-	    long       v_BeginTime = this.request().getTime();
+	    DataSourceGroup v_DSG       = null;
+		Connection      v_Conn      = null;
+		Statement       v_Statement = null;
+	    ResultSet       v_Resultset = null;
+	    long            v_BeginTime = this.request().getTime();
 		
 		try
 		{
@@ -1338,17 +1344,18 @@ public final class XSQL implements Comparable<XSQL>
 	            throw new NullPointerException("Result is null of XSQL.");
 	        }
 	        
-	        if ( !this.getDataSourceGroup().isValid() )
-	        {
-	            throw new RuntimeException("DataSourceGroup is not valid.");
-	        }
+		    v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
 	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 		    
-			v_Conn      = this.getConnection();
+			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 			v_Resultset = v_Statement.executeQuery(i_SQL);
 			$SQLBusway.put(new XSQLLog(i_SQL));
@@ -1382,10 +1389,11 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public Object query(String i_SQL ,int [] i_FilterColNoArr)
 	{
-		Connection v_Conn      = null;
-		Statement  v_Statement = null;
-	    ResultSet  v_Resultset = null;
-	    long       v_BeginTime = this.request().getTime();
+	    DataSourceGroup v_DSG       = null;
+		Connection      v_Conn      = null;
+		Statement       v_Statement = null;
+	    ResultSet       v_Resultset = null;
+	    long            v_BeginTime = this.request().getTime();
 		
 		try
 		{
@@ -1394,17 +1402,18 @@ public final class XSQL implements Comparable<XSQL>
 	            throw new NullPointerException("Result is null of XSQL.");
 	        }
 	        
-	        if ( !this.getDataSourceGroup().isValid() )
-	        {
-	            throw new RuntimeException("DataSourceGroup is not valid.");
-	        }
+		    v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
 	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 		    
-			v_Conn      = this.getConnection();
+			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 			v_Resultset = v_Statement.executeQuery(i_SQL);
 			$SQLBusway.put(new XSQLLog(i_SQL));
@@ -1720,11 +1729,6 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("Result is null of XSQL.");
             }
             
-            if ( !this.getDataSourceGroup().isValid() )
-            {
-                throw new RuntimeException("DataSourceGroup is not valid.");
-            }
-            
             if ( Help.isNull(i_SQL) )
             {
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
@@ -1772,10 +1776,11 @@ public final class XSQL implements Comparable<XSQL>
      */
     public Object queryBigData(String i_SQL ,XSQLBigData i_XSQLBigData)
     {
-        Connection v_Conn      = null;
-        Statement  v_Statement = null;
-        ResultSet  v_Resultset = null;
-        long       v_BeginTime = this.request().getTime();
+        DataSourceGroup v_DSG       = null;
+        Connection      v_Conn      = null;
+        Statement       v_Statement = null;
+        ResultSet       v_Resultset = null;
+        long            v_BeginTime = this.request().getTime();
         
         try
         {
@@ -1784,7 +1789,8 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("Result is null of XSQL.");
             }
             
-            if ( !this.getDataSourceGroup().isValid() )
+            v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
             {
                 throw new RuntimeException("DataSourceGroup is not valid.");
             }
@@ -1794,7 +1800,7 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = this.getConnection();
+            v_Conn      = this.getConnection(v_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             $SQLBusway.put(new XSQLLog(i_SQL));
@@ -2066,11 +2072,12 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public XSQLBigger queryBigger(String i_SQL)
 	{
-		Connection v_Conn      = null;
-		Statement  v_Statement = null;
-	    ResultSet  v_Resultset = null;
-	    long       v_RowSize   = 0;
-	    long       v_BeginTime = this.request().getTime();
+	    DataSourceGroup v_DSG       = null;
+		Connection      v_Conn      = null;
+		Statement       v_Statement = null;
+	    ResultSet       v_Resultset = null;
+	    long            v_RowSize   = 0;
+	    long            v_BeginTime = this.request().getTime();
 		
 		try
 		{
@@ -2079,10 +2086,11 @@ public final class XSQL implements Comparable<XSQL>
 	            throw new NullPointerException("Result is null of XSQL.");
 	        }
 	        
-	        if ( !this.getDataSourceGroup().isValid() )
-	        {
-	            throw new RuntimeException("DataSourceGroup is not valid.");
-	        }
+		    v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
@@ -2090,7 +2098,7 @@ public final class XSQL implements Comparable<XSQL>
 	        }
 		    
 			v_RowSize   = this.getSQLCount("SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
-			v_Conn      = this.getConnection();
+			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 			v_Resultset = v_Statement.executeQuery(i_SQL);
 			$SQLBusway.put(new XSQLLog(i_SQL));
@@ -2129,11 +2137,12 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public XSQLBigger queryBigger(String i_SQL ,List<String> i_FilterColNames)
 	{
-		Connection v_Conn      = null;
-		Statement  v_Statement = null;
-	    ResultSet  v_Resultset = null;
-	    long       v_RowSize   = 0;
-	    long       v_BeginTime = this.request().getTime();
+	    DataSourceGroup v_DSG       = null;
+		Connection      v_Conn      = null;
+		Statement       v_Statement = null;
+	    ResultSet       v_Resultset = null;
+	    long            v_RowSize   = 0;
+	    long            v_BeginTime = this.request().getTime();
 		
 		try
 		{
@@ -2142,10 +2151,11 @@ public final class XSQL implements Comparable<XSQL>
 	            throw new NullPointerException("Result is null of XSQL.");
 	        }
 	        
-	        if ( !this.getDataSourceGroup().isValid() )
-	        {
-	            throw new RuntimeException("DataSourceGroup is not valid.");
-	        }
+		    v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
@@ -2153,7 +2163,7 @@ public final class XSQL implements Comparable<XSQL>
 	        }
 		    
 			v_RowSize   = this.getSQLCount("SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
-			v_Conn      = this.getConnection();
+			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 			v_Resultset = v_Statement.executeQuery(i_SQL);
 			$SQLBusway.put(new XSQLLog(i_SQL));
@@ -2192,11 +2202,12 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public XSQLBigger queryBigger(String i_SQL ,int [] i_FilterColNoArr)
 	{
-		Connection v_Conn      = null;
-		Statement  v_Statement = null;
-	    ResultSet  v_Resultset = null;
-	    long       v_RowSize   = 0;
-	    long       v_BeginTime = this.request().getTime();
+	    DataSourceGroup v_DSG       = null;
+		Connection      v_Conn      = null;
+		Statement       v_Statement = null;
+	    ResultSet       v_Resultset = null;
+	    long            v_RowSize   = 0;
+	    long            v_BeginTime = this.request().getTime();
 		
 		try
 		{
@@ -2205,10 +2216,11 @@ public final class XSQL implements Comparable<XSQL>
 	            throw new NullPointerException("Result is null of XSQL.");
 	        }
 	        
-	        if ( !this.getDataSourceGroup().isValid() )
-	        {
-	            throw new RuntimeException("DataSourceGroup is not valid.");
-	        }
+		    v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
@@ -2216,7 +2228,7 @@ public final class XSQL implements Comparable<XSQL>
 	        }
 		    
 			v_RowSize   = this.getSQLCount("SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
-			v_Conn      = this.getConnection();
+			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 			v_Resultset = v_Statement.executeQuery(i_SQL);
 			$SQLBusway.put(new XSQLLog(i_SQL));
@@ -2334,26 +2346,28 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public long getSQLCount(String i_SQL)
 	{
-		Connection v_Conn      = null;
-		Statement  v_Statement = null;
-	    ResultSet  v_Resultset = null;
-	    long       v_SQLCount  = 0;
-	    long       v_BeginTime = this.request().getTime();
+	    DataSourceGroup v_DSG       = null;
+		Connection      v_Conn      = null;
+		Statement       v_Statement = null;
+	    ResultSet       v_Resultset = null;
+	    long            v_SQLCount  = 0;
+	    long            v_BeginTime = this.request().getTime();
 
 	    
 	    try
 	    {
-	        if ( !this.getDataSourceGroup().isValid() )
-	        {
-	            throw new RuntimeException("DataSourceGroup is not valid.");
-	        }
+	        v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
 	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 	        
-	    	v_Conn      = this.getConnection();
+	    	v_Conn      = this.getConnection(v_DSG);
 	    	v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 	    	v_Resultset = v_Statement.executeQuery(i_SQL);
 	    	$SQLBusway.put(new XSQLLog(i_SQL));
@@ -2503,23 +2517,25 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public int executeUpdate(String i_SQL)
 	{
-		Connection v_Conn      = null;
-		Statement  v_Statement = null;
-		long       v_BeginTime = this.request().getTime();
+	    DataSourceGroup v_DSG       = null;
+		Connection      v_Conn      = null;
+		Statement       v_Statement = null;
+		long            v_BeginTime = this.request().getTime();
 		
 		try
 		{
-		    if ( !this.getDataSourceGroup().isValid() )
-	        {
-	            throw new RuntimeException("DataSourceGroup is not valid.");
-	        }
+		    v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
 	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 		    
-			v_Conn      = this.getConnection();
+			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement();
 			int v_Count = v_Statement.executeUpdate(i_SQL);
 			$SQLBusway.put(new XSQLLog(i_SQL));
@@ -2672,11 +2688,6 @@ public final class XSQL implements Comparable<XSQL>
         
         try
         {
-            if ( !this.getDataSourceGroup().isValid() )
-            {
-                throw new RuntimeException("DataSourceGroup is not valid.");
-            }
-            
             if ( Help.isNull(i_SQL) )
             {
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
@@ -2821,12 +2832,13 @@ public final class XSQL implements Comparable<XSQL>
      */
     private int executeUpdates_Inner(List<?> i_ObjList ,Connection i_Conn)
     {
-        Connection v_Conn       = null;
-        Statement  v_Statement  = null;
-        boolean    v_AutoCommit = false;
-        int        v_Ret        = 0;
-        long       v_BeginTime  = this.request().getTime();
-        String     v_SQL        = null;
+        DataSourceGroup v_DSG       = null;
+        Connection      v_Conn       = null;
+        Statement       v_Statement  = null;
+        boolean         v_AutoCommit = false;
+        int             v_Ret        = 0;
+        long            v_BeginTime  = this.request().getTime();
+        String          v_SQL        = null;
         
         try
         {
@@ -2835,7 +2847,8 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("Content is null of XSQL.");
             }
             
-            if ( !this.getDataSourceGroup().isValid() )
+            v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
             {
                 throw new RuntimeException("DataSourceGroup is not valid.");
             }
@@ -2845,7 +2858,7 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("Batch execute update List<Object> is null.");
             }
             
-            v_Conn       = i_Conn == null ? this.getConnection() : i_Conn;
+            v_Conn       = i_Conn == null ? this.getConnection(v_DSG) : i_Conn;
             v_AutoCommit = v_Conn.getAutoCommit();  
             v_Conn.setAutoCommit(false);
             v_Statement  = v_Conn.createStatement();
@@ -3171,6 +3184,7 @@ public final class XSQL implements Comparable<XSQL>
     @SuppressWarnings("unchecked")
     private int executeUpdatesPrepared_Inner(List<?> i_ObjList ,Connection i_Conn)
     {
+        DataSourceGroup   v_DSG        = null;
         Connection        v_Conn       = null;
         PreparedStatement v_PStatement = null;
         boolean           v_AutoCommit = false;
@@ -3185,7 +3199,8 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("Content is null of XSQL.");
             }
             
-            if ( !this.getDataSourceGroup().isValid() )
+            v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
             {
                 throw new RuntimeException("DataSourceGroup is not valid.");
             }
@@ -3195,7 +3210,7 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("Batch execute update List<Object> is null.");
             }
             
-            v_Conn       = i_Conn == null ? this.getConnection() : i_Conn;
+            v_Conn       = i_Conn == null ? this.getConnection(v_DSG) : i_Conn;
             v_AutoCommit = v_Conn.getAutoCommit();  
             v_Conn.setAutoCommit(false);
             v_SQL        = this.content.getPreparedSQL().getSQL();
@@ -3363,7 +3378,7 @@ public final class XSQL implements Comparable<XSQL>
      * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
      * 
      * 注: 1. 支持多种不同SQL语句的执行
-     *     2. 只支持同一数据库的操作
+     *     2. 支持不同类型的多个不同数据库的操作
      *     3. 如果要有顺序的执行，请java.util.LinkedHashMap
      *     
      * 重点注意：2014-12-04
@@ -3392,7 +3407,7 @@ public final class XSQL implements Comparable<XSQL>
      * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
      * 
      * 注: 1. 支持多种不同SQL语句的执行
-     *     2. 只支持同一数据库的操作
+     *     2. 支持不同类型的多个不同数据库的操作
      *     3. 如果要有顺序的执行，请java.util.LinkedHashMap
      *     
      * 重点注意：2014-12-04
@@ -3420,7 +3435,7 @@ public final class XSQL implements Comparable<XSQL>
      * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
      * 
      * 注: 1. 支持多种不同SQL语句的执行
-     *     2. 只支持同一数据库的操作
+     *     2. 支持不同类型的多个不同数据库的操作
      *     3. 如果要有顺序的执行，请java.util.LinkedHashMap
      *
      * 重点注意：2014-12-04
@@ -3439,18 +3454,19 @@ public final class XSQL implements Comparable<XSQL>
      */
     public static <R> int executeUpdates(Map<XSQL ,List<?>> i_XSQLs ,int i_BatchCommit)
     {
-        XSQL               v_XSQL           = null;
-        XSQL               v_XSQLError      = null;
-        Object             v_ParamObj       = null;
-        Connection         v_Conn           = null;
-        boolean            v_AutoCommit     = false;
-        int                v_Ret            = 0;
-        long               v_TimeLenSum     = 0;                               // 每段SQL用时时长的累计值。此值一般情况下小于 v_TimeLenTotal
-        long               v_TimeLenTotal   = 0;                               // 总体用时时长
-        long               v_BeginTimeTotal = Date.getNowTime().getTime();     // 总体开始时间
-        long               v_BeginTime      = 0;
-        List<Return<XSQL>> v_Totals         = null;
-        Return<XSQL>       v_TotalCache     = null;
+        Map<XSQL ,DataSourceGroup> v_DSGMap         = new HashMap<XSQL ,DataSourceGroup>();
+        DataSourceGroup            v_DSG            = null;
+        List<Connection>           v_Conns          = new ArrayList<Connection>();
+        XSQL                       v_XSQL           = null;
+        XSQL                       v_XSQLError      = null;
+        Object                     v_ParamObj       = null;
+        int                        v_Ret            = 0;
+        long                       v_TimeLenSum     = 0;                               // 每段SQL用时时长的累计值。此值一般情况下小于 v_TimeLenTotal
+        long                       v_TimeLenTotal   = 0;                               // 总体用时时长
+        long                       v_BeginTimeTotal = Date.getNowTime().getTime();     // 总体开始时间
+        long                       v_BeginTime      = 0;
+        List<Return<XSQL>>         v_Totals         = null;
+        Return<XSQL>               v_TotalCache     = null;
         
         try
         {
@@ -3466,28 +3482,30 @@ public final class XSQL implements Comparable<XSQL>
                     throw new NullPointerException("Content is null of XSQL.");
                 }
                 
-                if ( !v_XSQLTemp.getDataSourceGroup().isValid() )
-                {
-                    throw new RuntimeException("DataSourceGroup is not valid.");
-                }
-                
                 if ( Help.isNull(i_XSQLs.get(v_XSQLTemp)) )
                 {
                     throw new NullPointerException("Batch execute update List<Object> is null.");
                 }
+                
+                v_DSG = v_XSQLTemp.getDataSourceGroup();
+                if ( !v_DSG.isValid() )
+                {
+                    throw new RuntimeException("DataSourceGroup is not valid.");
+                }
+                v_DSGMap.put(v_XSQLTemp ,v_DSG);
             }
             
-            v_Totals     = new ArrayList<Return<XSQL>>(i_XSQLs.size());
-            v_XSQL       = i_XSQLs.keySet().iterator().next();
-            v_Conn       = v_XSQL.getConnection();
-            v_AutoCommit = v_Conn.getAutoCommit();  
-            v_Conn.setAutoCommit(false);
-            
+            v_Totals = new ArrayList<Return<XSQL>>(i_XSQLs.size());
+            v_XSQL   = i_XSQLs.keySet().iterator().next();
             
             if ( i_BatchCommit <= 0 )
             {
                 for (XSQL v_XSQLTemp : i_XSQLs.keySet())
                 {
+                    Connection v_Conn = v_XSQL.getConnection(v_DSG);
+                    v_Conn.setAutoCommit(false);
+                    v_Conns.add(v_Conn);
+                    
                     v_XSQLError = v_XSQLTemp;
                     List<?> v_ObjList = i_XSQLs.get(v_XSQLTemp);
                     
@@ -3509,7 +3527,7 @@ public final class XSQL implements Comparable<XSQL>
                     }
                 }
                 
-                v_Conn.commit();
+                commits(1 ,v_Conns);
             }
             else
             {
@@ -3517,6 +3535,10 @@ public final class XSQL implements Comparable<XSQL>
                 
                 for (XSQL v_XSQLTemp : i_XSQLs.keySet())
                 {
+                    Connection v_Conn = v_XSQL.getConnection(v_DSG);
+                    v_Conn.setAutoCommit(false);
+                    v_Conns.add(v_Conn);
+                    
                     v_XSQLError = v_XSQLTemp;
                     List<?> v_ObjList = i_XSQLs.get(v_XSQLTemp);
                     
@@ -3546,11 +3568,12 @@ public final class XSQL implements Comparable<XSQL>
                             }
                         }
                     }
-                }
-                
-                if ( !v_IsCommit )
-                {
-                    v_Conn.commit();
+                    
+                    if ( !v_IsCommit )
+                    {
+                        v_Conn.commit();
+                        v_IsCommit = true;
+                    }
                 }
             }
             
@@ -3575,16 +3598,9 @@ public final class XSQL implements Comparable<XSQL>
             }
             erroring(v_SQLError ,exce ,v_XSQLError);
             
-            try
+            if ( !Help.isNull(v_Conns) )
             {
-                if ( v_Conn != null )
-                {
-                    v_Conn.rollback();
-                }
-            }
-            catch (Exception e)
-            {
-                // Nothing.
+                rollbacks(v_Conns);
             }
             
             // 计算出总用时与每段SQL累计用时之差，后平摊到每段SQL的用时时长上。
@@ -3602,22 +3618,8 @@ public final class XSQL implements Comparable<XSQL>
         }
         finally
         {
-            try
-            {
-                if ( v_Conn != null )
-                {
-                    v_Conn.setAutoCommit(v_AutoCommit);
-                }
-            }
-            catch (Exception exce)
-            {
-                // Nothing.
-            }
-            
-            if ( v_XSQL != null )
-            {
-                v_XSQL.closeDB(null ,null ,v_Conn);
-            }
+            setAutoCommits(v_Conns ,true);
+            closeDB(v_Conns);
         }
     }
     
@@ -3704,6 +3706,7 @@ public final class XSQL implements Comparable<XSQL>
 	@SuppressWarnings("deprecation")
     public int executeUpdateBLob(String i_SQL ,File i_File)
 	{
+	    DataSourceGroup     v_DSG            = null;
 		Connection          v_Conn           = null;
 		Statement           v_Statement      = null;
 		ResultSet           v_ResultSet      = null;
@@ -3720,10 +3723,11 @@ public final class XSQL implements Comparable<XSQL>
 		
 		try
 		{
-		    if ( !this.getDataSourceGroup().isValid() )
-	        {
-	            throw new RuntimeException("DataSourceGroup is not valid.");
-	        }
+		    v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
@@ -3738,7 +3742,7 @@ public final class XSQL implements Comparable<XSQL>
 	        v_Event = new DefaultBLobEvent(this ,i_File.length());
 	        v_Event.setActionType(1);
 		    
-			v_Conn           = this.getConnection();
+			v_Conn           = this.getConnection(v_DSG);
 			v_Old_AutoCommit = v_Conn.getAutoCommit();
 			v_Conn.setAutoCommit(false);
 			v_Statement      = v_Conn.createStatement();
@@ -3927,6 +3931,7 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public boolean executeGetBLob(String i_SQL ,File io_SaveFile)
 	{
+	    DataSourceGroup     v_DSG         = null;
 		Connection          v_Conn        = null;
 		Statement           v_Statement   = null;
 	    ResultSet           v_ResultSet   = null;
@@ -3943,10 +3948,11 @@ public final class XSQL implements Comparable<XSQL>
 		
 		try
 		{
-		    if ( !this.getDataSourceGroup().isValid() )
-	        {
-	            throw new RuntimeException("DataSourceGroup is not valid.");
-	        }
+		    v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
 	        
 	        if ( Help.isNull(i_SQL) )
 	        {
@@ -3958,7 +3964,7 @@ public final class XSQL implements Comparable<XSQL>
 	            throw new NullPointerException("SaveFile is null of XSQL.");
 	        }
 		    
-			v_Conn      = this.getConnection();
+			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 			v_ResultSet = v_Statement.executeQuery(i_SQL);
 			$SQLBusway.put(new XSQLLog(i_SQL));
@@ -4178,24 +4184,26 @@ public final class XSQL implements Comparable<XSQL>
 	 */
 	public boolean execute(String i_SQL)
 	{
-		Connection v_Conn      = null;
-		Statement  v_Statement = null;
-		long       v_BeginTime = this.request().getTime();
-		String     v_SQL       = i_SQL;
+	    DataSourceGroup v_DSG       = null;
+		Connection      v_Conn      = null;
+		Statement       v_Statement = null;
+		long            v_BeginTime = this.request().getTime();
+		String          v_SQL       = i_SQL;
 		
 		try
 		{
-		    if ( !this.getDataSourceGroup().isValid() )
-	        {
-	            throw new RuntimeException("DataSourceGroup is not valid.");
-	        }
+		    v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
 	        
 	        if ( Help.isNull(v_SQL) )
 	        {
 	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
 	        }
 		    
-			v_Conn      = this.getConnection();
+			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement();
 			
 			String [] v_SQLs = v_SQL.split($Executes_Split);
@@ -4354,11 +4362,6 @@ public final class XSQL implements Comparable<XSQL>
         
         try
         {
-            if ( !this.getDataSourceGroup().isValid() )
-            {
-                throw new RuntimeException("DataSourceGroup is not valid.");
-            }
-            
             if ( Help.isNull(i_SQL) )
             {
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
@@ -4402,6 +4405,7 @@ public final class XSQL implements Comparable<XSQL>
      */
     public Object call(String i_SQLCallName)
     {
+        DataSourceGroup   v_DSG       = null;
         Connection        v_Conn      = null;
         CallableStatement v_Statement = null;
         long              v_BeginTime = this.request().getTime();
@@ -4414,7 +4418,8 @@ public final class XSQL implements Comparable<XSQL>
                 throw new IllegalArgumentException("Type is not 'P' or 'F' of XSQL.");
             }
             
-            if ( !this.getDataSourceGroup().isValid() )
+            v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
             {
                 throw new RuntimeException("DataSourceGroup is not valid.");
             }
@@ -4424,7 +4429,7 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("SQLCallName is null of XSQL.");
             }
             
-            v_Conn = this.getConnection();
+            v_Conn = this.getConnection(v_DSG);
             if ( $Type_Procedure.equals(this.type) )
             {
                 v_Statement = v_Conn.prepareCall("{call " + i_SQLCallName + "()}");
@@ -4532,6 +4537,7 @@ public final class XSQL implements Comparable<XSQL>
     @SuppressWarnings("resource")
     public Object call(Object i_ParamObj)
     {
+        DataSourceGroup   v_DSG            = null;
         Connection        v_Conn           = null;
         CallableStatement v_Statement      = null;
         ResultSet         v_Resultset      = null;
@@ -4562,7 +4568,8 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("Result is null of XSQL.");
             }
             
-            if ( !this.getDataSourceGroup().isValid() )
+            v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
             {
                 throw new RuntimeException("DataSourceGroup is not valid.");
             }
@@ -4619,7 +4626,7 @@ public final class XSQL implements Comparable<XSQL>
             v_Buffer.append(")}");
             
             
-            v_Conn      = this.getConnection();
+            v_Conn      = this.getConnection(v_DSG);
             v_Statement = v_Conn.prepareCall(v_Buffer.toString());
             
             
@@ -4748,6 +4755,7 @@ public final class XSQL implements Comparable<XSQL>
     @SuppressWarnings("resource")
     public Object call(Map<String ,?> i_ParamValues)
     {
+        DataSourceGroup   v_DSG            = null;
         Connection        v_Conn           = null;
         CallableStatement v_Statement      = null;
         ResultSet         v_Resultset      = null;
@@ -4773,7 +4781,8 @@ public final class XSQL implements Comparable<XSQL>
                 throw new NullPointerException("Result is null of XSQL.");
             }
             
-            if ( !this.getDataSourceGroup().isValid() )
+            v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
             {
                 throw new RuntimeException("DataSourceGroup is not valid.");
             }
@@ -4830,7 +4839,7 @@ public final class XSQL implements Comparable<XSQL>
             v_Buffer.append(")}");
             
             
-            v_Conn      = this.getConnection();
+            v_Conn      = this.getConnection(v_DSG);
             v_Statement = v_Conn.prepareCall(v_Buffer.toString());
             
             
@@ -5150,18 +5159,6 @@ public final class XSQL implements Comparable<XSQL>
 	
 	
 	
-	/**
-	 * 获取数据库连接。
-	 * 
-	 * @return
-	 */
-	public Connection getConnection()
-	{
-		return this.getDataSourceGroup().getConnection();
-	}
-    
-    
-    
     /**
      * 添加当调用存储过程或函数时的参数对象
      * 
@@ -5228,6 +5225,191 @@ public final class XSQL implements Comparable<XSQL>
     {
         this.content = i_DBSQL;
     }
+	
+	
+	
+	/**
+	 * 多个数据库连接批量提交
+	 * 
+	 * @author      ZhengWei(HY)
+	 * @createDate  2018-01-21
+	 * @version     v1.0
+	 *
+	 * @param i_Strategy  策略类型。
+	 *                       策略1：当出现异常时，其后的连接均继续：提交。
+	 *                       策略2：当出现异常时，其后的连接均执行：回滚。
+	 * @param i_Conns     数据库连接的集合
+	 * @return
+	 */
+	public static boolean commits(int i_Strategy ,List<Connection> i_Conns)
+	{
+	    boolean v_IsOK = true;
+	    
+	    if ( Help.isNull(i_Conns) )
+	    {
+	        return v_IsOK;
+	    }
+
+	    // 策略1：当出现异常时，其后的连接均继续：提交。
+        if ( i_Strategy == 1 )
+        {
+            for (Connection v_Conn : i_Conns)
+            {
+                try
+                {
+                    v_Conn.commit();
+                }
+                catch (Exception exce)
+                {
+                    v_IsOK = false;
+                    exce.printStackTrace();
+                }
+            }
+        }
+	    // 策略2：当出现异常时，其后的连接均执行：回滚。
+        else if ( i_Strategy == 2 )
+	    {
+    	    for (Connection v_Conn : i_Conns)
+    	    {
+    	        try
+    	        {
+    	            if ( v_IsOK )
+    	            {
+    	                v_Conn.commit();
+    	            }
+    	            else
+    	            {
+    	                v_Conn.rollback();
+    	            }
+    	        }
+    	        catch (Exception exce)
+    	        {
+    	            v_IsOK = false;
+    	            exce.printStackTrace();
+    	        }
+    	    }
+	    }
+	    
+	    return v_IsOK;
+	}
+	
+	
+	
+	/**
+     * 多个数据库连接批量回滚
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-21
+     * @version     v1.0
+     *
+     * @param i_Conns     数据库连接的集合
+     * @return
+     */
+    public static boolean rollbacks(List<Connection> i_Conns)
+    {
+        boolean v_IsOK = true;
+
+        if ( !Help.isNull(i_Conns) )
+        {
+            for (Connection v_Conn : i_Conns)
+            {
+                try
+                {
+                    v_Conn.rollback();
+                }
+                catch (Exception exce)
+                {
+                    // 异常用不抛出
+                    v_IsOK = false;
+                }
+            }
+        }
+        
+        return v_IsOK;
+    }
+    
+    
+    
+    /**
+     * 多个数据库连接批量设置是否自动提交
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-21
+     * @version     v1.0
+     *
+     * @param i_Conns       数据库连接的集合
+     * @param i_AutoCommit  是否自动提交
+     * @return
+     */
+    public static boolean setAutoCommits(List<Connection> i_Conns ,boolean i_AutoCommit)
+    {
+        boolean v_IsOK = true;
+        
+        if ( !Help.isNull(i_Conns) )
+        {
+            for (Connection v_Conn : i_Conns)
+            {
+                try
+                {
+                    v_Conn.setAutoCommit(i_AutoCommit);
+                }
+                catch (Exception exce)
+                {
+                    // 异常用不抛出
+                    v_IsOK = false;
+                }
+            }
+        }
+        
+        return v_IsOK;
+    }
+    
+    
+    
+    /**
+     * 多个数据库连接批量关闭
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-21
+     * @version     v1.0
+     *
+     * @param i_Conns     数据库连接的集合
+     * @return
+     */
+    public static boolean closeDB(List<Connection> i_Conns)
+    {
+        boolean v_IsOK = true;
+
+        if ( !Help.isNull(i_Conns) )
+        {
+            for (Connection v_Conn : i_Conns)
+            {
+                try
+                {
+                    v_Conn.close();
+                }
+                catch (Exception exce)
+                {
+                    // 异常用不抛出
+                    v_IsOK = false;
+                }
+            }
+        }
+        
+        return v_IsOK;
+    }
+	
+	
+	
+	/**
+     * 获取数据库连接。
+     * 
+     * @return
+     */
+    public Connection getConnection(DataSourceGroup i_DataSourceGroup)
+    {
+        return i_DataSourceGroup.getConnection();
+    }
 
 	
     
@@ -5255,19 +5437,19 @@ public final class XSQL implements Comparable<XSQL>
             }
         }
         
-        return dataSourceGroup;
+        return dataSourceGroups.next();
     }
 
     
     
     /**
-     * 设置：数据库连接池组
+     * 设置：将数据库连接池组将添加到的负载数据库集合中
      * 
-     * @param dataSourceGroup 
+     * @param i_DataSourceGroup 
      */
-    public void setDataSourceGroup(DataSourceGroup dataSourceGroup)
+    public void setDataSourceGroup(DataSourceGroup i_DataSourceGroup)
     {
-        this.dataSourceGroup = dataSourceGroup;
+        this.dataSourceGroups.add(i_DataSourceGroup);
     }
     
     
@@ -5305,7 +5487,7 @@ public final class XSQL implements Comparable<XSQL>
         this.type   = $Type_Create;
         
         
-        if ( null == this.dataSourceGroup )
+        if ( null == this.getDataSourceGroup() )
         {
             throw new NullPointerException("DataSourceGroup is null.");
         }

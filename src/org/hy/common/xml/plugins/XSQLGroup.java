@@ -108,6 +108,7 @@ import org.hy.common.xml.XSQLBigData;
  *              v15.1 2017-11-20  1.优化：提升getCollectionToDB()方法的执行性能。
  *              v16.0 2017-12-22  1.添加：XSQL组执行的Java方法的入参参数中增加控制中心XSQLGroupControl，实现事务统一提交、回滚。
  *                                2.添加：XSQLNode.isNoUpdateRollbacks()方法，当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作。
+ *              v17.0 2018-01-21  1.添加：支持多个平行、平等的数据库的负载均衡（简单级的），详见XSQL
  */
 public final class XSQLGroup
 {
@@ -1449,18 +1450,19 @@ public final class XSQLGroup
      */
     private synchronized Connection getConnection(XSQLNode i_Node ,Map<DataSourceGroup ,XConnection> io_DSGConns) throws SQLException
     {
-        XConnection v_Conn = io_DSGConns.get(i_Node.getSql().getDataSourceGroup());
+        XConnection v_XConn = io_DSGConns.get(i_Node.getSql().getDataSourceGroup());
         
-        if ( null == v_Conn )
+        if ( null == v_XConn )
         {
-            v_Conn = new XConnection(i_Node.getSql().getConnection());
-            v_Conn.getConn().setAutoCommit(false);                 // 不自动提交，而是之后统一提交（或回滚）
+            DataSourceGroup v_DSG = i_Node.getSql().getDataSourceGroup();
+            v_XConn = new XConnection(i_Node.getSql().getConnection(v_DSG));
+            v_XConn.getConn().setAutoCommit(false);                 // 不自动提交，而是之后统一提交（或回滚）
             
-            io_DSGConns.put(i_Node.getSql().getDataSourceGroup() ,v_Conn);
+            io_DSGConns.put(v_DSG ,v_XConn);
         }
         
-        v_Conn.setCommit(false);  // 内部标记为：没有 "提交" 过的连接
-        return v_Conn.getConn();
+        v_XConn.setCommit(false);  // 内部标记为：没有 "提交" 过的连接
+        return v_XConn.getConn();
     }
     
     
