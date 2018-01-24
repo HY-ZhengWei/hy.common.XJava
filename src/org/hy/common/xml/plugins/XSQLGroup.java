@@ -46,10 +46,11 @@ import org.hy.common.xml.XSQLBigData;
  *   特点13： 由外界决定是否提交、是否回滚的功能。
  *   特点14：支持简单的统计功能（请求整体执行的次数、成功次数、成功累计用时时长）。
  *   特点15：支持组嵌套组的执行：实现XSQLGroup组中嵌套另一个XSQLGroup组嵌套执行的功能。
- *   特点16：支持返回多个查询结果集。returnID标记的查询XSQL节点，一次性返回所有记录，并按XSQLResult定义的规则生成一个结果集对象。
- *   特点17：支持查询结果当作其后节点的SQL入参的同时，还返回查询结果。将查询XSQL节点每次循环遍历出的每一行记录，用 PartitionMap<String ,Object> 类型的行转列保存的数据结构，并返回查询结果集。
- *   特点18：支持执行Java代码，对查询结果集进行二次加工处理等Java操作。
- *   特点19：查询SQL语句有两种使用数据库连接的方式
+ *   特点16：支持递归的执行。自己指向自己递归执行（参类可分为局部变量和全局变量）。
+ *   特点17：支持返回多个查询结果集。returnID标记的查询XSQL节点，一次性返回所有记录，并按XSQLResult定义的规则生成一个结果集对象。
+ *   特点18：支持查询结果当作其后节点的SQL入参的同时，还返回查询结果。将查询XSQL节点每次循环遍历出的每一行记录，用 PartitionMap<String ,Object> 类型的行转列保存的数据结构，并返回查询结果集。
+ *   特点19：支持执行Java代码，对查询结果集进行二次加工处理等Java操作。
+ *   特点20：查询SQL语句有两种使用数据库连接的方式
  *           1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
  *           2. 读写同事务：查询SQL与更新修改SQL共用一个连接，做到读、写在同一个事务中进行。
  *   
@@ -58,6 +59,12 @@ import org.hy.common.xml.XSQLBigData;
  *   注意03：节点检查条件的占位符命名无大小写要求。
  *   注意04：如果前一个节点做了更新操作(Update、Delete等)，但没有提交，后一个节点对同一张表的查询，是会死锁的（一直等待上个更新节点的提交）。
  *          但设置 XSQLNode.oneConnection=true 后，同一张表的查询是OK的。
+ *   注意05：嵌套查询类型的XSQL节点，其子XSQL节点不能更改（能读取）父XSQL节点的参数信息，等同时for循环中的局部变量。
+ *          举例：控制循环次数的查询XSQL节点有A、B、C三个嵌套，相当于Java中嵌套循环for(A){ for(B){ for(C){} } }，
+ *               节点C可以读取到A、B两节点的所有参数信息（执行入参，A、B节点当前行的查询结果），
+ *               但节点C不能修改A、B两节点的所有参数（原先是可以的，但只对Java基本类型有效）。
+ *          这样做的好处是：当节点C退出循环时，B节点的参数信息不会受到影响，同时，每个节点均可以有相同名称的变量。
+ *                        从此将支持递归嵌套循环。
  *          
  *   
  *   XSQL组执行的Java方法的定义模板 @see org.hy.common.xml.plugins.XSQLGroupExecuteJava
@@ -109,6 +116,17 @@ import org.hy.common.xml.XSQLBigData;
  *              v16.0 2017-12-22  1.添加：XSQL组执行的Java方法的入参参数中增加控制中心XSQLGroupControl，实现事务统一提交、回滚。
  *                                2.添加：XSQLNode.isNoUpdateRollbacks()方法，当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作。
  *              v17.0 2018-01-21  1.添加：支持多个平行、平等的数据库的负载均衡（简单级的），详见XSQL
+ *              v18.0 2018-01-24  1.更改：控制循环次数的查询XSQL节点，其查询入参(io_Params)由全局变量更为局部变量。
+ *                                       保留原子节点继承父查询XSQL节点的入参信息。从此将支持递归嵌套循环
+ *                                       举例：控制循环次数的查询XSQL节点有A、B、C三个嵌套，相当于Java的三层嵌套循环for(A){ for(B){ for(C){} } }，
+ *                                            节点C可以读取到A、B两节点的所有参数信息（执行入参，A、B节点当前行的查询结果），
+ *                                            但节点C不能修改A、B两节点的所有参数（原先是可以的，但只对Java基本类型有效）。
+ *                                2.添加：多线程等待XSQLNode.threadWait属性，可自由定义在哪个节点上等待所有线程均执行完成。
+ *                                       之前是自动在其后的平级节点上等待。
+ *                                       同时，根节点XSQL组及所有子节点XSQL组均共享一个线程任务组。
+ *                                       配合递归功能，不再重复创建多线程任务组，
+ *                                       递归时重复创建多个多线程任务组，会造成线程资源使用殆尽，出现死锁。
+ *                                       
  */
 public final class XSQLGroup
 {
@@ -675,6 +693,8 @@ public final class XSQLGroup
                     }
                     
                     v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
+                    
+                    v_Ret = waitThreads(v_Node ,v_Ret);
                 }
                 else
                 {
@@ -861,10 +881,12 @@ public final class XSQLGroup
                 // 这里只处理内存中的集合循环遍历，因为数据库中的已交于大数据处理接口来处理了  ZhengWei(HY) Add 2018-01-18
                 if ( (XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) || !v_Node.isBigData()) && !Help.isNull(v_QueryRet) )
                 {
-                    TaskGroup v_TaskGroup = null;
                     if ( v_Node.isThread() )
                     {
-                        v_TaskGroup = new TaskGroup(this.getSQL(v_Node ,io_Params));
+                        if ( v_Ret.taskGroup == null )
+                        {
+                            v_Ret.taskGroup = new TaskGroup(this.getSQL(v_Node ,io_Params));
+                        }
                     }
                     
                     // 行级对象是：Map<String ,Object>
@@ -885,30 +907,31 @@ public final class XSQLGroup
                             {
                                 Object              v_QRItem    = v_QueryRet.get(v_RowIndex);
                                 Map<String ,Object> v_QRItemMap = (Map<String ,Object>)v_QRItem;
+                                Map<String ,Object> v_Params    = new HashMap<String ,Object>(io_Params);
                                 
-                                io_Params.putAll(v_QRItemMap);
-                                io_Params.put($Param_RowIndex ,v_RowIndex);
-                                io_Params.put($Param_RowSize  ,v_QueryRet.size());
+                                v_Params.putAll(v_QRItemMap);
+                                v_Params.put($Param_RowIndex ,v_RowIndex);
+                                v_Params.put($Param_RowSize  ,v_QueryRet.size());
                                 if ( v_RowIndex == v_QueryRet.size() - 1 )
                                 {
-                                    io_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                    io_Params.put($Param_RowNext     ,null);
+                                    v_Params.put($Param_RowPrevious ,v_RowPrevious);
+                                    v_Params.put($Param_RowNext     ,null);
                                 }
                                 else
                                 {
-                                    io_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                    io_Params.put($Param_RowNext     ,v_QueryRet.get(v_RowIndex + 1));
+                                    v_Params.put($Param_RowPrevious ,v_RowPrevious);
+                                    v_Params.put($Param_RowNext     ,v_QueryRet.get(v_RowIndex + 1));
                                 }
                                 
                                 if ( v_Node.isThread() )
                                 {
                                     // 多线程并发执行  Add 2017-02-22
-                                    XSQLGroupTask v_Task = new XSQLGroupTask(this ,v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
-                                    v_TaskGroup.addTaskAndStart(v_Task);
+                                    XSQLGroupTask v_Task = new XSQLGroupTask(this ,v_NodeIndex ,v_Params ,v_Ret ,io_DSGConns);
+                                    v_Ret.taskGroup.addTaskAndStart(v_Task);
                                 }
                                 else
                                 {
-                                    v_Ret = this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
+                                    v_Ret = this.executeGroup(v_NodeIndex ,v_Params ,v_Ret ,io_DSGConns);
                                     if ( !v_Ret.isSuccess() )
                                     {
                                         // 循环执行时，只要有一个执行异常，就全部退出
@@ -921,7 +944,7 @@ public final class XSQLGroup
                                 }
                                 
                                 v_QueryReturnPart.putRows(v_QRItemMap);  // 只有执行成功后才put返回查询结果集
-                                v_RowPrevious = Help.setMapValues(v_QRItemMap ,io_Params);
+                                v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
                             }
                         }
                         else
@@ -931,30 +954,31 @@ public final class XSQLGroup
                             {
                                 Object              v_QRItem    = v_QueryRet.get(v_RowIndex);
                                 Map<String ,Object> v_QRItemMap = (Map<String ,Object>)v_QRItem;
+                                Map<String ,Object> v_Params    = new HashMap<String ,Object>(io_Params);
                                 
-                                io_Params.putAll(v_QRItemMap);
-                                io_Params.put($Param_RowIndex ,v_RowIndex);
-                                io_Params.put($Param_RowSize  ,v_QueryRet.size());
+                                v_Params.putAll(v_QRItemMap);
+                                v_Params.put($Param_RowIndex ,v_RowIndex);
+                                v_Params.put($Param_RowSize  ,v_QueryRet.size());
                                 if ( v_RowIndex == v_QueryRet.size() - 1 )
                                 {
-                                    io_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                    io_Params.put($Param_RowNext     ,null);
+                                    v_Params.put($Param_RowPrevious ,v_RowPrevious);
+                                    v_Params.put($Param_RowNext     ,null);
                                 }
                                 else
                                 {
-                                    io_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                    io_Params.put($Param_RowNext     ,v_QueryRet.get(v_RowIndex + 1));
+                                    v_Params.put($Param_RowPrevious ,v_RowPrevious);
+                                    v_Params.put($Param_RowNext     ,v_QueryRet.get(v_RowIndex + 1));
                                 }
                                 
                                 if ( v_Node.isThread() )
                                 {
                                     // 多线程并发执行  Add 2017-02-22
-                                    XSQLGroupTask v_Task = new XSQLGroupTask(this ,v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
-                                    v_TaskGroup.addTaskAndStart(v_Task);
+                                    XSQLGroupTask v_Task = new XSQLGroupTask(this ,v_NodeIndex ,v_Params ,v_Ret ,io_DSGConns);
+                                    v_Ret.taskGroup.addTaskAndStart(v_Task);
                                 }
                                 else
                                 {
-                                    v_Ret = this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
+                                    v_Ret = this.executeGroup(v_NodeIndex ,v_Params ,v_Ret ,io_DSGConns);
                                     if ( !v_Ret.isSuccess() )
                                     {
                                         // 循环执行时，只要有一个执行异常，就全部退出
@@ -966,7 +990,7 @@ public final class XSQLGroup
                                     }
                                 }
                                 
-                                v_RowPrevious = Help.setMapValues(v_QRItemMap ,io_Params);
+                                v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
                             }
                         }
                     }
@@ -990,30 +1014,31 @@ public final class XSQLGroup
                                 {
                                     Object              v_QRItem    = v_QueryRet.get(v_RowIndex);
                                     Map<String ,Object> v_QRItemMap = Help.toMap(v_QRItem ,null ,false);
+                                    Map<String ,Object> v_Params    = new HashMap<String ,Object>(io_Params);
                                     
-                                    io_Params.putAll(v_QRItemMap);
-                                    io_Params.put($Param_RowIndex ,v_RowIndex);
-                                    io_Params.put($Param_RowSize  ,v_QueryRet.size());
+                                    v_Params.putAll(v_QRItemMap);
+                                    v_Params.put($Param_RowIndex ,v_RowIndex);
+                                    v_Params.put($Param_RowSize  ,v_QueryRet.size());
                                     if ( v_RowIndex == v_QueryRet.size() - 1 )
                                     {
-                                        io_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                        io_Params.put($Param_RowNext     ,null);
+                                        v_Params.put($Param_RowPrevious ,v_RowPrevious);
+                                        v_Params.put($Param_RowNext     ,null);
                                     }
                                     else
                                     {
-                                        io_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                        io_Params.put($Param_RowNext     ,v_QueryRet.get(v_RowIndex + 1));
+                                        v_Params.put($Param_RowPrevious ,v_RowPrevious);
+                                        v_Params.put($Param_RowNext     ,v_QueryRet.get(v_RowIndex + 1));
                                     }
                                     
                                     if ( v_Node.isThread() )
                                     {
                                         // 多线程并发执行  Add 2017-02-22
-                                        XSQLGroupTask v_Task = new XSQLGroupTask(this ,v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
-                                        v_TaskGroup.addTaskAndStart(v_Task);
+                                        XSQLGroupTask v_Task = new XSQLGroupTask(this ,v_NodeIndex ,v_Params ,v_Ret ,io_DSGConns);
+                                        v_Ret.taskGroup.addTaskAndStart(v_Task);
                                     }
                                     else
                                     {
-                                        v_Ret = this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
+                                        v_Ret = this.executeGroup(v_NodeIndex ,v_Params ,v_Ret ,io_DSGConns);
                                         if ( !v_Ret.isSuccess() )
                                         {
                                             // 循环执行时，只要有一个执行异常，就全部退出
@@ -1026,7 +1051,7 @@ public final class XSQLGroup
                                     }
                                     
                                     v_QueryReturnPart.putRows(v_QRItemMap);  // 只有执行成功后才put返回查询结果集
-                                    v_RowPrevious = Help.setMapValues(v_QRItemMap ,io_Params);
+                                    v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
                                 }
                             }
                             else
@@ -1036,30 +1061,31 @@ public final class XSQLGroup
                                 {
                                     Object              v_QRItem    = v_QueryRet.get(v_RowIndex);
                                     Map<String ,Object> v_QRItemMap = Help.toMap(v_QRItem ,null ,false);
+                                    Map<String ,Object> v_Params    = new HashMap<String ,Object>(io_Params);
                                     
-                                    io_Params.putAll(v_QRItemMap);
-                                    io_Params.put($Param_RowIndex ,v_RowIndex);
-                                    io_Params.put($Param_RowSize  ,v_QueryRet.size());
+                                    v_Params.putAll(v_QRItemMap);
+                                    v_Params.put($Param_RowIndex ,v_RowIndex);
+                                    v_Params.put($Param_RowSize  ,v_QueryRet.size());
                                     if ( v_RowIndex == v_QueryRet.size() - 1 )
                                     {
-                                        io_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                        io_Params.put($Param_RowNext     ,null);
+                                        v_Params.put($Param_RowPrevious ,v_RowPrevious);
+                                        v_Params.put($Param_RowNext     ,null);
                                     }
                                     else
                                     {
-                                        io_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                        io_Params.put($Param_RowNext     ,v_QueryRet.get(v_RowIndex + 1));
+                                        v_Params.put($Param_RowPrevious ,v_RowPrevious);
+                                        v_Params.put($Param_RowNext     ,v_QueryRet.get(v_RowIndex + 1));
                                     }
                                     
                                     if ( v_Node.isThread() )
                                     {
                                         // 多线程并发执行  Add 2017-02-22
-                                        XSQLGroupTask v_Task = new XSQLGroupTask(this ,v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
-                                        v_TaskGroup.addTaskAndStart(v_Task);
+                                        XSQLGroupTask v_Task = new XSQLGroupTask(this ,v_NodeIndex ,v_Params ,v_Ret ,io_DSGConns);
+                                        v_Ret.taskGroup.addTaskAndStart(v_Task);
                                     }
                                     else
                                     {
-                                        v_Ret = this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
+                                        v_Ret = this.executeGroup(v_NodeIndex ,v_Params ,v_Ret ,io_DSGConns);
                                         if ( !v_Ret.isSuccess() )
                                         {
                                             // 循环执行时，只要有一个执行异常，就全部退出
@@ -1071,7 +1097,7 @@ public final class XSQLGroup
                                         }
                                     }
                                     
-                                    v_RowPrevious = Help.setMapValues(v_QRItemMap ,io_Params);
+                                    v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
                                 }
                             }
                         }
@@ -1085,39 +1111,15 @@ public final class XSQLGroup
                         }
                     }
                     
-                    if ( v_Node.isThread() )
-                    {
-                        while ( !v_TaskGroup.isTasksFinish() )
-                        {
-                            // 一直等待并且的执行结果
-                            try
-                            {
-                                Thread.sleep(2);
-                            }
-                            catch (Exception exce)
-                            {
-                                // Nothing.
-                            }
-                        }
-                        
-                        // 获取执行结果
-                        XSQLGroupTask v_Task = (XSQLGroupTask)v_TaskGroup.getTask(0);
-                        v_Ret = v_Task.getXsqlGroupResult();
-                        for (int v_TaskIndex=0; v_TaskIndex<v_TaskGroup.size(); v_TaskIndex++)
-                        {
-                            v_Task = (XSQLGroupTask)v_TaskGroup.getTask(v_TaskIndex);
-                            
-                            if ( !v_Task.getXsqlGroupResult().isSuccess() )
-                            {
-                                v_Ret = v_Task.getXsqlGroupResult();
-                                break;
-                            }
-                        }
-                    }
+                    // 如果是多线程并有等待标识时，一直等待并且的执行结果  (原来的位置)
+                    v_Ret = waitThreads(v_Node ,v_Ret);
                 }
                 else
                 {
                     v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
+                    
+                    // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
+                    v_Ret = waitThreads(v_Node ,v_Ret);
                 }
             }
             // 返回查询结果集的查询
@@ -1159,6 +1161,9 @@ public final class XSQLGroup
                 
                 // put返回查询结果集
                 this.putReturnID(v_Ret ,v_Node ,v_QueryRet);
+                
+                // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
+                v_Ret = waitThreads(v_Node ,v_Ret);
                 
                 // 继续向后击鼓传花
                 return this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
@@ -1253,6 +1258,9 @@ public final class XSQLGroup
                     
                     v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
                     
+                    // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
+                    v_Ret = waitThreads(v_Node ,v_Ret);
+                    
                     // 继续向后击鼓传花
                     return this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
                 }
@@ -1274,6 +1282,50 @@ public final class XSQLGroup
         }
         
         return v_Ret;
+    }
+    
+    
+    
+    /**
+     * 等待所有线程均执行完成
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-24
+     * @version     v1.0
+     *
+     */
+    public XSQLGroupResult waitThreads(XSQLNode i_Node ,XSQLGroupResult i_XSQLGroupResult)
+    {
+        if ( i_Node.isThreadWait() )
+        {
+            while ( !i_XSQLGroupResult.taskGroup.isTasksFinish() )
+            {
+                // 一直等待并且的执行结果
+                try
+                {
+                    Thread.sleep(2);
+                }
+                catch (Exception exce)
+                {
+                    // Nothing.
+                }
+            }
+            
+            // 获取执行结果
+            XSQLGroupTask v_Task = (XSQLGroupTask)i_XSQLGroupResult.taskGroup.getTask(0);
+            i_XSQLGroupResult = v_Task.getXsqlGroupResult();
+            for (int v_TaskIndex=0; v_TaskIndex<i_XSQLGroupResult.taskGroup.size(); v_TaskIndex++)
+            {
+                v_Task = (XSQLGroupTask)i_XSQLGroupResult.taskGroup.getTask(v_TaskIndex);
+                
+                if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                {
+                    return v_Task.getXsqlGroupResult();
+                }
+            }
+        }
+        
+        return i_XSQLGroupResult;
     }
     
     
@@ -2100,8 +2152,6 @@ public final class XSQLGroup
         
         private PartitionMap<String ,Object> queryReturnPart;
         
-        private TaskGroup                    taskGroup;
-        
         private Map<String ,Object>          rowPrevious;
         
         
@@ -2144,7 +2194,10 @@ public final class XSQLGroup
             
             if ( xsqlNode.isThread() )
             {
-                taskGroup = new TaskGroup(xsqlGroup.getSQL(xsqlNode ,xsqlParams));
+                if ( xsqlRet.taskGroup == null )
+                {
+                    xsqlRet.taskGroup = new TaskGroup(xsqlGroup.getSQL(xsqlNode ,xsqlParams));
+                }
             }
         }
         
@@ -2161,35 +2214,8 @@ public final class XSQLGroup
          */
         public void finish(boolean i_sSucceed)
         {
-            if ( xsqlNode.isThread() )
-            {
-                while ( !taskGroup.isTasksFinish() )
-                {
-                    // 一直等待并且的执行结果
-                    try
-                    {
-                        Thread.sleep(2);
-                    }
-                    catch (Exception exce)
-                    {
-                        // Nothing.
-                    }
-                }
-                
-                // 获取执行结果
-                XSQLGroupTask v_Task = (XSQLGroupTask)taskGroup.getTask(0);
-                xsqlRet = v_Task.getXsqlGroupResult();
-                for (int v_TaskIndex=0; v_TaskIndex<taskGroup.size(); v_TaskIndex++)
-                {
-                    v_Task = (XSQLGroupTask)taskGroup.getTask(v_TaskIndex);
-                    
-                    if ( !v_Task.getXsqlGroupResult().isSuccess() )
-                    {
-                        xsqlRet = v_Task.getXsqlGroupResult();
-                        break;
-                    }
-                }
-            }
+            // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
+            xsqlRet = this.xsqlGroup.waitThreads(xsqlNode ,xsqlRet);
         }
         
         
@@ -2226,7 +2252,7 @@ public final class XSQLGroup
                     {
                         // 多线程并发执行  Add 2017-02-22
                         XSQLGroupTask v_Task = new XSQLGroupTask(xsqlGroup ,xsqlNodeIndex ,xsqlParams ,xsqlRet ,xsqlDSGConns);
-                        taskGroup.addTaskAndStart(v_Task);
+                        xsqlRet.taskGroup.addTaskAndStart(v_Task);
                     }
                     else
                     {
@@ -2263,7 +2289,7 @@ public final class XSQLGroup
                     {
                         // 多线程并发执行  Add 2017-02-22
                         XSQLGroupTask v_Task = new XSQLGroupTask(xsqlGroup ,xsqlNodeIndex ,xsqlParams ,xsqlRet ,xsqlDSGConns);
-                        taskGroup.addTaskAndStart(v_Task);
+                        xsqlRet.taskGroup.addTaskAndStart(v_Task);
                     }
                     else
                     {

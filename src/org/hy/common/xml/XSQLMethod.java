@@ -12,6 +12,7 @@ import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.StaticReflect;
+import org.hy.common.StringHelp;
 
 
 
@@ -231,7 +232,12 @@ public final class XSQLMethod
 		} 
 		catch (Exception exce) 
 		{
-			throw new NoSuchMethodError(i_Father.getClass().getName() + "." + this.call.getName() + "(" + v_Values.toString() + ").\n" + exce.getMessage());
+		    String v_VString = "";
+		    if ( !Help.isNull(v_Values) )
+		    {
+		        v_VString = StringHelp.toString(v_Values);
+		    }
+			throw new NoSuchMethodError(i_Father.getClass().getName() + "." + this.call.getName() + "(" + v_VString + ").\n" + exce.getMessage());
 		}
 	}
 	

@@ -5,6 +5,7 @@ import java.util.Map;
 import org.hy.common.Counter;
 import org.hy.common.Help;
 import org.hy.common.db.DataSourceGroup;
+import org.hy.common.thread.TaskGroup;
 import org.hy.common.xml.plugins.XSQLGroup.XConnection;
 
 
@@ -33,6 +34,8 @@ public class XSQLGroupControl
     
     /** 累计影响(Insert、Update、Delete)的总行数 */
     protected Counter<String>                   execSumCount;
+    
+    protected TaskGroup                         taskGroup;
     
     
     

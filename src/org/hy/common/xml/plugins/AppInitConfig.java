@@ -187,32 +187,36 @@ public class AppInitConfig
                         if ( v_FObject.isDirectory() ) 
                         {
                             List<Param> v_ChildParams = new ArrayList<Param>();
-                            for (File v_ChildFile : v_FObject.listFiles())
+                            File []     v_ChildFiles  = v_FObject.listFiles();
+                            if ( !Help.isNull(v_ChildFiles) )
                             {
-                                if (  v_ChildFile.isHidden()
-                                  || (v_ChildFile.isFile() && !v_ChildFile.getName().toLowerCase().endsWith(".xml")) )
+                                for (File v_ChildFile : v_ChildFiles)
                                 {
-                                    continue;
+                                    if (  v_ChildFile.isHidden()
+                                      || (v_ChildFile.isFile() && !v_ChildFile.getName().toLowerCase().endsWith(".xml")) )
+                                    {
+                                        continue;
+                                    }
+                                    
+                                    Param v_ChildParam = new Param();
+                                    
+                                    if ( v_XmlName.endsWith("\\")
+                                      || v_XmlName.endsWith("/") )
+                                    {
+                                        // ZhengWei(HY) Add 2017-12-20
+                                        // 无论Windows、Linux系统，统一均使用 / 符号分隔路径。防止Tomcat 7.0.82+ 版本以上出现如下异常的问题
+                                        // Invalid character found in the request target. The valid characters are defined in RFC 7230 and RFC 3986
+                                        v_ChildParam.setValue(v_XmlName.substring(0 ,v_XmlName.length() - 1) + "/" + v_ChildFile.getName());  
+                                    }
+                                    else
+                                    {
+                                        v_ChildParam.setValue(v_XmlName                                      + "/" + v_ChildFile.getName());
+                                    }
+                                    
+                                    v_ChildParam.setName(v_ChildParam.getValue());
+                                    
+                                    v_ChildParams.add(v_ChildParam);
                                 }
-                                
-                                Param v_ChildParam = new Param();
-                                
-                                if ( v_XmlName.endsWith("\\")
-                                  || v_XmlName.endsWith("/") )
-                                {
-                                    // ZhengWei(HY) Add 2017-12-20
-                                    // 无论Windows、Linux系统，统一均使用 / 符号分隔路径。防止Tomcat 7.0.82+ 版本以上出现如下异常的问题
-                                    // Invalid character found in the request target. The valid characters are defined in RFC 7230 and RFC 3986
-                                    v_ChildParam.setValue(v_XmlName.substring(0 ,v_XmlName.length() - 1) + "/" + v_ChildFile.getName());  
-                                }
-                                else
-                                {
-                                    v_ChildParam.setValue(v_XmlName                                      + "/" + v_ChildFile.getName());
-                                }
-                                
-                                v_ChildParam.setName(v_ChildParam.getValue());
-                                
-                                v_ChildParams.add(v_ChildParam);
                             }
                             
                             if ( !Help.isNull(v_ChildParams) )

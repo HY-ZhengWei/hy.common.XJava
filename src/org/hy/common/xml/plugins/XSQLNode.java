@@ -50,6 +50,12 @@ import com.greenpineyu.fel.context.FelContext;
  *              v10.0 2017-05-23  1.添加：节点的执行条件this.condition中的占位符支持xx.yy.ww的面向对象的形式。此建议来自于：向以前同学
  *              v11.0 2017-12-22  1.添加：XSQL组执行的Java方法的入参参数中增加控制中心XSQLGroupControl，实现事务统一提交、回滚。
  *                                2.添加：XSQLNode.isNoUpdateRollbacks()方法，当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作。
+ *              v11.1 2018-01-24  1.优化：isPass()方法中调用Fel计算时异常，显示更详细的异常日志(输出Fel表达式)
+ *                                2.添加：多线程等待threadWait属性，可自由定义在哪个节点上等待所有线程均执行完成。
+ *                                       之前是自动在其后的平级节点上等待。
+ *                                       同时，根节点XSQL组及所有子节点XSQL组均共享一个多线程任务组，且只有一个多线程任务组。
+ *                                       配合递归功能，不再创建多个多线程任务组，
+ *                                       递归时重复创建多个多线程任务组，会造成线程资源使用殆尽，出现死锁。
  */
 public class XSQLNode
 {
@@ -304,6 +310,13 @@ public class XSQLNode
     private boolean            thread;
     
     /**
+     * 当发起多线程时，标记哪个节点等待所有线程均执行完成。与 this.thread 配合使用。默认值：false。
+     * 
+     * 当某一节点设置为等待(this.threadWait=true)时，将在此节点的SQL语句执行完成后执行等待。
+     */
+    private boolean            threadWait;
+    
+    /**
      * 对于查询语句有两种使用数据库连接的方式
      *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
      *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，做到读、写在同一个事务中进行。
@@ -334,6 +347,7 @@ public class XSQLNode
         this.xjavaMethod       = null;
         this.collectionID      = null;
         this.thread            = false;
+        this.threadWait        = false;
         this.oneConnection     = false;
         this.bigData           = false;
     }
@@ -980,26 +994,33 @@ public class XSQLNode
             return true;
         }
         
-        FelEngine  v_Fel        = new FelEngineImpl();
-        FelContext v_FelContext = v_Fel.getContext();
-        
-        for (String v_Key : this.placeholders.keySet())
+        try
         {
-            Object v_Value = MethodReflect.getMapValue(i_ConditionValues ,v_Key);
+            FelEngine  v_Fel        = new FelEngineImpl();
+            FelContext v_FelContext = v_Fel.getContext();
             
-            v_Key = StringHelp.replaceAll(v_Key ,"." ,"_"); // 点原本就是Fel关键字，所以要替换 ZhengWei(HY) Add 2017-05-23
+            for (String v_Key : this.placeholders.keySet())
+            {
+                Object v_Value = MethodReflect.getMapValue(i_ConditionValues ,v_Key);
+                
+                v_Key = StringHelp.replaceAll(v_Key ,"." ,"_"); // 点原本就是Fel关键字，所以要替换 ZhengWei(HY) Add 2017-05-23
+                
+                if ( null == v_Value )
+                {
+                    v_FelContext.set(v_Key ,"NULL");
+                }
+                else
+                {
+                    v_FelContext.set(v_Key ,v_Value);
+                }
+            }
             
-            if ( null == v_Value )
-            {
-                v_FelContext.set(v_Key ,"NULL");
-            }
-            else
-            {
-                v_FelContext.set(v_Key ,v_Value);
-            }
+            return (Boolean) v_Fel.eval(this.conditionFel);
         }
-        
-        return (Boolean) v_Fel.eval(this.conditionFel);
+        catch (Exception exce)
+        {
+            throw new RuntimeException("Fel[" + this.condition + "] is error." + exce.getMessage());
+        }
     }
     
     
@@ -1060,8 +1081,34 @@ public class XSQLNode
         this.thread = i_Thread;
     }
 
+    
+    
+    /**
+     * 获取：当发起多线程时，标记哪个节点等待所有线程均执行完成。与 this.thread 配合使用。默认值：false。
+     * 
+     * 当某一节点设置为等待(this.threadWait=true)时，将在此节点的SQL语句执行完成后执行等待。
+     */
+    public boolean isThreadWait()
+    {
+        return threadWait;
+    }
+    
 
     
+    /**
+     * 设置：当发起多线程时，标记哪个节点等待所有线程均执行完成。与 this.thread 配合使用。默认值：false。
+     * 
+     * 当某一节点设置为等待(this.threadWait=true)时，将在此节点的SQL语句执行完成后执行等待。
+     * 
+     * @param threadWait 
+     */
+    public void setThreadWait(boolean threadWait)
+    {
+        this.threadWait = threadWait;
+    }
+    
+    
+
     /**
      * 获取：对于查询语句有两种使用数据库连接的方式
      *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
