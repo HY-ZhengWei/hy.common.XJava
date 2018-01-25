@@ -1295,7 +1295,7 @@ public final class XSQLGroup
      */
     public XSQLGroupResult waitThreads(XSQLNode i_Node ,XSQLGroupResult i_XSQLGroupResult)
     {
-        if ( i_Node.isThreadWait() )
+        if ( i_Node.isThreadWait() && i_XSQLGroupResult.taskGroup != null )
         {
             while ( !i_XSQLGroupResult.taskGroup.isTasksFinish() )
             {
