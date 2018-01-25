@@ -64,9 +64,9 @@ public class XSQLGroupResult extends XSQLGroupControl
     
     public XSQLGroupResult(XSQLGroupResult i_XResult)
     {
+        super(i_XResult);
         this.success      = i_XResult.success;
         this.returns      = i_XResult.returns;
-        this.execSumCount = i_XResult.execSumCount;
         this.execLastNode = i_XResult.execLastNode;
         this.exceptionSQL = i_XResult.exceptionSQL;
         this.exception    = i_XResult.exception;

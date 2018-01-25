@@ -55,6 +55,16 @@ public class XSQLGroupControl
     
     
     
+    public XSQLGroupControl(XSQLGroupControl i_Other)
+    {
+        this.xsqlGroup    = i_Other.xsqlGroup;
+        this.dsgConns     = i_Other.dsgConns;
+        this.execSumCount = i_Other.execSumCount;
+        this.taskGroup    = i_Other.taskGroup;
+    }
+    
+    
+    
     /**
      * 统一提交的事务功能
      * 

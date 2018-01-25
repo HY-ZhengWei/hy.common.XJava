@@ -55,6 +55,12 @@ import com.greenpineyu.fel.context.FelContext;
  *                                       同时，根节点XSQL组及所有子节点XSQL组均共享一个多线程任务组，且只有一个多线程任务组。
  *                                       配合递归功能，不再创建多个多线程任务组，
  *                                       递归时重复创建多个多线程任务组，会造成线程资源使用殆尽，出现死锁。
+ *                                3.添加：自主、自由的数据库连接freeConnection属性。
+ *                                       节点使用的数据库连接不再由XSQLGroup控制及管理。
+ *                                       由节点自行打开一个独立的数据库连接，并自行控制提交、回滚。
+ *                                       主要用于多线程的并发写操作。
+ *                                4.添加：多线程监控完成情况的时间间隔threadWaitInterval属性。
+ *                                       由原先的固定值改为可由用户自行调整的属性。
  */
 public class XSQLNode
 {
@@ -75,7 +81,9 @@ public class XSQLNode
     /** 
      * 节点类型： 执行（包含DML、DDL、DCL、TCL）
      * 
-     *  即执行数据库操作，不获取操作结果。执行参数由外界或其它查询类型的节点(XSQLNode)提供
+     *  即执行数据库操作，不获取操作结果。执行参数由外界或其它查询类型的节点(XSQLNode)提供。
+     *  
+     *  注意：此类型的数据库连接与freeConnection同义，不再由XSQL组控制及管理。每次执行均使用独立的数据库连接。
      */
     public static final String  $Type_Execute                    = "Execute";
     
@@ -319,9 +327,34 @@ public class XSQLNode
     private boolean            threadWait;
     
     /**
+     * 监控所有线程完成情况的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.threadWait 属性配合使用。
+     * 
+     * 默认为0值，表示取时间间隔为：ThreadPool.getIntervalTime() * 3
+     */
+    private long               threadWaitInterval;
+    
+    /**
+     * 自主、自由的数据库连接。
+     * 
+     * 当为true时，本节点的数据库连接不再由XSQLGroup控制及管理。
+     * 由节点自行打开一个独立的数据库连接，并自行控制提交、回滚。
+     * 
+     * 主要用于多线程的并发写操作。
+     * 
+     * 只对 $Type_ExecuteUpdate、$Type_Execute、$Type_CollectionToExecuteUpdate 三个类型有效。
+     * 
+     * 默认为：false，即：由XSQLroup控制及管理数据库连接 
+     */
+    private boolean            freeConnection;
+    
+    /**
      * 对于查询语句有两种使用数据库连接的方式
      *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
      *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，做到读、写在同一个事务中进行。
+     *   
+     * 只对 $Type_Query 类型有效。
      */
     private boolean            oneConnection;
     
@@ -332,26 +365,28 @@ public class XSQLNode
     
     public XSQLNode()
     {
-        this.noPassContinue    = true;
-        this.beforeCommit      = false;
-        this.afterCommit       = false;
-        this.perAfterCommit    = false;
-        this.noUpdateRollbacks = false;
-        this.lastOnce          = false;
-        this.returnID          = null;
-        this.returnAppend      = false;
-        this.returnQuery       = false;
-        this.queryReturnID     = null;
-        this.sqlGroup          = null;
-        this.xjavaID           = null;
-        this.methodName        = null;
-        this.xjavaIntance      = null;
-        this.xjavaMethod       = null;
-        this.collectionID      = null;
-        this.thread            = false;
-        this.threadWait        = false;
-        this.oneConnection     = false;
-        this.bigData           = false;
+        this.noPassContinue     = true;
+        this.beforeCommit       = false;
+        this.afterCommit        = false;
+        this.perAfterCommit     = false;
+        this.noUpdateRollbacks  = false;
+        this.lastOnce           = false;
+        this.returnID           = null;
+        this.returnAppend       = false;
+        this.returnQuery        = false;
+        this.queryReturnID      = null;
+        this.sqlGroup           = null;
+        this.xjavaID            = null;
+        this.methodName         = null;
+        this.xjavaIntance       = null;
+        this.xjavaMethod        = null;
+        this.collectionID       = null;
+        this.thread             = false;
+        this.threadWait         = false;
+        this.threadWaitInterval = 0;
+        this.freeConnection     = false;
+        this.oneConnection      = false;
+        this.bigData            = false;
     }
     
     
@@ -1116,12 +1151,84 @@ public class XSQLNode
         this.threadWait = threadWait;
     }
     
+
     
+    /**
+     * 获取：监控所有线程完成情况的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.threadWait 属性配合使用。
+     * 
+     * 默认为0值，表示取时间间隔为：ThreadPool.getIntervalTime() * 3
+     */
+    public long getThreadWaitInterval()
+    {
+        return threadWaitInterval;
+    }
+    
+
+    
+    /**
+     * 设置：监控所有线程完成情况的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.threadWait 属性配合使用。
+     * 
+     * 默认为0值，表示取时间间隔为：ThreadPool.getIntervalTime() * 3
+     * 
+     * @param threadWaitInterval 
+     */
+    public void setThreadWaitInterval(long threadWaitInterval)
+    {
+        this.threadWaitInterval = threadWaitInterval;
+    }
+
+
+
+    /**
+     * 获取：自主、自由的数据库连接。
+     * 
+     * 当为true时，本节点的数据库连接不再由XSQLGroup控制及管理。
+     * 由节点自行打开一个独立的数据库连接，并自行控制提交、回滚。
+     * 
+     * 主要用于多线程的并发写操作。
+     * 
+     * 只对 $Type_ExecuteUpdate、$Type_Execute、$Type_CollectionToExecuteUpdate 三个类型有效。
+     * 
+     * 默认为：false，即：由XSQLroup控制及管理数据库连接
+     */
+    public boolean isFreeConnection()
+    {
+        return freeConnection;
+    }
+    
+
+    
+    /**
+     * 设置：自主、自由的数据库连接。
+     * 
+     * 当为true时，本节点的数据库连接不再由XSQLGroup控制及管理。
+     * 由节点自行打开一个独立的数据库连接，并自行控制提交、回滚。
+     * 
+     * 主要用于多线程的并发写操作。
+     * 
+     * 默认为：false，即：由XSQLroup控制及管理数据库连接
+     * 
+     * 只对 $Type_ExecuteUpdate、$Type_Execute、$Type_CollectionToExecuteUpdate 三个类型有效。
+     * 
+     * @param freeConnection 
+     */
+    public void setFreeConnection(boolean freeConnection)
+    {
+        this.freeConnection = freeConnection;
+    }
+    
+
 
     /**
      * 获取：对于查询语句有两种使用数据库连接的方式
      *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
      *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，做到读、写在同一个事务中进行。
+     *   
+     * 只对 $Type_Query 类型有效。
      */
     public boolean isOneConnection()
     {
@@ -1134,6 +1241,8 @@ public class XSQLNode
      * 设置：对于查询语句有两种使用数据库连接的方式
      *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
      *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，做到读、写在同一个事务中进行。
+     * 
+     * 只对 $Type_Query 类型有效。
      * 
      * @param oneConnection 
      */

@@ -19,6 +19,7 @@ import org.hy.common.TablePartition;
 import org.hy.common.db.DataSourceGroup;
 import org.hy.common.thread.Task;
 import org.hy.common.thread.TaskGroup;
+import org.hy.common.thread.ThreadPool;
 import org.hy.common.xml.XSQLBigData;
 
 
@@ -124,8 +125,11 @@ import org.hy.common.xml.XSQLBigData;
  *                                2.添加：多线程等待XSQLNode.threadWait属性，可自由定义在哪个节点上等待所有线程均执行完成。
  *                                       同时，根节点XSQL组及所有子节点XSQL组均共享一个线程任务组。
  *                                       配合递归功能，不再重复创建多线程任务组，
- *                                       递归时重复创建多个多线程任务组，会造成线程资源使用殆尽，出现死锁。
- *                                       
+ *                                       递归时重复创建多个多线程任务组，会造成线程资源使用殆尽，出现死锁
+ *                                3.添加：自主、自由的数据库连接freeConnection属性。
+ *                                       节点使用的数据库连接不再由XSQLGroup控制及管理。
+ *                                       由节点自行打开一个独立的数据库连接，并自行控制提交、回滚。
+ *                                       主要用于多线程的并发写操作。
  */
 public final class XSQLGroup
 {
@@ -493,8 +497,16 @@ public final class XSQLGroup
         v_Node.getSqlGroup().superGroup = this;
         v_Ret = v_Node.getSqlGroup().executeGroup(io_Params ,io_DSGConns ,v_Ret); 
         
+        // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
+        v_Ret = waitThreads(v_Node ,v_Ret);
         if ( v_Ret.isSuccess() )
         {
+            // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
+            if ( v_Ret.isSuccess() && v_Node.isAfterCommit() )
+            {
+                this.commits(io_DSGConns ,v_Ret.getExecSumCount());
+            }
+            
             // 继续向后击鼓传花
             return this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
         }
@@ -565,13 +577,6 @@ public final class XSQLGroup
             if ( null != v_Node.getSqlGroup() )
             {
                 v_Ret = executeGroup_Nesting(v_NodeIndex - 1 ,io_Params ,io_DSGConns ,v_Ret);
-                
-                // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
-                if ( v_Ret.isSuccess() && v_Node.isAfterCommit() )
-                {
-                    this.commits(io_DSGConns ,v_Ret.getExecSumCount());
-                }
-                
                 continue;
             }
             
@@ -685,15 +690,18 @@ public final class XSQLGroup
                 
                 if ( v_ExecRet )
                 {
-                    // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
-                    if ( v_Node.isAfterCommit() )
-                    {
-                        this.commits(io_DSGConns ,v_Ret.getExecSumCount());
-                    }
-                    
-                    v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
-                    
+                    // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
                     v_Ret = waitThreads(v_Node ,v_Ret);
+                    if ( v_Ret.isSuccess() )
+                    {
+                        // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
+                        if ( v_Node.isAfterCommit() )
+                        {
+                            this.commits(io_DSGConns ,v_Ret.getExecSumCount());
+                        }
+                        
+                        v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
+                    }
                 }
                 else
                 {
@@ -733,7 +741,7 @@ public final class XSQLGroup
     protected XSQLGroupResult executeGroup(int i_SuperNodeIndex ,Map<String ,Object> io_Params ,XSQLGroupResult i_XSQLGroupResult ,Map<DataSourceGroup ,XConnection> io_DSGConns)
     {
         XSQLGroupResult v_Ret = i_XSQLGroupResult;
-        v_Ret.setSuccess(false);
+        v_Ret.setSuccess(true); // 2018-01-25:false
         
         int v_NodeIndex = i_SuperNodeIndex + 1;
         if ( v_NodeIndex >= this.xsqlNodes.size() )
@@ -773,13 +781,6 @@ public final class XSQLGroup
         if ( null != v_Node.getSqlGroup() )
         {
             v_Ret = executeGroup_Nesting(i_SuperNodeIndex ,io_Params ,io_DSGConns ,v_Ret);
-            
-            // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
-            if ( v_Ret.isSuccess() && v_Node.isAfterCommit() )
-            {
-                this.commits(io_DSGConns ,v_Ret.getExecSumCount());
-            }
-            
             return v_Ret;
         }
         
@@ -882,10 +883,7 @@ public final class XSQLGroup
                 {
                     if ( v_Node.isThread() )
                     {
-                        if ( v_Ret.taskGroup == null )
-                        {
-                            v_Ret.taskGroup = new TaskGroup(this.getSQL(v_Node ,io_Params));
-                        }
+                        newTaskGroupByThreads(v_Node ,v_Ret ,io_Params);
                     }
                     
                     // 行级对象是：Map<String ,Object>
@@ -1112,13 +1110,19 @@ public final class XSQLGroup
                     
                     // 如果是多线程并有等待标识时，一直等待并且的执行结果  (原来的位置)
                     v_Ret = waitThreads(v_Node ,v_Ret);
+                    if ( v_Ret.isSuccess() )
+                    {
+                        v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
+                    }
                 }
                 else
                 {
-                    v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
-                    
                     // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
                     v_Ret = waitThreads(v_Node ,v_Ret);
+                    if ( v_Ret.isSuccess() )
+                    {
+                        v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
+                    }
                 }
             }
             // 返回查询结果集的查询
@@ -1150,22 +1154,28 @@ public final class XSQLGroup
                     return v_Ret;
                 }
                 
-                // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
-                if ( v_Node.isAfterCommit() )
-                {
-                    this.commits(io_DSGConns ,v_Ret.getExecSumCount());
-                }
-                
-                v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
-                
-                // put返回查询结果集
-                this.putReturnID(v_Ret ,v_Node ,v_QueryRet);
-                
                 // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
                 v_Ret = waitThreads(v_Node ,v_Ret);
-                
-                // 继续向后击鼓传花
-                return this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
+                if ( v_Ret.isSuccess() )
+                {
+                    // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
+                    if ( v_Node.isAfterCommit() )
+                    {
+                        this.commits(io_DSGConns ,v_Ret.getExecSumCount());
+                    }
+                    
+                    v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
+                    
+                    // put返回查询结果集
+                    this.putReturnID(v_Ret ,v_Node ,v_QueryRet);
+                    
+                    // 继续向后击鼓传花
+                    return this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
+                }
+                else
+                {
+                    return v_Ret;
+                }
             }
         }
         else
@@ -1183,7 +1193,14 @@ public final class XSQLGroup
                     
                     if ( !Help.isNull(v_CollectionParam) )
                     {
-                        v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params) ,this.getConnection(v_Node ,io_DSGConns));
+                        if ( v_Node.isFreeConnection() )
+                        {
+                            v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params));
+                        }
+                        else
+                        {
+                            v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params) ,this.getConnection(v_Node ,io_DSGConns));
+                        }
                         
                         io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
                         v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_RCount);
@@ -1208,11 +1225,25 @@ public final class XSQLGroup
                 {
                     if ( Help.isNull(io_Params) )
                     {
-                        v_RCount = v_Node.getSql().executeUpdate(this.getConnection(v_Node ,io_DSGConns));
+                        if ( v_Node.isFreeConnection() )
+                        {
+                            v_RCount = v_Node.getSql().executeUpdate();
+                        }
+                        else
+                        {
+                            v_RCount = v_Node.getSql().executeUpdate(this.getConnection(v_Node ,io_DSGConns));
+                        }
                     }
                     else
                     {
-                        v_RCount = v_Node.getSql().executeUpdate(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                        if ( v_Node.isFreeConnection() )
+                        {
+                            v_RCount = v_Node.getSql().executeUpdate(io_Params);
+                        }
+                        else
+                        {
+                            v_RCount = v_Node.getSql().executeUpdate(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                        }
                     }
                     
                     io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
@@ -1249,19 +1280,21 @@ public final class XSQLGroup
                 
                 if ( v_ExecRet )
                 {
-                    // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
-                    if ( v_Node.isAfterCommit() )
-                    {
-                        this.commits(io_DSGConns ,v_Ret.getExecSumCount());
-                    }
-                    
-                    v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
-                    
                     // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
                     v_Ret = waitThreads(v_Node ,v_Ret);
-                    
-                    // 继续向后击鼓传花
-                    return this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
+                    if ( v_Ret.isSuccess() )
+                    {
+                        // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
+                        if ( v_Node.isAfterCommit() )
+                        {
+                            this.commits(io_DSGConns ,v_Ret.getExecSumCount());
+                        }
+                        
+                        v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
+                        
+                        // 继续向后击鼓传花
+                        return this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
+                    }
                 }
                 else
                 {
@@ -1286,6 +1319,27 @@ public final class XSQLGroup
     
     
     /**
+     * 创建多线程任务组
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-25
+     * @version     v1.0
+     *
+     * @param i_Node
+     * @param i_XSQLGroupResult
+     * @param io_Params
+     */
+    public synchronized void newTaskGroupByThreads(XSQLNode i_Node ,XSQLGroupResult i_XSQLGroupResult ,Map<String ,Object> io_Params)
+    {
+        if ( i_XSQLGroupResult.taskGroup == null )
+        {
+            i_XSQLGroupResult.taskGroup = new TaskGroup(getSQL(i_Node ,io_Params));
+        }
+    }
+    
+    
+    
+    /**
      * 等待所有线程均执行完成
      * 
      * @author      ZhengWei(HY)
@@ -1297,12 +1351,18 @@ public final class XSQLGroup
     {
         if ( i_Node.isThreadWait() && i_XSQLGroupResult.taskGroup != null )
         {
+            long v_Interval = i_Node.getThreadWaitInterval();
+            if ( v_Interval <= 0 )
+            {
+                v_Interval = ThreadPool.getIntervalTime() * 3;
+            }
+            
             while ( !i_XSQLGroupResult.taskGroup.isTasksFinish() )
             {
                 // 一直等待并且的执行结果
                 try
                 {
-                    Thread.sleep(2);
+                    Thread.sleep(v_Interval);
                 }
                 catch (Exception exce)
                 {
@@ -2193,10 +2253,7 @@ public final class XSQLGroup
             
             if ( xsqlNode.isThread() )
             {
-                if ( xsqlRet.taskGroup == null )
-                {
-                    xsqlRet.taskGroup = new TaskGroup(xsqlGroup.getSQL(xsqlNode ,xsqlParams));
-                }
+                xsqlGroup.newTaskGroupByThreads(xsqlNode ,xsqlRet ,xsqlParams);
             }
         }
         
