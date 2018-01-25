@@ -52,7 +52,6 @@ import com.greenpineyu.fel.context.FelContext;
  *                                2.添加：XSQLNode.isNoUpdateRollbacks()方法，当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作。
  *              v11.1 2018-01-24  1.优化：isPass()方法中调用Fel计算时异常，显示更详细的异常日志(输出Fel表达式)
  *                                2.添加：多线程等待threadWait属性，可自由定义在哪个节点上等待所有线程均执行完成。
- *                                       之前是自动在其后的平级节点上等待。
  *                                       同时，根节点XSQL组及所有子节点XSQL组均共享一个多线程任务组，且只有一个多线程任务组。
  *                                       配合递归功能，不再创建多个多线程任务组，
  *                                       递归时重复创建多个多线程任务组，会造成线程资源使用殆尽，出现死锁。
@@ -306,6 +305,9 @@ public class XSQLNode
      * 是否为多线程并且发执行。默认值：false。
      * 
      * 只对 $Type_Query、$Type_CollectionToQuery 两个类型有效。
+     * 
+     * 注：当thread设置为ture时，threadWait默认也设置为true，
+     *    表示同一节点发起的多线程任务的同时，也在同一节点等待所有线程执行完成。
      */
     private boolean            thread;
     
@@ -1074,11 +1076,15 @@ public class XSQLNode
      * 
      * 只对 $Type_Query、$Type_CollectionToQuery 两个类型有效。
      * 
+     * 注：当thread设置为ture时，threadWait默认也设置为true，
+     *    表示同一节点发起的多线程任务的同时，也在同一节点等待所有线程执行完成。
+     * 
      * @param i_Thread
      */
     public void setThread(boolean i_Thread)
     {
-        this.thread = i_Thread;
+        this.thread     = i_Thread;
+        this.threadWait = i_Thread;
     }
 
     
@@ -1087,6 +1093,9 @@ public class XSQLNode
      * 获取：当发起多线程时，标记哪个节点等待所有线程均执行完成。与 this.thread 配合使用。默认值：false。
      * 
      * 当某一节点设置为等待(this.threadWait=true)时，将在此节点的SQL语句执行完成后执行等待。
+     * 
+     * 注：当thread设置为ture时，threadWait默认也设置为true，
+     *    表示同一节点发起的多线程任务的同时，也在同一节点等待所有线程执行完成。
      */
     public boolean isThreadWait()
     {
