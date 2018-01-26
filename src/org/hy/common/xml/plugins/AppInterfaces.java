@@ -94,6 +94,7 @@ public final class AppInterfaces
         {
             v_Ret = (AppMessage<?>)i_AppMessage.clone();
             v_Ret.setRc("-1");
+            v_Ret.setResult(false);
             v_Ret.setRi(exce.getMessage());
         }
         

@@ -2258,6 +2258,8 @@ public final class XSQL implements Comparable<XSQL>
 	/**
      * 统计记录数据：占位符SQL的查询。
      * 
+     * 模块SQL的形式如：SELECT COUNT(1) FROM ...
+     * 
      * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
@@ -2299,6 +2301,8 @@ public final class XSQL implements Comparable<XSQL>
     /**
      * 统计记录数据：占位符SQL的查询。
      * 
+     * 模块SQL的形式如：SELECT COUNT(1) FROM ...
+     * 
      * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
@@ -2334,11 +2338,52 @@ public final class XSQL implements Comparable<XSQL>
             }
         }
     }
+    
+    
+    
+    /**
+     * 查询记录总数
+     * 
+     * 模块SQL的形式如：SELECT COUNT(1) FROM ...
+     * 
+     * @return
+     * @throws Exception
+     */
+    public long getSQLCount()
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+
+        try
+        {
+            return this.getSQLCount(this.content.getSQL());
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes();
+            }
+        }
+    }
 	
 	
 	
 	/**
 	 * 查询记录总数
+	 * 
+	 * 模块SQL的形式如：SELECT COUNT(1) FROM ...
 	 * 
 	 * @param i_SQL
 	 * @return

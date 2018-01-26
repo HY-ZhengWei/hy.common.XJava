@@ -36,6 +36,7 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  * @createDate  2017-12-14
  * @version     v1.0
  *              v1.1  2018-01-20  修复：@Xsql.names() 与 @Xparam.name() 在判定合计数量上的问题。
+ *              v1.2  2018-01-25  添加：对查询SQL的记录行数功能的支持。
  */
 public class XSQLProxy implements InvocationHandler ,Serializable
 {
@@ -678,13 +679,44 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             return this.errorLog(i_Method ,null);
         }
         
+        // 2018-01-25 Add 如果方法返回值是整数，则按查询记录行数的SELECT Count(1) FROM ... 返回
+        boolean v_IsQueryCount = false;
+        boolean v_IsLong       = false;
+        if ( i_Method.getReturnType() == Integer.class 
+          || i_Method.getReturnType() == int.class )
+        {
+            v_IsQueryCount = true;
+        }
+        else if ( i_Method.getReturnType() == Long.class
+               || i_Method.getReturnType() == long.class )
+        {
+            v_IsQueryCount = true;
+            v_IsLong       = true;
+        }
+        
         if ( i_Args == null || i_Args.length == 0 )
         {
-            v_Ret = i_XSQL.query();
+            if ( v_IsQueryCount )
+            {
+                long v_Count = i_XSQL.getSQLCount();
+                return v_IsLong ? v_Count : Integer.parseInt("" + v_Count);
+            }
+            else
+            {
+                v_Ret = i_XSQL.query();
+            }
         }
         else
         {
-            v_Ret = i_XSQL.query(v_Params);
+            if ( v_IsQueryCount )
+            {
+                long v_Count = i_XSQL.getSQLCount(v_Params);
+                return v_IsLong ? v_Count : Integer.parseInt("" + v_Count);
+            }
+            else
+            {
+                v_Ret = i_XSQL.query(v_Params);
+            }
         }
         
         if ( v_Ret != null )
