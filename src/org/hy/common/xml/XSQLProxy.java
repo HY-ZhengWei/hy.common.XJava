@@ -37,7 +37,8 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  * @version     v1.0
  *              v1.1  2018-01-20  修复：@Xsql.names() 与 @Xparam.name() 在判定合计数量上的问题。
  *              v1.2  2018-01-25  添加：对查询SQL的记录行数功能的支持。
- *              v1.3  2018-01-27  添加：批量数据的更新功能。
+ *              v1.3  2018-01-27  添加：普通方式的，批量数据的更新功能。
+ *                                添加：预解析方式，批量数据的更新功能。
  */
 public class XSQLProxy implements InvocationHandler ,Serializable
 {
@@ -817,7 +818,14 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             if ( v_Params instanceof List )
             {
                 // 批量数据的更新功能  2018-01-27
-                v_Ret = i_XSQL.executeUpdates((List<?>)v_Params);
+                if ( i_Anno.getXsql().batch() )
+                {
+                    v_Ret = i_XSQL.executeUpdatesPrepared((List<?>)v_Params);
+                }
+                else
+                {
+                    v_Ret = i_XSQL.executeUpdates((List<?>)v_Params);
+                }
             }
             else
             {

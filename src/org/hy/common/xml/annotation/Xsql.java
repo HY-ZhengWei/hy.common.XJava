@@ -16,6 +16,7 @@ import java.lang.annotation.Target;
  * @author      ZhengWei(HY)
  * @createDate  2017-12-14
  * @version     v1.0
+ *              v2.0  2018-01-27  添加：batch()属性，支持预解析方式的批量执行。
  */
 @Documented
 @Target({ElementType.METHOD})
@@ -128,5 +129,20 @@ public @interface Xsql
      * 执行数据库操作时的日志，只在执行成功时输出。
      */
     public String log() default "";
+    
+    
+    
+    /**
+     * 针对Insert、Update、Delete操作，是否按批量的预解析方式(prepareStatement)执行SQL。
+     * 
+     * 只对方法入参类型为List集合的才生效。
+     * 
+     * 当方法入参类型为List集合
+     *    1. batch = false 时，按普通批量方式执行，统一提交及回滚。如果XSQL设置了batchCommit属性，可再分批提交。
+     *    2. batch = true  时，按预解析的方式执行，统一提交及回滚。如果XSQL设置了batchCommit属性，可再分批提交。
+     *    
+     * 上面两种方式，在写SQL模板时，略有不同。
+     */
+    public boolean batch() default false;
     
 }
