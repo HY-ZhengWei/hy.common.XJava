@@ -129,8 +129,8 @@ public final class XSQL implements Comparable<XSQL>
     /** execute()方法中执行多条SQL语句的分割符 */
     public  static final String            $Executes_Split = ";/";
     
-    /** SQL执行日志。默认只保留10000条执行过的SQL语句 */
-    public  static final Busway<XSQLLog>   $SQLBusway      = new Busway<XSQLLog>(10000);
+    /** SQL执行日志。默认只保留1000条执行过的SQL语句 */
+    public  static final Busway<XSQLLog>   $SQLBusway      = new Busway<XSQLLog>(1000);
     
     /** SQL执行异常的日志。默认只保留1000条执行异常的SQL语句 */
     public  static final Busway<XSQLLog>   $SQLBuswayError = new Busway<XSQLLog>(1000);
@@ -282,21 +282,21 @@ public final class XSQL implements Comparable<XSQL>
 	
 	
 	
-	private synchronized void success(double i_TimeLen)
-	{
-	    ++this.successCount;
-	    this.successTimeLen += i_TimeLen;
-	    this.executeTime = new Date();
-	}
-	
-	
-	
-	private synchronized void success(double i_TimeLen ,int i_SCount)
+	private synchronized void success(Date i_ExecuteTime ,double i_TimeLen)
     {
-	    this.requestCount   += i_SCount - 1;
+        ++this.successCount;
+        this.successTimeLen += i_TimeLen;
+        this.executeTime     = i_ExecuteTime;
+    }
+	
+	
+	
+	private synchronized void success(Date i_ExecuteTime ,double i_TimeLen ,int i_SCount)
+    {
+        this.requestCount   += i_SCount - 1;
         this.successCount   += i_SCount;
         this.successTimeLen += i_TimeLen;
-        this.executeTime = new Date();
+        this.executeTime     = i_ExecuteTime;
     }
 	
 	
@@ -1049,7 +1049,8 @@ public final class XSQL implements Comparable<XSQL>
 			$SQLBusway.put(new XSQLLog(i_SQL));
 			
 			Object v_Ret = this.result.getDatas(v_Resultset);
-			this.success(Date.getNowTime().getTime() - v_BeginTime);
+			Date v_EndTime = Date.getNowTime();
+			this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
 			
 			return v_Ret;
 		}
@@ -1106,7 +1107,8 @@ public final class XSQL implements Comparable<XSQL>
             $SQLBusway.put(new XSQLLog(i_SQL));
             
             Object v_Ret = this.result.getDatas(v_Resultset);
-            this.success(Date.getNowTime().getTime() - v_BeginTime);
+            Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
             
             return v_Ret;
         }
@@ -1303,7 +1305,8 @@ public final class XSQL implements Comparable<XSQL>
             $SQLBusway.put(new XSQLLog(i_SQL));
             
             Object v_Ret = this.result.getDatas(v_Resultset ,i_StartRow ,i_PagePerSize);
-            this.success(Date.getNowTime().getTime() - v_BeginTime);
+            Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
             
             return v_Ret;
         }
@@ -1361,7 +1364,8 @@ public final class XSQL implements Comparable<XSQL>
 			$SQLBusway.put(new XSQLLog(i_SQL));
 			
 			Object v_Ret = this.result.getDatas(v_Resultset ,i_FilterColNames);
-			this.success(Date.getNowTime().getTime() - v_BeginTime);
+			Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
 			
 			return v_Ret;
 		}
@@ -1419,7 +1423,8 @@ public final class XSQL implements Comparable<XSQL>
 			$SQLBusway.put(new XSQLLog(i_SQL));
 			
 			Object v_Ret = this.result.getDatas(v_Resultset ,i_FilterColNoArr);
-			this.success(Date.getNowTime().getTime() - v_BeginTime);
+			Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
 			
 			return v_Ret;
 		}
@@ -1744,7 +1749,8 @@ public final class XSQL implements Comparable<XSQL>
             $SQLBusway.put(new XSQLLog(i_SQL));
             
             Object v_Ret = this.result.getBigDatas(v_Resultset ,i_XSQLBigData);
-            this.success(Date.getNowTime().getTime() - v_BeginTime);
+            Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
             
             return v_Ret;
         }
@@ -1806,7 +1812,8 @@ public final class XSQL implements Comparable<XSQL>
             $SQLBusway.put(new XSQLLog(i_SQL));
             
             Object v_Ret = this.result.getBigDatas(v_Resultset ,i_XSQLBigData);
-            this.success(Date.getNowTime().getTime() - v_BeginTime);
+            Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
             
             return v_Ret;
         }
@@ -2108,7 +2115,8 @@ public final class XSQL implements Comparable<XSQL>
 			XSQLBigger v_Bigger = new XSQLBigger(this ,v_Resultset ,v_RowSize ,(new Date()).getTime() - v_BeginTime);
 			
 			this.result.getDatas(v_Bigger);
-			this.success(Date.getNowTime().getTime() - v_BeginTime);
+			Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
 			
 			return v_Bigger;
 		}
@@ -2173,7 +2181,8 @@ public final class XSQL implements Comparable<XSQL>
 			XSQLBigger v_Bigger = new XSQLBigger(this ,v_Resultset ,v_RowSize ,(new Date()).getTime() - v_BeginTime);
 			
 			this.result.getDatas(v_Bigger ,i_FilterColNames);
-			this.success(Date.getNowTime().getTime() - v_BeginTime);
+			Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
 			
 			return v_Bigger;
 		}
@@ -2238,7 +2247,8 @@ public final class XSQL implements Comparable<XSQL>
 			XSQLBigger v_Bigger = new XSQLBigger(this ,v_Resultset ,v_RowSize ,(new Date()).getTime() - v_BeginTime);
 			
 			this.result.getDatas(v_Bigger ,i_FilterColNoArr);
-			this.success(Date.getNowTime().getTime() - v_BeginTime);
+			Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
 			
 			return v_Bigger;
 		}
@@ -2422,7 +2432,8 @@ public final class XSQL implements Comparable<XSQL>
 	    		v_SQLCount = v_Resultset.getLong(1);
 	    	}
 	    	
-	    	this.success(Date.getNowTime().getTime() - v_BeginTime);
+	    	Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
 	    }
 	    catch (Exception exce)
 	    {
@@ -2585,7 +2596,8 @@ public final class XSQL implements Comparable<XSQL>
 			int v_Count = v_Statement.executeUpdate(i_SQL);
 			$SQLBusway.put(new XSQLLog(i_SQL));
 			
-			this.success(Date.getNowTime().getTime() - v_BeginTime);
+			Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
 			
 			return v_Count;
 		}
@@ -2747,7 +2759,8 @@ public final class XSQL implements Comparable<XSQL>
             int v_Count = v_Statement.executeUpdate(i_SQL);
             $SQLBusway.put(new XSQLLog(i_SQL));
             
-            this.success(Date.getNowTime().getTime() - v_BeginTime);
+            Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
             
             return v_Count;
         }
@@ -2877,7 +2890,7 @@ public final class XSQL implements Comparable<XSQL>
      */
     private int executeUpdates_Inner(List<?> i_ObjList ,Connection i_Conn)
     {
-        DataSourceGroup v_DSG       = null;
+        DataSourceGroup v_DSG        = null;
         Connection      v_Conn       = null;
         Statement       v_Statement  = null;
         boolean         v_AutoCommit = false;
@@ -2953,7 +2966,8 @@ public final class XSQL implements Comparable<XSQL>
                 }
             }
             
-            this.success(Date.getNowTime().getTime() - v_BeginTime ,v_Ret);
+            Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,v_Ret);
             return v_Ret;
         }
         catch (Exception exce)
@@ -3368,7 +3382,8 @@ public final class XSQL implements Comparable<XSQL>
             }
             
             $SQLBusway.put(new XSQLLog(v_SQL));
-            this.success(Date.getNowTime().getTime() - v_BeginTime ,v_Ret);
+            Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,v_Ret);
             
             return v_Ret;
         }
@@ -3831,7 +3846,8 @@ public final class XSQL implements Comparable<XSQL>
 					}
 				}
 				
-				this.success(Date.getNowTime().getTime() - v_BeginTime);
+				Date v_EndTime = Date.getNowTime();
+	            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
 				v_ExecResult = 1;
 				v_Event.setSucceedFinish();
 			}
@@ -4054,7 +4070,8 @@ public final class XSQL implements Comparable<XSQL>
 						}
 					}
 					
-					this.success(Date.getNowTime().getTime() - v_BeginTime);
+					Date v_EndTime = Date.getNowTime();
+		            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
 					v_ExecResult = true;
 					v_Event.setSucceedFinish();
 				}
@@ -4259,7 +4276,8 @@ public final class XSQL implements Comparable<XSQL>
 			    $SQLBusway.put(new XSQLLog(v_SQL));
 			}
 			
-			this.success(Date.getNowTime().getTime() - v_BeginTime);
+			Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
 			
 			return true;
 		}
@@ -4421,7 +4439,8 @@ public final class XSQL implements Comparable<XSQL>
             
             v_Statement.execute(i_SQL);
             $SQLBusway.put(new XSQLLog(i_SQL));
-            this.success(Date.getNowTime().getTime() - v_BeginTime);
+            Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
             
             return true;
         }
@@ -4481,7 +4500,8 @@ public final class XSQL implements Comparable<XSQL>
                 
                 v_Statement.execute();
                 $SQLBusway.put(new XSQLLog("{call " + i_SQLCallName + "()}"));
-                this.success(Date.getNowTime().getTime() - v_BeginTime);
+                Date v_EndTime = Date.getNowTime();
+                this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
                 
                 return true;
             }
@@ -4504,7 +4524,8 @@ public final class XSQL implements Comparable<XSQL>
                 }
                 
                 $SQLBusway.put(new XSQLLog("{call " + i_SQLCallName + "()}"));
-                this.success(Date.getNowTime().getTime() - v_BeginTime);
+                Date v_EndTime = Date.getNowTime();
+                this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
                 
                 if ( v_RetType == 1 )
                 {
@@ -4704,7 +4725,8 @@ public final class XSQL implements Comparable<XSQL>
             {
                 v_Statement.execute();
                 $SQLBusway.put(new XSQLLog(v_Buffer.toString()));
-                this.success(Date.getNowTime().getTime() - v_BeginTime);
+                Date v_EndTime = Date.getNowTime();
+                this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
                 return true;
             }
             else
@@ -4721,12 +4743,14 @@ public final class XSQL implements Comparable<XSQL>
                     {
                         v_Resultset = (ResultSet)v_OutValue;
                         Object v_Ret = this.result.getDatas(v_Resultset);
-                        this.success(Date.getNowTime().getTime() - v_BeginTime);
+                        Date v_EndTime = Date.getNowTime();
+                        this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
                         return v_Ret;
                     }
                     else
                     {
-                        this.success(Date.getNowTime().getTime() - v_BeginTime);
+                        Date v_EndTime = Date.getNowTime();
+                        this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
                         return v_OutValue;
                     }
                 }
@@ -4750,7 +4774,8 @@ public final class XSQL implements Comparable<XSQL>
                         }
                     }
                     
-                    this.success(Date.getNowTime().getTime() - v_BeginTime);
+                    Date v_EndTime = Date.getNowTime();
+                    this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
                     return v_Rets;
                 }
             }
@@ -4922,7 +4947,8 @@ public final class XSQL implements Comparable<XSQL>
             {
                 v_Statement.execute();
                 $SQLBusway.put(new XSQLLog(v_Buffer.toString()));
-                this.success(Date.getNowTime().getTime() - v_BeginTime);
+                Date v_EndTime = Date.getNowTime();
+                this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
                 return true;
             }
             else
@@ -4939,12 +4965,14 @@ public final class XSQL implements Comparable<XSQL>
                     {
                         v_Resultset = (ResultSet)v_OutValue;
                         Object v_Ret = this.result.getDatas(v_Resultset);
-                        this.success(Date.getNowTime().getTime() - v_BeginTime);
+                        Date v_EndTime = Date.getNowTime();
+                        this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
                         return v_Ret;
                     }
                     else
                     {
-                        this.success(Date.getNowTime().getTime() - v_BeginTime);
+                        Date v_EndTime = Date.getNowTime();
+                        this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
                         return v_OutValue;
                     }
                 }
@@ -4968,7 +4996,8 @@ public final class XSQL implements Comparable<XSQL>
                         }
                     }
                     
-                    this.success(Date.getNowTime().getTime() - v_BeginTime);
+                    Date v_EndTime = Date.getNowTime();
+                    this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
                     return v_Rets;
                 }
             }
