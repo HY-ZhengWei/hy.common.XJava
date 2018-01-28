@@ -498,6 +498,7 @@ public final class XSQLGroup
         v_Ret = v_Node.getSqlGroup().executeGroup(io_Params ,io_DSGConns ,v_Ret); 
         
         // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
+
         v_Ret = waitThreads(v_Node ,v_Ret);
         if ( v_Ret.isSuccess() )
         {
@@ -1377,9 +1378,15 @@ public final class XSQLGroup
             {
                 v_Task = (XSQLGroupTask)i_XSQLGroupResult.taskGroup.getTask(v_TaskIndex);
                 
-                if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                if ( v_Task != null )
                 {
-                    return v_Task.getXsqlGroupResult();
+                    if ( v_Task.getXsqlGroupResult() != null )
+                    {
+                        if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                        {
+                            return v_Task.getXsqlGroupResult();
+                        }
+                    }
                 }
             }
         }
