@@ -78,6 +78,7 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *              v1.8  2017-12-05  添加：@XRequest注解，Web请求接口的解释功能。
  *              v1.9  2017-12-15  添加：@Xsql注解，XSQL、XSQLGroup的注解。用于 xml配置 + Java接口类(无须实现类)的组合实现持久层的功能。
  *              v1.10 2018-01-20  添加：@XRequest注解添加对secrets()属性的支持。用注解定义各个系统的接口级消息密钥。
+ *              v1.11 2018-01-29  添加：对部分异常日志，添加更详细的说明。
  */
 public final class XJava
 {
@@ -733,9 +734,9 @@ public final class XJava
                 {
                     return v_Maybe.keySet().iterator().next().getObject();
                 }
-                catch (Exception e)
+                catch (Exception exce)
                 {
-                    throw new NullPointerException(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().object.getClass().getName() + "] is " + e.getMessage() + ".");
+                    throw new NullPointerException(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().object.getClass().getName() + "] is " + exce.getMessage() + ".\n" + exce.getMessage());
                 }
             }
         }
@@ -2588,7 +2589,7 @@ public final class XJava
 						        }
 						        catch (Exception exce)
 	                            {
-	                                throw new IllegalAccessException("Field setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].");
+	                                throw new IllegalAccessException("Field setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + exce.getMessage());
 	                            }
 						    }
 						}
@@ -2600,7 +2601,7 @@ public final class XJava
 							}
 							catch (Exception exce)
 							{
-							    throw new NoSuchMethodException("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].");
+							    throw new NoSuchMethodException("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + exce.getMessage());
 							}
 						}
 					}
@@ -2629,7 +2630,7 @@ public final class XJava
 					}
 					catch (Exception exce)
 					{
-						throw new ClassNotFoundException("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
+						throw new ClassNotFoundException("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].\n" + exce.getMessage());
 					}
 				}
 			}
@@ -3567,7 +3568,7 @@ public final class XJava
     				}
     				catch (Exception exce)
     				{
-    					throw new NoSuchMethodException("Ref url[" + i_RefID + "] is exception of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].");
+    					throw new NoSuchMethodException("Ref url[" + i_RefID + "] is exception of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].\n" + exce.getMessage());
     				}
                 }
                 else
@@ -3614,7 +3615,7 @@ public final class XJava
                     }
                     catch (Exception exce)
                     {
-                        throw new NoSuchMethodException("Ref url[" + i_RefID + "] is't exist of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].");
+                        throw new NoSuchMethodException("Ref url[" + i_RefID + "] is't exist of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].\n" + exce.getMessage());
                     }
                 }
                 
@@ -3739,9 +3740,9 @@ public final class XJava
                     
                     return v_CloneMethod.invoke(i_Instance);
                 }
-                catch (Exception e)
+                catch (Exception exce)
                 {
-                    throw new java.lang.NoSuchMethodException("XJava object clone exception.");
+                    throw new java.lang.NoSuchMethodException("XJava object clone exception.\n" + exce.getMessage());
                 }
             }
         }
@@ -3757,9 +3758,9 @@ public final class XJava
                 
                 return v_NewObj;
             }
-            catch (Exception e)
+            catch (Exception exce)
             {
-                throw new NoSuchMethodException("XJava object newInstance exception." + e.getMessage());
+                throw new NoSuchMethodException("XJava object newInstance exception.\n" + exce.getMessage());
             }
         }
         
@@ -3805,17 +3806,17 @@ public final class XJava
             
             return v_NewObj;
         }
-        catch (InstantiationException e)
+        catch (InstantiationException exce)
         {
-            throw new NoSuchMethodException("XJava object newInstance exception." + v_ErrorInfo);
+            throw new NoSuchMethodException("XJava object newInstance exception." + v_ErrorInfo + "\n" + exce.getMessage());
         }
-        catch (IllegalAccessException e)
+        catch (IllegalAccessException exce)
         {
-            throw new NoSuchMethodException("XJava object newInstance exception." + v_ErrorInfo);
+            throw new NoSuchMethodException("XJava object newInstance exception." + v_ErrorInfo + "\n" + exce.getMessage());
         }
-        catch (Exception e)
+        catch (Exception exce)
         {
-            throw new NoSuchMethodException("XJava object setter(getter()) exception." + v_ErrorInfo + " -- " + e.getMessage());
+            throw new NoSuchMethodException("XJava object setter(getter()) exception." + v_ErrorInfo + "\n" + exce.getMessage());
         }
 	}
     
