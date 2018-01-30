@@ -5523,6 +5523,7 @@ public final class XSQL implements Comparable<XSQL>
      */
     public void setDataSourceGroup(DataSourceGroup i_DataSourceGroup)
     {
+        if ( i_DataSourceGroup == null ) return;
         this.dataSourceGroups.add(i_DataSourceGroup);
     }
     
