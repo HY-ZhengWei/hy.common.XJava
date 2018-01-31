@@ -32,6 +32,6 @@ public interface XSQLGroupExecuteCloud
      * @param io_Params   执行或查询参数。
      * @return            表示是否执行成功。当返回false时，其后的XSQLNode节点将不再执行。
      */
-    public boolean executeCloud_XSQLNode(Map<String ,Object> io_Params);
+    public boolean executeJava_CloudXSQLNode(Map<String ,Object> io_Params);
     
 }
