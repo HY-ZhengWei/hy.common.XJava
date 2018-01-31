@@ -4,9 +4,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import org.hy.common.CycleNextList;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.StringHelp;
+import org.hy.common.net.ClientSocket;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
 
@@ -94,6 +96,8 @@ public class XSQLNode
      *   相关针对性属性有：
      *     1. xjavaID
      *     2. methodName
+     *     3. cloudServers      云计算
+     *     4. cloudServersList  云计算
      *     
      * 方法的定义模板 @see org.hy.common.xml.plugins.XSQLGroupExecuteJava
      */
@@ -135,10 +139,10 @@ public class XSQLNode
     
     
     /** 节点类型。默认为：执行类型（包含DML、DDL、DCL、TCL） */
-    private String              type;
+    private String                       type;
     
     /** 操作SQL对象 */
-    private XSQL                sql;
+    private XSQL                         sql;
     
     /** 
      * 执行前的前提条件，只有当满足这个条件后，XSQL才会被执行
@@ -147,14 +151,14 @@ public class XSQLNode
      * 
      * 为空时，表示任何情况下都允许执行
      */
-    private String              condition;
+    private String                       condition;
     
     /** 
      * 解释出来的Fel条件。与this.condition的区别是：它是没有占位符
      * 
      * 如：c01=='1' && c02=='2'
      */
-    private String              conditionFel;
+    private String                       conditionFel;
     
     /**
      * 占位符信息的集合
@@ -162,30 +166,30 @@ public class XSQLNode
      * Map.key    为占位符。前缀为:符号
      * Map.Value  为占位符原文本信息
      */
-    private Map<String ,Object> placeholders;
+    private Map<String ,Object>          placeholders;
     
     /**
      * 当检查不通过时，是否允许其后的XSQL节点执行。默认为：true
      * 
      * 当为 true 时，检查只影响自己的节点，不影响其它及其后XSQL节点的执行。
      */
-    private boolean             noPassContinue;
+    private boolean                      noPassContinue;
     
     /** 执行本节点前，对之前的所有XSQL节点进行统一提交操作。默认为：false */
-    private boolean             beforeCommit;
+    private boolean                      beforeCommit;
     
     /**
      * 专用于执行类型的XSQL节点。
      * 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作。默认为：false 
      */
-    private boolean             afterCommit;
+    private boolean                      afterCommit;
     
     /** 
      * 专用于查询类型的XSQL节点。
      * 除获取查询结果集的首条记录外，每获取结果集一条记录前，对上一条记录产生的一系列数据库操作，做一次统一提交操作。 
      * 默认为：false
      */
-    private boolean             perAfterCommit;
+    private boolean                      perAfterCommit;
     
     /**
      * 专用于更新类型的XSQL节点($Type_ExecuteUpdate、$Type_CollectionToExecuteUpdate)。
@@ -196,14 +200,14 @@ public class XSQLNode
      * 
      * 默认为：false
      */
-    private boolean             noUpdateRollbacks;
+    private boolean                      noUpdateRollbacks;
     
     /** 
      * 在整个组合XSQLGroup的最后执行，并只执行一次。就算查询节点查无数据(无检查条件的情况下)，也会被执行。
      * 即，标记为lastOnce=true的节点，不在查询类型XSQL节点的循环之中执行。
      * 默认为：false
      */
-    private boolean             lastOnce;
+    private boolean                      lastOnce;
     
     /** 
      * 返回查询结果集
@@ -220,7 +224,7 @@ public class XSQLNode
      * 
      * 建议与 this.lastOnce 属性配合使用。如果在控制类循环的查询SQL中，会被执行多次 Map.put(this.returnID ,结果集)。
      */
-    private String              returnID;
+    private String                       returnID;
     
     /**
      * 针对 this.returnID 属性，定义返回查询结果集是 "追加方式"？还是 "覆盖方式"。
@@ -229,7 +233,7 @@ public class XSQLNode
      *   3. 其它查询结果集还是采用覆盖方式。
      * 默认为：false（覆盖方式）
      */
-    private boolean             returnAppend;
+    private boolean                      returnAppend;
     
     /**
      * 针对 this.returnID 属性，定义返回查询结果集是 "返回结果集"？还是 "查询并返回"。
@@ -241,7 +245,7 @@ public class XSQLNode
      * 
      * ZhengWei(HY) Add 2017-05-17
      */
-    private boolean             returnQuery;
+    private boolean                      returnQuery;
     
     /**
      * 查询结果当作其后节点的SQL入参的同时，还返回查询结果
@@ -262,7 +266,7 @@ public class XSQLNode
      * 2017-05-17 准备放弃this.queryReturnID属性，只少是不再建议使用此属性。
      *            用 this.returnQuery 属性代替。原因是，this.returnQuery 返回的数据结构更好被理解。
      */
-    private String              queryReturnID;
+    private String                       queryReturnID;
     
     /** 
      * 实现XSQLGroup组中嵌套另一个XSQLGroup组嵌套执行的功能。
@@ -272,32 +276,71 @@ public class XSQLNode
      * 当 sqlGroup 生效(不为空)时，只有 condition、noPassContinue、lastOnce 三个属性依然有作用。
      * 其它属性全部都将失效，包括 this.sql 也同时失效。
      */
-    private XSQLGroup           sqlGroup;
+    private XSQLGroup                    sqlGroup;
     
     /** 注解说明。当开启日志模式(XSQLGroup.isLog)时，此注解说明也会被同时输出。 */
-    private String              comment;
+    private String                       comment;
+    
+    /**
+     * 云计算服务器的列表。用英文逗号,分隔（可以有空格、回车符、制表符）。如下形式：IP1:Port1 ,IP2:Port2 ,IP3:Port3。
+     * 
+     * 与 $Type_ExecuteJava、xjavaID、methodName配合使用。
+     * 
+     * 云计算服务器的列表，可以包含自己。
+     * 
+     * 注1：所有通讯数据对象及关联对象，均须实际序列化接口java.io.Serializable。 
+     * 注2：methodName方法入参形式与本地执行Java方法不同。方法形式如下：
+     *     public boolean 方法名称(Map<String ,Object> i_Params) {}
+     *        
+     *     入参i_Params与XSQLGroupExecuteJava.executeJava_XSQLNode()方法中的io_Params入参相同，但只是只读的。
+     */
+    private String                       cloudServers;
+    
+    /**
+     * 与 cloudServers 同义，并且 cloudServers 最终将转成 cloudServersList。
+     * 
+     * 但功能上与cloudServers略有差异：
+     *    当多个XSQL组共用一组云计算服务列表时，云计算服务器可在多个XSQL组间保持一定负载均衡的功能。
+     */
+    private CycleNextList<XSQLNodeCloud> cloudServersList;
+    
+    /**
+     * 云服务正在运算（或繁忙）的服务器数量
+     */
+    private int                          cloudBusyCount;
+    
+    /**
+     * 等待哪个节点上的云服务计算完成
+     */
+    private XSQLNode                     cloudWait;
+    
+    /**
+     * 监控云服务计算完成情况的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.cloudWait 属性配合使用。
+     * 
+     * 默认为15 * 1000 = 15秒
+     */
+    private long                         cloudWaitInterval;
     
     /** 
      * XJava对象标识
      *    构建XSQLNode对象实例时，xjavaID标记的对象实例，可以是不存在的（或尚未构建的）。
      *    只要在执行时存在就OK了 
      */
-    private String              xjavaID;
+    private String                       xjavaID;
     
     /** 
      * XJava对象执行的方法名
-     *      方法的定义形式为：public boolean xxx(Map<String ,Object> io_Params ,Map<String ,Object> io_Returns) { }
-     *        1. io_Params    执行或查询参数。同XSQLGroup.executeGroup()方法的入参参数io_Params同义。
-     *        2. io_Returns   通过returnID标记的，返回出去的多个查询结果集。同XSQLGroupResult.returns属性同义。
-     *        3. 返回值，表示是否执行成功
+     *      方法的定义形式为：详见org.hy.common.xml.plugins.XSQLGroupExecuteJava
      */
-    private String              methodName;
+    private String                       methodName;
     
     /** 解释好的XJava对象实例。为了性能而存在，在反复循环中，只解释一次就好 */
-    private Object             xjavaIntance;
+    private Object                       xjavaIntance;
     
     /** 解释好的XJava对象方法。为了性能而存在，在反复循环中，只解释一次就好 */
-    private Method             xjavaMethod;
+    private Method                       xjavaMethod;
     
     /**
      * 集合ID
@@ -307,7 +350,7 @@ public class XSQLNode
      * 
      * 支持xxx.yyy.www(或getXxx.getYyy.getWww)全路径的解释
      */
-    private String             collectionID;
+    private String                       collectionID;
     
     /**
      * 是否为多线程并且发执行。默认值：false。
@@ -317,14 +360,14 @@ public class XSQLNode
      * 注：当thread设置为ture时，threadWait默认也设置为true，
      *    表示同一节点发起的多线程任务的同时，也在同一节点等待所有线程执行完成。
      */
-    private boolean            thread;
+    private boolean                      thread;
     
     /**
      * 当发起多线程时，标记哪个节点等待所有线程均执行完成。与 this.thread 配合使用。默认值：false。
      * 
      * 当某一节点设置为等待(this.threadWait=true)时，将在此节点的SQL语句执行完成后执行等待。
      */
-    private boolean            threadWait;
+    private boolean                      threadWait;
     
     /**
      * 监控所有线程完成情况的时间间隔(单位：毫秒)。
@@ -333,7 +376,7 @@ public class XSQLNode
      * 
      * 默认为0值，表示取时间间隔为：ThreadPool.getIntervalTime() * 3
      */
-    private long               threadWaitInterval;
+    private long                         threadWaitInterval;
     
     /**
      * 自主、自由的数据库连接。
@@ -347,7 +390,7 @@ public class XSQLNode
      * 
      * 默认为：false，即：由XSQLroup控制及管理数据库连接 
      */
-    private boolean            freeConnection;
+    private boolean                      freeConnection;
     
     /**
      * 对于查询语句有两种使用数据库连接的方式
@@ -356,10 +399,10 @@ public class XSQLNode
      *   
      * 只对 $Type_Query 类型有效。
      */
-    private boolean            oneConnection;
+    private boolean                      oneConnection;
     
     /** 是否采用大数据模式控制循环遍历 */
-    private boolean            bigData;
+    private boolean                      bigData;
     
     
     
@@ -376,6 +419,11 @@ public class XSQLNode
         this.returnQuery        = false;
         this.queryReturnID      = null;
         this.sqlGroup           = null;
+        this.cloudServers       = null;
+        this.cloudServersList   = null;
+        this.cloudBusyCount     = 0;
+        this.cloudWait          = null;
+        this.cloudWaitInterval  = 15 * 1000;
         this.xjavaID            = null;
         this.methodName         = null;
         this.xjavaIntance       = null;
@@ -847,6 +895,187 @@ public class XSQLNode
     
     
     /**
+     * 云计算服务器的列表。用英文逗号,分隔（可以有空格、回车符、制表符）。如下形式：IP1:Port1 ,IP2:Port2 ,IP3:Port3。
+     * 
+     * 与 $Type_ExecuteJava、xjavaID、methodName配合使用。
+     * 
+     * 云计算服务器的列表，可以包含自己。
+     * 
+     * 注1：所有通讯数据对象及关联对象，均须实际序列化接口java.io.Serializable。 
+     * 注2：methodName方法入参形式与本地执行Java方法不同。方法形式如下：
+     *     public boolean 方法名称(Map<String ,Object> i_Params) {}
+     *        
+     *     入参i_Params与XSQLGroupExecuteJava.executeJava_XSQLNode()方法中的io_Params入参相同，但只是只读的。 
+     */
+    public String getCloudServers()
+    {
+        return cloudServers;
+    }
+    
+
+    
+    /**
+     * 与 cloudServers 同义，并且 cloudServers 最终将转成 cloudServersList。
+     * 
+     * 但功能上与cloudServers略有差异：
+     *    当多个XSQL组共用一组云计算服务列表时，云计算服务器可在多个XSQL组间保持一定负载均衡的功能。
+     */
+    public CycleNextList<XSQLNodeCloud> getCloudServersList()
+    {
+        return cloudServersList;
+    }
+
+
+    
+    /**
+     * 云计算服务器的列表。用英文逗号,分隔（可以有空格、回车符、制表符）。如下形式：IP1:Port1 ,IP2:Port2 ,IP3:Port3。
+     * 
+     * 与 $Type_ExecuteJava、xjavaID、methodName配合使用。
+     * 
+     * 云计算服务器的列表，可以包含自己。
+     * 
+     * 注1：所有通讯数据对象及关联对象，均须实际序列化接口java.io.Serializable。 
+     * 注2：methodName方法入参形式与本地执行Java方法不同。方法形式如下：
+     *     public boolean 方法名称(Map<String ,Object> i_Params) {}
+     *        
+     *     入参i_Params与XSQLGroupExecuteJava.executeJava_XSQLNode()方法中的io_Params入参相同，但只是只读的。
+     */
+    public void setCloudServers(String cloudServers)
+    {
+        this.cloudServers     = cloudServers;
+        this.cloudServersList = new CycleNextList<XSQLNodeCloud>();
+        
+        String [] v_ClusterServers = StringHelp.replaceAll(this.cloudServers ,new String[]{"，" ," " ,"\t" ,"\r" ,"\n"} ,new String[]{"," ,""}).split(",");
+        for (String v_Server : v_ClusterServers)
+        {
+            String [] v_HostPort = (v_Server.trim() + ":1721").split(":");
+            
+            this.cloudServersList.add(new XSQLNodeCloud(new ClientSocket(v_HostPort[0] ,Integer.parseInt(v_HostPort[1]))));
+        }
+    }
+    
+
+    
+    /**
+     * 与 cloudServers 同义，并且 cloudServers 最终将转成 cloudServersList。
+     * 
+     * 但功能上与cloudServers略有差异：
+     *    当多个XSQL组共用一组云计算服务列表时，云计算服务器可在多个XSQL组间保持一定负载均衡的功能。
+     */
+    public void setCloudServersList(CycleNextList<XSQLNodeCloud> cloudServersList)
+    {
+        this.cloudServersList = cloudServersList;
+    }
+    
+
+    
+    /**
+     * 获取：云服务正在运算（或繁忙）的服务器数量
+     */
+    public synchronized int getCloudBusyCount()
+    {
+        return cloudBusyCount;
+    }
+    
+
+    
+    /**
+     * 设置：云服务正在运算（或繁忙）的服务器数量
+     * 
+     * @param cloudBusyCount 
+     */
+    public synchronized void setCloudBusyCount(int cloudBusyCount)
+    {
+        this.cloudBusyCount = cloudBusyCount;
+    }
+    
+    
+    
+    /**
+     * 云服务的繁忙数+1
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-30
+     * @version     v1.0
+     *
+     * @return  并返回当前的总繁忙数
+     */
+    public synchronized int cloudBusy()
+    {
+        return ++this.cloudBusyCount;
+    }
+    
+    
+    
+    /**
+     * 云服务的空闲数+1（即繁忙数-1）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-30
+     * @version     v1.0
+     *
+     * @return  并返回当前的总繁忙数
+     */
+    public synchronized int cloudIdle()
+    {
+        return --this.cloudBusyCount;
+    }
+    
+
+    
+    /**
+     * 获取：等待哪个节点上的云服务计算完成
+     */
+    public XSQLNode getCloudWait()
+    {
+        return cloudWait;
+    }
+    
+
+    
+    /**
+     * 获取：监控云服务计算完成情况的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.cloudWait 属性配合使用。
+     * 
+     * 默认为15 * 1000 = 15秒
+     */
+    public long getCloudWaitInterval()
+    {
+        return cloudWaitInterval;
+    }
+    
+
+    
+    /**
+     * 设置：* 等待哪个节点上的云服务计算完成
+     * 
+     * @param cloudWait 
+     */
+    public void setCloudWait(XSQLNode cloudWait)
+    {
+        this.cloudWait = cloudWait;
+    }
+    
+
+    
+    /**
+     * 设置：* 监控云服务计算完成情况的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.cloudWait 属性配合使用。
+     * 
+     * 默认为15 * 1000 = 15秒
+     * 
+     * @param cloudWaitInterval 
+     */
+    public void setCloudWaitInterval(long cloudWaitInterval)
+    {
+        this.cloudWaitInterval = cloudWaitInterval;
+    }
+    
+
+
+    /**
      * 获取：XJava对象标识
      *      构建XSQLNode对象实例时，xjavaID标记的对象实例，可以是不存在的（或尚未构建的）。
      *      只要在执行时存在就OK了
@@ -876,10 +1105,7 @@ public class XSQLNode
     
     /**
      * 获取：XJava对象执行的方法名
-     *      方法的定义形式为：public boolean xxx(Map<String ,Object> io_Params ,Map<String ,Object> io_Returns) { }
-     *        1. io_Params    执行或查询参数。同XSQLGroup.executeGroup()方法的入参参数io_Params同义。
-     *        2. io_Returns   通过returnID标记的，返回出去的多个查询结果集。同XSQLGroupResult.returns属性同义。
-     *        3. 返回值，表示是否执行成功
+     *      方法的定义形式为：详见org.hy.common.xml.plugins.XSQLGroupExecuteJava
      */
     public String getMethodName()
     {
@@ -890,10 +1116,7 @@ public class XSQLNode
     
     /**
      * 设置：XJava对象执行的方法名
-     *      方法的定义形式为：public boolean xxx(Map<String ,Object> io_Params ,Map<String ,Object> io_Returns) { }
-     *        1. io_Params    执行或查询参数。同XSQLGroup.executeGroup()方法的入参参数io_Params同义。
-     *        2. io_Returns   通过returnID标记的，返回出去的多个查询结果集。同XSQLGroupResult.returns属性同义。
-     *        3. 返回值，表示是否执行成功
+     *      方法的定义形式为：详见org.hy.common.xml.plugins.XSQLGroupExecuteJava
      *        
      * @param methodName 
      */
@@ -927,23 +1150,58 @@ public class XSQLNode
      */
     public synchronized boolean executeJava(XSQLGroupControl i_Control ,Map<String ,Object> io_Params ,Map<String ,Object> io_Returns) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException
     {
-        // 已经解释成功的，不在二次解释
-        if ( this.xjavaMethod != null )
+        // 本地计算
+        if ( Help.isNull(this.cloudServersList) )
         {
-            Object v_Object = XJava.getObject(this.xjavaID.trim());
-            
-            if ( this.xjavaIntance != v_Object )
+            // 已经解释成功的，不在二次解释
+            if ( this.xjavaMethod != null )
+            {
+                Object v_Object = XJava.getObject(this.xjavaID.trim());
+                
+                if ( this.xjavaIntance != v_Object )
+                {
+                    this.parserMethod();
+                }
+            }
+            else
             {
                 this.parserMethod();
             }
+            
+            Object v_Ret = this.xjavaMethod.invoke(this.xjavaIntance ,i_Control ,io_Params ,io_Returns);
+            return (Boolean)v_Ret;
         }
+        // 云计算 ZhengWei(HY) Add 2018-01-30
         else
         {
-            this.parserMethod();
+            if ( Help.isNull(this.xjavaID) )
+            {
+                throw new NullPointerException("XSQLNode.getXjavaID() is null.");
+            }
+            else if ( Help.isNull(this.methodName) )
+            {
+                throw new NullPointerException("XSQLNode.getMethodName() is null."); 
+            }
+            else
+            {
+                XSQLNodeCloud v_Cloud = this.cloudServersList.next();
+                while ( !v_Cloud.isIdle() )
+                {
+                    try
+                    {
+                        Thread.sleep(10 * 1000);
+                    }
+                    catch (Exception exce)
+                    {
+                        // Nothing.
+                    }
+                    v_Cloud = this.cloudServersList.next();
+                }
+                
+                v_Cloud.executeCloud(this ,io_Params);
+                return true;
+            }
         }
-        
-        Object v_Ret = this.xjavaMethod.invoke(this.xjavaIntance ,i_Control ,io_Params ,io_Returns);
-        return (Boolean)v_Ret;
     }
     
     

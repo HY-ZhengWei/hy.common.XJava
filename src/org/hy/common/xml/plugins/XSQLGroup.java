@@ -1274,6 +1274,7 @@ public final class XSQLGroup
                 }
                 else 
                 {
+                    // $Type_ExecuteJava
                     v_ExecRet = v_Node.executeJava(new XSQLGroupControl(this ,io_DSGConns ,v_Ret.getExecSumCount()) ,io_Params ,v_Ret.getReturns());
                 }
                 
@@ -1387,6 +1388,48 @@ public final class XSQLGroup
                             return v_Task.getXsqlGroupResult();
                         }
                     }
+                }
+            }
+        }
+        
+        return waitClouds(i_Node ,i_XSQLGroupResult);
+    }
+    
+    
+    
+    /**
+     * 等待云服务的计算完成。
+     * 
+     * 先等待线程，再等待云服务。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-30
+     * @version     v1.0
+     *
+     * @param i_Node
+     * @param i_XSQLGroupResult
+     * @return
+     */
+    public XSQLGroupResult waitClouds(XSQLNode i_Node ,XSQLGroupResult i_XSQLGroupResult)
+    {
+        if ( i_Node.getCloudWait() != null )
+        {
+            long v_Interval = i_Node.getCloudWaitInterval();
+            if ( v_Interval <= 0 )
+            {
+                v_Interval = 15 * 1000;
+            }
+            
+            while ( i_Node.getCloudWait().getCloudBusyCount() >= 1 )
+            {
+                // 一直等待并且的执行结果
+                try
+                {
+                    Thread.sleep(v_Interval);
+                }
+                catch (Exception exce)
+                {
+                    // Nothing.
                 }
             }
         }
