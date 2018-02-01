@@ -319,7 +319,7 @@ public class XSQLNode
      * 
      * 与 this.cloudWait 属性配合使用。
      * 
-     * 默认为15 * 1000 = 15秒
+     * 默认为5 * 1000 = 5秒
      */
     private long                         cloudWaitInterval;
     
@@ -423,7 +423,7 @@ public class XSQLNode
         this.cloudServersList   = null;
         this.cloudBusyCount     = 0;
         this.cloudWait          = null;
-        this.cloudWaitInterval  = 15 * 1000;
+        this.cloudWaitInterval  = 5 * 1000;
         this.xjavaID            = null;
         this.methodName         = null;
         this.xjavaIntance       = null;
@@ -1038,7 +1038,7 @@ public class XSQLNode
      * 
      * 与 this.cloudWait 属性配合使用。
      * 
-     * 默认为15 * 1000 = 15秒
+     * 默认为5 * 1000 = 5秒
      */
     public long getCloudWaitInterval()
     {
@@ -1064,7 +1064,7 @@ public class XSQLNode
      * 
      * 与 this.cloudWait 属性配合使用。
      * 
-     * 默认为15 * 1000 = 15秒
+     * 默认为5 * 1000 = 5秒
      * 
      * @param cloudWaitInterval 
      */

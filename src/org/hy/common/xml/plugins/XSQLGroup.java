@@ -1417,7 +1417,7 @@ public final class XSQLGroup
             long v_Interval = i_Node.getCloudWaitInterval();
             if ( v_Interval <= 0 )
             {
-                v_Interval = 15 * 1000;
+                v_Interval = 5 * 1000;
             }
             
             while ( i_Node.getCloudWait().getCloudBusyCount() >= 1 )
