@@ -2,9 +2,11 @@ package org.hy.common.xml.plugins;
 
 import java.util.Map;
 
+import org.hy.common.Date;
 import org.hy.common.Execute;
 import org.hy.common.ExecuteEvent;
 import org.hy.common.ExecuteListener;
+import org.hy.common.Help;
 import org.hy.common.net.ClientSocket;
 
 
@@ -78,6 +80,9 @@ public class XSQLNodeCloud
     {
         i_XSQLNode.cloudBusy();
         this.isIdle = false;
+        
+        System.out.println("\n" + Date.getNowTime().getFullMilli() + "  Cloud computing " + this.client.getHostName() + this.client.getPort() + " Starting ...");
+        Help.print(i_Params);
         
         Execute v_Execute = new Execute(client ,"sendCommand" ,new Object[]{i_XSQLNode.getXjavaID().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{i_Params}});
         
