@@ -81,8 +81,9 @@ public class XSQLNodeCloud
         i_XSQLNode.cloudBusy();
         this.isIdle = false;
         
-        System.out.println("\n" + Date.getNowTime().getFullMilli() + "  Cloud computing " + this.client.getHostName() + this.client.getPort() + " Starting ...");
+        System.out.println("\n" + Date.getNowTime().getFullMilli() + "  Cloud computing " + this.client.getHostName() + ":" + this.client.getPort() + " Starting ...");
         Help.print(i_Params);
+        System.out.println();
         
         Execute v_Execute = new Execute(client ,"sendCommand" ,new Object[]{i_XSQLNode.getXjavaID().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{i_Params}});
         
