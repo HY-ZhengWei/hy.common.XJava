@@ -133,6 +133,174 @@
 			
 		</sql>
 		
+		
+		
+		
+		
+		
+		
+		
+		<!-- 生成Oracle数据库删除对象的SQL语句 -->
+		<sql id="XSQL_DBMetadata_DropByName_ORACLE" new="true">
+		
+			<content>
+				<![CDATA[
+				SELECT  CASE WHEN A.Object_Type = 'TABLE'           THEN 'DROP TABLE           ' || A.Object_Name
+				             WHEN A.Object_Type = 'VIEW'            THEN 'DROP VIEW            ' || A.Object_Name
+				             WHEN A.Object_Type = 'INDEX'           THEN 'DROP INDEX           ' || A.Object_Name
+				             WHEN A.Object_Type = 'INDEX PARTITION' THEN 'DROP INDEX PARTITION ' || A.Object_Name
+				             WHEN A.Object_Type = 'SEQUENCE'        THEN 'DROP SEQUENCE        ' || A.Object_Name
+				             WHEN A.Object_Type = 'FUNCTION'        THEN 'DROP FUNCTION        ' || A.Object_Name
+				             WHEN A.Object_Type = 'PROCEDURE'       THEN 'DROP PROCEDURE       ' || A.Object_Name
+				             WHEN A.Object_Type = 'PACKAGE'         THEN 'DROP PACKAGE         ' || A.Object_Name
+				             WHEN A.Object_Type = 'SYNONYM'         THEN 'DROP SYNONYM         ' || A.Object_Name
+				             WHEN A.Object_Type = 'TRIGGER'         THEN 'DROP TRIGGER         ' || A.Object_Name
+				             WHEN A.Object_Type = 'TYPE'            THEN 'DROP TYPE            ' || A.Object_Name
+				             WHEN A.Object_Type = 'DIRECTORY'       THEN 'DROP DIRECTORY       ' || A.Object_Name
+				             WHEN A.Object_Type = 'JAVA CLASS'      THEN 'DROP JAVA CLASS      ' || A.Object_Name
+				             WHEN A.Object_Type = 'CLUSTER'         THEN 'DROP CLUSTER         ' || A.Object_Name
+				              END AS DropSQL
+				  FROM  User_Objects  A
+				 WHERE  UPPER(A.Object_Name) = UPPER(':objectName')
+				]]>
+			</content>
+			
+		</sql>
+		
+		
+		
+		<!-- 生成MySQL数据库删除对象的SQL语句 -->
+		<sql id="XSQL_DBMetadata_DropByName_MYSQL" new="true">
+		
+			<content>
+				<![CDATA[
+				SELECT  CASE WHEN A.ObjectType = 'TABLE'           THEN CONCAT('DROP TABLE           ' ,A.ObjectName)
+				             WHEN A.ObjectType = 'VIEW'            THEN CONCAT('DROP VIEW            ' ,A.ObjectName)
+				             WHEN A.ObjectType = 'FUNCTION'        THEN CONCAT('DROP FUNCTION        ' ,A.ObjectName)
+				             WHEN A.ObjectType = 'PROCEDURE'       THEN CONCAT('DROP PROCEDURE       ' ,A.ObjectName)
+				             WHEN A.ObjectType = 'TRIGGER'         THEN CONCAT('DROP TRIGGER         ' ,A.ObjectName)
+				              END AS DropSQL
+					FROM  (
+					         SELECT  Table_Name      AS ObjectName
+					                ,Table_Schema    AS DBName 
+					                ,'TABLE'         AS ObjectType
+					           FROM  INFORMATION_SCHEMA.Tables  
+					          UNION  ALL
+					         SELECT  Table_Name      AS ObjectName
+					                ,Table_Schema    AS DBName 
+					                ,'VIEW'          AS ObjectType
+					           FROM  INFORMATION_SCHEMA.Views  
+					          UNION  ALL
+					         SELECT  Trigger_Name    AS ObjectName
+					                ,Trigger_Schema  AS DBName
+					                ,'TRIGGER'       AS ObjectType
+					           FROM  INFORMATION_SCHEMA.Triggers 
+					          UNION  ALL
+					         SELECT  Routine_Name    AS ObjectName
+					                ,Routine_Schema  AS DBName
+					                ,Routine_Type    AS ObjectType
+					           FROM  INFORMATION_SCHEMA.Routines
+                        )  A
+				 WHERE  A.DBName            = Database()
+				   AND  UPPER(A.ObjectName) = UPPER(':objectName')
+				]]>
+			</content>
+			
+		</sql>
+		
+		
+		
+		<!-- 生成SQLServer数据库删除对象的SQL语句 -->
+		<sql id="XSQL_DBMetadata_DropByName_SQLSERVER" new="true">
+		
+			<content>
+				<![CDATA[
+				SELECT  CASE WHEN A.Type = 'U'  THEN 'DROP TABLE           ' + A.Name
+				             WHEN A.Type = 'V'  THEN 'DROP VIEW            ' + A.Name
+				             WHEN A.Type = 'FN' THEN 'DROP FUNCTION        ' + A.Name
+				             WHEN A.Type = 'P'  THEN 'DROP PROCEDURE       ' + A.Name
+				             WHEN A.Type = 'SN' THEN 'DROP SYNONYM         ' + A.Name
+				             WHEN A.Type = 'TR' THEN 'DROP TRIGGER         ' + A.Name
+				              END AS DropSQL
+				  FROM  SysObjects  A
+                 WHERE  UPPER(A.Name) = UPPER(':objectName')
+				]]>
+			</content>
+			
+		</sql>
+		
+		
+		
+		<!-- 生成DB2数据库删除对象的SQL语句 -->
+		<sql id="XSQL_DBMetadata_DropByName_DB2" new="true">
+		
+			<content>
+				<![CDATA[
+				SELECT  CASE WHEN A.ObjectType = 'TABLE'           THEN 'DROP TABLE           ' || A.ObjectName
+				             WHEN A.ObjectType = 'VIEW'            THEN 'DROP VIEW            ' || A.ObjectName
+				             WHEN A.ObjectType = 'FUNCTION'        THEN 'DROP FUNCTION        ' || A.ObjectName
+				             WHEN A.ObjectType = 'PROCEDURE'       THEN 'DROP PROCEDURE       ' || A.ObjectName
+				             WHEN A.ObjectType = 'TRIGGER'         THEN 'DROP TRIGGER         ' || A.ObjectName
+				              END AS DropSQL
+                  FROM  (
+                          SELECT  TabName         AS ObjectName
+                                 ,TabSchema       AS DBName 
+                                 ,'TABLE'         AS ObjectType
+                            FROM  SysCat.Tables
+                           UNION  ALL
+                          SELECT  ViewName        AS ObjectName
+                                 ,ViewSchema      AS DBName 
+                                 ,'VIEW'          AS ObjectType
+                            FROM  SysCat.Views  
+                           UNION  ALL
+                          SELECT  TriggerName     AS ObjectName
+                                 ,TriggerSchema   AS DBName 
+                                 ,'TRIGGER'       AS ObjectType
+                            FROM  SysCat.Triggers 
+                           UNION  ALL
+                          SELECT  RoutineName     AS ObjectName
+                                 ,RoutineSchema   AS DBName 
+                                 ,RoutineType     AS ObjectType
+                            FROM  SysCat.Routines
+                        )  A
+                 WHERE  A.DBName            = Current Schema
+                   AND  UPPER(A.ObjectName) = UPPER(':objectName')
+				]]>
+			</content>
+			
+		</sql>
+		
+		
+		
+		<!-- 生成SQLite数据库删除对象的SQL语句 -->
+		<sql id="XSQL_DBMetadata_DropByName_SQLITE" new="true">
+		
+			<content>
+				<![CDATA[
+                SELECT  'DROP TABLE ' || A.name
+                  FROM  Sqlite_Master  A
+                 WHERE  UPPER(A.name) = UPPER(':objectName')
+				]]>
+			</content>
+			
+		</sql>
+		
+		
+		
+		<!-- 生成POSTGRESQL数据库删除对象的SQL语句 -->
+		<sql id="XSQL_DBMetadata_DropByName_POSTGRESQL" new="true">
+		
+			<content>
+				<![CDATA[
+                SELECT  'DROP TABLE ' || A.tablename
+                  FROM  PG_Tables  A
+                 WHERE  A.schemaname       = 'public'
+                   AND  UPPER(A.tablename) = UPPER(':objectName')
+				]]>
+			</content>
+			
+		</sql>
+		
 	</sqls>
 	
 </config>

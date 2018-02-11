@@ -72,15 +72,19 @@ public class AnalyseServerServlet extends HttpServlet
         
         if ( !Help.isNull(v_XSQLOID) && !Help.isNull(v_XSQLXID) )
         {
-            i_Response.getWriter().println(this.analyse.analyseDBError(v_BasePath ,i_Request.getRequestURL().toString() ,v_XSQLOID ,v_XSQLXID ,"Y".equalsIgnoreCase(v_Cluster)));
+            i_Response.getWriter().println(this.analyse.analyseDBError (v_BasePath ,i_Request.getRequestURL().toString() ,v_XSQLOID ,v_XSQLXID ,"Y".equalsIgnoreCase(v_Cluster)));
         }
         else if ( "GROUP".equalsIgnoreCase(v_Type) )
         {
-            i_Response.getWriter().println(this.analyse.analyseDBGroup(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
+            i_Response.getWriter().println(this.analyse.analyseDBGroup (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
+        }
+        else if ( "CREATE".equalsIgnoreCase(v_Type) )
+        {
+            i_Response.getWriter().println(this.analyse.analyseDBCreate(v_BasePath ,i_Request.getRequestURL().toString()));
         }
         else
         {
-            i_Response.getWriter().println(this.analyse.analyseDB     (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
+            i_Response.getWriter().println(this.analyse.analyseDB      (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
         }
     }
     

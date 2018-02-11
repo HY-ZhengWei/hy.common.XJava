@@ -27,6 +27,7 @@ import org.hy.common.xml.XJSON;
 import org.hy.common.xml.XJSONObject;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
+import org.hy.common.xml.XSQLDBMetadata;
 import org.hy.common.xml.XSQLLog;
 import org.hy.common.xml.annotation.Xjava;
 import org.hy.common.xml.plugins.AppInitConfig;
@@ -705,6 +706,139 @@ public class AnalyseBase
     
     
     /**
+     * 删除并重新创建数据库对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-02-11
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
+     * @param  i_Cluster         是否为集群
+     * @return
+     */
+    public String analyseDBCreate(String i_BasePath ,String i_ObjectValuePath)
+    {
+        Map<String ,Object> v_XSQLMap      = XJava.getObjects(XSQL.class);
+        StringBuilder       v_Buffer       = new StringBuilder();
+        int                 v_Index        = 0;
+        String              v_Content      = this.getTemplateShowResultContent();
+        int                 v_TotalCount   = 0;
+        int                 v_DropCount    = 0;
+        int                 v_CreateCount  = 0;
+        
+        
+        for (Map.Entry<String, Object> v_Item : v_XSQLMap.entrySet())
+        {
+            if ( v_Item.getValue() == null )
+            {
+                continue;
+            }
+            
+            XSQL v_XSQL = (XSQL)v_Item.getValue();
+            if ( Help.isNull(v_XSQL.getCreateObjectName()) )
+            {
+                continue;
+            }
+            
+            v_TotalCount++;
+            
+            try
+            {
+                XSQLDBMetadata v_XSQLDBMetadata = new XSQLDBMetadata();
+                boolean        v_IsExists       = v_XSQLDBMetadata.isExists(v_XSQL);
+                boolean        v_DropRet        = false;
+                boolean        v_CreateRet      = false;
+                String         v_OprStatus      = "";
+                
+                if ( v_IsExists )
+                {
+                    v_DropRet = v_XSQLDBMetadata.dropObject(v_XSQL);
+                    
+                    if ( v_DropRet )
+                    {
+                        v_DropCount++;
+                        v_CreateRet = v_XSQL.createObject();
+                        
+                        if ( v_CreateRet )
+                        {
+                            v_CreateCount++;
+                            v_OprStatus = "成功";
+                        }
+                        else
+                        {
+                            v_OprStatus = "创建对象异常";
+                        }
+                    }
+                    else
+                    {
+                        v_OprStatus = "删除对象异常";
+                    }
+                }
+                else
+                {
+                    v_DropCount++;
+                    v_CreateRet = v_XSQL.createObject();
+                    if ( v_CreateRet )
+                    {
+                        v_CreateCount++;
+                        v_OprStatus = "成功";
+                    }
+                    else
+                    {
+                        v_OprStatus = "创建对象异常";
+                    }
+                }
+                
+                
+                v_Buffer.append(StringHelp.replaceAll(v_Content 
+                                ,new String[]{":No" 
+                                             ,":OprName"
+                                             ,":OprTime" 
+                                             ,":OprStatus"} 
+                                ,new String[]{String.valueOf(++v_Index)
+                                             ,v_XSQL.getCreateObjectName() + "  " + Help.NVL(v_XSQL.getComment())
+                                             ,Date.getNowTime().getFullMilli()
+                                             ,v_OprStatus
+                                }));
+            }
+            catch (Exception exce)
+            {
+                exce.printStackTrace();
+            }
+        }
+        
+        String v_SumInfo = "";
+        if ( v_TotalCount == v_CreateCount )
+        {
+            v_SumInfo = "共成功创建 " + v_CreateCount + " 个对象";
+        }
+        else
+        {
+            v_SumInfo = "成功创建 " + v_CreateCount + " 个对象；"
+                      + "创建异常 " + (v_DropCount  - v_CreateCount) + " 个对象；"
+                      + "删除异常 " + (v_TotalCount - v_DropCount) + " 个对象；";
+        }
+        
+        v_Buffer.append(StringHelp.replaceAll(v_Content 
+                       ,new String[]{":No" 
+                                    ,":OprName"
+                                    ,":OprTime" 
+                                    ,":OprStatus"} 
+                       ,new String[]{String.valueOf(++v_Index)
+                                    ,"合计：" + v_SumInfo
+                                    ,Date.getNowTime().getFullMilli()
+                                    ,v_TotalCount == v_CreateCount ? "全部成功" : "有异常"
+                       }));
+
+        return StringHelp.replaceAll(this.getTemplateShowResult()
+                                    ,new String[]{":Title"          ,":HttpBasePath" ,":Content"}
+                                    ,new String[]{"重建数据库对象列表" ,i_BasePath      ,v_Buffer.toString()});
+    }
+    
+    
+    
+    /**
      * 功能1. 查看对象信息
      * 功能2. 执行对象方法（支持集群）
      * 
@@ -1315,6 +1449,20 @@ public class AnalyseBase
     private String getTemplateShowClusterContent()
     {
         return this.getTemplateContent("template.showClusterContent.html");
+    }
+    
+    
+    
+    private String getTemplateShowResult()
+    {
+        return this.getTemplateContent("template.showResult.html");
+    }
+    
+    
+    
+    private String getTemplateShowResultContent()
+    {
+        return this.getTemplateContent("template.showResultContent.html");
     }
     
     

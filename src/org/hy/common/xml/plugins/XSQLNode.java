@@ -63,6 +63,7 @@ import com.greenpineyu.fel.context.FelContext;
  *                                       主要用于多线程的并发写操作。
  *                                4.添加：多线程监控完成情况的时间间隔threadWaitInterval属性。
  *                                       由原先的固定值改为可由用户自行调整的属性。
+ *              v12.0 2018-01-30  1.添加：支持多台服务器并行计算。
  */
 public class XSQLNode
 {

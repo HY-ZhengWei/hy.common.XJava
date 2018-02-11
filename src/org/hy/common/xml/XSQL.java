@@ -5556,12 +5556,31 @@ public final class XSQL implements Comparable<XSQL>
      *
      * @param i_CreateObjectName
      */
-    public synchronized void setCreate(String i_CreateObjectName)
+    public void setCreate(String i_CreateObjectName)
     {
         this.create = i_CreateObjectName.trim();
         this.type   = $Type_Create;
         
         
+        createObject();
+    }
+    
+    
+    
+    /**
+     * 创建对象。如创建表。
+     * 
+     * 此属性为动作方法，即this.setCreate(...)时，将尝试创建对象(当对象不存在时)。
+     * 也因为是动作方法，所以在设置本属性前dataSourceGroup、content它两属性应当已设置OK。
+     * 
+     * 实现服务启动时检查并创建数据库对象(如数据库表)，已存在不创建。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-01-12
+     * @version     v1.0
+     */
+    public synchronized boolean createObject()
+    {
         if ( null == this.getDataSourceGroup() )
         {
             throw new NullPointerException("DataSourceGroup is null.");
@@ -5597,6 +5616,8 @@ public final class XSQL implements Comparable<XSQL>
                 {
                     System.err.println("Create object[" + this.create + "] Error. " + Help.NVL(this.comment));
                 }
+                
+                return v_Ret;
             }
         }
         catch (Exception exce)
@@ -5604,7 +5625,9 @@ public final class XSQL implements Comparable<XSQL>
             System.err.println("Create object[" + this.create + "] Error. " + Help.NVL(this.comment));
             exce.printStackTrace();
         }
-    }
+        
+        return false;
+    } 
     
 
 
