@@ -41,6 +41,7 @@ import org.hy.common.Help;
  *              v3.0  2017-01-22  添加：查看集群数据库访问量的概要统计数据
  *                                添加：查看集群数据库组合SQL访问量的概要统计数据 
  *                                添加：查看集群查看XSQL对象执行错误的SQL语句
+ *              4.0  2018-02-11   添加： 删除并重新创建数据库对象
  */
 public class AnalyseServerServlet extends HttpServlet
 {

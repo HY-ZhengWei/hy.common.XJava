@@ -1,8 +1,10 @@
 package org.hy.common.xml;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.hy.common.Help;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.Xjava;
 
@@ -73,6 +75,7 @@ public class XSQLDBMetadata
      * @param i_XSQL
      * @return
      */
+    @SuppressWarnings("unchecked")
     public boolean dropObject(XSQL i_XSQL)
     {
         XSQL                v_XSQLMetdata = XJava.getXSQL("XSQL_DBMetadata_DropByName_" + i_XSQL.getDataSourceGroup().getDbProductType());
@@ -81,7 +84,16 @@ public class XSQLDBMetadata
         v_XSQLMetdata.setDataSourceGroup(i_XSQL.getDataSourceGroup());
         v_Params.put("objectName" ,i_XSQL.getCreateObjectName());
         
-        return v_XSQLMetdata.execute(v_Params);
+        List<List<String>> v_Datas = (List<List<String>>)v_XSQLMetdata.query(v_Params);
+        
+        if ( Help.isNull(v_Datas) )
+        {
+            return false;
+        }
+        else
+        {
+            return v_XSQLMetdata.execute(v_Datas.get(0).get(0));
+        }
     }
     
 }

@@ -56,6 +56,7 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *              v6.0  2017-03-01  添加：查看前缀匹配的对象列表页面，添加显示对象.toString()的信息。
  *                                     特殊情况1: 对于Java默认的toString()返回值不予显示。
  *                                     特殊情况2: 对于集合对象，不予显示。
+ *              v7.0  2018-02-11  添加：删除并重新创建数据库对象
  */
 @Xjava
 public class AnalyseBase
@@ -828,7 +829,7 @@ public class AnalyseBase
                        ,new String[]{String.valueOf(++v_Index)
                                     ,"合计：" + v_SumInfo
                                     ,Date.getNowTime().getFullMilli()
-                                    ,v_TotalCount == v_CreateCount ? "全部成功" : "有异常"
+                                    ,v_TotalCount == 0 ? "未找配置" : v_TotalCount == v_CreateCount ? "全部成功" : "有异常"
                        }));
 
         return StringHelp.replaceAll(this.getTemplateShowResult()
