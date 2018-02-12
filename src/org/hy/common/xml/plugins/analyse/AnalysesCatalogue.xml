@@ -91,7 +91,7 @@
 	        <item>
 	            <name>重建数据库对象</name>
 				<comment><![CDATA[ <font color='red'>危险！对象存在时，会先删除后创建。</font> ]]></comment>
-				<value><![CDATA[ /analyseDB?type=Create ]]></value>
+				<value><![CDATA[ /analyseObject?XSQLCreate=Y ]]></value>
 	        </item>
 	        
 	        
