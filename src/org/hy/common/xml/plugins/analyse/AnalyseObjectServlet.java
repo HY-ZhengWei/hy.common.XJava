@@ -34,17 +34,19 @@ import org.hy.common.xml.XJava;
         <url-pattern>/analyses/analyseObject</url-pattern>
     </servlet-mapping>
  * 
- * 功能1：查看前缀匹配的对象列表     http://IP:Port/WebService/../analyseObject?xid=XJavaIDPrefix*
- * 功能2：查看对象信息             http://IP:Port/WebService/../analyseObject?xid=XJavaID         
- * 功能3：执行对象方法             http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称
- * 功能4：集群顺次执行对象方法      http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称&cluster=Y
- * 功能5：集群同时执行对象方法      http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称&cluster=Y&sameTime=Y
+ * 功能1：查看前缀匹配的对象列表         http://IP:Port/WebService/../analyseObject?xid=XJavaIDPrefix*
+ * 功能2：查看对象信息                         http://IP:Port/WebService/../analyseObject?xid=XJavaID         
+ * 功能3：执行对象方法                          http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称
+ * 功能4：集群顺次执行对象方法            http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称&cluster=Y
+ * 功能5：集群同时执行对象方法            http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称&cluster=Y&sameTime=Y
  * 
- * 功能6：查看XJava配置文件列表     http://IP:Port/WebService/../analyseObject
- * 功能7：重新加载XJava配置文件     http://IP:Port/WebService/../analyseObject?xfile=xxx
+ * 功能6：查看XJava配置文件列表         http://IP:Port/WebService/../analyseObject
+ * 功能7：重新加载XJava配置文件         http://IP:Port/WebService/../analyseObject?xfile=xxx
  * 功能8：集群重新加载XJava配置文件  http://IP:Port/WebService/../analyseObject?xfile=xxx&cluster=Y
  * 
- * 功能9：查看集群服务列表          http://IP:Port/WebService/../analyseObject?cluster=Y
+ * 功能9：查看集群服务列表                   http://IP:Port/WebService/../analyseObject?cluster=Y
+ * 
+ * 功能10：删除并重建数据库对象          http://IP:Port/WebService/../analyseObject?XSQLCreate=Y
  *
  * @author      ZhengWei(HY)
  * @createDate  2015-12-16
@@ -53,6 +55,7 @@ import org.hy.common.xml.XJava;
  *                                添加：集群顺次执行对象方法
  *                                添加：集群同时执行对象方法（并发）
  *                                添加：查看集群服务列表
+ *              v3.0  2018-02-11  添加：删除并重建数据库对象
  */
 public class AnalyseObjectServlet extends HttpServlet
 {
@@ -119,10 +122,15 @@ public class AnalyseObjectServlet extends HttpServlet
         String v_XFile    = i_Request.getParameter("xfile");
         String v_Cluster  = i_Request.getParameter("cluster");
         String v_SameTime = i_Request.getParameter("sameTime");
+        String v_Create   = i_Request.getParameter("XSQLCreate");
         
         if ( Help.isNull(v_XID) )
         {
-            if ( Help.isNull(v_XFile) && "Y".equalsIgnoreCase(v_Cluster) )
+            if ( !Help.isNull(v_Create) && "Y".equalsIgnoreCase(v_Create) )
+            {
+                i_Response.getWriter().println(this.analyse.analyseDBCreate(v_BasePath ,i_Request.getRequestURL().toString()));
+            }
+            else if ( Help.isNull(v_XFile) && "Y".equalsIgnoreCase(v_Cluster) )
             {
                 i_Response.getWriter().println(this.analyse.analyseCluster(v_BasePath ,i_Request.getRequestURL().toString()));
             }

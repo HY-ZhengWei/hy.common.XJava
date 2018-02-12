@@ -16,13 +16,13 @@ import org.hy.common.Help;
 /**
  * 获取数据库访问量的概要统计数据(Servlet实现方式)
  * 
- * 功能1：获取数据库组合SQL访问量的概要统计数据      http://IP:Port/WebService/../analyseDB?type=Group
+ * 功能1：获取数据库组合SQL访问量的概要统计数据          http://IP:Port/WebService/../analyseDB?type=Group
  * 功能2：获取集群数据库组合SQL访问量的概要统计数据   http://IP:Port/WebService/../analyseDB?type=Group&cluster=Y
  * 
- * 功能3：获取数据库访问量的概要统计数据             http://IP:Port/WebService/../analyseDB
- * 功能4：获取集群数据库访问量的概要统计数据         http://IP:Port/WebService/../analyseDB?cluster=Y
+ * 功能3：获取数据库访问量的概要统计数据                      http://IP:Port/WebService/../analyseDB
+ * 功能4：获取集群数据库访问量的概要统计数据               http://IP:Port/WebService/../analyseDB?cluster=Y
  * 
- * 功能5：查看XSQL对象执行错误的SQL语句            http://IP:Port/WebService/../analyseDB?xsqloid=xxxxx&xsqlxid=xxxxx
+ * 功能5：查看XSQL对象执行错误的SQL语句                     http://IP:Port/WebService/../analyseDB?xsqloid=xxxxx&xsqlxid=xxxxx
  *
  *  配置web.xml如下代码
     <servlet>
@@ -41,7 +41,6 @@ import org.hy.common.Help;
  *              v3.0  2017-01-22  添加：查看集群数据库访问量的概要统计数据
  *                                添加：查看集群数据库组合SQL访问量的概要统计数据 
  *                                添加：查看集群查看XSQL对象执行错误的SQL语句
- *              4.0  2018-02-11   添加： 删除并重新创建数据库对象
  */
 public class AnalyseServerServlet extends HttpServlet
 {
@@ -78,10 +77,6 @@ public class AnalyseServerServlet extends HttpServlet
         else if ( "GROUP".equalsIgnoreCase(v_Type) )
         {
             i_Response.getWriter().println(this.analyse.analyseDBGroup (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
-        }
-        else if ( "CREATE".equalsIgnoreCase(v_Type) )
-        {
-            i_Response.getWriter().println(this.analyse.analyseDBCreate(v_BasePath ,i_Request.getRequestURL().toString()));
         }
         else
         {
