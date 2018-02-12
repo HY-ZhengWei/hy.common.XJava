@@ -1046,6 +1046,29 @@ public class XSQLNode
         return cloudWaitInterval;
     }
     
+    
+    
+    /**
+     * 设置本节为等待的云服务计算完成的节点
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-02-12
+     * @version     v1.0
+     *
+     * @param i_IsWait
+     */
+    public void setMyCloudWait(boolean i_IsWait)
+    {
+        if ( i_IsWait )
+        {
+            this.cloudWait = this;
+        }
+        else
+        {
+            this.cloudWait = null;
+        }
+    }
+    
 
     
     /**
