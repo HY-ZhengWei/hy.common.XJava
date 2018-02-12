@@ -57,6 +57,8 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *                                     特殊情况1: 对于Java默认的toString()返回值不予显示。
  *                                     特殊情况2: 对于集合对象，不予显示。
  *              v7.0  2018-02-11  添加：删除并重新创建数据库对象
+ *              v8.0  2018-02-12  添加：支持集群中每个服务可以有不一样XSQL列表，并且可以在集群列表中显示。
+ *                                添加：集群监控SQL异常时，显示是哪台服务器上的SQL出的错。
  */
 @Xjava
 public class AnalyseBase
