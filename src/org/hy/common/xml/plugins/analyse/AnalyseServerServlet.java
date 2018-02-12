@@ -22,7 +22,7 @@ import org.hy.common.Help;
  * 功能3：获取数据库访问量的概要统计数据                      http://IP:Port/WebService/../analyseDB
  * 功能4：获取集群数据库访问量的概要统计数据               http://IP:Port/WebService/../analyseDB?cluster=Y
  * 
- * 功能5：查看XSQL对象执行错误的SQL语句                     http://IP:Port/WebService/../analyseDB?xsqloid=xxxxx&xsqlxid=xxxxx
+ * 功能5：查看XSQL对象执行错误的SQL语句                     http://IP:Port/WebService/../analyseDB?xsqlxid=xxxxx
  *
  *  配置web.xml如下代码
     <servlet>
@@ -66,13 +66,12 @@ public class AnalyseServerServlet extends HttpServlet
         i_Response.setContentType("text/html;charset=UTF-8");
         
         String v_Type    = i_Request.getParameter("type");
-        String v_XSQLOID = i_Request.getParameter("xsqloid");
         String v_XSQLXID = i_Request.getParameter("xsqlxid");
         String v_Cluster = i_Request.getParameter("cluster");
         
-        if ( !Help.isNull(v_XSQLOID) && !Help.isNull(v_XSQLXID) )
+        if ( !Help.isNull(v_XSQLXID) )
         {
-            i_Response.getWriter().println(this.analyse.analyseDBError (v_BasePath ,i_Request.getRequestURL().toString() ,v_XSQLOID ,v_XSQLXID ,"Y".equalsIgnoreCase(v_Cluster)));
+            i_Response.getWriter().println(this.analyse.analyseDBError (v_BasePath ,i_Request.getRequestURL().toString() ,v_XSQLXID ,"Y".equalsIgnoreCase(v_Cluster)));
         }
         else if ( "GROUP".equalsIgnoreCase(v_Type) )
         {

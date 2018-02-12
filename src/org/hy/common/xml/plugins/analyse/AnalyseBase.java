@@ -355,7 +355,7 @@ public class AnalyseBase
      */
     public String analyseDB(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster)
     {
-        Map<String ,Object> v_Objs            = XJava.getObjects(XSQL.class);
+        Map<String ,Object> v_XSQLs           = XJava.getObjects(XSQL.class);
         StringBuilder       v_Buffer          = new StringBuilder();
         int                 v_Index           = 0;
         String              v_Content         = this.getTemplateShowTotalContent();
@@ -408,60 +408,56 @@ public class AnalyseBase
             }
         }
         
-        v_Objs    = Help.toSort(v_Objs);
+        Set<String> v_XSQLIDs = Help.toSort(v_Total.getRequestCount()).keySet();
         v_NowTime = new Date().getMinutes(-2).getTime();
         
-        for (Map.Entry<String, Object> v_Item : v_Objs.entrySet())
+        for (String v_XSQLID : v_XSQLIDs)
         {
-            if ( v_Item.getValue() != null )
+            v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
+            v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
+            v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
+            v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
+            v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue(v_XSQLID).longValue());
+            
+            if ( v_RequestCount > v_SuccessCount )
             {
-                XSQL v_XSQL = (XSQL)v_Item.getValue();
+                v_OperateURL = i_ObjectValuePath + "?xsqlxid=" + v_XSQLID;
                 
-                v_RequestCount = v_Total.getRequestCount().getSumValue(v_Item.getKey());
-                v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_Item.getKey());
-                v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_Item.getKey());
-                v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
-                v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue(v_Item.getKey()).longValue());
-                
-                if ( v_RequestCount > v_SuccessCount )
+                if ( i_Cluster )
                 {
-                    v_OperateURL = i_ObjectValuePath + "?xsqloid=" + v_XSQL.getObjectID() + "&xsqlxid=" + v_Item.getKey();
-                    
-                    if ( i_Cluster )
-                    {
-                        v_OperateURL += "&cluster=Y"; 
-                    }
+                    v_OperateURL += "&cluster=Y"; 
                 }
-                else
-                {
-                    v_OperateURL = "#";
-                }
-               
-                // 触发器的执行统计
-                if ( v_XSQL.isTriggers() )
-                {
-                    v_TriggerReqCount = v_Total.getTriggerReqCount().getSumValue(v_Item.getKey());
-                    v_TriggerSucCount = v_Total.getTriggerSucCount().getSumValue(v_Item.getKey());
-                }
-                else
-                {
-                    v_TriggerReqCount = 0;
-                    v_TriggerSucCount = 0;
-                }
-                
-                v_TriggerFaiCount = v_TriggerReqCount - v_TriggerSucCount;
-                
-                v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
-                                         .replaceAll(":Name"         ,v_Item.getKey())
-                                         .replaceAll(":RequestCount" ,String.valueOf(v_RequestCount)                  + (v_TriggerReqCount > 0 ? "-T"+v_TriggerReqCount : ""))
-                                         .replaceAll(":SuccessCount" ,String.valueOf(v_SuccessCount)                  + (v_TriggerReqCount > 0 ? "-T"+v_TriggerSucCount : ""))
-                                         .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount) + (v_TriggerFaiCount > 0 ? "-T"+v_TriggerFaiCount : ""))
-                                         .replaceAll(":ParamURL"     ,v_OperateURL)
-                                         .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : (v_MaxExecTime.getTime() >= v_NowTime ? v_MaxExecTime.getFull() : "<span style='color:gray;'>" + v_MaxExecTime.getFull() + "</span>"))
-                                         .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
-                                         .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
-                               );
             }
+            else
+            {
+                v_OperateURL = "#";
+            }
+           
+            // 触发器的执行统计
+            XSQL v_XSQL = (XSQL)v_XSQLs.get(v_XSQLID);
+            if ( v_XSQL != null && v_XSQL.isTriggers() )
+            {
+                v_TriggerReqCount = v_Total.getTriggerReqCount().getSumValue(v_XSQLID);
+                v_TriggerSucCount = v_Total.getTriggerSucCount().getSumValue(v_XSQLID);
+            }
+            else
+            {
+                v_TriggerReqCount = 0;
+                v_TriggerSucCount = 0;
+            }
+            
+            v_TriggerFaiCount = v_TriggerReqCount - v_TriggerSucCount;
+            
+            v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
+                                     .replaceAll(":Name"         ,v_XSQLID)
+                                     .replaceAll(":RequestCount" ,String.valueOf(v_RequestCount)                  + (v_TriggerReqCount > 0 ? "-T"+v_TriggerReqCount : ""))
+                                     .replaceAll(":SuccessCount" ,String.valueOf(v_SuccessCount)                  + (v_TriggerReqCount > 0 ? "-T"+v_TriggerSucCount : ""))
+                                     .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount) + (v_TriggerFaiCount > 0 ? "-T"+v_TriggerFaiCount : ""))
+                                     .replaceAll(":ParamURL"     ,v_OperateURL)
+                                     .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : (v_MaxExecTime.getTime() >= v_NowTime ? v_MaxExecTime.getFull() : "<span style='color:gray;'>" + v_MaxExecTime.getFull() + "</span>"))
+                                     .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
+                                     .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
+                           );
         }
         
         v_RequestCount = v_Total.getRequestCount().getSumValue();
@@ -579,15 +575,14 @@ public class AnalyseBase
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
-     * @param  i_XSQLOID         XSQL的惟一标识getObjectID()
      * @param  i_XSQLXID         XSQL对象的XID
      * @param  i_Cluster         是否为集群
      * @return
      */
     @SuppressWarnings("unchecked")
-    public String analyseDBError(String i_BasePath ,String i_ObjectValuePath ,String i_XSQLOID ,String i_XSQLXID ,boolean i_Cluster)
+    public String analyseDBError(String i_BasePath ,String i_ObjectValuePath ,String i_XSQLXID ,boolean i_Cluster)
     {
-        if ( Help.isNull(i_XSQLOID) || Help.isNull(i_XSQLXID) )
+        if ( Help.isNull(i_XSQLXID) )
         {
             return "";
         }
@@ -599,7 +594,7 @@ public class AnalyseBase
             // 本机统计
             if ( !i_Cluster )
             {
-                v_ErrorLogs = this.analyseDBError_Total(i_XSQLOID ,i_XSQLXID);
+                v_ErrorLogs = this.analyseDBError_Total(i_XSQLXID);
             }
             // 集群统计
             else
@@ -609,17 +604,26 @@ public class AnalyseBase
                 
                 if ( !Help.isNull(v_Servers) )
                 {
-                    Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBError_Total" ,new Object[]{i_XSQLOID ,i_XSQLXID});
+                    Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBError_Total" ,new Object[]{i_XSQLXID});
                     
                     for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                     {
                         CommunicationResponse v_ResponseData = v_Item.getValue();
+                        ClientSocket          v_Client       = v_Item.getKey();
+                        String                v_ClientName   = "【" + v_Client.getHostName() + ":" + v_Client.getPort() + "】 ";
                         
                         if ( v_ResponseData.getResult() == 0 )
                         {
                             if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof List )
                             {
-                                v_ErrorLogs.addAll((List<XSQLLog>)(v_ResponseData.getData()));
+                                List<XSQLLog> v_XSQLLogs = (List<XSQLLog>)v_ResponseData.getData();
+                                
+                                for (XSQLLog v_XSQLLog : v_XSQLLogs)
+                                {
+                                    v_XSQLLog.setE(v_ClientName + Help.NVL(v_XSQLLog.getE()));
+                                }
+                                
+                                v_ErrorLogs.addAll(v_XSQLLogs);
                             }
                         }
                     }
@@ -662,14 +666,14 @@ public class AnalyseBase
      * @createDate  2017-01-22
      * @version     v1.0
      *
-     * @param  i_XSQLOID         XSQL的惟一标识getObjectID()
      * @param  i_XSQLXID         XSQL对象的XID
      * @return
      */
     @SuppressWarnings("unchecked")
-    public List<XSQLLog> analyseDBError_Total(String i_XSQLOID ,String i_XSQLXID)
+    public List<XSQLLog> analyseDBError_Total(String i_XSQLXID)
     {
-        XSQL          v_XSQLMaster = XJava.getXSQL(i_XSQLXID);
+        XSQL          v_XSQLMaster = XJava.getXSQL(i_XSQLXID ,false);
+        String        v_XSQLOID    = v_XSQLMaster.getObjectID();
         List<XSQLLog> v_ErrorLogs  = new ArrayList<XSQLLog>();
         
         Busway<XSQLLog> v_SQLBuswayError = (Busway<XSQLLog>)XJava.getObject("$SQLBuswayError");
@@ -683,7 +687,7 @@ public class AnalyseBase
             XSQLLog v_XSQLLog = (XSQLLog)v_Item;
             if ( v_XSQLLog != null )
             {
-                if ( i_XSQLOID.equals(v_XSQLLog.getOid()) )
+                if ( v_XSQLOID.equals(v_XSQLLog.getOid()) )
                 {
                     v_ErrorLogs.add(v_XSQLLog);
                 }
