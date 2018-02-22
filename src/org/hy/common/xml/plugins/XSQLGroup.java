@@ -1420,7 +1420,7 @@ public final class XSQLGroup
                 v_Interval = 5 * 1000;
             }
             
-            while ( i_Node.getCloudWait().getCloudBusyCount() >= 1 )
+            while ( i_Node.getCloudWait().getCloudBusyCount() - i_Node.getCloudErrorCount() >= 1 )
             {
                 // 一直等待并且的执行结果
                 try
@@ -1432,6 +1432,9 @@ public final class XSQLGroup
                     // Nothing.
                 }
             }
+            
+            i_Node.setCloudBusyCount (0);
+            i_Node.setCloudErrorCount(0);
         }
         
         return i_XSQLGroupResult;

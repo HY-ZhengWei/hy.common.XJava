@@ -85,11 +85,19 @@ public class XSQLNodeCloud
         Help.print(i_Params);
         System.out.println();
         
-        Execute v_Execute = new Execute(client ,"sendCommand" ,new Object[]{i_XSQLNode.getXjavaID().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{i_Params}});
-        
-        v_Execute.addListener(new XSQLNodeCloudExecuteListener(i_XSQLNode ,this));
-        
-        v_Execute.start();
+        try
+        {
+            Execute v_Execute = new Execute(client ,"sendCommand" ,new Object[]{i_XSQLNode.getXjavaID().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{i_Params}});
+            
+            v_Execute.addListener(new XSQLNodeCloudExecuteListener(i_XSQLNode ,this));
+            
+            v_Execute.start();
+        }
+        catch (Exception exce)
+        {
+            i_XSQLNode.cloudError();
+            exce.printStackTrace();
+        }
     }
     
     

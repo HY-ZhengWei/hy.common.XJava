@@ -64,6 +64,7 @@ import com.greenpineyu.fel.context.FelContext;
  *                                4.添加：多线程监控完成情况的时间间隔threadWaitInterval属性。
  *                                       由原先的固定值改为可由用户自行调整的属性。
  *              v12.0 2018-01-30  1.添加：支持多台服务器并行计算。
+ *              v12.1 2018-02-22  1.修复：云计算时，某台服务器异常后，修复"云等待"死等的问题。
  */
 public class XSQLNode
 {
@@ -306,6 +307,11 @@ public class XSQLNode
     private CycleNextList<XSQLNodeCloud> cloudServersList;
     
     /**
+     * 云服务计算异常的服务器数量。当异常时，其服务器仍然标记为"繁忙"
+     */
+    private int                          cloudErrorCount;
+    
+    /**
      * 云服务正在运算（或繁忙）的服务器数量
      */
     private int                          cloudBusyCount;
@@ -422,6 +428,7 @@ public class XSQLNode
         this.sqlGroup           = null;
         this.cloudServers       = null;
         this.cloudServersList   = null;
+        this.cloudErrorCount    = 0;
         this.cloudBusyCount     = 0;
         this.cloudWait          = null;
         this.cloudWaitInterval  = 5 * 1000;
@@ -971,6 +978,28 @@ public class XSQLNode
 
     
     /**
+     * 获取：云服务计算异常的服务器数量。当异常时，其服务器仍然标记为"繁忙"
+     */
+    public synchronized int getCloudErrorCount()
+    {
+        return cloudErrorCount;
+    }
+
+
+    
+    /**
+     * 设置：云服务计算异常的服务器数量。当异常时，其服务器仍然标记为"繁忙"
+     * 
+     * @param cloudErrorCount 
+     */
+    public synchronized void setCloudErrorCount(int cloudErrorCount)
+    {
+        this.cloudErrorCount = cloudErrorCount;
+    }
+    
+
+
+    /**
      * 获取：云服务正在运算（或繁忙）的服务器数量
      */
     public synchronized int getCloudBusyCount()
@@ -1020,6 +1049,22 @@ public class XSQLNode
     public synchronized int cloudIdle()
     {
         return --this.cloudBusyCount;
+    }
+    
+    
+    
+    /**
+     * 云服务的异常数+1。当异常时，其服务器仍然标记为"繁忙"
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-02-22
+     * @version     v1.0
+     *
+     * @return  并返回当前的总繁忙数
+     */
+    public synchronized int cloudError()
+    {
+        return ++this.cloudErrorCount;
     }
     
 
