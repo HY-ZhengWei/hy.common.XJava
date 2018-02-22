@@ -16,7 +16,7 @@
 				<collectionID>collectionID_Test_Datas</collectionID>
 			</sqlNode>
 		
-			<sqlNode>
+			<sqlNode id="XSQLNode_Test_Cloud">
 				<type ref="this.$Type_ExecuteJava" />
 				<cloudServers>
 				    127.0.0.1:2021
@@ -24,8 +24,15 @@
 				</cloudServers>
 				<xjavaID>JU_XSQLCloud</xjavaID>
 				<methodName>JU_XSQLCloud_CloudXSQLNode</methodName>
-				<myCloudWait>true</myCloudWait>
 				<cloudWaitInterval>30000</cloudWaitInterval>
+			</sqlNode>
+			
+			<sqlNode>
+				<type ref="this.$Type_ExecuteJava" />
+				<xjavaID>JU_XSQLCloud</xjavaID>
+				<methodName>JU_XSQLCloud_Finish_XSQLNode</methodName>
+				<lastOnce>true</lastOnce>
+				<cloudWait ref="XSQLNode_Test_Cloud" />
 			</sqlNode>
 		</sqlGroup>
 		

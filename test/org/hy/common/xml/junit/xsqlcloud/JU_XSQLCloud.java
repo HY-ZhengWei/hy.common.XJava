@@ -11,6 +11,7 @@ import org.hy.common.xml.XJava;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.Xjava;
 import org.hy.common.xml.plugins.XSQLGroup;
+import org.hy.common.xml.plugins.XSQLGroupControl;
 import org.junit.Test;
 
 
@@ -50,7 +51,7 @@ public class JU_XSQLCloud
         Map<String ,Object> v_Param = new HashMap<String ,Object>();
         List<Param>         v_Datas     = new ArrayList<Param>();
         XSQLGroup           v_XSQLGroup = XJava.getXSQLGroup("GXSQL_Test_XSQLCloud").setLog(true);
-        int                 v_CloudSize = 200;   // 云计算发起次数
+        int                 v_CloudSize = 20;   // 云计算发起次数
         
         for (int i=0; i<v_CloudSize; i++)
         {
@@ -86,6 +87,26 @@ public class JU_XSQLCloud
             exce.printStackTrace();
         }
         
+        return true;
+    }
+    
+    
+    
+    /**
+     * XSQL组执行Java的方法接口
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-12-22
+     * @version     v1.0
+     *
+     * @param i_Control   XSQL组的控制中心。如，统一事务提交、统一事务回滚。
+     * @param io_Params   执行或查询参数。
+     * @param io_Returns  通过returnID标记的，返回出去的多个查询结果集。
+     * @return            表示是否执行成功。当返回false时，其后的XSQLNode节点将不再执行。
+     */
+    public boolean JU_XSQLCloud_Finish_XSQLNode(XSQLGroupControl i_Control ,Map<String ,Object> io_Params ,Map<String ,Object> io_Returns)
+    {
+        System.out.println("-- " + Date.getNowTime().getFullMilli() + " 云计算完成.");
         return true;
     }
     

@@ -4,6 +4,7 @@ import org.hy.common.Date;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.Xjava;
+import org.junit.Test;
 
 
 
@@ -35,7 +36,8 @@ public class Server01
     
     
     
-    public static void main(String [] i_Agrs) throws Exception
+    @Test
+    public void openServer() throws Exception
     {
         new Server01();
         System.out.println("-- " + Date.getNowTime().getFullMilli() + " 服务01开启");
