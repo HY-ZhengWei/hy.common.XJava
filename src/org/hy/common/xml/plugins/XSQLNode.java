@@ -330,6 +330,13 @@ public class XSQLNode
      */
     private long                         cloudWaitInterval;
     
+    /**
+     * 云服务并行发起计算动作时，间隔发起计算的时间间隔(单位：毫秒)。
+     * 
+     * 默认为 66毫秒
+     */
+    private long                         cloudExecInterval;
+    
     /** 
      * XJava对象标识
      *    构建XSQLNode对象实例时，xjavaID标记的对象实例，可以是不存在的（或尚未构建的）。
@@ -432,6 +439,7 @@ public class XSQLNode
         this.cloudBusyCount     = 0;
         this.cloudWait          = null;
         this.cloudWaitInterval  = 5 * 1000;
+        this.cloudExecInterval  = 66;
         this.xjavaID            = null;
         this.methodName         = null;
         this.xjavaIntance       = null;
@@ -1077,20 +1085,6 @@ public class XSQLNode
         return cloudWait;
     }
     
-
-    
-    /**
-     * 获取：监控云服务计算完成情况的时间间隔(单位：毫秒)。
-     * 
-     * 与 this.cloudWait 属性配合使用。
-     * 
-     * 默认为5 * 1000 = 5秒
-     */
-    public long getCloudWaitInterval()
-    {
-        return cloudWaitInterval;
-    }
-    
     
     
     /**
@@ -1129,6 +1123,24 @@ public class XSQLNode
 
     
     /**
+     * 获取：监控云服务计算完成情况的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.cloudWait 属性配合使用。
+     * 
+     * 默认为5 * 1000 = 5秒
+     */
+    public long getCloudWaitInterval()
+    {
+        if ( cloudWaitInterval <= 0 )
+        {
+            cloudWaitInterval = 5 * 1000;
+        }
+        return cloudWaitInterval;
+    }
+    
+    
+    
+    /**
      * 设置：* 监控云服务计算完成情况的时间间隔(单位：毫秒)。
      * 
      * 与 this.cloudWait 属性配合使用。
@@ -1140,6 +1152,36 @@ public class XSQLNode
     public void setCloudWaitInterval(long cloudWaitInterval)
     {
         this.cloudWaitInterval = cloudWaitInterval;
+    }
+    
+
+    
+    /**
+     * 获取：云服务并行发起计算动作时，间隔发起计算的时间间隔(单位：毫秒)。
+     * 
+     * 默认为 66毫秒
+     */
+    public long getCloudExecInterval()
+    {
+        if ( cloudExecInterval <= 0 )
+        {
+            cloudExecInterval = 66;
+        }
+        return cloudExecInterval;
+    }
+    
+
+    
+    /**
+     * 设置：云服务并行发起计算动作时，间隔发起计算的时间间隔(单位：毫秒)。
+     * 
+     * 默认为 66毫秒
+     * 
+     * @param cloudExecInterval 
+     */
+    public void setCloudExecInterval(long cloudExecInterval)
+    {
+        this.cloudExecInterval = cloudExecInterval;
     }
     
 
@@ -1253,12 +1295,13 @@ public class XSQLNode
             }
             else
             {
-                XSQLNodeCloud v_Cloud = this.cloudServersList.next();
+                long          v_Interval = this.getCloudExecInterval();
+                XSQLNodeCloud v_Cloud    = this.cloudServersList.next();
                 while ( !v_Cloud.isIdle() )
                 {
                     try
                     {
-                        Thread.sleep(10 * 1000);
+                        Thread.sleep(v_Interval);
                     }
                     catch (Exception exce)
                     {

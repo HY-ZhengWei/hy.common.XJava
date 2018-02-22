@@ -130,6 +130,7 @@ import org.hy.common.xml.XSQLBigData;
  *                                       节点使用的数据库连接不再由XSQLGroup控制及管理。
  *                                       由节点自行打开一个独立的数据库连接，并自行控制提交、回滚。
  *                                       主要用于多线程的并发写操作。
+ *              v19.0 2018-02-22  1.修复：云计算时，某台服务器异常后，修复"云等待"死等的问题。
  */
 public final class XSQLGroup
 {
@@ -1414,13 +1415,9 @@ public final class XSQLGroup
     {
         if ( i_Node.getCloudWait() != null )
         {
-            long v_Interval = i_Node.getCloudWaitInterval();
-            if ( v_Interval <= 0 )
-            {
-                v_Interval = 5 * 1000;
-            }
-            
-            while ( i_Node.getCloudWait().getCloudBusyCount() - i_Node.getCloudErrorCount() >= 1 )
+            XSQLNode v_CloudWaitNode = i_Node.getCloudWait();
+            long     v_Interval      = Math.max(v_CloudWaitNode.getCloudWaitInterval() ,v_CloudWaitNode.getCloudExecInterval());
+            while ( v_CloudWaitNode.getCloudBusyCount() - v_CloudWaitNode.getCloudErrorCount() >= 1 )
             {
                 // 一直等待并且的执行结果
                 try
@@ -1433,8 +1430,13 @@ public final class XSQLGroup
                 }
             }
             
-            i_Node.setCloudBusyCount (0);
-            i_Node.setCloudErrorCount(0);
+            // 2018-02-22 还原各状态参数
+            v_CloudWaitNode.setCloudBusyCount (0);
+            v_CloudWaitNode.setCloudErrorCount(0);
+            for (int i=v_CloudWaitNode.getCloudServersList().size(); i>=1; i--)
+            {
+                v_CloudWaitNode.getCloudServersList().next().setIdle(true);
+            }
         }
         
         return i_XSQLGroupResult;

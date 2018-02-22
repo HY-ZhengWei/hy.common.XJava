@@ -8,6 +8,7 @@ import org.hy.common.ExecuteEvent;
 import org.hy.common.ExecuteListener;
 import org.hy.common.Help;
 import org.hy.common.net.ClientSocket;
+import org.hy.common.net.data.CommunicationResponse;
 
 
 
@@ -19,6 +20,7 @@ import org.hy.common.net.ClientSocket;
  * @author      ZhengWei(HY)
  * @createDate  2018-01-30
  * @version     v1.0
+ *              v2.0  2018-02-22  1.修复：云计算时，某台服务器异常后，修复"云等待"死等的问题。
  */
 public class XSQLNodeCloud
 {
@@ -66,6 +68,18 @@ public class XSQLNodeCloud
     
     
     
+    /**
+     * 设置：是否空闲
+     * 
+     * @param isIdle 
+     */
+    public synchronized void setIdle(boolean isIdle)
+    {
+        this.isIdle = isIdle;
+    }
+    
+
+
     /**
      * 云服务计算
      * 
@@ -139,8 +153,19 @@ public class XSQLNodeCloud
          */
         public void result(ExecuteEvent i_Event)
         {
-            this.cloud.isIdle = true;
-            this.xsqlNode.cloudIdle();
+            if (  i_Event != null 
+              && !i_Event.isError()
+              &&  i_Event.getResult() != null
+              &&  ((CommunicationResponse)i_Event.getResult()).getResult() == 0 )
+            {
+                this.cloud.isIdle = true;
+                this.xsqlNode.cloudIdle();
+            }
+            else
+            {
+                // 2018-02-22  1.修复：云计算时，某台服务器异常后，修复"云等待"死等的问题。
+                this.xsqlNode.cloudError();
+            }
         }
         
     }

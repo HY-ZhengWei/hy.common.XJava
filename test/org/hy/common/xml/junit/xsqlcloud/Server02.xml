@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="sqls"            class="java.util.ArrayList" />
+	<import name="server"          class="org.hy.common.net.ServerSocket" />
+
+
+
+	<sqls>
+		
+		<server id="Server02">
+			<port>3021</port>
+			<log>true</log>
+			<call name="open" />
+		</server>
+		
+	</sqls>
+	
+</config>

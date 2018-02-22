@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="sqls"            class="java.util.ArrayList" />
+	<import name="sqlGroup"        class="org.hy.common.xml.plugins.XSQLGroup" />
+	<import name="sql"             class="org.hy.common.xml.XSQL" />
+
+
+
+	<sqls>
+		
+		<sqlGroup id="GXSQL_Test_XSQLCloud">
+			<sqlNode>
+				<type ref="this.$Type_CollectionToQuery" />
+				<collectionID>collectionID_Test_Datas</collectionID>
+			</sqlNode>
+		
+			<sqlNode>
+				<type ref="this.$Type_ExecuteJava" />
+				<cloudServers>
+				    127.0.0.1:2021
+				   ,127.0.0.1:3021
+				</cloudServers>
+				<xjavaID>JU_XSQLCloud</xjavaID>
+				<methodName>JU_XSQLCloud_CloudXSQLNode</methodName>
+				<myCloudWait>true</myCloudWait>
+				<cloudWaitInterval>30000</cloudWaitInterval>
+			</sqlNode>
+		</sqlGroup>
+		
+	</sqls>
+	
+</config>
