@@ -1327,7 +1327,7 @@ public class AnalyseBase
             {
                 CommunicationResponse v_ResponseData = v_Item.getValue();
                 String                v_StartTime    = "-";
-                String                v_ServerStatus = "异常";
+                String                v_ServerStatus = "<font color='red'>异常</font>";
                 
                 if ( v_ResponseData.getResult() == 0 )
                 {
