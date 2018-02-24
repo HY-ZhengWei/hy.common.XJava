@@ -27,12 +27,13 @@
 				<cloudWaitInterval>30000</cloudWaitInterval>
 			</sqlNode>
 			
+			<cloudWait ref="XSQLNode_Test_Cloud" />
+			
 			<sqlNode>
 				<type ref="this.$Type_ExecuteJava" />
 				<xjavaID>JU_XSQLCloud</xjavaID>
 				<methodName>JU_XSQLCloud_Finish_XSQLNode</methodName>
 				<lastOnce>true</lastOnce>
-				<cloudWait ref="XSQLNode_Test_Cloud" />
 			</sqlNode>
 		</sqlGroup>
 		

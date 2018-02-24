@@ -131,6 +131,9 @@ import org.hy.common.xml.XSQLBigData;
  *                                       由节点自行打开一个独立的数据库连接，并自行控制提交、回滚。
  *                                       主要用于多线程的并发写操作。
  *              v19.0 2018-02-22  1.修复：云计算时，某台服务器异常后，修复"云等待"死等的问题。
+ *                                2.添加：等待哪个节点上的云服务计算完成。与XSQLNode.cloudWait同义。
+ *                                       但，此属性表示XSQL组整体完成前的最后等待哪个节点上的云服务计算。
+ *                                       在所有lastOnce标记的XSQL节点执行之前执行此等待操作。
  */
 public final class XSQLGroup
 {
@@ -171,6 +174,14 @@ public final class XSQLGroup
     /** 执行SQL节点的集合 */
     private List<XSQLNode>           xsqlNodes;
     
+    /**
+     * 等待哪个节点上的云服务计算完成。与XSQLNode.cloudWait同义
+     * 但，此属性表示XSQL组整体完成前的最后等待哪个节点上的云服务计算。
+     * 
+     * 在所有lastOnce标记的XSQL节点执行之前执行此等待操作。
+     */
+    private XSQLNode                 cloudWait;
+    
     /** 是否打印执行轨迹日志。默认为：false */
     private boolean                  isLog;
     
@@ -206,7 +217,7 @@ public final class XSQLGroup
     private Date                     executeTime;
     
     /** 注释。可用于日志的输出等帮助性的信息 */
-    private String                   comment; 
+    private String                   comment;
     
     
     
@@ -214,6 +225,7 @@ public final class XSQLGroup
     {
         this.superGroup     = null;
         this.xsqlNodes      = new ArrayList<XSQLNode>();
+        this.cloudWait      = null;
         this.isLog          = false;
         this.isAutoCommit   = true;
         this.requestCount   = 0;
@@ -409,6 +421,11 @@ public final class XSQLGroup
         XSQLGroupResult                   v_Ret       = this.executeGroup(-1 ,io_Params ,io_XSQLGroupResult ,v_DSGConns);
         
         // v_Ret.getExecSumCount().putAll(i_ExecSumCount);
+        
+        if ( this.cloudWait != null )
+        {
+            v_Ret = waitClouds(this.cloudWait ,v_Ret);
+        }
         
         // 在整个组合XSQLGroup的最后执行，并只执行一次。不在查询类型XSQL节点的循环之中执行
         v_Ret = this.executeGroup_LastOnce(io_Params ,v_DSGConns ,v_Ret);
@@ -1393,7 +1410,14 @@ public final class XSQLGroup
             }
         }
         
-        return waitClouds(i_Node ,i_XSQLGroupResult);
+        if ( i_Node.getCloudWait() != null )
+        {
+            return waitClouds(i_Node.getCloudWait() ,i_XSQLGroupResult);
+        }
+        else
+        {
+            return i_XSQLGroupResult;
+        }
     }
     
     
@@ -1407,36 +1431,32 @@ public final class XSQLGroup
      * @createDate  2018-01-30
      * @version     v1.0
      *
-     * @param i_Node
+     * @param i_CloudWaitNode   执行云计算的XSQL节点
      * @param i_XSQLGroupResult
      * @return
      */
-    public XSQLGroupResult waitClouds(XSQLNode i_Node ,XSQLGroupResult i_XSQLGroupResult)
+    public XSQLGroupResult waitClouds(XSQLNode i_CloudWaitNode ,XSQLGroupResult i_XSQLGroupResult)
     {
-        if ( i_Node.getCloudWait() != null )
+        long v_Interval = Math.max(i_CloudWaitNode.getCloudWaitInterval() ,i_CloudWaitNode.getCloudExecInterval());
+        while ( i_CloudWaitNode.getCloudBusyCount() - i_CloudWaitNode.getCloudErrorCount() >= 1 )
         {
-            XSQLNode v_CloudWaitNode = i_Node.getCloudWait();
-            long     v_Interval      = Math.max(v_CloudWaitNode.getCloudWaitInterval() ,v_CloudWaitNode.getCloudExecInterval());
-            while ( v_CloudWaitNode.getCloudBusyCount() - v_CloudWaitNode.getCloudErrorCount() >= 1 )
+            // 一直等待并且的执行结果
+            try
             {
-                // 一直等待并且的执行结果
-                try
-                {
-                    Thread.sleep(v_Interval);
-                }
-                catch (Exception exce)
-                {
-                    // Nothing.
-                }
+                Thread.sleep(v_Interval);
             }
-            
-            // 2018-02-22 还原各状态参数
-            v_CloudWaitNode.setCloudBusyCount (0);
-            v_CloudWaitNode.setCloudErrorCount(0);
-            for (int i=v_CloudWaitNode.getCloudServersList().size(); i>=1; i--)
+            catch (Exception exce)
             {
-                v_CloudWaitNode.getCloudServersList().next().setIdle(true);
+                // Nothing.
             }
+        }
+        
+        // 2018-02-22 还原各状态参数
+        i_CloudWaitNode.setCloudBusyCount (0);
+        i_CloudWaitNode.setCloudErrorCount(0);
+        for (int i=i_CloudWaitNode.getCloudServersList().size(); i>=1; i--)
+        {
+            i_CloudWaitNode.getCloudServersList().next().setIdle(true);
         }
         
         return i_XSQLGroupResult;
@@ -1960,7 +1980,35 @@ public final class XSQLGroup
         this.xsqlNodes = xsqlNodes;
     }
 
+    
+    
+    /**
+     * 获取：等待哪个节点上的云服务计算完成。与XSQLNode.cloudWait同义
+     *      但，此属性表示XSQL组整体完成前的最后等待哪个节点上的云服务计算。
+     *      
+     *      在所有lastOnce标记的XSQL节点执行之前执行此等待操作。
+     */
+    public XSQLNode getCloudWait()
+    {
+        return cloudWait;
+    }
+    
 
+    
+    /**
+     * 设置：等待哪个节点上的云服务计算完成。与XSQLNode.cloudWait同义
+     *      但，此属性表示XSQL组整体完成前的最后等待哪个节点上的云服务计算。
+     *      
+     *      在所有lastOnce标记的XSQL节点执行之前执行此等待操作。
+     * 
+     * @param cloudWait 
+     */
+    public void setCloudWait(XSQLNode cloudWait)
+    {
+        this.cloudWait = cloudWait;
+    }
+    
+    
     
     /**
      * 获取：是否打印执行轨迹日志。默认为：false

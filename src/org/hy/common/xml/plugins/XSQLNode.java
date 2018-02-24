@@ -65,6 +65,7 @@ import com.greenpineyu.fel.context.FelContext;
  *                                       由原先的固定值改为可由用户自行调整的属性。
  *              v12.0 2018-01-30  1.添加：支持多台服务器并行计算。
  *              v12.1 2018-02-22  1.修复：云计算时，某台服务器异常后，修复"云等待"死等的问题。
+ *                                2.添加：云计算异常时，尝试交给其它云服务计算。当重试多次(this.cloudRetryCount)云计算仍然异常时，放弃计算。
  */
 public class XSQLNode
 {
@@ -307,6 +308,15 @@ public class XSQLNode
     private CycleNextList<XSQLNodeCloud> cloudServersList;
     
     /**
+     * 异常重试次数。云计算异常时，尝试交给其它云服务重新计算。当重试多次云计算仍然异常时，放弃计算。
+     * 
+     * 等于0时，表示云计算异常时，不尝试重新计算。
+     * 
+     * 默认为：3次
+     */
+    private int                          cloudRetryCount;
+    
+    /**
      * 云服务计算异常的服务器数量。当异常时，其服务器仍然标记为"繁忙"
      */
     private int                          cloudErrorCount;
@@ -435,6 +445,7 @@ public class XSQLNode
         this.sqlGroup           = null;
         this.cloudServers       = null;
         this.cloudServersList   = null;
+        this.cloudRetryCount    = 3;
         this.cloudErrorCount    = 0;
         this.cloudBusyCount     = 0;
         this.cloudWait          = null;
@@ -986,6 +997,36 @@ public class XSQLNode
 
     
     /**
+     * 获取：异常重试次数。云计算异常时，尝试交给其它云服务重新计算。当重试多次云计算仍然异常时，放弃计算。
+     * 
+     * 等于0时，表示云计算异常时，不尝试重新计算。
+     * 
+     * 默认为：3次
+     */
+    public int getCloudRetryCount()
+    {
+        return cloudRetryCount;
+    }
+    
+
+    
+    /**
+     * 设置：异常重试次数。云计算异常时，尝试交给其它云服务重新计算。当重试多次云计算仍然异常时，放弃计算。
+     * 
+     * 等于0时，表示云计算异常时，不尝试重新计算。
+     * 
+     * 默认为：3次
+     * 
+     * @param cloudRetryCount 
+     */
+    public void setCloudRetryCount(int cloudRetryCount)
+    {
+        this.cloudRetryCount = cloudRetryCount;
+    }
+
+
+
+    /**
      * 获取：云服务计算异常的服务器数量。当异常时，其服务器仍然标记为"繁忙"
      */
     public synchronized int getCloudErrorCount()
@@ -1259,7 +1300,35 @@ public class XSQLNode
      * @throws InvocationTargetException
      * @throws NoSuchMethodException
      */
-    public synchronized boolean executeJava(XSQLGroupControl i_Control ,Map<String ,Object> io_Params ,Map<String ,Object> io_Returns) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException
+    public boolean executeJava(XSQLGroupControl i_Control ,Map<String ,Object> io_Params ,Map<String ,Object> io_Returns) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException
+    {
+        return this.executeJava(i_Control ,io_Params ,io_Returns ,1);
+    }
+    
+    
+    
+    /**
+     * 执行Java代码的执行方法。
+     * 
+     * @see org.hy.common.xml.plugins.XSQLGroupExecuteJava
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2016-05-17
+     * @version     v1.0
+     *              v2.0  2017-12-22  添加XSQLGroupControl参数
+     *              v3.0  2018-02-23  添加执行次数，用于云计算异常时重新计算的执行次数。表示当前执行次数，下标从1开始。
+     *
+     * @param i_Control       XSQL组的控制中心。如，统一事务提交、统一事务回滚。
+     * @param io_Params       执行或查询参数。同XSQLGroup.executeGroup()方法的入参参数io_Params同义。
+     * @param io_Returns      通过returnID标记的，返回出去的多个查询结果集。同XSQLGroupResult.returns属性同义。
+     * @param i_ExecuteCount  执行次数，用于云计算异常时重新计算的执行次数。表示当前执行次数，下标从1开始。
+     * @return                表示是否执行成功。当返回false时，其后的XSQLNode节点将不再执行。
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     * @throws InvocationTargetException
+     * @throws NoSuchMethodException
+     */
+    public synchronized boolean executeJava(XSQLGroupControl i_Control ,Map<String ,Object> io_Params ,Map<String ,Object> io_Returns ,int i_ExecuteCount) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException
     {
         // 本地计算
         if ( Help.isNull(this.cloudServersList) )
@@ -1310,7 +1379,7 @@ public class XSQLNode
                     v_Cloud = this.cloudServersList.next();
                 }
                 
-                v_Cloud.executeCloud(this ,io_Params);
+                v_Cloud.executeCloud(this ,i_Control ,io_Params ,io_Returns ,i_ExecuteCount);
                 return true;
             }
         }
