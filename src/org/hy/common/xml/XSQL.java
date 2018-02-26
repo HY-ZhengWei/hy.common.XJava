@@ -2835,7 +2835,7 @@ public final class XSQL implements Comparable<XSQL>
      * @param i_Conn             数据库连接。
      *                           1. 当为空时，内部自动获取一个新的数据库连接。
      *                           2. 当有值时，内部将不关闭数据库连接，而是交给外部调用者来关闭。
-     *                           3. 当有值时，内部也不执行"提交"操作，而是交给外部调用者来执行"提交"。
+     *                           3. 当有值时，内部也不执行"提交"操作（但分批提交this.batchCommit大于0时除外），而是交给外部调用者来执行"提交"。
      *                           4. 当有值时，出现异常时，内部也不执行"回滚"操作，而是交给外部调用者来执行"回滚"。
      * @return                   返回语句影响的记录数。
      */
@@ -2885,6 +2885,7 @@ public final class XSQL implements Comparable<XSQL>
      *                           1. 当为空时，内部自动获取一个新的数据库连接。
      *                           2. 当有值时，内部将不关闭数据库连接，而是交给外部调用者来关闭。
      *                           3. 当有值时，内部也不执行"提交"操作，而是交给外部调用者来执行"提交"。
+     *                           3. 当有值时，内部也不执行"提交"操作（但分批提交this.batchCommit大于0时除外），而是交给外部调用者来执行"提交"。
      *                           4. 当有值时，出现异常时，内部也不执行"回滚"操作，而是交给外部调用者来执行"回滚"。
      * @return                   返回语句影响的记录数。
      */
@@ -2933,7 +2934,10 @@ public final class XSQL implements Comparable<XSQL>
                     }
                 }
                 
-                v_Conn.commit();  // 它与i_Conn.commit();同作用
+                if ( i_Conn == null )
+                {
+                    v_Conn.commit();  // 它与i_Conn.commit();同作用
+                }
             }
             else
             {
@@ -3183,7 +3187,7 @@ public final class XSQL implements Comparable<XSQL>
      * @param i_Conn             数据库连接。
      *                           1. 当为空时，内部自动获取一个新的数据库连接。
      *                           2. 当有值时，内部将不关闭数据库连接，而是交给外部调用者来关闭。
-     *                           3. 当有值时，内部也不执行"提交"操作，而是交给外部调用者来执行"提交"。
+     *                           3. 当有值时，内部也不执行"提交"操作（但分批提交this.batchCommit大于0时除外），而是交给外部调用者来执行"提交"。
      *                           4. 当有值时，出现异常时，内部也不执行"回滚"操作，而是交给外部调用者来执行"回滚"。
      * @return                   返回语句影响的记录数。
      */
@@ -3236,7 +3240,7 @@ public final class XSQL implements Comparable<XSQL>
      * @param i_Conn             数据库连接。
      *                           1. 当为空时，内部自动获取一个新的数据库连接。
      *                           2. 当有值时，内部将不关闭数据库连接，而是交给外部调用者来关闭。
-     *                           3. 当有值时，内部也不执行"提交"操作，而是交给外部调用者来执行"提交"。
+     *                           3. 当有值时，内部也不执行"提交"操作（但分批提交this.batchCommit大于0时除外），而是交给外部调用者来执行"提交"。
      *                           4. 当有值时，出现异常时，内部也不执行"回滚"操作，而是交给外部调用者来执行"回滚"。
      * @return                   返回语句影响的记录数。
      */
@@ -3314,7 +3318,10 @@ public final class XSQL implements Comparable<XSQL>
                     v_Ret += v_Count;
                 }
                 
-                v_Conn.commit();  // 它与i_Conn.commit();同作用
+                if ( i_Conn == null )
+                {
+                    v_Conn.commit();  // 它与i_Conn.commit();同作用
+                }
             }
             else
             {
