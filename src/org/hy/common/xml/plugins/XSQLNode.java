@@ -357,6 +357,8 @@ public class XSQLNode
     /** 
      * XJava对象执行的方法名
      *      方法的定义形式为：详见org.hy.common.xml.plugins.XSQLGroupExecuteJava
+     *      
+     * 默认名称为：executes。方便云计算时，执行云端的XSQL组，只须用户配置xjavaID即可。
      */
     private String                       methodName;
     
@@ -452,7 +454,7 @@ public class XSQLNode
         this.cloudWaitInterval  = 5 * 1000;
         this.cloudExecInterval  = 66;
         this.xjavaID            = null;
-        this.methodName         = null;
+        this.methodName         = "executes";
         this.xjavaIntance       = null;
         this.xjavaMethod        = null;
         this.collectionID       = null;
@@ -1258,6 +1260,8 @@ public class XSQLNode
     /**
      * 获取：XJava对象执行的方法名
      *      方法的定义形式为：详见org.hy.common.xml.plugins.XSQLGroupExecuteJava
+     *      
+     * 默认名称为：executes。方便云计算时，执行云端的XSQL组，只须用户配置xjavaID即可。
      */
     public String getMethodName()
     {
@@ -1269,6 +1273,8 @@ public class XSQLNode
     /**
      * 设置：XJava对象执行的方法名
      *      方法的定义形式为：详见org.hy.common.xml.plugins.XSQLGroupExecuteJava
+     *        
+     * 默认名称为：executes。方便云计算时，执行云端的XSQL组，只须用户配置xjavaID即可。
      *        
      * @param methodName 
      */
