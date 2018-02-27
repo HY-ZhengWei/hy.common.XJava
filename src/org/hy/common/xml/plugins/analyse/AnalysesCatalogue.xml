@@ -115,6 +115,12 @@
 	        </item>
 	        
 	        <item>
+	            <name>监控线程池运行情况（支持集群）</name>
+				<comment></comment>
+				<value><![CDATA[ /analyseObject?ThreadPool=Y ]]></value>
+	        </item>
+	        
+	        <item>
 	            <name>查看单点登陆用户</name>
 				<comment>需开启单点登陆服务。可查看在线用户</comment>
 				<value><![CDATA[ /analyseObject?xid=USID* ]]></value>

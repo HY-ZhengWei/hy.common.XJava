@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -1450,14 +1451,17 @@ public class AnalyseBase
         
         for (ThreadReport v_TReport : v_Total.getReports())
         {
-            v_Buffer.append(v_Content.replaceAll(":No"        ,String.valueOf(++v_Index))
-                                     .replaceAll(":ThreadNo"  ,v_TReport.getThreadNo())
-                                     .replaceAll(":TaskName"  ,v_TReport.getTaskName())
-                                     .replaceAll(":TotalTime" ,Date.toTimeLen(v_TReport.getTotalTime()))
-                                     .replaceAll(":RunStatus" ,v_TReport.getRunStatus())
-                                     .replaceAll(":ExecCount" ,v_TReport.getExecCount() + "")
-                                     .replaceAll(":TaskDesc"  ,v_TReport.getTaskDesc())
-                           );
+            Map<String ,String> v_RKey = new HashMap<String ,String>();
+            
+            v_RKey.put(":No"        ,String.valueOf(++v_Index));
+            v_RKey.put(":ThreadNo"  ,v_TReport.getThreadNo());
+            v_RKey.put(":TaskName"  ,v_TReport.getTaskName());
+            v_RKey.put(":TotalTime" ,Date.toTimeLen(v_TReport.getTotalTime()));
+            v_RKey.put(":RunStatus" ,v_TReport.getRunStatus());
+            v_RKey.put(":ExecCount" ,v_TReport.getExecCount() + "");
+            v_RKey.put(":TaskDesc"  ,v_TReport.getTaskDesc());
+            
+            v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
             
             v_TotalExecCount += v_TReport.getExecCount();
             v_TotalTime      += v_TReport.getTotalTime();
