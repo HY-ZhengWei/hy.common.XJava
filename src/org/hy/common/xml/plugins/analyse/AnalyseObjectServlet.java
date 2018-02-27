@@ -47,6 +47,9 @@ import org.hy.common.xml.XJava;
  * 功能9：查看集群服务列表                   http://IP:Port/WebService/../analyseObject?cluster=Y
  * 
  * 功能10：删除并重建数据库对象          http://IP:Port/WebService/../analyseObject?XSQLCreate=Y
+ * 
+ * 功能11：本机线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y
+ * 功能12：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y&cluster=Y
  *
  * @author      ZhengWei(HY)
  * @createDate  2015-12-16
@@ -117,16 +120,21 @@ public class AnalyseObjectServlet extends HttpServlet
             }
         }
         
-        String v_XID      = i_Request.getParameter("xid");
-        String v_Call     = i_Request.getParameter("call");
-        String v_XFile    = i_Request.getParameter("xfile");
-        String v_Cluster  = i_Request.getParameter("cluster");
-        String v_SameTime = i_Request.getParameter("sameTime");
-        String v_Create   = i_Request.getParameter("XSQLCreate");
+        String v_XID        = i_Request.getParameter("xid");
+        String v_Call       = i_Request.getParameter("call");
+        String v_XFile      = i_Request.getParameter("xfile");
+        String v_Cluster    = i_Request.getParameter("cluster");
+        String v_SameTime   = i_Request.getParameter("sameTime");
+        String v_Create     = i_Request.getParameter("XSQLCreate");
+        String v_ThreadPool = i_Request.getParameter("ThreadPool");
         
         if ( Help.isNull(v_XID) )
         {
-            if ( !Help.isNull(v_Create) && "Y".equalsIgnoreCase(v_Create) )
+            if ( !Help.isNull(v_ThreadPool) )
+            {
+                i_Response.getWriter().println(this.analyse.analyseThreadPool(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
+            }
+            else if ( !Help.isNull(v_Create) )
             {
                 i_Response.getWriter().println(this.analyse.analyseDBCreate(v_BasePath ,i_Request.getRequestURL().toString()));
             }

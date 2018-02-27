@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>:Title</title>
+<style type="text/css"> 
+html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
+.userInfoModify_logininfobody{ width:100%;height:100%;overflow-y:scroll;overflow-x:auto;}
+.userInfoModify_logininfo{ width:1050px;margin:0 auto;}
+.userInfoModify_logininfo1{ width:1050px;margin:0 auto; }
+.userInfoModify_labeTag,.userInfoModify_ThreadNo_Title,.userInfoModify_TaskName_Title,.userInfoModify_TotalTime_Title{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px; background-color:#D5DDF6;}
+.userInfoModify_labeTag1,.userInfoModify_ThreadNo,.userInfoModify_TaskName,.userInfoModify_TotalTime{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
+.userInfoModify_labeTag2,.userInfoModify_ThreadNo_Other,.userInfoModify_TaskName_Other,.userInfoModify_TotalTime_Other{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;border:#97B0F8 solid 0px;}
+
+.userInfoModify_clearTag {clear:both;height:36px;margin-top:0px;position:absolute;z-index:2008;} 
+.userInfoModify_clearTag1 {clear:both;height:36px;margin-top:0px;} 
+.userInfoModify_labeTag { width:40px;text-align:center; border:#97B0F8 solid 1px; } 
+.userInfoModify_ThreadNo_Title  { width:720px; vertical-align:middle;text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
+.userInfoModify_TaskName_Title  { width:160px; text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_TotalTime_Title { width:120px; text-align:center;  border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;} 
+.userInfoModify_RunStatus_Title { width:160px; text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_ExecCount_Title { width:120px; text-align:center;  border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
+.userInfoModify_TaskDesc_Title  { width:160px; text-align:center; border: #97B0F8 solid 1px;}
+
+.userInfoModify_labeTag1  { width:40px;text-align:center;border:#97B0F8 solid 1px;  } 
+.userInfoModify_ThreadNo  { width:720px; text-align:left;   border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
+.userInfoModify_TaskName  { width:160px; text-align:center; border:#97B0F8 solid 1px;} 
+.userInfoModify_TotalTime { width:120px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;} 
+.userInfoModify_RunStatus { width:160px; text-align:center; border:#97B0F8 solid 1px;} 
+.userInfoModify_ExecCount { width:120px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;} 
+.userInfoModify_TaskDesc  { width:160px; text-align:center; border:#97B0F8 solid 1px;} 
+
+.userInfoModify_labeTag2        { width:50px;text-align:center;  } 
+.userInfoModify_ThreadNo_Other  { width:720px; text-align:left;}  
+.userInfoModify_TaskName_Other  { width:160px; text-align:left;} 
+.userInfoModify_TotalTime_Other { width:120px; text-align:left;}
+.userInfoModify_RunStatus_Other { width:720px; text-align:left;}  
+.userInfoModify_ExecCount_Other { width:160px; text-align:left;} 
+.userInfoModify_TaskDesc_Other  { width:120px; text-align:left;} 
+
+.cont_show_ThreadNo  { width:700px; margin-left:5px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_TaskName  { width:155px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_TotalTime { width:115px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_RunStatus { width:115px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_ExecCount { width:115px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_TaskDesc  { width:115px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+
+
+a{ color:#669900; text-decoration:none; outline:none;}
+a:hover{color:#99CC00;text-decoration:none;}
+</style>
+
+<script type="text/javascript" src=":HttpBasePath/jsoneditor-3.1.2/jquery.min.js"></script>
+
+</head>
+<body> 
+		
+	   <div class="userInfoModify_logininfobody" >
+	   	   <div class="userInfoModify_logininfo"> 
+	      <div class="userInfoModify_clearTag">
+	            <div class="userInfoModify_labeTag">编号</div>
+	            <div class="userInfoModify_ThreadNo_Title">线程编号</div>
+	            <div class="userInfoModify_TaskName_Title">任务编号</div>
+	            <div class="userInfoModify_TotalTime_Title">累计用时</div>
+	            <div class="userInfoModify_RunStatus_Title">运行状态</div>
+	            <div class="userInfoModify_ExecCount_Title">执行次数</div>
+	            <div class="userInfoModify_TaskDesc_Title">任务描述:GotoTitle</div>
+	      </div> 
+		 
+	   </div> 
+	   
+	   		<div id="info_fill" class="userInfoModify_logininfo1"> 
+	   		
+	   			<div class="userInfoModify_clearTag1">
+		            <div class="userInfoModify_labeTag2"></div>
+		            <div class="userInfoModify_ThreadNo_Other"></div>
+		            <div class="userInfoModify_TaskName_Other"></div>
+		            <div class="userInfoModify_TotalTime_Other"></div>
+		            <div class="userInfoModify_RunStatus_Other"></div>
+		            <div class="userInfoModify_ExecCount_Other"></div>
+		            <div class="userInfoModify_TaskDesc_Other"></div>
+	     	    </div> 
+	   		
+	    		:Content 
+	    		
+	    		<div class="userInfoModify_clearTag1">
+		            <div class="userInfoModify_labeTag2"></div>
+		            <div class="userInfoModify_ThreadNo_Other"></div>
+		            <div class="userInfoModify_TaskName_Other"></div>
+		            <div class="userInfoModify_TotalTime_Other"></div>
+		            <div class="userInfoModify_RunStatus_Other"></div>
+		            <div class="userInfoModify_ExecCount_Other"></div>
+		            <div class="userInfoModify_TaskDesc_Other"></div>
+	     	    </div>
+	   		</div>
+	   		
+	   </div>
+	   
+</body>
+</html>

@@ -63,7 +63,7 @@
 	<dependency>
 	    <groupId>org</groupId>
 	    <artifactId>hy.common.tpool</artifactId>
-	    <version>1.1.1</version>
+	    <version>1.1.2</version>
 	</dependency>
 	
 	<!-- Reduce 2.2.1 to 1.1.1 for greater compatibility (e.g. ASM) -->

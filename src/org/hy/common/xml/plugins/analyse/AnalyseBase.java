@@ -23,6 +23,7 @@ import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
 import org.hy.common.net.data.CommunicationResponse;
 import org.hy.common.thread.Job;
+import org.hy.common.thread.ThreadReport;
 import org.hy.common.xml.XJSON;
 import org.hy.common.xml.XJSONObject;
 import org.hy.common.xml.XJava;
@@ -1383,6 +1384,127 @@ public class AnalyseBase
     
     
     
+    /**
+     * 查看线程池运行情况（支持集群）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-02-26
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?ThreadPool=Y
+     * @param  i_Cluster         是否为集群
+     * @return
+     */
+    public String analyseThreadPool(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster)
+    {
+        StringBuilder          v_Buffer         = new StringBuilder();
+        int                    v_Index          = 0;
+        String                 v_Content        = this.getTemplateShowThreadPoolContent();
+        long                   v_TotalTime      = 0L;
+        int                    v_TotalExecCount = 0;
+        AnalyseThreadPoolTotal v_Total          = null;
+        
+        // 本机统计
+        if ( !i_Cluster )
+        {
+            v_Total = this.analyseThreadPool_Total();
+        }
+        // 集群统计
+        else
+        {
+            List<ClientSocket> v_Servers = Cluster.getClusters();
+            v_Total = new AnalyseThreadPoolTotal("合计");
+            
+            if ( !Help.isNull(v_Servers) )
+            {
+                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseThreadPool_Total");
+                
+                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                {
+                    CommunicationResponse v_ResponseData = v_Item.getValue();
+                    
+                    if ( v_ResponseData.getResult() == 0 )
+                    {
+                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseThreadPoolTotal )
+                        {
+                            AnalyseThreadPoolTotal v_TempTotal = (AnalyseThreadPoolTotal)v_ResponseData.getData();
+                            
+                            v_TempTotal.setHostName(v_Item.getKey().getHostName() + ":" + v_Item.getKey().getPort());
+                            
+                            // 线程号前加主机IP:Port
+                            for (ThreadReport v_TReport : v_TempTotal.getReports())
+                            {
+                                v_TReport.setThreadNo(v_TempTotal.getHostName() + v_TReport.getThreadNo());
+                            }
+                            
+                            v_Total.getReports().addAll( v_TempTotal.getReports());
+                            v_Total.setThreadCount(      v_Total.getThreadCount()       + v_TempTotal.getThreadCount());
+                            v_Total.setIdleThreadCount(  v_Total.getIdleThreadCount()   + v_TempTotal.getIdleThreadCount());
+                            v_Total.setActiveThreadCount(v_Total.getActiveThreadCount() + v_TempTotal.getActiveThreadCount());
+                        }
+                    }
+                }
+            }
+        }
+        
+        for (ThreadReport v_TReport : v_Total.getReports())
+        {
+            v_Buffer.append(v_Content.replaceAll(":No"        ,String.valueOf(++v_Index))
+                                     .replaceAll(":ThreadNo"  ,v_TReport.getThreadNo())
+                                     .replaceAll(":TaskName"  ,v_TReport.getTaskName())
+                                     .replaceAll(":TotalTime" ,Date.toTimeLen(v_TReport.getTotalTime()))
+                                     .replaceAll(":RunStatus" ,v_TReport.getRunStatus())
+                                     .replaceAll(":ExecCount" ,v_TReport.getExecCount() + "")
+                                     .replaceAll(":TaskDesc"  ,v_TReport.getTaskDesc())
+                           );
+            
+            v_TotalExecCount += v_TReport.getExecCount();
+            v_TotalTime      += v_TReport.getTotalTime();
+        }
+        
+        v_Buffer.append(v_Content.replaceAll(":No"        ,String.valueOf(++v_Index))
+                                 .replaceAll(":ThreadNo"  ,"合计")
+                                 .replaceAll(":TaskName"  ,"-")
+                                 .replaceAll(":TotalTime" ,Date.toTimeLen(v_TotalTime))
+                                 .replaceAll(":RunStatus" ,"-")
+                                 .replaceAll(":ExecCount" ,v_TotalExecCount + "")
+                                 .replaceAll(":TaskDesc"  ,"Total: " + v_Total.getThreadCount() + "  Idle: " + v_Total.getIdleThreadCount() + "  Active: " + v_Total.getActiveThreadCount())
+                       );
+        
+        String v_Goto = "";
+        if ( i_Cluster )
+        {
+            v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseObject?ThreadPool=Y' style='color:#AA66CC'>查看本机</a>";
+        }
+        else
+        {
+            v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseObject?ThreadPool=Y&cluster=Y' style='color:#AA66CC'>查看集群</a>";
+        }
+        
+        return StringHelp.replaceAll(this.getTemplateShowThreadPool()
+                                    ,new String[]{":GotoTitle" ,":Title"       ,":HttpBasePath" ,":Content"}
+                                    ,new String[]{v_Goto       ,"线程池运行情况" ,i_BasePath      ,v_Buffer.toString()});
+    }
+    
+    
+    
+    /**
+     * 本机线程池运行情况
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-02-27
+     * @version     v1.0
+     *
+     * @return
+     */
+    public AnalyseThreadPoolTotal analyseThreadPool_Total()
+    {
+        return new AnalyseThreadPoolTotal();
+    }
+    
+    
+    
     private String getTemplateLogon()
     {
         return this.getTemplateContent("template.login.html");
@@ -1470,6 +1592,20 @@ public class AnalyseBase
     private String getTemplateShowResultContent()
     {
         return this.getTemplateContent("template.showResultContent.html");
+    }
+    
+    
+    
+    private String getTemplateShowThreadPool()
+    {
+        return this.getTemplateContent("template.showThreadPool.html");
+    }
+    
+    
+    
+    private String getTemplateShowThreadPoolContent()
+    {
+        return this.getTemplateContent("template.showThreadPoolContent.html");
     }
     
     
