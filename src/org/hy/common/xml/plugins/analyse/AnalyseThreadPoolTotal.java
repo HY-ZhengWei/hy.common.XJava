@@ -3,6 +3,7 @@ package org.hy.common.xml.plugins.analyse;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hy.common.thread.TaskPool;
 import org.hy.common.thread.ThreadPool;
 import org.hy.common.thread.ThreadReport;
 import org.hy.common.xml.SerializableDef;
@@ -36,6 +37,9 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     /** 活动的线程数 */
     private int                activeThreadCount;
     
+    /** 队排中等待的任务数 */
+    private int                waitTaskCount;
+    
     /** 线程池监控信息 */
     private List<ThreadReport> reports;
     
@@ -52,6 +56,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     public AnalyseThreadPoolTotal()
     {
         this.hostName          = "";
+        this.waitTaskCount     = TaskPool.size();
         this.threadCount       = ThreadPool.getThreadCount();
         this.idleThreadCount   = ThreadPool.getIdleThreadCount();
         this.activeThreadCount = ThreadPool.getActiveThreadCount();
@@ -166,6 +171,28 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     public void setReports(List<ThreadReport> reports)
     {
         this.reports = reports;
+    }
+
+
+    
+    /**
+     * 获取：队排中等待的任务数
+     */
+    public int getWaitTaskCount()
+    {
+        return waitTaskCount;
+    }
+    
+
+    
+    /**
+     * 设置：队排中等待的任务数
+     * 
+     * @param waitTaskCount 
+     */
+    public void setWaitTaskCount(int waitTaskCount)
+    {
+        this.waitTaskCount = waitTaskCount;
     }
     
 }

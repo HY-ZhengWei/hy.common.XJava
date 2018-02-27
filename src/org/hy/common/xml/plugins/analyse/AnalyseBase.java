@@ -1404,7 +1404,6 @@ public class AnalyseBase
         StringBuilder          v_Buffer         = new StringBuilder();
         int                    v_Index          = 0;
         String                 v_Content        = this.getTemplateShowThreadPoolContent();
-        long                   v_TotalTime      = 0L;
         int                    v_TotalExecCount = 0;
         AnalyseThreadPoolTotal v_Total          = null;
         
@@ -1445,6 +1444,7 @@ public class AnalyseBase
                             v_Total.setThreadCount(      v_Total.getThreadCount()       + v_TempTotal.getThreadCount());
                             v_Total.setIdleThreadCount(  v_Total.getIdleThreadCount()   + v_TempTotal.getIdleThreadCount());
                             v_Total.setActiveThreadCount(v_Total.getActiveThreadCount() + v_TempTotal.getActiveThreadCount());
+                            v_Total.setWaitTaskCount(    v_Total.getWaitTaskCount()     + v_TempTotal.getWaitTaskCount());
                         }
                     }
                 }
@@ -1466,16 +1466,18 @@ public class AnalyseBase
             v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
             
             v_TotalExecCount += v_TReport.getExecCount();
-            v_TotalTime      += v_TReport.getTotalTime();
         }
         
         v_Buffer.append(v_Content.replaceAll(":No"        ,String.valueOf(++v_Index))
                                  .replaceAll(":ThreadNo"  ,"合计")
                                  .replaceAll(":TaskName"  ,"-")
-                                 .replaceAll(":TotalTime" ,Date.toTimeLen(v_TotalTime))
+                                 .replaceAll(":TotalTime" ,"-")
                                  .replaceAll(":RunStatus" ,"-")
                                  .replaceAll(":ExecCount" ,v_TotalExecCount + "")
-                                 .replaceAll(":TaskDesc"  ,"Total: " + v_Total.getThreadCount() + "  Idle: " + v_Total.getIdleThreadCount() + "  Active: " + v_Total.getActiveThreadCount())
+                                 .replaceAll(":TaskDesc"  ,"Total: "                   + v_Total.getThreadCount() 
+                                                         + "  Idle: "                  + v_Total.getIdleThreadCount() 
+                                                         + "  Active: "                + v_Total.getActiveThreadCount()
+                                                         + "  Queue wait task count: " + v_Total.getWaitTaskCount())
                        );
         
         String v_Goto = "";
