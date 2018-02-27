@@ -61,6 +61,8 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *              v7.0  2018-02-11  添加：删除并重新创建数据库对象
  *              v8.0  2018-02-12  添加：支持集群中每个服务可以有不一样XSQL列表，并且可以在集群列表中显示。
  *                                添加：集群监控SQL异常时，显示是哪台服务器上的SQL出的错。
+ *              v9.0  2018-02-27  添加：本机线程池运行情况监控
+ *                                添加：集群线程池运行情况监控
  */
 @Xjava
 public class AnalyseBase

@@ -59,6 +59,8 @@ import org.hy.common.xml.XJava;
  *                                添加：集群同时执行对象方法（并发）
  *                                添加：查看集群服务列表
  *              v3.0  2018-02-11  添加：删除并重建数据库对象
+ *              v4.0  2018-02-27  添加：本机线程池运行情况
+ *                                添加：集群线程池运行情况 
  */
 public class AnalyseObjectServlet extends HttpServlet
 {
