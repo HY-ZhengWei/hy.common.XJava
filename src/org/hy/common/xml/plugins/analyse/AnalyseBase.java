@@ -34,7 +34,6 @@ import org.hy.common.xml.XSQLLog;
 import org.hy.common.xml.annotation.Xjava;
 import org.hy.common.xml.plugins.AppInitConfig;
 import org.hy.common.xml.plugins.XSQLGroup;
-import org.hy.common.xml.plugins.analyse.AnalyseJobTotal.JobReport;
 
 
 
