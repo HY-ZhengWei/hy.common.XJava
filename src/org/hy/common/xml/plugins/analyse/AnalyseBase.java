@@ -24,6 +24,7 @@ import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
 import org.hy.common.net.data.CommunicationResponse;
 import org.hy.common.thread.Job;
+import org.hy.common.thread.JobReport;
 import org.hy.common.thread.ThreadReport;
 import org.hy.common.xml.XJSON;
 import org.hy.common.xml.XJSONObject;
@@ -1564,6 +1565,8 @@ public class AnalyseBase
             }
         }
         
+        Help.toSort(v_Total.getReports() ,"nextTime" ,"lastTime");
+        
         for (JobReport v_JReport : v_Total.getReports())
         {
             Map<String ,String> v_RKey = new HashMap<String ,String>();
@@ -1579,14 +1582,16 @@ public class AnalyseBase
             v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
         }
         
+        /*
         v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
                                  .replaceAll(":JobID"        ,"合计")
                                  .replaceAll(":IntervalType" ,"-")
                                  .replaceAll(":IntervalLen"  ,"-")
                                  .replaceAll(":LastTime"     ,"-")
                                  .replaceAll(":NextTime"     ,"-")
-                                 .replaceAll(":JobDesc"      ,"Total: " + v_Total.getReports())
+                                 .replaceAll(":JobDesc"      ,"Total: " + v_Total.getReports().size())
                        );
+        */
         
         return StringHelp.replaceAll(this.getTemplateShowJob()
                                     ,new String[]{":GotoTitle" ,":Title"         ,":HttpBasePath" ,":Content"}
