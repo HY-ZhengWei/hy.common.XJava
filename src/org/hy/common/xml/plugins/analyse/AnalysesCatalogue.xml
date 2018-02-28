@@ -109,9 +109,9 @@
 	        </item>
 	        
 	        <item>
-	            <name>查看定时任务（支持集群）</name>
-				<comment>可手工执行定时任务</comment>
-				<value><![CDATA[ /analyseObject?xid=JOB* ]]></value>
+	            <name>监控定时任务运行情况</name>
+				<comment>可手工执行定时任务（支持集群）</comment>
+				<value><![CDATA[ /analyseObject?Job=Y ]]></value>
 	        </item>
 	        
 	        <item>

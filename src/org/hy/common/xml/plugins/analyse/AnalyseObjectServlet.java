@@ -50,6 +50,8 @@ import org.hy.common.xml.XJava;
  * 
  * 功能11：本机线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y
  * 功能12：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y&cluster=Y
+ * 
+ * 功能13：本机定时任务运行情况          http://IP:Port/WebService/../analyseObject?Job=Y
  *
  * @author      ZhengWei(HY)
  * @createDate  2015-12-16
@@ -61,6 +63,8 @@ import org.hy.common.xml.XJava;
  *              v3.0  2018-02-11  添加：删除并重建数据库对象
  *              v4.0  2018-02-27  添加：本机线程池运行情况
  *                                添加：集群线程池运行情况 
+ *              v4.0  2018-02-28  添加：本机定时任务运行情况。之前合并在 "查看前缀匹配的对象列表" 任务中
+ *              
  */
 public class AnalyseObjectServlet extends HttpServlet
 {
@@ -129,10 +133,15 @@ public class AnalyseObjectServlet extends HttpServlet
         String v_SameTime   = i_Request.getParameter("sameTime");
         String v_Create     = i_Request.getParameter("XSQLCreate");
         String v_ThreadPool = i_Request.getParameter("ThreadPool");
+        String v_Job        = i_Request.getParameter("Job");
         
         if ( Help.isNull(v_XID) )
         {
-            if ( !Help.isNull(v_ThreadPool) )
+            if ( !Help.isNull(v_Job) )
+            {
+                i_Response.getWriter().println(this.analyse.analyseJob(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
+            }
+            else if ( !Help.isNull(v_ThreadPool) )
             {
                 i_Response.getWriter().println(this.analyse.analyseThreadPool(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
             }
