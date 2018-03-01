@@ -64,6 +64,7 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *                                添加：集群监控SQL异常时，显示是哪台服务器上的SQL出的错。
  *              v9.0  2018-02-27  添加：本机线程池运行情况监控
  *                                添加：集群线程池运行情况监控
+ *              v10.0 2018-03-01  添加：本机定时任务运行情况。之前合并在 "查看前缀匹配的对象列表" 任务中
  */
 @Xjava
 public class AnalyseBase
@@ -1452,6 +1453,8 @@ public class AnalyseBase
             }
         }
         
+        Help.toSort(v_Total.getReports() ,"threadNo");
+        
         for (ThreadReport v_TReport : v_Total.getReports())
         {
             Map<String ,String> v_RKey = new HashMap<String ,String>();
@@ -1593,9 +1596,11 @@ public class AnalyseBase
                        );
         */
         
+        String v_GotoTitle = StringHelp.lpad("" ,4 ,"&nbsp;") + Date.getNowTime().getFull();
+        
         return StringHelp.replaceAll(this.getTemplateShowJob()
                                     ,new String[]{":GotoTitle" ,":Title"         ,":HttpBasePath" ,":Content"}
-                                    ,new String[]{""           ,"定时任务运行情况" ,i_BasePath      ,v_Buffer.toString()});
+                                    ,new String[]{v_GotoTitle  ,"定时任务运行情况" ,i_BasePath      ,v_Buffer.toString()});
     }
     
     
