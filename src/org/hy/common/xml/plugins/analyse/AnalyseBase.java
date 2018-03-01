@@ -332,14 +332,14 @@ public class AnalyseBase
                                  .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                        );
         
-        String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseDB' style='color:#AA66CC'>查看SQL</a>";
+        String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseDB' style='color:#AA66CC'>查看SQL</a>" + StringHelp.lpad("" ,4 ,"&nbsp;");
         if ( i_Cluster )
         {
-            v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseDB?type=Group' style='color:#AA66CC'>查看本机</a>";
+            v_Goto += "<a href='analyseDB?type=Group' style='color:#AA66CC'>查看本机</a>";
         }
         else
         {
-            v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseDB?type=Group&cluster=Y' style='color:#AA66CC'>查看集群</a>";
+            v_Goto += "<a href='analyseDB?type=Group&cluster=Y' style='color:#AA66CC'>查看集群</a>";
         }
         
         return StringHelp.replaceAll(this.getTemplateShowTotal()
@@ -485,14 +485,14 @@ public class AnalyseBase
                                  .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                        );
         
-        String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseDB?type=Group' style='color:#AA66CC'>查看SQL组</a>";
+        String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseDB?type=Group' style='color:#AA66CC'>查看SQL组</a>" + StringHelp.lpad("" ,4 ,"&nbsp;");
         if ( i_Cluster )
         {
-            v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseDB' style='color:#AA66CC'>查看本机</a>";
+            v_Goto += "<a href='analyseDB' style='color:#AA66CC'>查看本机</a>";
         }
         else
         {
-            v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseDB?cluster=Y' style='color:#AA66CC'>查看集群</a>";
+            v_Goto += "<a href='analyseDB?cluster=Y' style='color:#AA66CC'>查看集群</a>";
         }
         
         return StringHelp.replaceAll(this.getTemplateShowTotal()
@@ -1464,6 +1464,7 @@ public class AnalyseBase
             v_RKey.put(":TaskName"  ,v_TReport.getTaskName());
             v_RKey.put(":TotalTime" ,Date.toTimeLen(v_TReport.getTotalTime()));
             v_RKey.put(":RunStatus" ,v_TReport.getRunStatus());
+            v_RKey.put(":LastTime"  ,v_TReport.getLastTime());
             v_RKey.put(":ExecCount" ,v_TReport.getExecCount() + "");
             v_RKey.put(":TaskDesc"  ,v_TReport.getTaskDesc());
             
@@ -1477,6 +1478,7 @@ public class AnalyseBase
                                  .replaceAll(":TaskName"  ,"-")
                                  .replaceAll(":TotalTime" ,"-")
                                  .replaceAll(":RunStatus" ,"-")
+                                 .replaceAll(":LastTime"  ,"-")
                                  .replaceAll(":ExecCount" ,v_TotalExecCount + "")
                                  .replaceAll(":TaskDesc"  ,"Total: "                   + v_Total.getThreadCount() 
                                                          + "  Idle: "                  + v_Total.getIdleThreadCount() 
@@ -1484,15 +1486,17 @@ public class AnalyseBase
                                                          + "  Queue wait task count: " + v_Total.getWaitTaskCount())
                        );
         
-        String v_Goto = "";
+        String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;");
         if ( i_Cluster )
         {
-            v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseObject?ThreadPool=Y' style='color:#AA66CC'>查看本机</a>";
+            v_Goto += "<a href='analyseObject?ThreadPool=Y' style='color:#AA66CC'>查看本机</a>";
         }
         else
         {
-            v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseObject?ThreadPool=Y&cluster=Y' style='color:#AA66CC'>查看集群</a>";
+            v_Goto += "<a href='analyseObject?ThreadPool=Y&cluster=Y' style='color:#AA66CC'>查看集群</a>";
         }
+        
+        v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;") + Date.getNowTime().getFull();
         
         return StringHelp.replaceAll(this.getTemplateShowThreadPool()
                                     ,new String[]{":GotoTitle" ,":Title"       ,":HttpBasePath" ,":Content"}
