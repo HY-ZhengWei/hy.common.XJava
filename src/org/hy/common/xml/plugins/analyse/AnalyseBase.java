@@ -1317,13 +1317,13 @@ public class AnalyseBase
      * @param  i_ReLoadPath     重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject
      * @return
      */
-    @SuppressWarnings("unchecked")
     public String analyseCluster(String i_BasePath ,String i_ReLoadPath)
     {
         List<ClientSocket>   v_Servers      = Cluster.getClusters();
         StringBuilder        v_Buffer       = new StringBuilder();
         int                  v_Index        = 0;
         String               v_Content      = this.getTemplateShowClusterContent();
+        List<ClusterReport>  v_Clusters     = new ArrayList<ClusterReport>();
         
         if ( !Help.isNull(v_Servers) )
         {
@@ -1331,42 +1331,57 @@ public class AnalyseBase
             
             for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
-                CommunicationResponse v_ResponseData = v_Item.getValue();
-                String                v_StartTime    = "-";
-                String                v_ServerStatus = "<font color='red'>异常</font>";
+                CommunicationResponse v_ResponseData  = v_Item.getValue();
+                ClusterReport         v_ClusterReport = null;
                 
                 if ( v_ResponseData.getResult() == 0 )
                 {
-                    if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof Return )
+                    if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof ClusterReport )
                     {
-                        v_StartTime    = ((Return<Date>)v_ResponseData.getData()).paramObj.getFullMilli();
-                        v_ServerStatus = "正常";
+                        v_ClusterReport = (ClusterReport)v_ResponseData.getData();
+                        v_ClusterReport.setServerStatus("正常");
                     }
                 }
                 
-                v_Buffer.append(StringHelp.replaceAll(v_Content 
-                                                     ,new String[]{":No" 
-                                                                  ,":Name" 
-                                                                  ,":StartTime" 
-                                                                  ,":ServerStatus"} 
-                                                     ,new String[]{String.valueOf(++v_Index)
-                                                                  ,v_Item.getKey().getHostName()
-                                                                  ,v_StartTime
-                                                                  ,v_ServerStatus
-                                                                  })
-                               );
+                if ( v_ClusterReport == null )
+                {
+                    v_ClusterReport = new ClusterReport();
+                    v_ClusterReport.setStartTime("-");
+                    v_ClusterReport.setServerStatus("<font color='red'>异常</font>");
+                }
+                
+                v_ClusterReport.setHostName(v_Item.getKey().getHostName());
+                v_Clusters.add(v_ClusterReport);
             }
-            
-            String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseObject' style='color:#AA66CC'>查看XJava配置</a>";
-            
-            return StringHelp.replaceAll(this.getTemplateShowCluster()
-                                        ,new String[]{":Title"     ,":Column01Title"   ,":HttpBasePath" ,":Content"}
-                                        ,new String[]{"集群服务列表" ,"集群服务" + v_Goto ,i_BasePath      ,v_Buffer.toString()});
         }
         else
         {
-            return "No config cluster.";
+            v_Clusters.add(this.analyseCluster_Info());
+            v_Clusters.get(0).setHostName("127.0.0.1");
         }
+        
+        Help.toSort(v_Clusters ,"startTime Desc" ,"hostName");
+        
+        for (ClusterReport v_CReport : v_Clusters)
+        {
+            Map<String ,String> v_RKey = new HashMap<String ,String>();
+            
+            v_RKey.put(":No"           ,String.valueOf(++v_Index));
+            v_RKey.put(":ServerName"   ,v_CReport.getHostName());
+            v_RKey.put(":MaxMemory"    ,StringHelp.getComputeUnit(v_CReport.getMaxMemory()));
+            v_RKey.put(":TotalMemory"  ,StringHelp.getComputeUnit(v_CReport.getTotalMemory()));
+            v_RKey.put(":FreeMemory"   ,StringHelp.getComputeUnit(v_CReport.getFreeMemory()));
+            v_RKey.put(":StartTime"    ,v_CReport.getStartTime());
+            v_RKey.put(":ServerStatus" ,v_CReport.getServerStatus());
+            
+            v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
+        }
+        
+        String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseObject' style='color:#AA66CC'>查看XJava配置</a>";
+        
+        return StringHelp.replaceAll(this.getTemplateShowCluster()
+                                    ,new String[]{":Title"     ,":Column01Title"   ,":HttpBasePath" ,":Content"}
+                                    ,new String[]{"集群服务列表" ,"集群服务" + v_Goto ,i_BasePath      ,v_Buffer.toString()});
     }
     
     
@@ -1380,11 +1395,9 @@ public class AnalyseBase
      *
      * @return
      */
-    public Return<Date> analyseCluster_Info()
+    public ClusterReport analyseCluster_Info()
     {
-        Return<Date> v_Ret = new Return<Date>(true);
-        
-        return v_Ret.paramObj($ServerStartTime);
+        return new ClusterReport($ServerStartTime);
     }
     
     
@@ -1480,10 +1493,10 @@ public class AnalyseBase
                                  .replaceAll(":RunStatus" ,"-")
                                  .replaceAll(":LastTime"  ,"-")
                                  .replaceAll(":ExecCount" ,v_TotalExecCount + "")
-                                 .replaceAll(":TaskDesc"  ,"Total: "                   + v_Total.getThreadCount() 
-                                                         + "  Idle: "                  + v_Total.getIdleThreadCount() 
-                                                         + "  Active: "                + v_Total.getActiveThreadCount()
-                                                         + "  Queue wait task count: " + v_Total.getWaitTaskCount())
+                                 .replaceAll(":TaskDesc"  ,"Total: "             + v_Total.getThreadCount() 
+                                                         + "  Idle: "            + v_Total.getIdleThreadCount() 
+                                                         + "  Active: "          + v_Total.getActiveThreadCount()
+                                                         + "  Queue wait task: " + v_Total.getWaitTaskCount())
                        );
         
         String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;");
@@ -1561,7 +1574,7 @@ public class AnalyseBase
                     
                     if ( v_ResponseData.getResult() == 0 )
                     {
-                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseThreadPoolTotal )
+                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseJobTotal )
                         {
                             AnalyseJobTotal v_TempTotal = (AnalyseJobTotal)v_ResponseData.getData();
                             
