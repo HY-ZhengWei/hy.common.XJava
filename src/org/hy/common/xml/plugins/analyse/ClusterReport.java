@@ -35,6 +35,9 @@ public class ClusterReport extends SerializableDef
     /** 空闲内存 */
     private long   freeMemory;
     
+    /** 线程总数 */
+    private int    threadCount;
+    
     /** 服务器情况（正常、异常） */
     private String serverStatus;
     
@@ -46,6 +49,7 @@ public class ClusterReport extends SerializableDef
         this.maxMemory    = 0;
         this.totalMemory  = 0;
         this.freeMemory   = 0;
+        this.threadCount  = 0;
         this.hostName     = "";
         this.serverStatus = "";
     }
@@ -56,10 +60,14 @@ public class ClusterReport extends SerializableDef
     {
         Runtime v_RunTime = Runtime.getRuntime();
         
+        ThreadGroup v_PT  = null;
+        for (v_PT = Thread.currentThread().getThreadGroup(); v_PT.getParent() != null; v_PT = v_PT.getParent());
+        
         this.startTime    = i_StartTime.getFull();
         this.maxMemory    = v_RunTime.maxMemory();
         this.totalMemory  = v_RunTime.totalMemory();
         this.freeMemory   = v_RunTime.freeMemory();
+        this.threadCount  = v_PT.activeCount();
         this.hostName     = "";
         this.serverStatus = "";
     }
@@ -152,8 +160,30 @@ public class ClusterReport extends SerializableDef
         this.freeMemory = freeMemory;
     }
 
+    
+    
+    /**
+     * 获取：线程总数
+     */
+    public int getThreadCount()
+    {
+        return threadCount;
+    }
+
 
     
+    /**
+     * 设置：线程总数
+     * 
+     * @param threadCount 
+     */
+    public void setThreadCount(int threadCount)
+    {
+        this.threadCount = threadCount;
+    }
+
+
+
     /**
      * 获取：主机名称
      */
