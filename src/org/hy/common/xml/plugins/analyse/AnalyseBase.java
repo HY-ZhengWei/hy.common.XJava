@@ -1371,7 +1371,7 @@ public class AnalyseBase
             v_RKey.put(":MaxMemory"    ,StringHelp.getComputeUnit(v_CReport.getMaxMemory()));
             v_RKey.put(":TotalMemory"  ,StringHelp.getComputeUnit(v_CReport.getTotalMemory()));
             v_RKey.put(":FreeMemory"   ,StringHelp.getComputeUnit(v_CReport.getFreeMemory()));
-            v_RKey.put(":ThreadCount"  ,StringHelp.getComputeUnit(v_CReport.getThreadCount()));
+            v_RKey.put(":ThreadCount"  ,v_CReport.getThreadCount() + "");
             v_RKey.put(":StartTime"    ,v_CReport.getStartTime());
             v_RKey.put(":ServerStatus" ,v_CReport.getServerStatus());
             
