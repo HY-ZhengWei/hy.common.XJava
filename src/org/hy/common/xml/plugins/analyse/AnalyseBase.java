@@ -1827,11 +1827,11 @@ public class AnalyseBase
         String v_GotoTitle = StringHelp.lpad("" ,4 ,"&nbsp;");
         if ( i_Cluster )
         {
-            v_GotoTitle += "<a href='analyseObject?DBG=Y' style='color:#AA66CC'>查看本机</a>";
+            v_GotoTitle += "<a href='analyseObject?DSG=Y' style='color:#AA66CC'>查看本机</a>";
         }
         else
         {
-            v_GotoTitle += "<a href='analyseObject?DBG=Y&cluster=Y' style='color:#AA66CC'>查看集群</a>";
+            v_GotoTitle += "<a href='analyseObject?DSG=Y&cluster=Y' style='color:#AA66CC'>查看集群</a>";
         }
         
         return StringHelp.replaceAll(this.getTemplateShowDSG()
