@@ -344,6 +344,16 @@ public class AnalyseBase
             v_Goto += "<a href='analyseDB?type=Group&cluster=Y' style='color:#AA66CC'>查看集群</a>";
         }
         
+        v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;");
+        if ( i_Cluster )
+        {
+            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset' style='color:#AA66CC'>重置统计</a>";
+        }
+        else
+        {
+            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset&cluster=Y&sameTime=Y' style='color:#AA66CC'>集群重置</a>";
+        }
+        
         return StringHelp.replaceAll(this.getTemplateShowTotal()
                                     ,new String[]{":NameTitle"             ,":Title"                    ,":HttpBasePath" ,":Content"}
                                     ,new String[]{"组合SQL访问标识" + v_Goto ,"数据库组合SQL访问量的概要统计" ,i_BasePath      ,v_Buffer.toString()});
@@ -497,6 +507,16 @@ public class AnalyseBase
             v_Goto += "<a href='analyseDB?cluster=Y' style='color:#AA66CC'>查看集群</a>";
         }
         
+        v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;");
+        if ( i_Cluster )
+        {
+            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal' style='color:#AA66CC'>重置统计</a>";
+        }
+        else
+        {
+            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal&cluster=Y&sameTime=Y' style='color:#AA66CC'>集群重置</a>";
+        }
+        
         return StringHelp.replaceAll(this.getTemplateShowTotal()
                                     ,new String[]{":NameTitle"          ,":Title"              ,":HttpBasePath" ,":Content"}
                                     ,new String[]{"SQL访问标识" + v_Goto ,"数据库访问量的概要统计" ,i_BasePath      ,v_Buffer.toString()});
@@ -572,6 +592,32 @@ public class AnalyseBase
         }
         
         return v_Total;
+    }
+    
+    
+    
+    /**
+     * 重置数据库组合SQL访问量的概要统计数据
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-05
+     * @version     v1.0
+     *
+     * @return
+     */
+    public void analyseDBGroup_Reset()
+    {
+        Map<String ,Object> v_Objs  = XJava.getObjects(XSQLGroup.class);
+        
+        for (Map.Entry<String, Object> v_Item : v_Objs.entrySet())
+        {
+            if ( v_Item.getValue() != null )
+            {
+                XSQLGroup v_XSQLGroup = (XSQLGroup)v_Item.getValue();
+                
+                v_XSQLGroup.reset();
+            }
+        }
     }
     
     

@@ -134,6 +134,7 @@ import org.hy.common.xml.XSQLBigData;
  *                                2.添加：等待哪个节点上的云服务计算完成。与XSQLNode.cloudWait同义。
  *                                       但，此属性表示XSQL组整体完成前的最后等待哪个节点上的云服务计算。
  *                                       在所有lastOnce标记的XSQL节点执行之前执行此等待操作。
+ *              v19.1 2018-03-05  添加：重置统计数据的功能。
  */
 public final class XSQLGroup
 {
@@ -233,6 +234,24 @@ public final class XSQLGroup
         this.successTimeLen = 0D;
         this.executeTime    = null;
         this.comment        = null;
+    }
+    
+    
+    
+    /**
+     * 重置统计数据
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-05
+     * @version     v1.0
+     *
+     */
+    public void reset()
+    {
+        this.requestCount   = 0;
+        this.successCount   = 0;
+        this.successTimeLen = 0D;
+        this.executeTime    = null;
     }
     
     
