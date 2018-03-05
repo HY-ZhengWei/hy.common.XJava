@@ -66,6 +66,7 @@ import com.greenpineyu.fel.context.FelContext;
  *              v12.0 2018-01-30  1.添加：支持多台服务器并行计算。
  *              v12.1 2018-02-22  1.修复：云计算时，某台服务器异常后，修复"云等待"死等的问题。
  *                                2.添加：云计算异常时，尝试交给其它云服务计算。当重试多次(this.cloudRetryCount)云计算仍然异常时，放弃计算。
+ *              v13.0 2018-03-05  1.添加：执行异常时重试XSQLNode.retryCount功能。
  */
 public class XSQLNode
 {
@@ -285,6 +286,15 @@ public class XSQLNode
     private String                       comment;
     
     /**
+     * 异常重试次数。执行SQL语句，因争抢锁等原因异常时，尝试重新执行。当重试多次仍然异常时，放弃执行。
+     * 
+     * 等于0时，表示异常时，不尝试重新执行。
+     * 
+     * 默认为：0次
+     */
+    private int                          retryCount;
+    
+    /**
      * 云计算服务器的列表。用英文逗号,分隔（可以有空格、回车符、制表符）。如下形式：IP1:Port1 ,IP2:Port2 ,IP3:Port3。
      * 
      * 与 $Type_ExecuteJava、xjavaID、methodName配合使用。
@@ -308,7 +318,7 @@ public class XSQLNode
     private CycleNextList<XSQLNodeCloud> cloudServersList;
     
     /**
-     * 异常重试次数。云计算异常时，尝试交给其它云服务重新计算。当重试多次云计算仍然异常时，放弃计算。
+     * 云计算异常重试次数。云计算异常时，尝试交给其它云服务重新计算。当重试多次云计算仍然异常时，放弃计算。
      * 
      * 等于0时，表示云计算异常时，不尝试重新计算。
      * 
@@ -998,6 +1008,36 @@ public class XSQLNode
     
 
     
+    /**
+     * 获取：* 异常重试次数。执行SQL语句，因争抢锁等原因异常时，尝试重新执行。当重试多次仍然异常时，放弃执行。
+     * 
+     * 等于0时，表示异常时，不尝试重新执行。
+     * 
+     * 默认为：0次
+     */
+    public int getRetryCount()
+    {
+        return retryCount;
+    }
+    
+
+    
+    /**
+     * 设置：* 异常重试次数。执行SQL语句，因争抢锁等原因异常时，尝试重新执行。当重试多次仍然异常时，放弃执行。
+     * 
+     * 等于0时，表示异常时，不尝试重新执行。
+     * 
+     * 默认为：0次
+     * 
+     * @param retryCount 
+     */
+    public void setRetryCount(int retryCount)
+    {
+        this.retryCount = retryCount;
+    }
+    
+
+
     /**
      * 获取：异常重试次数。云计算异常时，尝试交给其它云服务重新计算。当重试多次云计算仍然异常时，放弃计算。
      * 

@@ -134,7 +134,8 @@ import org.hy.common.xml.XSQLBigData;
  *                                2.添加：等待哪个节点上的云服务计算完成。与XSQLNode.cloudWait同义。
  *                                       但，此属性表示XSQL组整体完成前的最后等待哪个节点上的云服务计算。
  *                                       在所有lastOnce标记的XSQL节点执行之前执行此等待操作。
- *              v19.1 2018-03-05  添加：重置统计数据的功能。
+ *              v20.0 2018-03-05  1.添加：重置统计数据的功能。
+ *                                2.添加：执行异常时重试XSQLNode.retryCount功能。
  */
 public final class XSQLGroup
 {
@@ -618,143 +619,149 @@ public final class XSQLGroup
                 continue;
             }
             
-            try
+            int v_RetryCount = v_Node.getRetryCount();
+            do
             {
-                boolean v_ExecRet = false;
-                int     v_RCount  = 0;
-                
-                this.logExecuteBefore(v_Node ,io_Params ,v_NodeIndex);
-                
-                if ( XSQLNode.$Type_Query.equals(v_Node.getType()) )
+                try
                 {
-                    Object v_QueryRet = null;
+                    boolean v_ExecRet = false;
+                    int     v_RCount  = 0;
                     
-                    if ( Help.isNull(io_Params) )
+                    this.logExecuteBefore(v_Node ,io_Params ,v_NodeIndex);
+                    
+                    if ( XSQLNode.$Type_Query.equals(v_Node.getType()) )
                     {
-                        if ( v_Node.isOneConnection() )
+                        Object v_QueryRet = null;
+                        
+                        if ( Help.isNull(io_Params) )
                         {
-                            v_QueryRet = v_Node.getSql().query(this.getConnection(v_Node ,io_DSGConns));
+                            if ( v_Node.isOneConnection() )
+                            {
+                                v_QueryRet = v_Node.getSql().query(this.getConnection(v_Node ,io_DSGConns));
+                            }
+                            else
+                            {
+                                v_QueryRet = v_Node.getSql().query();
+                            }
                         }
                         else
                         {
-                            v_QueryRet = v_Node.getSql().query();
+                            if ( v_Node.isOneConnection() )
+                            {
+                                v_QueryRet = v_Node.getSql().query(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                            }
+                            else
+                            {
+                                v_QueryRet = v_Node.getSql().query(io_Params);
+                            }
                         }
+                        
+                        // put返回查询结果集
+                        this.putReturnID(v_Ret ,v_Node ,v_QueryRet);
+                        v_ExecRet = true;
                     }
-                    else
+                    else if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_Node.getType()) )
                     {
-                        if ( v_Node.isOneConnection() )
+                        List<Object> v_CollectionParam = getCollectionToQueryOrDB(v_Node ,io_Params);
+                        
+                        if ( !Help.isNull(v_CollectionParam) )
                         {
-                            v_QueryRet = v_Node.getSql().query(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                            v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params) ,this.getConnection(v_Node ,io_DSGConns));
+                            
+                            io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
+                            v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_RCount);
                         }
                         else
                         {
-                            v_QueryRet = v_Node.getSql().query(io_Params);
+                            v_RCount = 1; // 防止被回滚 v_Node.isNoUpdateRollbacks();
+                        }
+                        
+                        // 2017-12-22 Add 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作
+                        if ( v_RCount <= 0 && v_Node.isNoUpdateRollbacks() )
+                        {
+                            v_ExecRet = false;
+                            this.rollbacks(io_DSGConns);
+                        }
+                        else
+                        {
+                            v_ExecRet = true;
                         }
                     }
-                    
-                    // put返回查询结果集
-                    this.putReturnID(v_Ret ,v_Node ,v_QueryRet);
-                    v_ExecRet = true;
-                }
-                else if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_Node.getType()) )
-                {
-                    List<Object> v_CollectionParam = getCollectionToQueryOrDB(v_Node ,io_Params);
-                    
-                    if ( !Help.isNull(v_CollectionParam) )
+                    else if ( XSQLNode.$Type_ExecuteUpdate.equals(v_Node.getType()) )
                     {
-                        v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params) ,this.getConnection(v_Node ,io_DSGConns));
+                        if ( Help.isNull(io_Params) )
+                        {
+                            v_RCount = v_Node.getSql().executeUpdate(this.getConnection(v_Node ,io_DSGConns));
+                        }
+                        else
+                        {
+                            v_RCount = v_Node.getSql().executeUpdate(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                        }
                         
                         io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
                         v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_RCount);
-                    }
-                    else
-                    {
-                        v_RCount = 1; // 防止被回滚 v_Node.isNoUpdateRollbacks();
-                    }
-                    
-                    // 2017-12-22 Add 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作
-                    if ( v_RCount <= 0 && v_Node.isNoUpdateRollbacks() )
-                    {
-                        v_ExecRet = false;
-                        this.rollbacks(io_DSGConns);
-                    }
-                    else
-                    {
-                        v_ExecRet = true;
-                    }
-                }
-                else if ( XSQLNode.$Type_ExecuteUpdate.equals(v_Node.getType()) )
-                {
-                    if ( Help.isNull(io_Params) )
-                    {
-                        v_RCount = v_Node.getSql().executeUpdate(this.getConnection(v_Node ,io_DSGConns));
-                    }
-                    else
-                    {
-                        v_RCount = v_Node.getSql().executeUpdate(io_Params ,this.getConnection(v_Node ,io_DSGConns));
-                    }
-                    
-                    io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
-                    v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_RCount);
-                    
-                    // 2017-12-22 Add 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作
-                    if ( v_RCount <= 0 && v_Node.isNoUpdateRollbacks() )
-                    {
-                        v_ExecRet = false;
-                        this.rollbacks(io_DSGConns);
-                    }
-                    else
-                    {
-                        v_ExecRet = true;
-                    }
-                }
-                else if ( XSQLNode.$Type_Execute.equals(v_Node.getType()) )
-                {
-                    if ( Help.isNull(io_Params) )
-                    {
-                        v_ExecRet = v_Node.getSql().execute();
-                    }
-                    else
-                    {
-                        v_ExecRet = v_Node.getSql().execute(io_Params);
-                    }
-                }
-                else 
-                {
-                    v_ExecRet = v_Node.executeJava(new XSQLGroupControl(this ,io_DSGConns ,v_Ret.getExecSumCount()) ,io_Params ,v_Ret.getReturns());
-                }
-                
-                this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
-                
-                if ( v_ExecRet )
-                {
-                    // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
-                    v_Ret = waitThreads(v_Node ,v_Ret);
-                    if ( v_Ret.isSuccess() )
-                    {
-                        // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
-                        if ( v_Node.isAfterCommit() )
-                        {
-                            this.commits(io_DSGConns ,v_Ret.getExecSumCount());
-                        }
                         
-                        v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
+                        // 2017-12-22 Add 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作
+                        if ( v_RCount <= 0 && v_Node.isNoUpdateRollbacks() )
+                        {
+                            v_ExecRet = false;
+                            this.rollbacks(io_DSGConns);
+                        }
+                        else
+                        {
+                            v_ExecRet = true;
+                        }
+                    }
+                    else if ( XSQLNode.$Type_Execute.equals(v_Node.getType()) )
+                    {
+                        if ( Help.isNull(io_Params) )
+                        {
+                            v_ExecRet = v_Node.getSql().execute();
+                        }
+                        else
+                        {
+                            v_ExecRet = v_Node.getSql().execute(io_Params);
+                        }
+                    }
+                    else 
+                    {
+                        v_ExecRet = v_Node.executeJava(new XSQLGroupControl(this ,io_DSGConns ,v_Ret.getExecSumCount()) ,io_Params ,v_Ret.getReturns());
+                    }
+                    
+                    this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
+                    
+                    if ( v_ExecRet )
+                    {
+                        // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
+                        v_Ret = waitThreads(v_Node ,v_Ret);
+                        if ( v_Ret.isSuccess() )
+                        {
+                            // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
+                            if ( v_Node.isAfterCommit() )
+                            {
+                                this.commits(io_DSGConns ,v_Ret.getExecSumCount());
+                            }
+                            
+                            v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
+                        }
+                    }
+                    else
+                    {
+                        v_Ret.setExceptionNode(v_NodeIndex);
+                        v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
+                        v_Ret.setSuccess(false);
                     }
                 }
-                else
+                catch (Exception exce)
                 {
                     v_Ret.setExceptionNode(v_NodeIndex);
                     v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
+                    v_Ret.setException(    exce);
                     v_Ret.setSuccess(false);
                 }
-            }
-            catch (Exception exce)
-            {
-                v_Ret.setExceptionNode(v_NodeIndex);
-                v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
-                v_Ret.setException(    exce);
-                v_Ret.setSuccess(false);
-            }
+                
+                v_RetryCount--;
+            } while ( !v_Ret.isSuccess() && v_RetryCount >= 0 );
         }
         
         return v_Ret;
@@ -832,82 +839,88 @@ public final class XSQLGroup
             {
                 List<Object> v_QueryRet = null;
                 
-                try
+                int v_RetryCount = v_Node.getRetryCount();
+                do
                 {
-                    this.logExecuteBefore(v_Node ,io_Params ,v_NodeIndex);
-                    
-                    if ( XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
+                    try
                     {
-                        v_QueryRet = getCollectionToQueryOrDB(v_Node ,io_Params);
-                    }
-                    else if ( v_Node.isBigData() )
-                    {
-                        XSQLGroupBigData v_XSQLBigData = new XSQLGroupBigData(this 
-                                                                             ,v_NodeIndex
-                                                                             ,v_Node
-                                                                             ,io_Params
-                                                                             ,v_Ret
-                                                                             ,io_DSGConns);
+                        this.logExecuteBefore(v_Node ,io_Params ,v_NodeIndex);
                         
-                        if ( Help.isNull(io_Params) )
+                        if ( XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
                         {
-                            if ( v_Node.isOneConnection() )
+                            v_QueryRet = getCollectionToQueryOrDB(v_Node ,io_Params);
+                        }
+                        else if ( v_Node.isBigData() )
+                        {
+                            XSQLGroupBigData v_XSQLBigData = new XSQLGroupBigData(this 
+                                                                                 ,v_NodeIndex
+                                                                                 ,v_Node
+                                                                                 ,io_Params
+                                                                                 ,v_Ret
+                                                                                 ,io_DSGConns);
+                            
+                            if ( Help.isNull(io_Params) )
                             {
-                                v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(this.getConnection(v_Node ,io_DSGConns) ,v_XSQLBigData);
+                                if ( v_Node.isOneConnection() )
+                                {
+                                    v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(this.getConnection(v_Node ,io_DSGConns) ,v_XSQLBigData);
+                                }
+                                else
+                                {
+                                    v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(v_XSQLBigData);
+                                }
                             }
                             else
                             {
-                                v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(v_XSQLBigData);
+                                if ( v_Node.isOneConnection() )
+                                {
+                                    v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(io_Params ,this.getConnection(v_Node ,io_DSGConns) ,v_XSQLBigData);
+                                }
+                                else
+                                {
+                                    v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(io_Params ,v_XSQLBigData);
+                                }
                             }
                         }
                         else
                         {
-                            if ( v_Node.isOneConnection() )
+                            if ( Help.isNull(io_Params) )
                             {
-                                v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(io_Params ,this.getConnection(v_Node ,io_DSGConns) ,v_XSQLBigData);
+                                if ( v_Node.isOneConnection() )
+                                {
+                                    v_QueryRet = (List<Object>)v_Node.getSql().query(this.getConnection(v_Node ,io_DSGConns));
+                                }
+                                else
+                                {
+                                    v_QueryRet = (List<Object>)v_Node.getSql().query();
+                                }
                             }
                             else
                             {
-                                v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(io_Params ,v_XSQLBigData);
+                                if ( v_Node.isOneConnection() )
+                                {
+                                    v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                                }
+                                else
+                                {
+                                    v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params);
+                                }
                             }
                         }
+                        
+                        this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
                     }
-                    else
+                    catch (Exception exce)
                     {
-                        if ( Help.isNull(io_Params) )
-                        {
-                            if ( v_Node.isOneConnection() )
-                            {
-                                v_QueryRet = (List<Object>)v_Node.getSql().query(this.getConnection(v_Node ,io_DSGConns));
-                            }
-                            else
-                            {
-                                v_QueryRet = (List<Object>)v_Node.getSql().query();
-                            }
-                        }
-                        else
-                        {
-                            if ( v_Node.isOneConnection() )
-                            {
-                                v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params ,this.getConnection(v_Node ,io_DSGConns));
-                            }
-                            else
-                            {
-                                v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params);
-                            }
-                        }
+                        v_Ret.setExceptionNode(v_NodeIndex);
+                        v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
+                        v_Ret.setException(    exce);
+                        v_Ret.setSuccess(false);
+                        return v_Ret;
                     }
                     
-                    this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
-                }
-                catch (Exception exce)
-                {
-                    v_Ret.setExceptionNode(v_NodeIndex);
-                    v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
-                    v_Ret.setException(    exce);
-                    v_Ret.setSuccess(false);
-                    return v_Ret;
-                }
+                    v_RetryCount--;
+                } while ( !v_Ret.isSuccess() && v_RetryCount >= 0 );
                 
                 // 查询并返回：返回结果集，控制其后节点执行：返回结果集的同时，还将控制其后XSQL节点的执行次数。ZhengWei(HY) Add 2017-05-17
                 if ( !Help.isNull(v_Node.getReturnID()) )
@@ -1167,30 +1180,35 @@ public final class XSQLGroup
             else
             {
                 Object v_QueryRet = null;
-                
-                try
+                int v_RetryCount = v_Node.getRetryCount();
+                do
                 {
-                    this.logExecuteBefore(v_Node ,io_Params ,v_NodeIndex);
-                    
-                    if ( Help.isNull(io_Params) )
+                    try
                     {
-                        v_QueryRet = v_Node.getSql().query();
+                        this.logExecuteBefore(v_Node ,io_Params ,v_NodeIndex);
+                        
+                        if ( Help.isNull(io_Params) )
+                        {
+                            v_QueryRet = v_Node.getSql().query();
+                        }
+                        else
+                        {
+                            v_QueryRet = v_Node.getSql().query(io_Params);
+                        }
+                        
+                        this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
                     }
-                    else
+                    catch (Exception exce)
                     {
-                        v_QueryRet = v_Node.getSql().query(io_Params);
+                        v_Ret.setExceptionNode(v_NodeIndex);
+                        v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
+                        v_Ret.setException(    exce);
+                        v_Ret.setSuccess(false);
+                        return v_Ret;
                     }
                     
-                    this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
-                }
-                catch (Exception exce)
-                {
-                    v_Ret.setExceptionNode(v_NodeIndex);
-                    v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
-                    v_Ret.setException(    exce);
-                    v_Ret.setSuccess(false);
-                    return v_Ret;
-                }
+                    v_RetryCount--;
+                } while ( !v_Ret.isSuccess() && v_RetryCount >= 0 );
                 
                 // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
                 v_Ret = waitThreads(v_Node ,v_Ret);
@@ -1218,138 +1236,144 @@ public final class XSQLGroup
         }
         else
         {
-            try
+            int v_RetryCount = v_Node.getRetryCount();
+            do
             {
-                boolean v_ExecRet = false;
-                int     v_RCount  = 0;
-                
-                this.logExecuteBefore(v_Node ,io_Params ,v_NodeIndex);
-                
-                if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_Node.getType()) )
+                try
                 {
-                    List<Object> v_CollectionParam = getCollectionToQueryOrDB(v_Node ,io_Params);
+                    boolean v_ExecRet = false;
+                    int     v_RCount  = 0;
                     
-                    if ( !Help.isNull(v_CollectionParam) )
+                    this.logExecuteBefore(v_Node ,io_Params ,v_NodeIndex);
+                    
+                    if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_Node.getType()) )
                     {
-                        if ( v_Node.isFreeConnection() )
+                        List<Object> v_CollectionParam = getCollectionToQueryOrDB(v_Node ,io_Params);
+                        
+                        if ( !Help.isNull(v_CollectionParam) )
                         {
-                            v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params));
+                            if ( v_Node.isFreeConnection() )
+                            {
+                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params));
+                            }
+                            else
+                            {
+                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params) ,this.getConnection(v_Node ,io_DSGConns));
+                            }
+                            
+                            io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
+                            v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_RCount);
                         }
                         else
                         {
-                            v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params) ,this.getConnection(v_Node ,io_DSGConns));
+                            v_RCount = 1; // 防止被回滚 v_Node.isNoUpdateRollbacks();
+                        }
+                        
+                        // 2017-12-22 Add 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作
+                        if ( v_RCount <= 0 && v_Node.isNoUpdateRollbacks() )
+                        {
+                            v_ExecRet = false;
+                            this.rollbacks(io_DSGConns);
+                        }
+                        else
+                        {
+                            v_ExecRet = true;
+                        }
+                    }
+                    else if ( XSQLNode.$Type_ExecuteUpdate.equals(v_Node.getType()) )
+                    {
+                        if ( Help.isNull(io_Params) )
+                        {
+                            if ( v_Node.isFreeConnection() )
+                            {
+                                v_RCount = v_Node.getSql().executeUpdate();
+                            }
+                            else
+                            {
+                                v_RCount = v_Node.getSql().executeUpdate(this.getConnection(v_Node ,io_DSGConns));
+                            }
+                        }
+                        else
+                        {
+                            if ( v_Node.isFreeConnection() )
+                            {
+                                v_RCount = v_Node.getSql().executeUpdate(io_Params);
+                            }
+                            else
+                            {
+                                v_RCount = v_Node.getSql().executeUpdate(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                            }
                         }
                         
                         io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
                         v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_RCount);
-                    }
-                    else
-                    {
-                        v_RCount = 1; // 防止被回滚 v_Node.isNoUpdateRollbacks();
-                    }
-                    
-                    // 2017-12-22 Add 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作
-                    if ( v_RCount <= 0 && v_Node.isNoUpdateRollbacks() )
-                    {
-                        v_ExecRet = false;
-                        this.rollbacks(io_DSGConns);
-                    }
-                    else
-                    {
-                        v_ExecRet = true;
-                    }
-                }
-                else if ( XSQLNode.$Type_ExecuteUpdate.equals(v_Node.getType()) )
-                {
-                    if ( Help.isNull(io_Params) )
-                    {
-                        if ( v_Node.isFreeConnection() )
+                        
+                        // 2017-12-22 Add 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作
+                        if ( v_RCount <= 0 && v_Node.isNoUpdateRollbacks() )
                         {
-                            v_RCount = v_Node.getSql().executeUpdate();
+                            v_ExecRet = false;
+                            this.rollbacks(io_DSGConns);
                         }
                         else
                         {
-                            v_RCount = v_Node.getSql().executeUpdate(this.getConnection(v_Node ,io_DSGConns));
+                            v_ExecRet = true;
                         }
                     }
-                    else
+                    else if ( XSQLNode.$Type_Execute.equals(v_Node.getType()) )
                     {
-                        if ( v_Node.isFreeConnection() )
+                        if ( Help.isNull(io_Params) )
                         {
-                            v_RCount = v_Node.getSql().executeUpdate(io_Params);
+                            v_ExecRet = v_Node.getSql().execute();
                         }
                         else
                         {
-                            v_RCount = v_Node.getSql().executeUpdate(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                            v_ExecRet = v_Node.getSql().execute(io_Params);
                         }
                     }
+                    else 
+                    {
+                        // $Type_ExecuteJava
+                        v_ExecRet = v_Node.executeJava(new XSQLGroupControl(this ,io_DSGConns ,v_Ret.getExecSumCount()) ,io_Params ,v_Ret.getReturns());
+                    }
                     
-                    io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
-                    v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_RCount);
+                    this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
                     
-                    // 2017-12-22 Add 当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作
-                    if ( v_RCount <= 0 && v_Node.isNoUpdateRollbacks() )
+                    if ( v_ExecRet )
                     {
-                        v_ExecRet = false;
-                        this.rollbacks(io_DSGConns);
-                    }
-                    else
-                    {
-                        v_ExecRet = true;
-                    }
-                }
-                else if ( XSQLNode.$Type_Execute.equals(v_Node.getType()) )
-                {
-                    if ( Help.isNull(io_Params) )
-                    {
-                        v_ExecRet = v_Node.getSql().execute();
-                    }
-                    else
-                    {
-                        v_ExecRet = v_Node.getSql().execute(io_Params);
-                    }
-                }
-                else 
-                {
-                    // $Type_ExecuteJava
-                    v_ExecRet = v_Node.executeJava(new XSQLGroupControl(this ,io_DSGConns ,v_Ret.getExecSumCount()) ,io_Params ,v_Ret.getReturns());
-                }
-                
-                this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
-                
-                if ( v_ExecRet )
-                {
-                    // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
-                    v_Ret = waitThreads(v_Node ,v_Ret);
-                    if ( v_Ret.isSuccess() )
-                    {
-                        // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
-                        if ( v_Node.isAfterCommit() )
+                        // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
+                        v_Ret = waitThreads(v_Node ,v_Ret);
+                        if ( v_Ret.isSuccess() )
                         {
-                            this.commits(io_DSGConns ,v_Ret.getExecSumCount());
+                            // 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作
+                            if ( v_Node.isAfterCommit() )
+                            {
+                                this.commits(io_DSGConns ,v_Ret.getExecSumCount());
+                            }
+                            
+                            v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
+                            
+                            // 继续向后击鼓传花
+                            return this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
                         }
-                        
-                        v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
-                        
-                        // 继续向后击鼓传花
-                        return this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
+                    }
+                    else
+                    {
+                        v_Ret.setExceptionNode(v_NodeIndex);
+                        v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
+                        v_Ret.setSuccess(false);
                     }
                 }
-                else
+                catch (Exception exce)
                 {
                     v_Ret.setExceptionNode(v_NodeIndex);
                     v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
+                    v_Ret.setException(    exce);
                     v_Ret.setSuccess(false);
+                    return v_Ret;
                 }
-            }
-            catch (Exception exce)
-            {
-                v_Ret.setExceptionNode(v_NodeIndex);
-                v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
-                v_Ret.setException(    exce);
-                v_Ret.setSuccess(false);
-                return v_Ret;
-            }
+                
+                v_RetryCount--;
+            } while ( !v_Ret.isSuccess() && v_RetryCount >= 0 );
         }
         
         return v_Ret;
