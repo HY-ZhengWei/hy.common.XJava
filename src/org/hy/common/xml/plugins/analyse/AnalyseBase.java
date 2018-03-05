@@ -1639,6 +1639,148 @@ public class AnalyseBase
     
     
     
+    /**
+     * 功能1：本机数据库连接池信息
+     * 功能2：集群数据库连接池信息
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-05
+     * @version     v1.0
+     *
+     * @param  i_BasePath       服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ReLoadPath     重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject?DBG=Y
+     * @param  i_Cluster        是否为集群
+     * @return
+     */
+    public String analyseDataSourceGroup(String i_BasePath ,String i_ReLoadPath ,boolean i_Cluster)
+    {
+        StringBuilder   v_Buffer  = new StringBuilder();
+        int             v_Index   = 0;
+        String          v_Content = this.getTemplateShowDSGContent();
+        AnalyseDSGTotal v_Total   = null;
+        
+        // 本机统计
+        if ( !i_Cluster )
+        {
+            v_Total = this.analyseDataSourceGroup_Total();
+        }
+        // 集群统计
+        else
+        {
+            List<ClientSocket> v_Servers = Cluster.getClusters();
+            v_Total = new AnalyseDSGTotal("合计");
+            
+            if ( !Help.isNull(v_Servers) )
+            {
+                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDataSourceGroup_Total");
+                
+                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                {
+                    CommunicationResponse v_ResponseData = v_Item.getValue();
+                    
+                    if ( v_ResponseData.getResult() == 0 )
+                    {
+                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseDSGTotal )
+                        {
+                            AnalyseDSGTotal v_TempTotal = (AnalyseDSGTotal)v_ResponseData.getData();
+                            
+                            if ( !Help.isNull(v_TempTotal.getReports()) )
+                            {
+                                for (DataSourceGroupReport v_Report : v_TempTotal.getReports().values())
+                                {
+                                    DataSourceGroupReport v_TR = v_Total.getReports().get(v_Report.getDsgID());
+                                    
+                                    if ( v_TR == null )
+                                    {
+                                        v_Total.getReports().put(v_Report.getDsgID() ,v_Report);
+                                    }
+                                    else
+                                    {
+                                        if ( v_TR.getDbProductType().indexOf(v_Report.getDbProductType()) < 0 )
+                                        {
+                                            // 不同数据库类型就拼接
+                                            String v_DBPType = v_TR.getDbProductType();
+                                            if ( !Help.isNull(v_DBPType) )
+                                            {
+                                                v_DBPType += "<br>";
+                                            }
+                                            v_TR.setDbProductType(v_DBPType + v_Report.getDbProductType());
+                                        }
+                                        
+                                        if ( "异常".equals(v_Report.getDsgStatus()) )
+                                        {
+                                            String v_DsgStatus = v_TR.getDsgStatus();
+                                            if ( !Help.isNull(v_DsgStatus) )
+                                            {
+                                                v_DsgStatus += "<br>";
+                                            }
+                                            v_TR.setDsgStatus(v_DsgStatus + "<font color='red'>异常：</font>" + v_Item.getKey().getHostName());
+                                        }
+                                        
+                                        v_TR.setConnActiveCount(v_TR.getConnActiveCount() + v_Report.getConnActiveCount());          // 合计值
+                                        v_TR.setConnMaxUseCount(Math.max(v_TR.getConnMaxUseCount() ,v_Report.getConnMaxUseCount())); // 最大峰值
+                                        v_TR.setDataSourcesSize((v_TR.getDataSourcesSize() + v_Report.getDataSourcesSize()) / 2);    // 平均值
+                                        v_TR.setConnLastTime(v_TR.getConnLastTime().compareTo(v_Report.getConnLastTime()) >= 0 ? v_TR.getConnLastTime() : v_Report.getConnLastTime());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        Help.toSort(v_Total.getReports());
+        
+        for (DataSourceGroupReport v_Report : v_Total.getReports().values())
+        {
+            Map<String ,String> v_RKey = new HashMap<String ,String>();
+            
+            v_RKey.put(":No"              ,String.valueOf(++v_Index));
+            v_RKey.put(":DSGID"           ,v_Report.getDsgID());
+            v_RKey.put(":DBProductType"   ,v_Report.getDbProductType());
+            v_RKey.put(":DataSourcesSize" ,v_Report.getDataSourcesSize() + "");
+            v_RKey.put(":ConnActiveCount" ,v_Report.getConnActiveCount() + "");
+            v_RKey.put(":ConnMaxUseCount" ,v_Report.getConnMaxUseCount() + "");
+            v_RKey.put(":ConnLastTime"    ,v_Report.getConnLastTime());
+            v_RKey.put(":DSGStatus"       ,v_Report.getDsgStatus());
+            
+            v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
+        }
+        
+        String v_GotoTitle = StringHelp.lpad("" ,4 ,"&nbsp;");
+        if ( i_Cluster )
+        {
+            v_GotoTitle += "<a href='analyseObject?DBG=Y' style='color:#AA66CC'>查看本机</a>";
+        }
+        else
+        {
+            v_GotoTitle += "<a href='analyseObject?DBG=Y&cluster=Y' style='color:#AA66CC'>查看集群</a>";
+        }
+        
+        return StringHelp.replaceAll(this.getTemplateShowDSG()
+                                    ,new String[]{":GotoTitle" ,":Title"            ,":HttpBasePath" ,":Content"}
+                                    ,new String[]{v_GotoTitle  ,"数据库连接池使用情况" ,i_BasePath      ,v_Buffer.toString()});
+    }
+    
+    
+    
+    /**
+     * 获取数据库连接池信息
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-05
+     * @version     v1.0
+     *
+     * @return
+     */
+    public AnalyseDSGTotal analyseDataSourceGroup_Total()
+    {
+        return new AnalyseDSGTotal();
+    }
+    
+    
+    
     private String getTemplateLogon()
     {
         return this.getTemplateContent("template.login.html");
@@ -1754,6 +1896,20 @@ public class AnalyseBase
     private String getTemplateShowJobContent()
     {
         return this.getTemplateContent("template.showJobContent.html");
+    }
+    
+    
+    
+    private String getTemplateShowDSG()
+    {
+        return this.getTemplateContent("template.showDSG.html");
+    }
+    
+    
+    
+    private String getTemplateShowDSGContent()
+    {
+        return this.getTemplateContent("template.showDSGContent.html");
     }
     
     

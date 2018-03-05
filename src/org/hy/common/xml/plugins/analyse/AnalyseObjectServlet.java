@@ -52,6 +52,9 @@ import org.hy.common.xml.XJava;
  * 功能12：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y&cluster=Y
  * 
  * 功能13：本机定时任务运行情况          http://IP:Port/WebService/../analyseObject?Job=Y
+ * 
+ * 功能15：本机线程池运行情况             http://IP:Port/WebService/../analyseObject?DSG=Y
+ * 功能16：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?DSG=Y&cluster=Y
  *
  * @author      ZhengWei(HY)
  * @createDate  2015-12-16
@@ -134,10 +137,15 @@ public class AnalyseObjectServlet extends HttpServlet
         String v_Create     = i_Request.getParameter("XSQLCreate");
         String v_ThreadPool = i_Request.getParameter("ThreadPool");
         String v_Job        = i_Request.getParameter("Job");
+        String v_DSG        = i_Request.getParameter("DSG");
         
         if ( Help.isNull(v_XID) )
         {
-            if ( !Help.isNull(v_Job) )
+            if ( !Help.isNull(v_DSG) )
+            {
+                i_Response.getWriter().println(this.analyse.analyseDataSourceGroup(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
+            }
+            else if ( !Help.isNull(v_Job) )
             {
                 i_Response.getWriter().println(this.analyse.analyseJob(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
             }

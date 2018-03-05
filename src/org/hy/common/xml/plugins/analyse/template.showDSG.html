@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>:Title</title>
+<style type="text/css"> 
+html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
+.userInfoModify_logininfobody{ width:100%;height:100%;overflow-y:scroll;overflow-x:auto;}
+.userInfoModify_logininfo{ width:1200px;margin:0 auto;}
+.userInfoModify_logininfo1{ width:1200px;margin:0 auto; }
+.userInfoModify_labeTag,.userInfoModify_DSGID_Title,.userInfoModify_DBProductType_Title,.userInfoModify_DataSourcesSize_Title,.userInfoModify_ConnActiveCount_Title,.userInfoModify_ConnMaxUseCount_Title,.userInfoModify_ConnLastTime_Title,.userInfoModify_DSGStatus_Title{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px; background-color:#D5DDF6;}
+.userInfoModify_labeTag1,.userInfoModify_DSGID,.userInfoModify_DBProductType,.userInfoModify_DataSourcesSize,.userInfoModify_ConnActiveCount,.userInfoModify_ConnMaxUseCount,.userInfoModify_ConnLastTime,.userInfoModify_DSGStatus{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
+.userInfoModify_labeTag2,.userInfoModify_DSGID_Other,.userInfoModify_DBProductType_Other,.userInfoModify_DataSourcesSize_Other,.userInfoModify_ConnActiveCount_Other,.userInfoModify_ConnMaxUseCount_Other,.userInfoModify_ConnLastTime_Other,.userInfoModify_DSGStatus_Other{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;border:#97B0F8 solid 0px;}
+
+.userInfoModify_clearTag {clear:both;height:36px;margin-top:0px;position:absolute;z-index:2008;} 
+.userInfoModify_clearTag1 {clear:both;height:36px;margin-top:0px;} 
+.userInfoModify_labeTag               { width:40px;  text-align:center; border:#97B0F8 solid 1px; } 
+.userInfoModify_DSGID_Title           { width:280px; vertical-align:middle;text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
+.userInfoModify_DBProductType_Title   { width:180px; text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_DataSourcesSize_Title { width:90px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_ConnActiveCount_Title { width:90px;  text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_ConnMaxUseCount_Title { width:90px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_ConnLastTime_Title    { width:135px; text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_DSGStatus_Title       { width:180px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
+
+
+.userInfoModify_labeTag1        { width:40px;  text-align:center; border:#97B0F8 solid 1px;  } 
+.userInfoModify_DSGID           { width:280px; text-align:left;   border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
+.userInfoModify_DBProductType   { width:180px; text-align:center; border:#97B0F8 solid 1px;} 
+.userInfoModify_DataSourcesSize { width:90px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_ConnActiveCount { width:90px;  text-align:center; border:#97B0F8 solid 1px;} 
+.userInfoModify_ConnMaxUseCount { width:90px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_ConnLastTime    { width:135px; text-align:center; border:#97B0F8 solid 1px;} 
+.userInfoModify_DSGStatus       { width:180px; text-align:left;   border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
+
+.userInfoModify_labeTag2              { width:40px;  text-align:center;} 
+.userInfoModify_DSGID_Other           { width:280px; text-align:left;}  
+.userInfoModify_DBProductType_Other   { width:180px; text-align:left;} 
+.userInfoModify_DataSourcesSize_Other { width:90px;  text-align:left;}
+.userInfoModify_ConnActiveCount_Other { width:90px;  text-align:left;}  
+.userInfoModify_ConnMaxUseCount_Other { width:90px;  text-align:left;} 
+.userInfoModify_ConnLastTime_Other    { width:135px; text-align:left;} 
+.userInfoModify_DSGStatus_Other       { width:180px; text-align:left;} 
+
+.cont_show_DSGID           { width:275px; margin-left:5px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_DBProductType   { width:175px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_DataSourcesSize { width:85px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_ConnActiveCount { width:85px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_ConnMaxUseCount { width:85px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_ConnLastTime    { width:130px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_DSGStatus       { width:175px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+
+
+a{ color:#669900; text-decoration:none; outline:none;}
+a:hover{color:#99CC00;text-decoration:none;}
+</style>
+
+<script type="text/javascript" src=":HttpBasePath/jsoneditor-3.1.2/jquery.min.js"></script>
+
+</head>
+<body> 
+		
+	   <div class="userInfoModify_logininfobody" >
+	   	   <div class="userInfoModify_logininfo"> 
+	      <div class="userInfoModify_clearTag">
+	            <div class="userInfoModify_labeTag">编号</div>
+	            <div class="userInfoModify_DSGID_Title">对象标识</div>
+	            <div class="userInfoModify_DBProductType_Title">数据库类型</div>
+	            <div class="userInfoModify_DataSourcesSize_Title">主备连接池数</div>
+	            <div class="userInfoModify_ConnActiveCount_Title">连接活动数</div>
+	            <div class="userInfoModify_ConnMaxUseCount_Title">最大连接峰值</div>
+	            <div class="userInfoModify_ConnLastTime_Title">最后连接时间</div>
+	            <div class="userInfoModify_DSGStatus_Title">状态</div>
+	      </div> 
+		 
+	   </div> 
+	   
+	   		<div id="info_fill" class="userInfoModify_logininfo1"> 
+	   		
+	   			<div class="userInfoModify_clearTag1">
+		            <div class="userInfoModify_labeTag2"></div>
+		            <div class="userInfoModify_DSGID_Other"></div>
+		            <div class="userInfoModify_DBProductType_Other"></div>
+		            <div class="userInfoModify_DataSourcesSize_Other"></div>
+		            <div class="userInfoModify_ConnActiveCount_Other"></div>
+		            <div class="userInfoModify_ConnMaxUseCount_Other"></div>
+		            <div class="userInfoModify_ConnLastTime_Other"></div>
+		            <div class="userInfoModify_DSGStatus_Other"></div>
+	     	    </div> 
+	   		
+	    		:Content 
+	    		
+	    		<div class="userInfoModify_clearTag1">
+		            <div class="userInfoModify_labeTag2"></div>
+		            <div class="userInfoModify_DSGID_Other"></div>
+		            <div class="userInfoModify_DBProductType_Other"></div>
+		            <div class="userInfoModify_DataSourcesSize_Other"></div>
+		            <div class="userInfoModify_ConnActiveCount_Other"></div>
+		            <div class="userInfoModify_ConnMaxUseCount_Other"></div>
+		            <div class="userInfoModify_ConnLastTime_Other"></div>
+		            <div class="userInfoModify_DSGStatus_Other"></div>
+	     	    </div>
+	   		</div>
+	   		
+	   </div>
+	   
+</body>
+</html>
