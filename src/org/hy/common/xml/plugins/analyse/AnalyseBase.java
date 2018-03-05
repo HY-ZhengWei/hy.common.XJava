@@ -347,11 +347,11 @@ public class AnalyseBase
         v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;");
         if ( i_Cluster )
         {
-            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset' style='color:#AA66CC'>重置统计</a>";
+            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset&cluster=Y&sameTime=Y' style='color:#AA66CC'>集群重置</a>";
         }
         else
         {
-            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset&cluster=Y&sameTime=Y' style='color:#AA66CC'>集群重置</a>";
+            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset' style='color:#AA66CC'>重置统计</a>";
         }
         
         return StringHelp.replaceAll(this.getTemplateShowTotal()
@@ -510,11 +510,11 @@ public class AnalyseBase
         v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;");
         if ( i_Cluster )
         {
-            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal' style='color:#AA66CC'>重置统计</a>";
+            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal&cluster=Y&sameTime=Y' style='color:#AA66CC'>集群重置</a>";
         }
         else
         {
-            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal&cluster=Y&sameTime=Y' style='color:#AA66CC'>集群重置</a>";
+            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal' style='color:#AA66CC'>重置统计</a>";
         }
         
         return StringHelp.replaceAll(this.getTemplateShowTotal()
@@ -1793,7 +1793,7 @@ public class AnalyseBase
                                         
                                         v_TR.setConnActiveCount(v_TR.getConnActiveCount() + v_Report.getConnActiveCount());          // 合计值
                                         v_TR.setConnMaxUseCount(Math.max(v_TR.getConnMaxUseCount() ,v_Report.getConnMaxUseCount())); // 最大峰值
-                                        v_TR.setDataSourcesSize((v_TR.getDataSourcesSize() + v_Report.getDataSourcesSize()) / 2);    // 平均值
+                                        v_TR.setDataSourcesSize((v_TR.getDataSourcesSize() + v_Report.getDataSourcesSize()));        // 平均值
                                         v_TR.setConnLastTime(v_TR.getConnLastTime().compareTo(v_Report.getConnLastTime()) >= 0 ? v_TR.getConnLastTime() : v_Report.getConnLastTime());
                                     }
                                 }
@@ -1817,7 +1817,7 @@ public class AnalyseBase
             v_RKey.put(":ConnActiveCount" ,v_Report.getConnActiveCount() + "");
             v_RKey.put(":ConnMaxUseCount" ,v_Report.getConnMaxUseCount() + "");
             v_RKey.put(":ConnLastTime"    ,v_Report.getConnLastTime());
-            v_RKey.put(":DSGStatus"       ,v_Report.getDsgStatus());
+            v_RKey.put(":DSGStatus"       ,Help.NVL(v_Report.getDsgStatus() ,"正常"));
             
             v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
         }
