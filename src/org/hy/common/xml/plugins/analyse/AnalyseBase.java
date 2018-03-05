@@ -65,6 +65,8 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *              v9.0  2018-02-27  添加：本机线程池运行情况监控
  *                                添加：集群线程池运行情况监控
  *              v10.0 2018-03-01  添加：本机定时任务运行情况。之前合并在 "查看前缀匹配的对象列表" 任务中
+ *              v11.0 2018-03-05  添加：本机数据库连接池组使用情况。之前合并在 "查看前缀匹配的对象列表" 任务中
+ *                                添加：集群数据库连接池组使用情况。之前合并在 "查看前缀匹配的对象列表" 任务中
  */
 @Xjava
 public class AnalyseBase
@@ -570,6 +572,32 @@ public class AnalyseBase
         }
         
         return v_Total;
+    }
+    
+    
+    
+    /**
+     * 重置数据库访问量的概要统计数据 
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-05
+     * @version     v1.0
+     *
+     * @return
+     */
+    public void analyseDB_RestTotal()
+    {
+        Map<String ,Object> v_Objs  = XJava.getObjects(XSQL.class);
+        
+        for (Map.Entry<String, Object> v_Item : v_Objs.entrySet())
+        {
+            if ( v_Item.getValue() != null )
+            {
+                XSQL v_XSQL = (XSQL)v_Item.getValue();
+                
+                v_XSQL.reset();
+            }
+        }
     }
     
     

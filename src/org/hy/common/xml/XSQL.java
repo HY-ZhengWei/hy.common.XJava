@@ -102,6 +102,7 @@ import org.hy.common.xml.event.BLobEvent;
  *                                     目前建议只用在查询SQL上，当多个相同数据的数据库（如主备数据库），
  *                                     在高并发的情况下，提高整体查询速度，查询锁、查询阻塞等问题均能得到一定的解决。
  *                                     在高并发的情况下，突破数据库可分配的连接数量，会话数量将翻数倍（与数据库个数有正相关的关系）。
+ *              v11.1 2018-03-05  添加：重置统计数据的功能。
  */
 /*
  * 游标类型的说明
@@ -269,6 +270,24 @@ public final class XSQL implements Comparable<XSQL>
         this.successTimeLen    = 0D;
         this.executeTime       = null;
         this.comment           = null;
+	}
+	
+	
+	
+	/**
+	 * 重置统计数据
+	 * 
+	 * @author      ZhengWei(HY)
+	 * @createDate  2018-03-05
+	 * @version     v1.0
+	 *
+	 */
+	public void reset()
+	{
+	    this.requestCount   = 0;
+	    this.successCount   = 0;
+	    this.successTimeLen = 0D;
+	    this.executeTime    = null;
 	}
 	
 	
