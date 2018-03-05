@@ -28,27 +28,15 @@
 	        
 	    	
 	    	<item>
-	            <name>数据库访问量（本机的）</name>
+	            <name>数据库访问量（支持集群）</name>
 				<comment>可查看异常的SQL</comment>
 				<value><![CDATA[ /analyseDB ]]></value>
 	        </item>
 	        
 	        <item>
-	            <name>数据库访问量（集群的）</name>
-				<comment>可查看异常的SQL</comment>
-				<value><![CDATA[ /analyseDB?cluster=Y ]]></value>
-	        </item>
-	        
-	        <item>
-	            <name>数据库组合SQL访问量（本机的）</name>
+	            <name>数据库组合SQL访问量（支持集群）</name>
 				<comment></comment>
 				<value><![CDATA[ /analyseDB?type=Group ]]></value>
-	        </item>
-	        
-	        <item>
-	            <name>数据库组合SQL访问量（集群的）</name>
-				<comment></comment>
-				<value><![CDATA[ /analyseDB?type=Group&cluster=Y ]]></value>
 	        </item>
 	        
 	        <item>
@@ -59,9 +47,9 @@
 	        
 	        
 	        <item>
-	            <name>查看数据库连接池组状态</name>
+	            <name>数据库连接池组使用情况（支持集群）</name>
 				<comment></comment>
-				<value><![CDATA[ /analyseObject?xid=DSG* ]]></value>
+				<value><![CDATA[ /analyseObject?DSG=Y ]]></value>
 	        </item>
 	        
 	        <item>
@@ -90,7 +78,7 @@
 	        
 	        <item>
 	            <name>重建数据库对象</name>
-				<comment><![CDATA[ <font color='red'>危险！对象存在时，会先删除后创建。</font> ]]></comment>
+				<comment><![CDATA[ <font color='red'>危险！</font>对象存在时，会先删除后创建 ]]></comment>
 				<value><![CDATA[ /analyseObject?XSQLCreate=Y ]]></value>
 	        </item>
 	        

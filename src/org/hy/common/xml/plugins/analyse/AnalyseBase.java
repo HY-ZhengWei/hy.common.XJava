@@ -1759,8 +1759,8 @@ public class AnalyseBase
         }
         
         return StringHelp.replaceAll(this.getTemplateShowDSG()
-                                    ,new String[]{":GotoTitle" ,":Title"            ,":HttpBasePath" ,":Content"}
-                                    ,new String[]{v_GotoTitle  ,"数据库连接池使用情况" ,i_BasePath      ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle" ,":Title"              ,":HttpBasePath" ,":Content"}
+                                    ,new String[]{v_GotoTitle  ,"数据库连接池组使用情况" ,i_BasePath      ,v_Buffer.toString()});
     }
     
     
