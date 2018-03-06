@@ -761,7 +761,7 @@ public final class XSQLGroup
                 }
                 
                 v_RetryCount--;
-            } while ( !v_Ret.isSuccess() && v_RetryCount >= 0 );
+            } while ( !v_Ret.isSuccess() && v_RetryCount > 0 );
             if ( !v_Ret.isSuccess() ) return v_Ret;
         }
         
@@ -920,7 +920,7 @@ public final class XSQLGroup
                     }
                     
                     v_RetryCount--;
-                } while ( !v_Ret.isSuccess() && v_RetryCount >= 0 );
+                } while ( !v_Ret.isSuccess() && v_RetryCount > 0 );
                 if ( !v_Ret.isSuccess() ) return v_Ret;
                 
                 // 查询并返回：返回结果集，控制其后节点执行：返回结果集的同时，还将控制其后XSQL节点的执行次数。ZhengWei(HY) Add 2017-05-17
@@ -1208,7 +1208,7 @@ public final class XSQLGroup
                     }
                     
                     v_RetryCount--;
-                } while ( !v_Ret.isSuccess() && v_RetryCount >= 0 );
+                } while ( !v_Ret.isSuccess() && v_RetryCount > 0 );
                 if ( !v_Ret.isSuccess() ) return v_Ret;
                 
                 // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
@@ -1373,7 +1373,7 @@ public final class XSQLGroup
                 }
                 
                 v_RetryCount--;
-            } while ( !v_Ret.isSuccess() && v_RetryCount >= 0 );
+            } while ( !v_Ret.isSuccess() && v_RetryCount > 0 );
             if ( !v_Ret.isSuccess() ) return v_Ret;
         }
         
