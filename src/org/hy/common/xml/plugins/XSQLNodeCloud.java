@@ -41,6 +41,13 @@ public class XSQLNodeCloud
     
     
     
+    public XSQLNodeCloud(String i_HostName ,int i_Port)
+    {
+        this(new ClientSocket(i_HostName ,i_Port));
+    }
+    
+    
+    
     public XSQLNodeCloud(ClientSocket i_Client)
     {
         this.client = i_Client;
