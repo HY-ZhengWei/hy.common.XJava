@@ -622,6 +622,8 @@ public final class XSQLGroup
             int v_RetryCount = v_Node.getRetryCount();
             do
             {
+                v_Ret.setSuccess(true);
+                
                 try
                 {
                     boolean v_ExecRet = false;
@@ -843,6 +845,8 @@ public final class XSQLGroup
                 int v_RetryCount = v_Node.getRetryCount();
                 do
                 {
+                    v_Ret.setSuccess(true);
+                    
                     try
                     {
                         this.logExecuteBefore(v_Node ,io_Params ,v_NodeIndex);
@@ -1184,6 +1188,8 @@ public final class XSQLGroup
                 int v_RetryCount = v_Node.getRetryCount();
                 do
                 {
+                    v_Ret.setSuccess(true);
+                    
                     try
                     {
                         this.logExecuteBefore(v_Node ,io_Params ,v_NodeIndex);
@@ -1240,6 +1246,8 @@ public final class XSQLGroup
             int v_RetryCount = v_Node.getRetryCount();
             do
             {
+                v_Ret.setSuccess(true);
+                
                 try
                 {
                     boolean v_ExecRet = false;
