@@ -12,3 +12,12 @@ cp xjava.jar ..
 rm xjava.jar
 cd ..
 
+
+
+
+
+cd src
+jar cvfm xjava-sources.jar MANIFEST.MF META-INF org 
+cp xjava-sources.jar ..
+rm xjava-sources.jar
+cd ..
