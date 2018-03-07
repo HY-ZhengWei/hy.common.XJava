@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd bin
+cd ./bin
 
 
 rm -R ./org/hy/common/xml/junit
@@ -16,7 +16,7 @@ cd ..
 
 
 
-cd src
+cd ./src
 jar cvfm xjava-sources.jar MANIFEST.MF META-INF org 
 cp xjava-sources.jar ..
 rm xjava-sources.jar
