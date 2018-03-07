@@ -1662,7 +1662,7 @@ public class AnalyseBase
             }
         }
         
-        Help.toSort(v_Total.getReports() ,"nextTime" ,"lastTime" ,"intervalType" ,"intervalLen" ,"jobID");
+        Help.toSort(v_Total.getReports() ,"nextTime" ,"lastTime" ,"intervalType" ,"intervalLen NUMASC" ,"jobID");
         
         for (JobReport v_JReport : v_Total.getReports())
         {

@@ -1,5 +1,5 @@
-Manifest-Version: 3.9.11
+Manifest-Version: 3.9.12
 Created-By: HY.ZhengWei@qq.com  2011
-Specification-Version: 3.9.11  2018-03-06
+Specification-Version: 3.9.12  2018-03-07
 SourceCode: https://github.com/HY-ZhengWei/XJava
 Build-JDK: 1.6
