@@ -1,6 +1,7 @@
 package org.hy.common.xml.plugins.analyse;
 
 import org.hy.common.Date;
+import org.hy.common.thread.TaskPool;
 import org.hy.common.xml.SerializableDef;
 
 
@@ -38,6 +39,9 @@ public class ClusterReport extends SerializableDef
     /** 线程总数 */
     private int    threadCount;
     
+    /** 队列等待的任务数 */
+    private int    queueCount;
+    
     /** 服务器情况（正常、异常） */
     private String serverStatus;
     
@@ -45,12 +49,13 @@ public class ClusterReport extends SerializableDef
     
     public ClusterReport()
     {
-        this.startTime    = "";
+        this.hostName     = "";
         this.maxMemory    = 0;
         this.totalMemory  = 0;
         this.freeMemory   = 0;
         this.threadCount  = 0;
-        this.hostName     = "";
+        this.queueCount   = 0;
+        this.startTime    = "";
         this.serverStatus = "";
     }
     
@@ -68,6 +73,7 @@ public class ClusterReport extends SerializableDef
         this.totalMemory  = v_RunTime.totalMemory();
         this.freeMemory   = v_RunTime.freeMemory();
         this.threadCount  = v_PT.activeCount();
+        this.queueCount   = TaskPool.size();
         this.hostName     = "";
         this.serverStatus = "";
     }
@@ -182,6 +188,28 @@ public class ClusterReport extends SerializableDef
         this.threadCount = threadCount;
     }
 
+
+    
+    /**
+     * 获取：队列等待的任务数
+     */
+    public int getQueueCount()
+    {
+        return queueCount;
+    }
+
+
+    
+    /**
+     * 设置：队列等待的任务数
+     * 
+     * @param queueCount 
+     */
+    public void setQueueCount(int queueCount)
+    {
+        this.queueCount = queueCount;
+    }
+    
 
 
     /**

@@ -1400,6 +1400,7 @@ public class AnalyseBase
         int                  v_Index        = 0;
         String               v_Content      = this.getTemplateShowClusterContent();
         List<ClusterReport>  v_Clusters     = new ArrayList<ClusterReport>();
+        ClusterReport        v_Total        = new ClusterReport();
         
         if ( !Help.isNull(v_Servers) )
         {
@@ -1448,11 +1449,32 @@ public class AnalyseBase
             v_RKey.put(":TotalMemory"  ,StringHelp.getComputeUnit(v_CReport.getTotalMemory()));
             v_RKey.put(":FreeMemory"   ,StringHelp.getComputeUnit(v_CReport.getFreeMemory()));
             v_RKey.put(":ThreadCount"  ,v_CReport.getThreadCount() + "");
+            v_RKey.put(":QueueCount"   ,v_CReport.getQueueCount()  + "");
             v_RKey.put(":StartTime"    ,v_CReport.getStartTime());
             v_RKey.put(":ServerStatus" ,v_CReport.getServerStatus());
             
             v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
+            
+            v_Total.setMaxMemory(  v_Total.getMaxMemory()   + v_CReport.getMaxMemory());
+            v_Total.setTotalMemory(v_Total.getTotalMemory() + v_CReport.getTotalMemory());
+            v_Total.setFreeMemory( v_Total.getFreeMemory()  + v_CReport.getFreeMemory());
+            v_Total.setThreadCount(v_Total.getThreadCount() + v_CReport.getThreadCount());
+            v_Total.setQueueCount( v_Total.getQueueCount()  + v_CReport.getQueueCount());
         }
+        
+        Map<String ,String> v_RKey = new HashMap<String ,String>();
+        
+        v_RKey.put(":No"           ,String.valueOf(++v_Index));
+        v_RKey.put(":ServerName"   ,"合计");
+        v_RKey.put(":MaxMemory"    ,StringHelp.getComputeUnit(v_Total.getMaxMemory()));
+        v_RKey.put(":TotalMemory"  ,StringHelp.getComputeUnit(v_Total.getTotalMemory()));
+        v_RKey.put(":FreeMemory"   ,StringHelp.getComputeUnit(v_Total.getFreeMemory()));
+        v_RKey.put(":ThreadCount"  ,v_Total.getThreadCount() + "");
+        v_RKey.put(":QueueCount"   ,v_Total.getQueueCount()  + "");
+        v_RKey.put(":StartTime"    ,"-");
+        v_RKey.put(":ServerStatus" ,"-");
+        
+        v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
         
         String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseObject' style='color:#AA66CC'>查看XJava配置</a>";
         
