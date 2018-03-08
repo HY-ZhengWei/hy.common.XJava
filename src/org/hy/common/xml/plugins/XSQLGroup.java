@@ -620,7 +620,8 @@ public final class XSQLGroup
                 continue;
             }
             
-            int v_RetryCount = v_Node.getRetryCount();
+            int  v_RetryCount    = v_Node.getRetryCount();
+            long v_RetryInterval = v_Node.getRetryInterval();
             do
             {
                 if ( !v_Ret.isSuccess() )
@@ -629,12 +630,13 @@ public final class XSQLGroup
                     v_Ret.setSuccess(true);
                     try
                     {
-                        Thread.sleep(v_Node.getRetryInterval());
+                        Thread.sleep(v_RetryInterval);
                     }
                     catch (Exception exce)
                     {
                         // Nothing.
                     }
+                    v_RetryInterval = v_RetryInterval * 2;
                 }
                 
                 try
@@ -855,7 +857,8 @@ public final class XSQLGroup
             {
                 List<Object> v_QueryRet = null;
                 
-                int v_RetryCount = v_Node.getRetryCount();
+                int  v_RetryCount    = v_Node.getRetryCount();
+                long v_RetryInterval = v_Node.getRetryInterval();
                 do
                 {
                     if ( !v_Ret.isSuccess() )
@@ -864,12 +867,13 @@ public final class XSQLGroup
                         v_Ret.setSuccess(true);
                         try
                         {
-                            Thread.sleep(v_Node.getRetryInterval());
+                            Thread.sleep(v_RetryInterval);
                         }
                         catch (Exception exce)
                         {
                             // Nothing.
                         }
+                        v_RetryInterval = v_RetryInterval * 2;
                     }
                     
                     try
@@ -1209,8 +1213,9 @@ public final class XSQLGroup
             // 返回查询结果集的查询
             else
             {
-                Object v_QueryRet = null;
-                int v_RetryCount = v_Node.getRetryCount();
+                Object v_QueryRet      = null;
+                int    v_RetryCount    = v_Node.getRetryCount();
+                long   v_RetryInterval = v_Node.getRetryInterval();
                 do
                 {
                     if ( !v_Ret.isSuccess() )
@@ -1219,12 +1224,13 @@ public final class XSQLGroup
                         v_Ret.setSuccess(true);
                         try
                         {
-                            Thread.sleep(v_Node.getRetryInterval());
+                            Thread.sleep(v_RetryInterval);
                         }
                         catch (Exception exce)
                         {
                             // Nothing.
                         }
+                        v_RetryInterval = v_RetryInterval * 2;
                     }
                     
                     try
@@ -1280,7 +1286,8 @@ public final class XSQLGroup
         }
         else
         {
-            int v_RetryCount = v_Node.getRetryCount();
+            int  v_RetryCount    = v_Node.getRetryCount();
+            long v_RetryInterval = v_Node.getRetryInterval();
             do
             {
                 if ( !v_Ret.isSuccess() )
@@ -1289,12 +1296,13 @@ public final class XSQLGroup
                     v_Ret.setSuccess(true);
                     try
                     {
-                        Thread.sleep(v_Node.getRetryInterval());
+                        Thread.sleep(v_RetryInterval);
                     }
                     catch (Exception exce)
                     {
                         // Nothing.
                     }
+                    v_RetryInterval = v_RetryInterval * 2;
                 }
                 
                 try
