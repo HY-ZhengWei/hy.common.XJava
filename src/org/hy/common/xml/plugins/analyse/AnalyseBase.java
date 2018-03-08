@@ -1460,6 +1460,7 @@ public class AnalyseBase
             v_Total.setFreeMemory( v_Total.getFreeMemory()  + v_CReport.getFreeMemory());
             v_Total.setThreadCount(v_Total.getThreadCount() + v_CReport.getThreadCount());
             v_Total.setQueueCount( v_Total.getQueueCount()  + v_CReport.getQueueCount());
+            v_Total.setServerStatus("正常".equals(v_CReport.getServerStatus()) ? v_Total.getServerStatus() : v_CReport.getServerStatus());
         }
         
         Map<String ,String> v_RKey = new HashMap<String ,String>();
@@ -1472,7 +1473,7 @@ public class AnalyseBase
         v_RKey.put(":ThreadCount"  ,v_Total.getThreadCount() + "");
         v_RKey.put(":QueueCount"   ,v_Total.getQueueCount()  + "");
         v_RKey.put(":StartTime"    ,"-");
-        v_RKey.put(":ServerStatus" ,"-");
+        v_RKey.put(":ServerStatus" ,Help.NVL(v_Total.getServerStatus() ,"正常"));
         
         v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
         
