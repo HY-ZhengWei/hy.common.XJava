@@ -67,6 +67,7 @@ import com.greenpineyu.fel.context.FelContext;
  *              v12.1 2018-02-22  1.修复：云计算时，某台服务器异常后，修复"云等待"死等的问题。
  *                                2.添加：云计算异常时，尝试交给其它云服务计算。当重试多次(this.cloudRetryCount)云计算仍然异常时，放弃计算。
  *              v13.0 2018-03-05  1.添加：执行异常时重试XSQLNode.retryCount功能。
+ *              v13.1 2018-03-08  1.添加：执行异常时重试等待的时间间隔XSQLNode.retryInterval功能。
  */
 public class XSQLNode
 {
@@ -295,6 +296,15 @@ public class XSQLNode
     private int                          retryCount;
     
     /**
+     * 异常重试的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.异常重试次数 属性配合使用。
+     * 
+     * 默认为5 * 1000 = 5秒
+     */
+    private long                         retryInterval;
+    
+    /**
      * 云计算服务器的列表。用英文逗号,分隔（可以有空格、回车符、制表符）。如下形式：IP1:Port1 ,IP2:Port2 ,IP3:Port3。
      * 
      * 与 $Type_ExecuteJava、xjavaID、methodName配合使用。
@@ -455,6 +465,8 @@ public class XSQLNode
         this.returnQuery        = false;
         this.queryReturnID      = null;
         this.sqlGroup           = null;
+        this.retryCount         = 0;
+        this.retryInterval      = 5 * 1000;
         this.cloudServers       = null;
         this.cloudServersList   = null;
         this.cloudRetryCount    = 3;
@@ -1008,6 +1020,37 @@ public class XSQLNode
     
 
     
+    
+    /**
+     * 获取：异常重试的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.异常重试次数 属性配合使用。
+     * 
+     * 默认为5 * 1000 = 5秒
+     */
+    public long getRetryInterval()
+    {
+        return retryInterval;
+    }
+    
+
+    
+    /**
+     * 设置：异常重试的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.异常重试次数 属性配合使用。
+     * 
+     * 默认为5 * 1000 = 5秒
+     * 
+     * @param retryInterval 
+     */
+    public void setRetryInterval(long retryInterval)
+    {
+        this.retryInterval = retryInterval;
+    }
+    
+
+
     /**
      * 获取：* 异常重试次数。执行SQL语句，因争抢锁等原因异常时，尝试重新执行。当重试多次仍然异常时，放弃执行。
      * 

@@ -136,6 +136,7 @@ import org.hy.common.xml.XSQLBigData;
  *                                       在所有lastOnce标记的XSQL节点执行之前执行此等待操作。
  *              v20.0 2018-03-05  1.添加：重置统计数据的功能。
  *                                2.添加：执行异常时重试XSQLNode.retryCount功能。
+ *              v20.1 2018-03-08  1.添加：执行异常时重试等待的时间间隔XSQLNode.retryInterval功能。
  */
 public final class XSQLGroup
 {
@@ -622,7 +623,19 @@ public final class XSQLGroup
             int v_RetryCount = v_Node.getRetryCount();
             do
             {
-                v_Ret.setSuccess(true);
+                if ( !v_Ret.isSuccess() )
+                {
+                    // 异常时重试等待的时间间隔
+                    v_Ret.setSuccess(true);
+                    try
+                    {
+                        Thread.sleep(v_Node.getRetryInterval());
+                    }
+                    catch (Exception exce)
+                    {
+                        // Nothing.
+                    }
+                }
                 
                 try
                 {
@@ -845,7 +858,19 @@ public final class XSQLGroup
                 int v_RetryCount = v_Node.getRetryCount();
                 do
                 {
-                    v_Ret.setSuccess(true);
+                    if ( !v_Ret.isSuccess() )
+                    {
+                        // 异常时重试等待的时间间隔
+                        v_Ret.setSuccess(true);
+                        try
+                        {
+                            Thread.sleep(v_Node.getRetryInterval());
+                        }
+                        catch (Exception exce)
+                        {
+                            // Nothing.
+                        }
+                    }
                     
                     try
                     {
@@ -1188,7 +1213,19 @@ public final class XSQLGroup
                 int v_RetryCount = v_Node.getRetryCount();
                 do
                 {
-                    v_Ret.setSuccess(true);
+                    if ( !v_Ret.isSuccess() )
+                    {
+                        // 异常时重试等待的时间间隔
+                        v_Ret.setSuccess(true);
+                        try
+                        {
+                            Thread.sleep(v_Node.getRetryInterval());
+                        }
+                        catch (Exception exce)
+                        {
+                            // Nothing.
+                        }
+                    }
                     
                     try
                     {
@@ -1246,7 +1283,19 @@ public final class XSQLGroup
             int v_RetryCount = v_Node.getRetryCount();
             do
             {
-                v_Ret.setSuccess(true);
+                if ( !v_Ret.isSuccess() )
+                {
+                    // 异常时重试等待的时间间隔
+                    v_Ret.setSuccess(true);
+                    try
+                    {
+                        Thread.sleep(v_Node.getRetryInterval());
+                    }
+                    catch (Exception exce)
+                    {
+                        // Nothing.
+                    }
+                }
                 
                 try
                 {
