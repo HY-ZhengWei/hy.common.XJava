@@ -1442,11 +1442,17 @@ public class AnalyseBase
         for (ClusterReport v_CReport : v_Clusters)
         {
             Map<String ,String> v_RKey = new HashMap<String ,String>();
+            String              v_TM   = StringHelp.getComputeUnit(v_CReport.getTotalMemory());
+            if ( 0.05 >= Help.division(v_CReport.getMaxMemory() - v_CReport.getTotalMemory() ,v_CReport.getMaxMemory()) )
+            {
+                // 当余量小于5%时，用红提示
+                v_TM = "<font color='red'>" + v_TM + "</font>";
+            }
             
             v_RKey.put(":No"           ,String.valueOf(++v_Index));
             v_RKey.put(":ServerName"   ,v_CReport.getHostName());
             v_RKey.put(":MaxMemory"    ,StringHelp.getComputeUnit(v_CReport.getMaxMemory()));
-            v_RKey.put(":TotalMemory"  ,StringHelp.getComputeUnit(v_CReport.getTotalMemory()));
+            v_RKey.put(":TotalMemory"  ,v_TM);
             v_RKey.put(":FreeMemory"   ,StringHelp.getComputeUnit(v_CReport.getFreeMemory()));
             v_RKey.put(":ThreadCount"  ,v_CReport.getThreadCount() + "");
             v_RKey.put(":QueueCount"   ,v_CReport.getQueueCount()  + "");
