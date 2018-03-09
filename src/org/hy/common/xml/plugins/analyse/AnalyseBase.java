@@ -1441,8 +1441,29 @@ public class AnalyseBase
         
         for (ClusterReport v_CReport : v_Clusters)
         {
-            Map<String ,String> v_RKey = new HashMap<String ,String>();
-            String              v_TM   = StringHelp.getComputeUnit(v_CReport.getTotalMemory());
+            Map<String ,String> v_RKey  = new HashMap<String ,String>();
+            String              v_OSCPU = "";
+            String              v_OSMem = "";
+            String              v_TM    = StringHelp.getComputeUnit(v_CReport.getTotalMemory());
+            
+            if ( v_CReport.getOsCPURate() >= 95 )
+            {
+                v_OSCPU = "<font color='red'>" + v_CReport.getOsCPURate() + "</font>";
+            }
+            else
+            {
+                v_OSCPU = "" + v_CReport.getOsCPURate();
+            }
+            
+            if ( v_CReport.getOsMemoryRate() >= 95 )
+            {
+                v_OSMem = "<font color='red'>" + v_CReport.getOsMemoryRate() + "</font>";
+            }
+            else
+            {
+                v_OSMem = "" + v_CReport.getOsMemoryRate();
+            }
+            
             if ( 0.05 >= Help.division(v_CReport.getMaxMemory() - v_CReport.getTotalMemory() ,v_CReport.getMaxMemory()) )
             {
                 // 当余量小于5%时，用红提示
@@ -1451,6 +1472,8 @@ public class AnalyseBase
             
             v_RKey.put(":No"           ,String.valueOf(++v_Index));
             v_RKey.put(":ServerName"   ,v_CReport.getHostName());
+            v_RKey.put(":OsCPURate"    ,v_OSCPU);
+            v_RKey.put(":OsMemoryRate" ,v_OSMem);
             v_RKey.put(":MaxMemory"    ,StringHelp.getComputeUnit(v_CReport.getMaxMemory()));
             v_RKey.put(":TotalMemory"  ,v_TM);
             v_RKey.put(":FreeMemory"   ,StringHelp.getComputeUnit(v_CReport.getFreeMemory()));
@@ -1473,6 +1496,8 @@ public class AnalyseBase
         
         v_RKey.put(":No"           ,String.valueOf(++v_Index));
         v_RKey.put(":ServerName"   ,"合计");
+        v_RKey.put(":OsCPURate"    ,"-");
+        v_RKey.put(":OsMemoryRate" ,"-");
         v_RKey.put(":MaxMemory"    ,StringHelp.getComputeUnit(v_Total.getMaxMemory()));
         v_RKey.put(":TotalMemory"  ,StringHelp.getComputeUnit(v_Total.getTotalMemory()));
         v_RKey.put(":FreeMemory"   ,StringHelp.getComputeUnit(v_Total.getFreeMemory()));

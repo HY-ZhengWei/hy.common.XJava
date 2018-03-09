@@ -1,8 +1,13 @@
 package org.hy.common.xml.plugins.analyse;
 
+import java.lang.management.ManagementFactory;
+
 import org.hy.common.Date;
+import org.hy.common.Help;
 import org.hy.common.thread.TaskPool;
 import org.hy.common.xml.SerializableDef;
+
+import com.sun.management.OperatingSystemMXBean;
 
 
 
@@ -27,13 +32,19 @@ public class ClusterReport extends SerializableDef
     /** 启动时间 */
     private String startTime;
     
-    /** 最大内存：Java虚拟机（这个进程）能构从操作系统那里挖到的最大的内存。JVM参数为：-Xmx */
+    /** 操作系统CPU使用率 */
+    private double osCPURate;
+    
+    /** 操作系统内存使用率 */
+    private double osMemoryRate;
+    
+    /** JVM最大内存：Java虚拟机（这个进程）能构从操作系统那里挖到的最大的内存。JVM参数为：-Xmx */
     private long   maxMemory;
     
-    /** 内存总量：Java虚拟机现在已经从操作系统那里挖过来的内存大小。JVM参数为：-Xms */
+    /** JVM内存总量：Java虚拟机现在已经从操作系统那里挖过来的内存大小。JVM参数为：-Xms */
     private long   totalMemory;
     
-    /** 空闲内存 */
+    /** JVM空闲内存 */
     private long   freeMemory;
     
     /** 线程总数 */
@@ -50,6 +61,8 @@ public class ClusterReport extends SerializableDef
     public ClusterReport()
     {
         this.hostName     = "";
+        this.osCPURate    = 0;
+        this.osMemoryRate = 0;
         this.maxMemory    = 0;
         this.totalMemory  = 0;
         this.freeMemory   = 0;
@@ -63,7 +76,8 @@ public class ClusterReport extends SerializableDef
     
     public ClusterReport(Date i_StartTime)
     {
-        Runtime v_RunTime = Runtime.getRuntime();
+        Runtime               v_RunTime = Runtime.getRuntime();
+        OperatingSystemMXBean v_OS      = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
         
         ThreadGroup v_PT  = null;
         for (v_PT = Thread.currentThread().getThreadGroup(); v_PT.getParent() != null; v_PT = v_PT.getParent());
@@ -74,12 +88,58 @@ public class ClusterReport extends SerializableDef
         this.freeMemory   = v_RunTime.freeMemory();
         this.threadCount  = v_PT.activeCount();
         this.queueCount   = TaskPool.size();
+        this.osCPURate    = Help.round(Help.multiply(v_OS.getSystemCpuLoad() ,100) ,2);
+        this.osMemoryRate = Help.round(Help.multiply(1 - Help.division(v_OS.getFreePhysicalMemorySize() ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
         this.hostName     = "";
         this.serverStatus = "";
     }
 
+    
+    
+    /**
+     * 获取：操作系统CPU使用率
+     */
+    public double getOsCPURate()
+    {
+        return osCPURate;
+    }
+
 
     
+    /**
+     * 获取：操作系统内存使用率
+     */
+    public double getOsMemoryRate()
+    {
+        return osMemoryRate;
+    }
+    
+    
+    
+    /**
+     * 设置：操作系统CPU使用率
+     * 
+     * @param osCPURate 
+     */
+    public void setOsCPURate(double osCPURate)
+    {
+        this.osCPURate = osCPURate;
+    }
+    
+
+    
+    /**
+     * 设置：操作系统内存使用率
+     * 
+     * @param osMemoryRate 
+     */
+    public void setOssMemoryRate(double osMemoryRate)
+    {
+        this.osMemoryRate = osMemoryRate;
+    }
+    
+    
+
     /**
      * 获取：启动时间
      */
@@ -91,7 +151,7 @@ public class ClusterReport extends SerializableDef
 
     
     /**
-     * 获取：最大内存：Java虚拟机（这个进程）能构从操作系统那里挖到的最大的内存。JVM参数为：-Xmx
+     * 获取：JVM最大内存：Java虚拟机（这个进程）能构从操作系统那里挖到的最大的内存。JVM参数为：-Xmx
      */
     public long getMaxMemory()
     {
@@ -101,7 +161,7 @@ public class ClusterReport extends SerializableDef
 
     
     /**
-     * 获取：内存总量：Java虚拟机现在已经从操作系统那里挖过来的内存大小。JVM参数为：-Xms
+     * 获取：JVM内存总量：Java虚拟机现在已经从操作系统那里挖过来的内存大小。JVM参数为：-Xms
      */
     public long getTotalMemory()
     {
@@ -111,7 +171,7 @@ public class ClusterReport extends SerializableDef
 
     
     /**
-     * 获取：空闲内存
+     * 获取：JVM空闲内存
      */
     public long getFreeMemory()
     {
@@ -133,7 +193,7 @@ public class ClusterReport extends SerializableDef
 
     
     /**
-     * 设置：最大内存：Java虚拟机（这个进程）能构从操作系统那里挖到的最大的内存。JVM参数为：-Xmx
+     * 设置：JVM最大内存：Java虚拟机（这个进程）能构从操作系统那里挖到的最大的内存。JVM参数为：-Xmx
      * 
      * @param maxMemory 
      */
@@ -145,7 +205,7 @@ public class ClusterReport extends SerializableDef
 
     
     /**
-     * 设置：内存总量：Java虚拟机现在已经从操作系统那里挖过来的内存大小。JVM参数为：-Xms
+     * 设置：JVM内存总量：Java虚拟机现在已经从操作系统那里挖过来的内存大小。JVM参数为：-Xms
      * 
      * @param totalMemory 
      */
@@ -157,7 +217,7 @@ public class ClusterReport extends SerializableDef
 
     
     /**
-     * 设置：空闲内存
+     * 设置：JVM空闲内存
      * 
      * @param freeMemory 
      */
