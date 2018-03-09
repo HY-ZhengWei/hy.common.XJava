@@ -1435,6 +1435,7 @@ public class AnalyseBase
         {
             v_Clusters.add(this.analyseCluster_Info());
             v_Clusters.get(0).setHostName("127.0.0.1");
+            v_Clusters.get(0).setServerStatus("正常");
         }
         
         Help.toSort(v_Clusters ,"startTime Desc" ,"hostName");
