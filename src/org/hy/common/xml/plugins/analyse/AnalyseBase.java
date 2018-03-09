@@ -1446,7 +1446,7 @@ public class AnalyseBase
             String              v_OSMem = "";
             String              v_TM    = StringHelp.getComputeUnit(v_CReport.getTotalMemory());
             
-            if ( v_CReport.getOsCPURate() >= 95 )
+            if ( v_CReport.getOsCPURate() >= 90 )
             {
                 v_OSCPU = "<font color='red'>" + v_CReport.getOsCPURate() + "</font>";
             }
@@ -1455,7 +1455,7 @@ public class AnalyseBase
                 v_OSCPU = "" + v_CReport.getOsCPURate();
             }
             
-            if ( v_CReport.getOsMemoryRate() >= 95 )
+            if ( v_CReport.getOsMemoryRate() >= 90 )
             {
                 v_OSMem = "<font color='red'>" + v_CReport.getOsMemoryRate() + "</font>";
             }
