@@ -48,7 +48,7 @@
 	        
 	        <item>
 	            <name>数据库连接池组使用情况（支持集群）</name>
-				<comment></comment>
+				<comment>数据库异常时，页面打开慢，请耐心等待</comment>
 				<value><![CDATA[ /analyseObject?DSG=Y ]]></value>
 	        </item>
 	        

@@ -39,6 +39,7 @@ import org.hy.common.StringHelp;
 import org.hy.common.TablePartitionRID;
 import org.hy.common.TreeMap;
 import org.hy.common.TreeNode;
+import org.hy.common.XJavaID;
 import org.hy.common.app.Param;
 import org.hy.common.xml.annotation.XRequest;
 import org.hy.common.xml.annotation.XType;
@@ -79,6 +80,7 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *              v1.9  2017-12-15  添加：@Xsql注解，XSQL、XSQLGroup的注解。用于 xml配置 + Java接口类(无须实现类)的组合实现持久层的功能。
  *              v1.10 2018-01-20  添加：@XRequest注解添加对secrets()属性的支持。用注解定义各个系统的接口级消息密钥。
  *              v1.11 2018-01-29  添加：对部分异常日志，添加更详细的说明。
+ *              v1.12 2018-03-09  添加：将配置在XML配置文件中的ID值，自动赋值给Java实例对象。须实现接口 org.hy.common.XJavaID 才有效。
  */
 public final class XJava
 {
@@ -1252,7 +1254,7 @@ public final class XJava
 	    
 	    TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(i_ID.trim() ,i_ID.trim());
         
-        v_TreeNode.setInfo(new XJavaObject(i_Object ,i_IsNew));
+        v_TreeNode.setInfo(new XJavaObject(i_ID.trim() ,i_Object ,i_IsNew));
         
         $XML_OBJECTS.put(v_TreeNode);
 	}
@@ -1420,7 +1422,7 @@ public final class XJava
                     
                     v_Obj = XSQLProxy.newProxy(v_ClassInfo.getClassObj());
                     
-                    v_TreeNode.setInfo(new XJavaObject(v_Obj ,v_AnnoID.isNew()));
+                    v_TreeNode.setInfo(new XJavaObject(v_ID ,v_Obj ,v_AnnoID.isNew()));
                     $XML_OBJECTS.put(v_TreeNode);
                 }
             }
@@ -1465,7 +1467,7 @@ public final class XJava
                         
                         v_Obj = v_ClassInfo.getClassObj().newInstance();
                         
-                        v_TreeNode.setInfo(new XJavaObject(v_Obj ,v_AnnoID.isNew()));
+                        v_TreeNode.setInfo(new XJavaObject(v_ID ,v_Obj ,v_AnnoID.isNew()));
                         $XML_OBJECTS.put(v_TreeNode);
                     }
                     catch (Exception exce)
@@ -2062,7 +2064,6 @@ public final class XJava
 	 * @return
 	 * @throws Exception 
 	 */
-	@SuppressWarnings("unchecked")
     private Object setInstance(Class<?> i_SuperClass ,Object io_SuperInstance ,Node i_SuperNode ,TreeNode<XJavaObject> i_SuperTreeNode) throws Exception
 	{
 		NodeList v_NodeList  = i_SuperNode.getChildNodes();
@@ -2289,7 +2290,7 @@ public final class XJava
 						
 						if ( "String".equalsIgnoreCase(v_Node.getNodeName()) )
 						{
-						    v_TreeNode.setInfo(new XJavaObject(v_AttrInstance));
+						    v_TreeNode.setInfo(new XJavaObject("" ,v_AttrInstance));
 						}
 					}
 					else
@@ -2640,7 +2641,7 @@ public final class XJava
 		// 标记有 id 的节点都已存入 $XML_OBJECTS 集合中，此时将 i_SuperInstance 实例化对象 setInfo() 节点中。
 		if ( io_SuperInstance != null )
 		{
-			if ( i_SuperTreeNode != null && i_SuperTreeNode.getNodeID() != null && !"".equals(i_SuperTreeNode.getNodeID().trim()) )
+			if ( i_SuperTreeNode != null && !Help.isNull(i_SuperTreeNode.getNodeID()) )
 			{
                 // 判断是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
                 String  v_IsNewValue = getNodeAttribute(i_SuperNode ,$XML_OBJECT_NEWOBJECT);
@@ -2651,7 +2652,7 @@ public final class XJava
                     v_IsNew = Boolean.parseBoolean(v_IsNewValue);
                 }
                     
-				i_SuperTreeNode.setInfo(new XJavaObject(io_SuperInstance ,v_IsNew));
+				i_SuperTreeNode.setInfo(new XJavaObject(i_SuperTreeNode.getNodeID() ,io_SuperInstance ,v_IsNew));
 			}
 		}
 		
@@ -3348,7 +3349,7 @@ public final class XJava
 		// Call节点调用的方法后的返回结果的ID标记，此结果也将存在 $XML_OBJECTS 中
 		if ( v_ReturnID != null )
 		{
-			TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(i_TreeNode.getOrderByID() ,v_ReturnID ,i_TreeNode.getSuper() ,new XJavaObject(v_ReturnValue));
+			TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(i_TreeNode.getOrderByID() ,v_ReturnID ,i_TreeNode.getSuper() ,new XJavaObject(v_ReturnID ,v_ReturnValue));
 			
 			if ( $XML_OBJECTS.containsNodeID(v_ReturnID) )
 			{
@@ -3853,22 +3854,31 @@ public final class XJava
         
         public XJavaObject()
         {
-            this(null ,false);
+            this(null ,null ,false);
         }
         
         
         
-        public XJavaObject(Object i_Object)
+        public XJavaObject(String i_XJavaID ,Object i_Object)
         {
-            this(i_Object ,false);
+            this(i_XJavaID ,i_Object ,false);
         }
         
         
         
-        public XJavaObject(Object i_Object ,boolean i_IsNew)
+        public XJavaObject(String i_XJavaID ,Object i_Object ,boolean i_IsNew)
         {
             this.object = i_Object;
             this.isNew  = i_IsNew;
+            
+            // 将配置在XML配置文件中的ID值，自动赋值给Java实例对象。  ZhengWei(HY) Add 2018-03-09
+            if ( this.object != null )
+            {
+                if ( this.object instanceof XJavaID )
+                {
+                    ((XJavaID)this.object).setXJavaID(i_XJavaID);
+                }
+            }
         }
 
         

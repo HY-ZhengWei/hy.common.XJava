@@ -1768,6 +1768,14 @@ public class AnalyseBase
         if ( !i_Cluster )
         {
             v_Total = this.analyseDataSourceGroup_Total();
+            
+            for (DataSourceGroupReport v_Report : v_Total.getReports().values())
+            {
+                if ( "异常".equals(v_Report.getDsgStatus()) )
+                {
+                    v_Report.setDsgStatus("<font color='red'>异常</font>");
+                }
+            }
         }
         // 集群统计
         else
