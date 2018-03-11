@@ -18,7 +18,7 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
 
 
 /**
- * 网页版本的文件管理系统（支持集群）
+ * Web文件资源管理器（支持集群）
  *
  * @author      ZhengWei(HY)
  * @createDate  2018-03-11
@@ -101,7 +101,7 @@ public class AnalyseFS extends Analyse
         }
         
         List<FileReport> v_FReports = Help.toList(v_Total);
-        Help.toSort(v_FReports ,"isDirectory" ,"fileName");
+        Help.toSort(v_FReports ,"directory Desc" ,"fileName");
         
         for (FileReport v_FReport : v_FReports)
         {
@@ -110,15 +110,15 @@ public class AnalyseFS extends Analyse
             if ( v_FReport.isDirectory() )
             {
                 v_RKey.put(":FileName" ,"<a href='" + v_AUrl + "&FPath=" + v_FReport.getFullName() + "'>" + v_FReport.getFileName() + "</a>");
-                v_RKey.put(":Operate"  ,"<a href='#'>集群克隆</a>" + StringHelp.lpad("" ,4 ,"&nbsp;") 
-                                      + "<a href='#'>压缩</a>" + StringHelp.lpad("" ,4 ,"&nbsp;") 
-                                      + "<a href='#'>删除</a>");
+                v_RKey.put(":Operate"  ,StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>集群克隆</a>"  
+                                      + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>压缩</a>"
+                                      + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>删除</a>");
             }
             else
             {
                 v_RKey.put(":FileName" ,v_FReport.getFileName()); 
-                v_RKey.put(":Operate"  ,"<a href='#'>集群克隆</a>" + StringHelp.lpad("" ,4 ,"&nbsp;") 
-                                      + "<a href='#'>删除</a>");
+                v_RKey.put(":Operate"  ,StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>集群克隆</a>" 
+                                      + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>删除</a>");
             }
             
             if ( v_FReport.getClusterHave() == v_SCount )
@@ -130,11 +130,11 @@ public class AnalyseFS extends Analyse
                 File v_File = new File(v_FReport.getFullName());
                 if ( v_File.exists() )
                 {
-                    v_RKey.put(":ClusterHave" ,"我有");
+                    v_RKey.put(":ClusterHave" ,"<font color='red'>本机有</font>");
                 }
                 else
                 {
-                    v_RKey.put(":ClusterHave" ,v_FReport.getHostName());
+                    v_RKey.put(":ClusterHave" ,"<font color='red'>" + v_FReport.getHostName() + "</font>");
                 }
             }
             
@@ -167,8 +167,8 @@ public class AnalyseFS extends Analyse
         }
         
         return StringHelp.replaceAll(this.getTemplateShowFiles()
-                                    ,new String[]{":GotoTitle" ,":Title"     ,":HttpBasePath" ,":Content"}
-                                    ,new String[]{v_Goto       ,"Web文件系统" ,i_BasePath      ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Content"}
+                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,i_FPath  ,v_Buffer.toString()});
     }
     
     

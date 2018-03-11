@@ -60,6 +60,7 @@ public class FileReport extends SerializableDef
         this.hostName    = "";
         this.filePath    = StringHelp.replaceAll(i_File.getPath() ,"\\" ,"/");
         this.fileName    = i_File.getName();
+        this.fileSize    = i_File.length();
         this.isDirectory = i_File.isDirectory();
         this.lastTime    = new Date(i_File.lastModified()).getFull();
         this.clusterHave = 1;
@@ -79,7 +80,14 @@ public class FileReport extends SerializableDef
      */
     public String getFullName()
     {
-        return this.filePath + "/" + this.fileName;
+        if ( this.isDirectory )
+        {
+            return this.filePath;
+        }
+        else
+        {
+            return this.filePath + "/" + this.fileName;
+        }
     }
 
     

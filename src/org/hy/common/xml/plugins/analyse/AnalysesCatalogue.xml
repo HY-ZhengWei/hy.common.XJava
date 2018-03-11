@@ -25,7 +25,7 @@
 				<value><![CDATA[ /analyseObject?cluster=Y ]]></value>
 	        </item>
 	        
-	        
+	    	
 	    	
 	    	<item>
 	            <name>数据库访问量（支持集群）</name>
@@ -119,6 +119,16 @@
 				<comment>xid前缀模板匹配。如xid=A*，即查看以A开头的所有对象</comment>
 				<value><![CDATA[ /analyseObject?xid=* ]]></value>
 	        </item>
+	        
+	        
+	        
+	        <item>
+	            <name>Web文件资源管理器（支持集群）</name>
+				<comment></comment>
+				<value><![CDATA[ /analyseObject?FS=Y ]]></value>
+	        </item>
+	        
+	        
 	        
 	        <item>
 	            <name>查看对象池中对象的详情</name>
