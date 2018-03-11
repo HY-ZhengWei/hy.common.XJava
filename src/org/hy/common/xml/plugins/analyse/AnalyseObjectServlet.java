@@ -79,16 +79,23 @@ public class AnalyseObjectServlet extends HttpServlet
     
     private AnalyseBase         analyse;
     
+    private AnalyseFS           analyseFS;
+    
     
     
     public AnalyseObjectServlet()
     {
         super();
         
-        this.analyse = (AnalyseBase)XJava.getObject("AnalyseBase");
+        this.analyse   = (AnalyseBase)XJava.getObject("AnalyseBase");
+        this.analyseFS = (AnalyseFS)  XJava.getObject("AnalyseFS");
         if ( this.analyse == null )
         {
             this.analyse = new AnalyseBase();
+        }
+        if ( this.analyseFS == null )
+        {
+            this.analyseFS = new AnalyseFS();
         }
     }
     
@@ -138,10 +145,16 @@ public class AnalyseObjectServlet extends HttpServlet
         String v_ThreadPool = i_Request.getParameter("ThreadPool");
         String v_Job        = i_Request.getParameter("Job");
         String v_DSG        = i_Request.getParameter("DSG");
+        String v_FS         = i_Request.getParameter("FS");
         
         if ( Help.isNull(v_XID) )
         {
-            if ( !Help.isNull(v_DSG) )
+            if ( !Help.isNull(v_FS) )
+            {
+                String v_FPath = Help.NVL(i_Request.getParameter("FPath") ,Help.getWebHomePath());
+                i_Response.getWriter().println(this.analyseFS.analysePath(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_FPath));
+            }
+            else if ( !Help.isNull(v_DSG) )
             {
                 i_Response.getWriter().println(this.analyse.analyseDataSourceGroup(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
             }
