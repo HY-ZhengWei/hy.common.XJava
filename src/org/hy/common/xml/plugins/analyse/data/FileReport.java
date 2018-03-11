@@ -3,6 +3,7 @@ package org.hy.common.xml.plugins.analyse.data;
 import java.io.File;
 
 import org.hy.common.Date;
+import org.hy.common.Help;
 import org.hy.common.StringHelp;
 import org.hy.common.xml.SerializableDef;
 
@@ -37,6 +38,9 @@ public class FileReport extends SerializableDef
     /** 是否为目录 */
     private boolean isDirectory;
     
+    /** 类型 */
+    private String  fileType;
+    
     /** 修改时间 */
     private String  lastTime;
     
@@ -64,7 +68,15 @@ public class FileReport extends SerializableDef
         this.isDirectory = i_File.isDirectory();
         this.lastTime    = new Date(i_File.lastModified()).getFull();
         this.clusterHave = 1;
-                
+        
+        if ( this.isDirectory )
+        {
+            this.fileType = "文件夹";
+        }
+        else
+        {
+            this.fileType = Help.NVL(StringHelp.getFilePostfix(this.fileName));
+        }
     }
     
     
@@ -242,6 +254,28 @@ public class FileReport extends SerializableDef
     public void setClusterHave(int clusterHave)
     {
         this.clusterHave = clusterHave;
+    }
+
+
+    
+    /**
+     * 获取：类型
+     */
+    public String getFileType()
+    {
+        return fileType;
+    }
+    
+
+    
+    /**
+     * 设置：类型
+     * 
+     * @param fileType 
+     */
+    public void setFileType(String fileType)
+    {
+        this.fileType = fileType;
     }
     
 }

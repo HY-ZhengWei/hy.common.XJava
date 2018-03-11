@@ -36,18 +36,19 @@ public class AnalyseFS extends Analyse
      * @version     v1.0
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
-     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?FS=Y&FPath=xxx
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?FS=Y&FP=xxx
      * @param  i_Cluster         是否为集群
      * @param  i_FPath           显示的目录路径
+     * @param  i_SortType        排序类型
      * @return
      */
     @SuppressWarnings("unchecked")
-    public String analysePath(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_FPath)
+    public String analysePath(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_FPath ,String i_SortType)
     {
         StringBuilder           v_Buffer  = new StringBuilder();
         int                     v_Index   = 0;
         String                  v_Content = this.getTemplateShowFilesContent();
-        String                  v_AUrl    = "analyseObject?FS=Y" + (i_Cluster ? "&cluster=Y" : "");
+        String                  v_AUrl    = "analyseObject?FS=Y" + (i_Cluster ? "&cluster=Y" : "") + "&S=" + i_SortType;
         int                     v_SCount  = 1;
         Map<String ,FileReport> v_Total   = null;
         
@@ -101,7 +102,26 @@ public class AnalyseFS extends Analyse
         }
         
         List<FileReport> v_FReports = Help.toList(v_Total);
-        Help.toSort(v_FReports ,"directory Desc" ,"fileName");
+        if ( "1".equalsIgnoreCase(i_SortType) )
+        {
+            // 按修改时间排序
+            Help.toSort(v_FReports ,"directory Desc" ,"lastTime Desc" ,"fileName");
+        }
+        else if ( "2".equalsIgnoreCase(i_SortType) )
+        {
+            // 按类型
+            Help.toSort(v_FReports ,"directory Desc" ,"fileType" ,"fileName");
+        }
+        else if ( "3".equalsIgnoreCase(i_SortType) )
+        {
+            // 按大小排序
+            Help.toSort(v_FReports ,"directory Desc" ,"fileSize NumDesc" ,"fileName");
+        }
+        else
+        {
+            // 默认的：按名称排序
+            Help.toSort(v_FReports ,"directory Desc" ,"fileName");
+        }
         
         for (FileReport v_FReport : v_FReports)
         {
@@ -109,7 +129,8 @@ public class AnalyseFS extends Analyse
             
             if ( v_FReport.isDirectory() )
             {
-                v_RKey.put(":FileName" ,"<a href='" + v_AUrl + "&FPath=" + v_FReport.getFullName() + "'>" + v_FReport.getFileName() + "</a>");
+                v_RKey.put(":FileName" ,"<a href='" + v_AUrl + "&FP=" + v_FReport.getFullName() + "'>" + v_FReport.getFileName() + "</a>");
+                v_RKey.put(":FileSize" ,"");
                 v_RKey.put(":Operate"  ,StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>集群克隆</a>"  
                                       + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>压缩</a>"
                                       + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>删除</a>");
@@ -117,13 +138,18 @@ public class AnalyseFS extends Analyse
             else
             {
                 v_RKey.put(":FileName" ,v_FReport.getFileName()); 
+                v_RKey.put(":FileSize" ,StringHelp.getComputeUnit(v_FReport.getFileSize()));
                 v_RKey.put(":Operate"  ,StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>集群克隆</a>" 
                                       + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>删除</a>");
             }
             
-            if ( v_FReport.getClusterHave() == v_SCount )
+            if ( !i_Cluster )
             {
-                v_RKey.put(":ClusterHave" ,"是");
+                v_RKey.put(":ClusterHave" ,"-");
+            }
+            else if ( v_FReport.getClusterHave() == v_SCount )
+            {
+                v_RKey.put(":ClusterHave" ,"全有");
             }
             else
             {
@@ -134,13 +160,13 @@ public class AnalyseFS extends Analyse
                 }
                 else
                 {
-                    v_RKey.put(":ClusterHave" ,"<font color='red'>" + v_FReport.getHostName() + "</font>");
+                    v_RKey.put(":ClusterHave" ,"<font color='red'>他机有</font>");
                 }
             }
             
             v_RKey.put(":No"       ,String.valueOf(++v_Index));
             v_RKey.put(":LastTime" ,v_FReport.getLastTime());
-            v_RKey.put(":FileSize" ,StringHelp.getComputeUnit(v_FReport.getFileSize()));
+            v_RKey.put(":FileType" ,v_FReport.getFileType());
             
             v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
         }
@@ -159,16 +185,16 @@ public class AnalyseFS extends Analyse
         String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;");
         if ( i_Cluster )
         {
-            v_Goto += "<a href='analyseObject?FS=Y&FPath=" + i_FPath + "' style='color:#AA66CC'>查看本机</a>";
+            v_Goto += "<a href='analyseObject?FS=Y&S=" + i_SortType +"&FP=" + i_FPath + "' style='color:#AA66CC'>查看本机</a>";
         }
         else
         {
-            v_Goto += "<a href='analyseObject?FS=Y&cluster=Y&FPath=" + i_FPath + "' style='color:#AA66CC'>查看集群</a>";
+            v_Goto += "<a href='analyseObject?FS=Y&S=" + i_SortType +"&cluster=Y&FP=" + i_FPath + "' style='color:#AA66CC'>查看集群</a>";
         }
         
         return StringHelp.replaceAll(this.getTemplateShowFiles()
-                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Content"}
-                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,i_FPath  ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":Content"}
+                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,i_FPath  ,i_SortType ,v_Buffer.toString()});
     }
     
     
