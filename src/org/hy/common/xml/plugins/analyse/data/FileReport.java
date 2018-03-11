@@ -75,7 +75,7 @@ public class FileReport extends SerializableDef
         }
         else
         {
-            this.fileType = Help.NVL(StringHelp.getFilePostfix(this.fileName));
+            this.fileType = Help.NVL(StringHelp.getFilePostfix(this.fileName)).toLowerCase();
         }
     }
     
