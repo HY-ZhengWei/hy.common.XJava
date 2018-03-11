@@ -1,4 +1,4 @@
-package org.hy.common.xml.plugins.analyse;
+package org.hy.common.xml.plugins.analyse.data;
 
 import org.hy.common.Counter;
 import org.hy.common.Max;

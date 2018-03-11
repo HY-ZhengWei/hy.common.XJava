@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>:Title</title>
+<style type="text/css"> 
+html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
+.userInfoModify_logininfobody{ width:100%;height:100%;overflow-y:scroll;overflow-x:auto;}
+.userInfoModify_logininfo { width:1250px;margin:0 auto;}
+.userInfoModify_logininfo1{ width:1250px;margin:0 auto; }
+.userInfoModify_labeTag,.userInfoModify_FileName_Title,.userInfoModify_LastTime_Title,.userInfoModify_FileSize_Title,.userInfoModify_ClusterHave_Title,.userInfoModify_Operate_Title{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px; background-color:#D5DDF6;}
+.userInfoModify_labeTag1,.userInfoModify_FileName,.userInfoModify_LastTime,.userInfoModify_FileSize,.userInfoModify_ClusterHave,.userInfoModify_Operate{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
+.userInfoModify_labeTag2,.userInfoModify_FileName_Other,.userInfoModify_LastTime_Other,.userInfoModify_FileSize_Other,.userInfoModify_ClusterHave_Other,.userInfoModify_Operate_Other{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;border:#97B0F8 solid 0px;}
+
+.userInfoModify_clearTag  {clear:both;height:36px;margin-top:0px;position:absolute;z-index:2008;} 
+.userInfoModify_clearTag1 {clear:both;height:36px;margin-top:0px;} 
+.userInfoModify_labeTag           { width:40px;text-align:center; border:#97B0F8 solid 1px; } 
+.userInfoModify_FileName_Title    { width:705px; vertical-align:middle;text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
+.userInfoModify_LastTime_Title    { width:135px; text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_FileSize_Title    { width:100px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_ClusterHave_Title { width:100px; text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_Operate_Title     { width:155px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;} 
+
+.userInfoModify_labeTag1    { width:40px;text-align:center;border:#97B0F8 solid 1px;  } 
+.userInfoModify_FileName    { width:705px; text-align:left;   border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
+.userInfoModify_LastTime    { width:135px; text-align:center; border:#97B0F8 solid 1px;} 
+.userInfoModify_FileSize    { width:100px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_ClusterHave { width:100px; text-align:center; border:#97B0F8 solid 1px;} 
+.userInfoModify_Operate     { width:155px; text-align:left;   border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;} 
+
+.userInfoModify_labeTag2          { width:40px;  text-align:center;} 
+.userInfoModify_FileName_Other    { width:705px; text-align:left;}
+.userInfoModify_LastTime_Other    { width:135px; text-align:left;}
+.userInfoModify_FileSize_Other    { width:100px; text-align:left;}
+.userInfoModify_ClusterHave_Other { width:100px; text-align:left;} 
+.userInfoModify_Operate_Other     { width:155px; text-align:left;}
+
+.cont_show_FileName    { width:700px; margin-left:5px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; }
+.cont_show_LastTime    { width:130px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_FileSize    { width:95px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_ClusterHave { width:95px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_Operate     { width:150px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+
+
+a{ color:#669900; text-decoration:none; outline:none;}
+a:hover{color:#99CC00;text-decoration:none;}
+</style>
+
+<script type="text/javascript" src=":HttpBasePath/jsoneditor-3.1.2/jquery.min.js"></script>
+
+</head>
+<body> 
+		
+	   <div class="userInfoModify_logininfobody" >
+	   	  <div class="userInfoModify_logininfo" /> 
+	      <div class="userInfoModify_clearTag">
+	            <div class="userInfoModify_labeTag">编号</div>
+	            <div class="userInfoModify_FileName_Title">名称</div>
+	            <div class="userInfoModify_LastTime_Title">修改时间</div>
+	            <div class="userInfoModify_FileSize_Title">大小</div>
+	            <div class="userInfoModify_ClusterHave_Title">集群均有</div>
+	            <div class="userInfoModify_Operate_Title">操作</div>
+	      </div> 
+		 
+	   </div> 
+	   
+	   		<div id="info_fill" class="userInfoModify_logininfo1"> 
+	   		
+	   			<div class="userInfoModify_clearTag1">
+		            <div class="userInfoModify_labeTag2"></div>
+		            <div class="userInfoModify_FileName_Other"></div>
+		            <div class="userInfoModify_LastTime_Other"></div>
+		            <div class="userInfoModify_FileSize_Other"></div>
+		            <div class="userInfoModify_ClusterHave_Other"></div>
+		            <div class="userInfoModify_Operate_Other"></div>
+	     	    </div> 
+	   		
+	    		:Content 
+	    		
+	    		<div class="userInfoModify_clearTag1">
+		            <div class="userInfoModify_labeTag2"></div>
+		            <div class="userInfoModify_FileName_Other"></div>
+		            <div class="userInfoModify_LastTime_Other"></div>
+		            <div class="userInfoModify_FileSize_Other"></div>
+		            <div class="userInfoModify_ClusterHave_Other"></div>
+		            <div class="userInfoModify_Operate_Other"></div>
+	     	    </div> 
+	   		</div>
+	   		
+	   </div>
+	   
+</body>
+</html>

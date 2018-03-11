@@ -1,4 +1,4 @@
-package org.hy.common.xml.plugins.analyse;
+package org.hy.common.xml.plugins.analyse.data;
 
 import java.util.HashMap;
 import java.util.Map;
