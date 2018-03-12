@@ -75,7 +75,7 @@ public class Analyse
     protected String getFileContent(String i_FileName) throws Exception
     {
         FileHelp    v_FileHelp    = new FileHelp();
-        String      v_PackageName = "org.hy.common.xml.plugins.analyse".replaceAll("\\." ,"/");
+        String      v_PackageName = "org.hy.common.xml.plugins.analyse.templates".replaceAll("\\." ,"/");
         InputStream v_InputStream = this.getClass().getResourceAsStream("/" + v_PackageName + "/" + i_FileName);
         
         return v_FileHelp.getContent(v_InputStream ,"UTF-8");

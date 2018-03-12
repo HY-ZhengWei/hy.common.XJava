@@ -86,11 +86,11 @@ public class AnalyseFS extends Analyse
                                     
                                     if ( v_FReport != null )
                                     {
-                                        v_FReport.setClusterHave(v_FReport.getClusterHave() + 1);
+                                        v_FReport.getClusterHave().add(v_Item.getKey().getHostName());
                                     }
                                     else
                                     {
-                                        v_FR.getValue().setHostName(v_Item.getKey().getHostName());
+                                        v_FR.getValue().getClusterHave().add(v_Item.getKey().getHostName());
                                         v_Total.put(v_FR.getKey() ,v_FR.getValue());
                                     }
                                 }
@@ -145,11 +145,13 @@ public class AnalyseFS extends Analyse
             
             if ( !i_Cluster )
             {
-                v_RKey.put(":ClusterHave" ,"-");
+                v_RKey.put(":PromptClusterHave" ,"");
+                v_RKey.put(":ClusterHave"       ,"-");
             }
-            else if ( v_FReport.getClusterHave() == v_SCount )
+            else if ( v_FReport.getClusterHave().size() == v_SCount )
             {
-                v_RKey.put(":ClusterHave" ,"全有");
+                v_RKey.put(":PromptClusterHave" ,"");
+                v_RKey.put(":ClusterHave"       ,"全有");
             }
             else
             {
@@ -162,6 +164,9 @@ public class AnalyseFS extends Analyse
                 {
                     v_RKey.put(":ClusterHave" ,"<font color='red'>他机有</font>");
                 }
+                
+                Help.toSort(v_FReport.getClusterHave());
+                v_RKey.put(":PromptClusterHave" ,"拥有资源的服务有：<br><br>" + StringHelp.toString(v_FReport.getClusterHave() ,"" ,"<br>"));
             }
             
             v_RKey.put(":No"       ,String.valueOf(++v_Index));

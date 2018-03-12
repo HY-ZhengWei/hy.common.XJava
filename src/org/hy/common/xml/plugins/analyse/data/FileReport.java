@@ -1,6 +1,8 @@
 package org.hy.common.xml.plugins.analyse.data;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hy.common.Date;
 import org.hy.common.Help;
@@ -27,34 +29,35 @@ public class FileReport extends SerializableDef
     
     
     /** 主机名称 */
-    private String hostName;
+    private String       hostName;
     
     /** 文件或目录所在父目录 */
-    private String  filePath;
+    private String       filePath;
     
     /** 文件或目录名称 */
-    private String  fileName;
+    private String       fileName;
     
     /** 是否为目录 */
-    private boolean isDirectory;
+    private boolean      isDirectory;
     
     /** 类型 */
-    private String  fileType;
+    private String       fileType;
     
     /** 修改时间 */
-    private String  lastTime;
+    private String       lastTime;
     
     /** 大小 */
-    private long    fileSize;
+    private long         fileSize;
     
     /** 集群均有 */
-    private int     clusterHave;
+    private List<String> clusterHave;
     
     
     
     public FileReport()
     {
-        
+        this.hostName    = "";
+        this.clusterHave = new ArrayList<String>();
     }
     
     
@@ -67,7 +70,7 @@ public class FileReport extends SerializableDef
         this.fileSize    = i_File.length();
         this.isDirectory = i_File.isDirectory();
         this.lastTime    = new Date(i_File.lastModified()).getFull();
-        this.clusterHave = 1;
+        this.clusterHave = new ArrayList<String>();
         
         if ( this.isDirectory )
         {
@@ -177,16 +180,6 @@ public class FileReport extends SerializableDef
 
     
     /**
-     * 获取：集群均有
-     */
-    public int getClusterHave()
-    {
-        return clusterHave;
-    }
-    
-
-    
-    /**
      * 设置：文件或目录所在父目录
      * 
      * @param filePath 
@@ -244,6 +237,16 @@ public class FileReport extends SerializableDef
         this.fileSize = fileSize;
     }
     
+    
+    
+    /**
+     * 获取：集群均有
+     */
+    public List<String> getClusterHave()
+    {
+        return clusterHave;
+    }
+
 
     
     /**
@@ -251,13 +254,13 @@ public class FileReport extends SerializableDef
      * 
      * @param clusterHave 
      */
-    public void setClusterHave(int clusterHave)
+    public void setClusterHave(List<String> clusterHave)
     {
         this.clusterHave = clusterHave;
     }
 
 
-    
+
     /**
      * 获取：类型
      */
