@@ -28,6 +28,10 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
 public class AnalyseFS extends Analyse
 {
     
+    public static final String $WebHome = "$WebHome";
+    
+    
+    
     /**
      * 显示指定目录下的所有文件及文件夹（支持集群）
      * 
@@ -48,6 +52,7 @@ public class AnalyseFS extends Analyse
         StringBuilder           v_Buffer  = new StringBuilder();
         int                     v_Index   = 0;
         String                  v_Content = this.getTemplateShowFilesContent();
+        String                  v_FPath   = i_FPath;
         String                  v_AUrl    = "analyseObject?FS=Y" + (i_Cluster ? "&cluster=Y" : "") + "&S=" + i_SortType;
         int                     v_SCount  = 1;
         Map<String ,FileReport> v_Total   = null;
@@ -55,7 +60,8 @@ public class AnalyseFS extends Analyse
         // 本机统计
         if ( !i_Cluster )
         {
-            v_Total = this.analysePath_Total(i_FPath);
+            v_Total = this.analysePath_Total(v_FPath);
+            v_FPath = toWebHome(v_FPath);
         }
         // 集群统计
         else
@@ -101,6 +107,45 @@ public class AnalyseFS extends Analyse
             }
         }
         
+        
+        // 生成 .. 的跳转上一级目录
+        Map<String ,String> v_RKey  = new HashMap<String ,String>();
+        if ( !i_Cluster )
+        {
+            File v_File = new File(toTruePath(v_FPath));
+            v_File = v_File.getParentFile();
+            
+            if ( v_File != null )
+            {
+                v_RKey.put(":FileName"  ,"<a href='" + v_AUrl + "&FP=" + toWebHome(v_File.getPath()) + "'>上一级目录</a>");
+            }
+            else
+            {
+                v_RKey.put(":FileName"  ,"<a href='" + v_AUrl + "&FP=" + v_FPath + "'>上一级目录</a>");
+            }
+        }
+        else
+        {
+            String [] v_FPArr = v_FPath.split("/");
+            if ( v_FPArr.length >= 2 && !v_FPath.endsWith("/.."))
+            {
+                v_RKey.put(":FileName"  ,"<a href='" + v_AUrl + "&FP=" + v_FPath.substring(0 ,v_FPath.length() - v_FPArr[v_FPArr.length-1].length() - 1) + "'>上一级目录</a>");
+            }
+            else
+            {
+                v_RKey.put(":FileName"  ,"<a href='" + v_AUrl + "&FP=" + v_FPath + "/..'>上一级目录</a>");
+            }
+        }
+        v_RKey.put(":No"                ,String.valueOf(++v_Index));
+        v_RKey.put(":LastTime"          ,"-");
+        v_RKey.put(":FileType"          ,"文件夹");
+        v_RKey.put(":FileSize"          ,"");
+        v_RKey.put(":PromptClusterHave" ,"");
+        v_RKey.put(":ClusterHave"       ,"-");
+        v_RKey.put(":Operate"           ,"");
+        v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
+        
+        
         List<FileReport> v_FReports = Help.toList(v_Total);
         if ( "1".equalsIgnoreCase(i_SortType) )
         {
@@ -125,7 +170,7 @@ public class AnalyseFS extends Analyse
         
         for (FileReport v_FReport : v_FReports)
         {
-            Map<String ,String> v_RKey = new HashMap<String ,String>();
+            v_RKey = new HashMap<String ,String>();
             
             if ( v_FReport.isDirectory() )
             {
@@ -190,16 +235,16 @@ public class AnalyseFS extends Analyse
         String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;");
         if ( i_Cluster )
         {
-            v_Goto += "<a href='analyseObject?FS=Y&S=" + i_SortType +"&FP=" + i_FPath + "' style='color:#AA66CC'>查看本机</a>";
+            v_Goto += "<a href='analyseObject?FS=Y&S=" + i_SortType +"&FP=" + v_FPath + "' style='color:#AA66CC'>查看本机</a>";
         }
         else
         {
-            v_Goto += "<a href='analyseObject?FS=Y&S=" + i_SortType +"&cluster=Y&FP=" + i_FPath + "' style='color:#AA66CC'>查看集群</a>";
+            v_Goto += "<a href='analyseObject?FS=Y&S=" + i_SortType +"&cluster=Y&FP=" + v_FPath + "' style='color:#AA66CC'>查看集群</a>";
         }
         
         return StringHelp.replaceAll(this.getTemplateShowFiles()
                                     ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":Content"}
-                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,i_FPath  ,i_SortType ,v_Buffer.toString()});
+                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,v_Buffer.toString()});
     }
     
     
@@ -216,7 +261,7 @@ public class AnalyseFS extends Analyse
     public Map<String ,FileReport> analysePath_Total(String i_FPath)
     {
         Map<String ,FileReport> v_Ret   = new HashMap<String ,FileReport>();
-        File                    v_FPath = new File(StringHelp.replaceAll(i_FPath ,"/" ,Help.getSysPathSeparator()));
+        File                    v_FPath = new File(toTruePath(i_FPath));
         
         if ( v_FPath.isDirectory() )
         {
@@ -225,11 +270,61 @@ public class AnalyseFS extends Analyse
             {
                 for (File v_File : v_Files)
                 {
-                    v_Ret.put(v_File.getName() ,new FileReport(v_File));
+                    v_Ret.put(v_File.getName() ,new FileReport(i_FPath ,v_File));
                 }
             }
         }
         
+        return v_Ret;
+    }
+    
+    
+    
+    /**
+     * 转为 $WebHome 字符的路径
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-12
+     * @version     v1.0
+     *
+     * @param i_Path
+     * @return
+     */
+    public static String toWebHome(String i_Path)
+    {
+        String v_WebHome = StringHelp.replaceAll(Help.getWebHomePath() ,"\\" ,"/");
+        if ( v_WebHome.endsWith("/") )
+        {
+            v_WebHome = v_WebHome.substring(0 ,v_WebHome.length() - 1);
+        }
+        
+        String v_Ret = StringHelp.replaceAll(i_Path ,"\\" ,"/");
+        v_Ret = StringHelp.replaceAll(v_Ret ,v_WebHome ,$WebHome);
+        return v_Ret;
+    }
+    
+    
+    
+    /**
+     * 将  $WebHome 字符的路径，转为真实的本地路径
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-12
+     * @version     v1.0
+     *
+     * @param i_Path
+     * @return
+     */
+    public static String toTruePath(String i_Path)
+    {
+        String v_WebHome = StringHelp.replaceAll(Help.getWebHomePath() ,"\\" ,"/");
+        if ( v_WebHome.endsWith("/") )
+        {
+            v_WebHome = v_WebHome.substring(0 ,v_WebHome.length() - 1);
+        }
+        
+        String v_Ret = StringHelp.replaceAll(i_Path ,"/" ,Help.getSysPathSeparator());
+        v_Ret = StringHelp.replaceAll(v_Ret ,$WebHome ,v_WebHome);
         return v_Ret;
     }
     

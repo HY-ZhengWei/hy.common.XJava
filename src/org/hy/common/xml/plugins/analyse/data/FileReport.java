@@ -62,10 +62,10 @@ public class FileReport extends SerializableDef
     
     
     
-    public FileReport(File i_File)
+    public FileReport(String i_FatherPath ,File i_File)
     {
         this.hostName    = "";
-        this.filePath    = StringHelp.replaceAll(i_File.getPath() ,"\\" ,"/");
+        this.filePath    = i_FatherPath;
         this.fileName    = i_File.getName();
         this.fileSize    = i_File.length();
         this.isDirectory = i_File.isDirectory();
@@ -95,14 +95,7 @@ public class FileReport extends SerializableDef
      */
     public String getFullName()
     {
-        if ( this.isDirectory )
-        {
-            return this.filePath;
-        }
-        else
-        {
-            return this.filePath + "/" + this.fileName;
-        }
+        return this.filePath + "/" + this.fileName;
     }
 
     

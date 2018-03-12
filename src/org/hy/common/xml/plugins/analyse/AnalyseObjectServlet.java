@@ -151,8 +151,8 @@ public class AnalyseObjectServlet extends HttpServlet
         {
             if ( !Help.isNull(v_FS) )
             {
-                String v_FPath = Help.NVL(i_Request.getParameter("FP") ,Help.getWebHomePath());
                 String v_Sort  = Help.NVL(i_Request.getParameter("S"));
+                String v_FPath = StringHelp.replaceAll(Help.NVL(i_Request.getParameter("FP") ,AnalyseFS.$WebHome) ,"\\" ,"/");
                 i_Response.getWriter().println(this.analyseFS.analysePath(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_FPath ,v_Sort));
             }
             else if ( !Help.isNull(v_DSG) )
