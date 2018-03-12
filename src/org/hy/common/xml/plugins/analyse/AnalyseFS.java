@@ -72,7 +72,7 @@ public class AnalyseFS extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseJob_Total");
+                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"analysePath_Total" ,new Object[]{v_FPath});
                 
                 for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
