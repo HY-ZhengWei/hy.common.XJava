@@ -52,7 +52,7 @@ public class AnalyseFS extends Analyse
         StringBuilder           v_Buffer  = new StringBuilder();
         int                     v_Index   = 0;
         String                  v_Content = this.getTemplateShowFilesContent();
-        String                  v_FPath   = i_FPath;
+        String                  v_FPath   = toWebHome(i_FPath);
         String                  v_AUrl    = "analyseObject?FS=Y" + (i_Cluster ? "&cluster=Y" : "") + "&S=" + i_SortType;
         int                     v_SCount  = 1;
         Map<String ,FileReport> v_Total   = null;
@@ -61,7 +61,6 @@ public class AnalyseFS extends Analyse
         if ( !i_Cluster )
         {
             v_Total = this.analysePath_Total(v_FPath);
-            v_FPath = toWebHome(v_FPath);
         }
         // 集群统计
         else
@@ -211,7 +210,7 @@ public class AnalyseFS extends Analyse
                 }
                 
                 Help.toSort(v_FReport.getClusterHave());
-                v_RKey.put(":PromptClusterHave" ,"拥有资源的服务有：<br><br>" + StringHelp.toString(v_FReport.getClusterHave() ,"" ,"<br>"));
+                v_RKey.put(":PromptClusterHave" ,"资源所在的服务：\n\n" + StringHelp.toString(v_FReport.getClusterHave() ,"" ,"\n"));
             }
             
             v_RKey.put(":No"       ,String.valueOf(++v_Index));
@@ -243,8 +242,8 @@ public class AnalyseFS extends Analyse
         }
         
         return StringHelp.replaceAll(this.getTemplateShowFiles()
-                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":Content"}
-                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":cluster"             ,":Content"}
+                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,(i_Cluster ? "Y" : "") ,v_Buffer.toString()});
     }
     
     
@@ -300,7 +299,15 @@ public class AnalyseFS extends Analyse
         
         String v_Ret = StringHelp.replaceAll(i_Path ,"\\" ,"/");
         v_Ret = StringHelp.replaceAll(v_Ret ,v_WebHome ,$WebHome);
-        return v_Ret;
+        
+        if ( v_Ret.endsWith($WebHome) )
+        {
+            return $WebHome;
+        }
+        else
+        {
+            return v_Ret;
+        }
     }
     
     
