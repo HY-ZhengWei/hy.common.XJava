@@ -151,9 +151,28 @@ public class AnalyseObjectServlet extends HttpServlet
         {
             if ( !Help.isNull(v_FS) )
             {
-                String v_Sort  = Help.NVL(i_Request.getParameter("S"));
-                String v_FPath = StringHelp.replaceAll(Help.NVL(i_Request.getParameter("FP") ,AnalyseFS.$WebHome) ,"\\" ,"/");
-                i_Response.getWriter().println(this.analyseFS.analysePath(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_FPath ,v_Sort));
+                String v_Sort   = Help.NVL(i_Request.getParameter("S"));
+                String v_FPath  = StringHelp.replaceAll(Help.NVL(i_Request.getParameter("FP") ,AnalyseFS.$WebHome) ,"\\" ,"/");
+                String v_Action = Help.NVL(i_Request.getParameter("Action"));
+                
+                if ( !Help.isNull(v_Action) )
+                {
+                    String v_FN  = Help.NVL(i_Request.getParameter("FN"));
+                    String v_HIP = Help.NVL(i_Request.getParameter("HIP"));
+                    
+                    if ( "DEL".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.delFile(v_FPath ,v_FN));
+                    }
+                    else if ( "DEL-C".equalsIgnoreCase(v_Action) )
+                    {
+                        
+                    }
+                }
+                else
+                {
+                    i_Response.getWriter().println(this.analyseFS.analysePath(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_FPath ,v_Sort));
+                }
             }
             else if ( !Help.isNull(v_DSG) )
             {

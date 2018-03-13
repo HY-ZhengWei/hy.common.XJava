@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.StringHelp;
+import org.hy.common.file.FileHelp;
 import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
 import org.hy.common.net.data.CommunicationResponse;
@@ -91,6 +93,11 @@ public class AnalyseFS extends Analyse
                                     
                                     if ( v_FReport != null )
                                     {
+                                        // 最后修改时间为：集群中的最后修改时间，才能保证多次刷新页面时，修改时间不会随机游走
+                                        if ( v_FR.getValue().getLastTime().compareTo(v_FReport.getLastTime()) >= 1 )
+                                        {
+                                            v_FReport.setLastTime(v_FR.getValue().getLastTime());
+                                        }
                                         v_FReport.getClusterHave().add(v_Item.getKey().getHostName());
                                     }
                                     else
@@ -141,6 +148,7 @@ public class AnalyseFS extends Analyse
         v_RKey.put(":FileSize"          ,"");
         v_RKey.put(":PromptClusterHave" ,"");
         v_RKey.put(":ClusterHave"       ,"-");
+        v_RKey.put(":HIP"               ,"");
         v_RKey.put(":Operate"           ,"");
         v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
         
@@ -171,31 +179,37 @@ public class AnalyseFS extends Analyse
         {
             v_RKey = new HashMap<String ,String>();
             
+            v_RKey.put(":No"       ,String.valueOf(++v_Index));
+            v_RKey.put(":LastTime" ,v_FReport.getLastTime());
+            v_RKey.put(":FileType" ,v_FReport.getFileType());
+            
             if ( v_FReport.isDirectory() )
             {
                 v_RKey.put(":FileName" ,"<a href='" + v_AUrl + "&FP=" + v_FReport.getFullName() + "'>" + v_FReport.getFileName() + "</a>");
                 v_RKey.put(":FileSize" ,"");
                 v_RKey.put(":Operate"  ,StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>集群克隆</a>"  
                                       + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>压缩</a>"
-                                      + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>删除</a>");
+                                      + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#' onclick='delFile(\"" + v_Index + ":" + v_FReport.getFileName() + "\")'>删除</a>");
             }
             else
             {
                 v_RKey.put(":FileName" ,v_FReport.getFileName()); 
                 v_RKey.put(":FileSize" ,StringHelp.getComputeUnit(v_FReport.getFileSize()));
                 v_RKey.put(":Operate"  ,StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>集群克隆</a>" 
-                                      + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>删除</a>");
+                                      + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#' onclick='delFile(\"" + v_Index + ":" + v_FReport.getFileName() + "\")'>删除</a>");
             }
             
             if ( !i_Cluster )
             {
                 v_RKey.put(":PromptClusterHave" ,"");
                 v_RKey.put(":ClusterHave"       ,"-");
+                v_RKey.put(":HIP"               ,"");
             }
             else if ( v_FReport.getClusterHave().size() == v_SCount )
             {
                 v_RKey.put(":PromptClusterHave" ,"");
                 v_RKey.put(":ClusterHave"       ,"全有");
+                v_RKey.put(":HIP"               ,"");
             }
             else
             {
@@ -210,12 +224,9 @@ public class AnalyseFS extends Analyse
                 }
                 
                 Help.toSort(v_FReport.getClusterHave());
-                v_RKey.put(":PromptClusterHave" ,"资源所在的服务：\n\n" + StringHelp.toString(v_FReport.getClusterHave() ,"" ,"\n"));
+                v_RKey.put(":PromptClusterHave" ,"资源存在的服务：\n\n" + StringHelp.toString(v_FReport.getClusterHave() ,"" ,"\n"));
+                v_RKey.put(":HIP"               ,StringHelp.toString(v_FReport.getClusterHave() ,""));
             }
-            
-            v_RKey.put(":No"       ,String.valueOf(++v_Index));
-            v_RKey.put(":LastTime" ,v_FReport.getLastTime());
-            v_RKey.put(":FileType" ,v_FReport.getFileType());
             
             v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
         }
@@ -275,6 +286,51 @@ public class AnalyseFS extends Analyse
         }
         
         return v_Ret;
+    }
+    
+    
+    
+    /**
+     * 删除本地文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-13
+     * @version     v1.0
+     *
+     * @param i_FilePath  路径
+     * @param i_FileName  名称
+     * @return
+     */
+    public String delFile(String i_FilePath ,String i_FileName)
+    {
+        File v_File = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
+        
+        if ( v_File.exists() )
+        {
+            try
+            {
+                if ( v_File.isDirectory() )
+                {
+                    FileHelp v_FileHelp = new FileHelp();
+                    v_FileHelp.delFiles(v_File ,Date.getNowTime() ,true);
+                    v_File.delete();
+                }
+                else
+                {
+                    v_File.delete();
+                }
+                
+                return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+            }
+            catch (Exception exce)
+            {
+                exce.printStackTrace();
+            }
+            
+            return StringHelp.replaceAll("{'retCode':'1'}" ,"'" ,"\"");
+        }
+        
+        return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
     }
     
     
