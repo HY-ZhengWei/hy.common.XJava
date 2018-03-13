@@ -151,6 +151,180 @@ function executeAction(i_FileName ,i_HIP ,i_Action ,i_FunCallBack)
 
 
 
+function zipFileAction(i_FileName)
+{
+	executeAction(i_FileName 
+			     ,""
+			     ,"ZIP"
+			     ,function (i_Ret)
+			     {
+					if ( i_Ret.retCode == "0" )
+					{
+						f_Goto();
+					}
+					else if ( i_Ret.retCode == "1" )
+					{
+						f_ShowMsg("消息" ,"未能成功压缩！" ,180);
+					}
+					else if ( i_Ret.retCode == "2" )
+					{
+						f_ShowMsg("消息" ,"资源不存在！" ,180);
+					}
+			     });
+}
+
+
+
+function zipFile(i_File)
+{
+	var v_FileNo   = i_File.split(":")[0];
+	var v_FileName = i_File.split(":")[1];
+	
+	if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+	{
+		var v_Height     = 0;
+		var v_HIP        = $("#HIP_" + v_FileNo).val();
+		var v_HIP_Prompt = v_HIP;
+		if ( v_HIP_Prompt == "" )
+		{
+			v_Height     = 180;
+			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，确定压缩吗？"
+		}
+		else
+		{
+			v_Height     = 300;
+			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，确定压缩吗？<br><br>" + v_HIP_Prompt;
+		}
+		
+		f_OpenDialog("Dialog-Default" 
+				    ,"确认压缩资源吗？" 
+				    ,v_HIP_Prompt
+				    ,v_Height
+				    ,{
+			        	"本机压缩": function() 
+			        	{
+			        		zipFileAction(v_FileName);
+			        		$(this).dialog( "close" );
+			          	},
+			          	"集群压缩": function() 
+			          	{
+			          		$(this).dialog( "close" );
+			          	},
+			          	"取　　消": function() 
+			          	{
+			            	$(this).dialog( "close" );
+			          	}
+	        		 });
+	}
+	else
+	{
+		f_OpenDialog("Dialog-Default" 
+				    ,"确认压缩资源吗？" 
+				    ,"<b>" + v_FileName + "</b><br>确定压缩吗？"
+				    ,180
+				    ,{
+			        	"本机压缩": function() 
+			        	{
+			        		zipFileAction(v_FileName);
+			        		$(this).dialog( "close" );
+			          	},
+			          	"取　　消": function() 
+			          	{
+			            	$(this).dialog( "close" );
+			          	}
+	        		 });
+	}
+}
+
+
+
+function unZipFileAction(i_FileName)
+{
+	executeAction(i_FileName 
+			     ,""
+			     ,"UNZIP"
+			     ,function (i_Ret)
+			     {
+					if ( i_Ret.retCode == "0" )
+					{
+						f_Goto();
+					}
+					else if ( i_Ret.retCode == "1" )
+					{
+						f_ShowMsg("消息" ,"未能成功解压！" ,180);
+					}
+					else if ( i_Ret.retCode == "2" )
+					{
+						f_ShowMsg("消息" ,"资源不存在！" ,180);
+					}
+			     });
+}
+
+
+
+function unZipFile(i_File)
+{
+	var v_FileNo   = i_File.split(":")[0];
+	var v_FileName = i_File.split(":")[1];
+	
+	if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+	{
+		var v_Height     = 0;
+		var v_HIP        = $("#HIP_" + v_FileNo).val();
+		var v_HIP_Prompt = v_HIP;
+		if ( v_HIP_Prompt == "" )
+		{
+			v_Height     = 180;
+			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，解压会覆盖，确定解压吗？"
+		}
+		else
+		{
+			v_Height     = 300;
+			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，解压会覆盖，确定解压吗？<br><br>" + v_HIP_Prompt;
+		}
+		
+		f_OpenDialog("Dialog-Default" 
+				    ,"确认解压资源吗？" 
+				    ,v_HIP_Prompt
+				    ,v_Height
+				    ,{
+			        	"本机解压": function() 
+			        	{
+			        		unZipFileAction(v_FileName);
+			        		$(this).dialog( "close" );
+			          	},
+			          	"集群解压": function() 
+			          	{
+			          		$(this).dialog( "close" );
+			          	},
+			          	"取　　消": function() 
+			          	{
+			            	$(this).dialog( "close" );
+			          	}
+	        		 });
+	}
+	else
+	{
+		f_OpenDialog("Dialog-Default" 
+				    ,"确认解压资源吗？" 
+				    ,"<b>" + v_FileName + "</b><br>解压会覆盖，确定解压吗？"
+				    ,180
+				    ,{
+			        	"本机解压": function() 
+			        	{
+			        		unZipFileAction(v_FileName);
+			        		$(this).dialog( "close" );
+			          	},
+			          	"取　　消": function() 
+			          	{
+			            	$(this).dialog( "close" );
+			          	}
+	        		 });
+	}
+}
+
+
+
 function delFileAction(i_FileName)
 {
 	executeAction(i_FileName 

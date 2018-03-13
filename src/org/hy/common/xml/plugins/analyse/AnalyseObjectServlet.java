@@ -168,6 +168,14 @@ public class AnalyseObjectServlet extends HttpServlet
                     {
                         
                     }
+                    else if ( "ZIP".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.zipFile(v_FPath ,v_FN));
+                    }
+                    else if ( "UNZIP".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.unZipFile(v_FPath ,v_FN));
+                    }
                 }
                 else
                 {

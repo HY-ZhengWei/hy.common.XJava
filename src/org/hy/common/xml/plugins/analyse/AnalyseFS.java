@@ -1,6 +1,7 @@
 package org.hy.common.xml.plugins.analyse;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,21 +184,41 @@ public class AnalyseFS extends Analyse
             v_RKey.put(":LastTime" ,v_FReport.getLastTime());
             v_RKey.put(":FileType" ,v_FReport.getFileType());
             
+            StringBuilder v_Operate    = new StringBuilder();
+            String        v_FileNoName = v_Index + ":" + v_FReport.getFileName();
             if ( v_FReport.isDirectory() )
             {
                 v_RKey.put(":FileName" ,"<a href='" + v_AUrl + "&FP=" + v_FReport.getFullName() + "'>" + v_FReport.getFileName() + "</a>");
                 v_RKey.put(":FileSize" ,"");
-                v_RKey.put(":Operate"  ,StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>集群克隆</a>"  
-                                      + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>压缩</a>"
-                                      + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#' onclick='delFile(\"" + v_Index + ":" + v_FReport.getFileName() + "\")'>删除</a>");
+                
+                v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#'>集群克隆</a>"); 
+                v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='zipFile(\"").append(v_FileNoName).append("\")'>压缩</a>");
+                v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='delFile(\"").append(v_FileNoName).append("\")'>删除</a>");
             }
             else
             {
                 v_RKey.put(":FileName" ,v_FReport.getFileName()); 
                 v_RKey.put(":FileSize" ,StringHelp.getComputeUnit(v_FReport.getFileSize()));
-                v_RKey.put(":Operate"  ,StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#'>集群克隆</a>" 
-                                      + StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='#' onclick='delFile(\"" + v_Index + ":" + v_FReport.getFileName() + "\")'>删除</a>");
+                
+                v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#'>集群克隆</a>");
+                
+                String v_FType = v_FReport.getFileType().toLowerCase();
+                if ( StringHelp.isContains(v_FType ,".zip" ,".tar" ,"gz") )
+                {
+                    v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='unZipFile(\"").append(v_FileNoName).append("\")'>解压</a>");
+                }
+                else if ( StringHelp.isContains(v_FType ,".rar") )
+                {
+                    // Nothing. 没有解压能力的
+                }
+                else
+                {
+                    v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='zipFile(\"").append(v_FileNoName).append("\")'>压缩</a>");
+                }
+                
+                v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='delFile(\"").append(v_FileNoName).append("\")'>删除</a>");
             }
+            v_RKey.put(":Operate" ,v_Operate.toString());
             
             if ( !i_Cluster )
             {
@@ -299,7 +320,9 @@ public class AnalyseFS extends Analyse
      *
      * @param i_FilePath  路径
      * @param i_FileName  名称
-     * @return
+     * @return            返回值：0.成功
+     *                           1.异常
+     *                           2.文件不存在
      */
     public String delFile(String i_FilePath ,String i_FileName)
     {
@@ -319,6 +342,96 @@ public class AnalyseFS extends Analyse
                 {
                     v_File.delete();
                 }
+                
+                return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+            }
+            catch (Exception exce)
+            {
+                exce.printStackTrace();
+            }
+            
+            return StringHelp.replaceAll("{'retCode':'1'}" ,"'" ,"\"");
+        }
+        
+        return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
+    }
+    
+    
+    
+    /**
+     * 压缩文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-13
+     * @version     v1.0
+     *
+     * @param i_FilePath
+     * @param i_FileName
+     * @return            返回值：0.成功
+     *                           1.异常
+     *                           2.文件不存在
+     */
+    public String zipFile(String i_FilePath ,String i_FileName)
+    {
+        File       v_File     = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
+        FileHelp   v_FileHelp = new FileHelp();
+        List<File> v_Files    = new ArrayList<File>();
+        
+        if ( v_File.exists() )
+        {
+            try
+            {
+                String v_SaveFile = toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName + "_" + Date.getNowTime().getFullMilli_ID() + ".zip";
+                if ( v_File.isDirectory() )
+                {
+                    v_Files = v_FileHelp.getFiles(v_File);
+                    v_FileHelp.createZip(v_SaveFile ,v_File.getParent() ,v_Files ,true);
+                }
+                else
+                {
+                    v_Files.add(v_File);
+                    v_FileHelp.createZip(v_SaveFile ,null ,v_Files ,true);
+                }
+                
+                return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+            }
+            catch (Exception exce)
+            {
+                exce.printStackTrace();
+            }
+            
+            return StringHelp.replaceAll("{'retCode':'1'}" ,"'" ,"\"");
+        }
+        
+        return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
+    }
+    
+    
+    
+    /**
+     * 解压文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-13
+     * @version     v1.0
+     *
+     * @param i_FilePath
+     * @param i_FileName
+     * @return            返回值：0.成功
+     *                           1.异常
+     *                           2.文件不存在
+     */
+    public String unZipFile(String i_FilePath ,String i_FileName)
+    {
+        File       v_File     = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
+        FileHelp   v_FileHelp = new FileHelp();
+        
+        if ( v_File.exists() && v_File.isFile() )
+        {
+            try
+            {
+                v_FileHelp.setOverWrite(true);
+                v_FileHelp.UnCompressZip(v_File.toString() ,v_File.getParent() ,true);
                 
                 return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
             }
