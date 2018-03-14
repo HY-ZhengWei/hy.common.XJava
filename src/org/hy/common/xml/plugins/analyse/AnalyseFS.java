@@ -158,22 +158,22 @@ public class AnalyseFS extends Analyse
         if ( "1".equalsIgnoreCase(i_SortType) )
         {
             // 按修改时间排序
-            Help.toSort(v_FReports ,"directory Desc" ,"lastTime Desc" ,"fileName");
+            Help.toSort(v_FReports ,"directory Desc" ,"lastTime Desc" ,"fileNameToUpper");
         }
         else if ( "2".equalsIgnoreCase(i_SortType) )
         {
             // 按类型
-            Help.toSort(v_FReports ,"directory Desc" ,"fileType" ,"fileName");
+            Help.toSort(v_FReports ,"directory Desc" ,"fileType" ,"fileNameToUpper" ,"lastTime Desc");
         }
         else if ( "3".equalsIgnoreCase(i_SortType) )
         {
             // 按大小排序
-            Help.toSort(v_FReports ,"directory Desc" ,"fileSize NumDesc" ,"fileName");
+            Help.toSort(v_FReports ,"directory Desc" ,"fileSize NumDesc" ,"fileNameToUpper");
         }
         else
         {
             // 默认的：按名称排序
-            Help.toSort(v_FReports ,"directory Desc" ,"fileName");
+            Help.toSort(v_FReports ,"directory Desc" ,"fileNameToUpper" ,"lastTime Desc");
         }
         
         for (FileReport v_FReport : v_FReports)
@@ -189,7 +189,7 @@ public class AnalyseFS extends Analyse
             if ( v_FReport.isDirectory() )
             {
                 v_RKey.put(":FileName" ,"<a href='" + v_AUrl + "&FP=" + v_FReport.getFullName() + "'>" + v_FReport.getFileName() + "</a>");
-                v_RKey.put(":FileSize" ,"");
+                v_RKey.put(":FileSize" ,"<a href='#' onclick='calcFileSize(\"" + v_FileNoName + "\")'>计算</a>");
                 
                 v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#'>集群克隆</a>"); 
                 v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='zipFile(\"").append(v_FileNoName).append("\")'>压缩</a>");
@@ -237,7 +237,7 @@ public class AnalyseFS extends Analyse
                 File v_File = new File(v_FReport.getFullName());
                 if ( v_File.exists() )
                 {
-                    v_RKey.put(":ClusterHave" ,"<font color='red'>本机有</font>");
+                    v_RKey.put(":ClusterHave" ,"<font color='red'>本服务有</font>");
                 }
                 else
                 {
@@ -434,6 +434,47 @@ public class AnalyseFS extends Analyse
                 v_FileHelp.UnCompressZip(v_File.toString() ,v_File.getParent() ,true);
                 
                 return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+            }
+            catch (Exception exce)
+            {
+                exce.printStackTrace();
+            }
+            
+            return StringHelp.replaceAll("{'retCode':'1'}" ,"'" ,"\"");
+        }
+        
+        return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
+    }
+    
+    
+    
+    /**
+     * 计算目录的大小
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-14
+     * @version     v1.0
+     *
+     * @param i_FilePath  路径
+     * @param i_FileName  名称
+     * @return            返回值：0.成功
+     *                           1.异常
+     *                           2.文件不存在
+     */
+    public String calcFileSize(String i_FilePath ,String i_FileName)
+    {
+        File v_File = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
+        
+        if ( v_File.exists() )
+        {
+            try
+            {
+                if ( v_File.isDirectory() )
+                {
+                    FileHelp v_FileHelp = new FileHelp();
+                    long     v_Size     = v_FileHelp.calcSize(v_File);
+                    return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size) + "'}" ,"'" ,"\"");
+                }
             }
             catch (Exception exce)
             {

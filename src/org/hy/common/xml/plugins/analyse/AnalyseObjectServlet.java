@@ -176,6 +176,10 @@ public class AnalyseObjectServlet extends HttpServlet
                     {
                         i_Response.getWriter().println(this.analyseFS.unZipFile(v_FPath ,v_FN));
                     }
+                    else if ( "CALC-SIZE".equals(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.calcFileSize(v_FPath ,v_FN));
+                    }
                 }
                 else
                 {

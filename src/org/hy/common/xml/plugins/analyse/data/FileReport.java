@@ -140,6 +140,13 @@ public class FileReport extends SerializableDef
         return fileName;
     }
     
+    
+    
+    public String getFileNameToUpper()
+    {
+        return fileName.toUpperCase();
+    }
+    
 
     
     /**

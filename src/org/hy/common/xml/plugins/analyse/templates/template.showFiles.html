@@ -151,13 +151,45 @@ function executeAction(i_FileName ,i_HIP ,i_Action ,i_FunCallBack)
 
 
 
+function calcFileSize(i_File)
+{
+	var v_FileNo   = i_File.split(":")[0];
+	var v_FileName = i_File.split(":")[1];
+	
+	$("#HFSize_" + v_FileNo).html("计算中");
+	
+	executeAction(v_FileName 
+			     ,""
+			     ,"CALC-SIZE"
+			     ,function (i_Ret)
+			     {
+					if ( i_Ret.retCode == "0" )
+					{
+						$("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\")' title='重新计算'>" + i_Ret.fileSize + "</a>");
+					}
+					else if ( i_Ret.retCode == "1" )
+					{
+						$("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\")' title='重新计算'>重新计算</a>");
+					}
+					else if ( i_Ret.retCode == "2" )
+					{
+						$("#HFSize_" + v_FileNo).html("");
+						f_ShowMsg("消息" ,"资源不存在！" ,180);
+					}
+			     });
+}
+
+
+
 function zipFileAction(i_FileName)
 {
+	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,180);
 	executeAction(i_FileName 
 			     ,""
 			     ,"ZIP"
 			     ,function (i_Ret)
 			     {
+					v_Loading.dialog("close");
 					if ( i_Ret.retCode == "0" )
 					{
 						f_Goto();
@@ -203,16 +235,16 @@ function zipFile(i_File)
 				    ,{
 			        	"本机压缩": function() 
 			        	{
+			        		$(this).dialog("close");
 			        		zipFileAction(v_FileName);
-			        		$(this).dialog( "close" );
 			          	},
 			          	"集群压缩": function() 
 			          	{
-			          		$(this).dialog( "close" );
+			          		$(this).dialog("close");
 			          	},
 			          	"取　　消": function() 
 			          	{
-			            	$(this).dialog( "close" );
+			            	$(this).dialog("close");
 			          	}
 	        		 });
 	}
@@ -225,12 +257,12 @@ function zipFile(i_File)
 				    ,{
 			        	"本机压缩": function() 
 			        	{
+			        		$(this).dialog("close");
 			        		zipFileAction(v_FileName);
-			        		$(this).dialog( "close" );
 			          	},
 			          	"取　　消": function() 
 			          	{
-			            	$(this).dialog( "close" );
+			            	$(this).dialog("close");
 			          	}
 	        		 });
 	}
@@ -240,11 +272,13 @@ function zipFile(i_File)
 
 function unZipFileAction(i_FileName)
 {
+	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,180);
 	executeAction(i_FileName 
 			     ,""
 			     ,"UNZIP"
 			     ,function (i_Ret)
 			     {
+					v_Loading.dialog("close");
 					if ( i_Ret.retCode == "0" )
 					{
 						f_Goto();
@@ -290,16 +324,16 @@ function unZipFile(i_File)
 				    ,{
 			        	"本机解压": function() 
 			        	{
+			        		$(this).dialog("close");
 			        		unZipFileAction(v_FileName);
-			        		$(this).dialog( "close" );
 			          	},
 			          	"集群解压": function() 
 			          	{
-			          		$(this).dialog( "close" );
+			          		$(this).dialog("close");
 			          	},
 			          	"取　　消": function() 
 			          	{
-			            	$(this).dialog( "close" );
+			            	$(this).dialog("close");
 			          	}
 	        		 });
 	}
@@ -312,12 +346,12 @@ function unZipFile(i_File)
 				    ,{
 			        	"本机解压": function() 
 			        	{
+			        		$(this).dialog("close");
 			        		unZipFileAction(v_FileName);
-			        		$(this).dialog( "close" );
 			          	},
 			          	"取　　消": function() 
 			          	{
-			            	$(this).dialog( "close" );
+			            	$(this).dialog("close");
 			          	}
 	        		 });
 	}
@@ -327,11 +361,13 @@ function unZipFile(i_File)
 
 function delFileAction(i_FileName)
 {
+	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,180);
 	executeAction(i_FileName 
 			     ,""
 			     ,"DEL"
 			     ,function (i_Ret)
 			     {
+					v_Loading.dialog("close");
 					if ( i_Ret.retCode == "0" )
 					{
 						f_Goto();
@@ -351,6 +387,7 @@ function delFileAction(i_FileName)
 
 function delFileByClusterAction(i_FileName ,i_HIP)
 {
+	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,180);
 	executeAction(i_FileName 
 			     ,i_HIP
 			     ,"DEL-C"
@@ -389,8 +426,8 @@ function delFile(i_File)
 				    ,{
 			        	"本机删除": function() 
 			        	{
+			        		$(this).dialog("close");
 			        		delFileAction(v_FileName);
-			        		$(this).dialog( "close" );
 			          	},
 			          	"集群删除": function() 
 			          	{
@@ -398,7 +435,7 @@ function delFile(i_File)
 			          	},
 			          	"取　　消": function() 
 			          	{
-			            	$(this).dialog( "close" );
+			            	$(this).dialog("close");
 			          	}
 	        		 });
 	}
@@ -411,12 +448,12 @@ function delFile(i_File)
 				    ,{
 			        	"本机删除": function() 
 			        	{
+			        		$(this).dialog("close");
 			        		delFileAction(v_FileName);
-			        		$(this).dialog( "close" );
 			          	},
 			          	"取　　消": function() 
 			          	{
-			            	$(this).dialog( "close" );
+			            	$(this).dialog("close");
 			          	}
 	        		 });
 	}
@@ -424,17 +461,29 @@ function delFile(i_File)
 
 
 
+function f_ShowLoading(i_Title ,i_Msg ,i_Height)
+{
+	return f_OpenDialog("Dialog-Default"
+			    ,i_Title
+			    ,i_Msg
+			    ,i_Height
+			    ,{}
+			    );
+}
+
+
+
 function f_ShowMsg(i_Title ,i_Msg ,i_Height)
 {
-	f_OpenDialog("Dialog-Default"
+	return f_OpenDialog("Dialog-Default"
 			    ,i_Title
 			    ,i_Msg
 			    ,i_Height
 			    ,{
-		          	"确　　定": function() 
-		          	{
-		            	$(this).dialog( "close" );
-		          	}
+			     	"确　　定": function() 
+			     	{
+			        	$(this).dialog("close");
+			     	}
 	    		 });
 }
 
@@ -451,6 +500,8 @@ function f_OpenDialog(i_DiaglogID ,i_Title ,i_Msg ,i_Height ,i_Buttons)
 	      modal: true,
 	      buttons: i_Buttons
 	});
+	
+	return $("#" + i_DiaglogID);
 }
 
 
