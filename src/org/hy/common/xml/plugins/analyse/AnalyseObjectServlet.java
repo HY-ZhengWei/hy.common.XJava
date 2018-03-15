@@ -160,21 +160,33 @@ public class AnalyseObjectServlet extends HttpServlet
                     String v_FN  = Help.NVL(i_Request.getParameter("FN"));
                     String v_HIP = Help.NVL(i_Request.getParameter("HIP"));
                     
-                    if ( "DEL".equalsIgnoreCase(v_Action) )
+                    if ( "CLONE-C".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.cloneFile(v_FPath ,v_FN ,v_HIP));
+                    }
+                    else if ( "DEL".equalsIgnoreCase(v_Action) )
                     {
                         i_Response.getWriter().println(this.analyseFS.delFile(v_FPath ,v_FN));
                     }
                     else if ( "DEL-C".equalsIgnoreCase(v_Action) )
                     {
-                        
+                        i_Response.getWriter().println(this.analyseFS.delFileByCluster(v_FPath ,v_FN ,v_HIP));
                     }
                     else if ( "ZIP".equalsIgnoreCase(v_Action) )
                     {
-                        i_Response.getWriter().println(this.analyseFS.zipFile(v_FPath ,v_FN));
+                        i_Response.getWriter().println(this.analyseFS.zipFile(v_FPath ,v_FN ,Date.getNowTime().getFullMilli_ID()));
+                    }
+                    else if ( "ZIP-C".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.zipFileByCluster(v_FPath ,v_FN ,v_HIP));
                     }
                     else if ( "UNZIP".equalsIgnoreCase(v_Action) )
                     {
                         i_Response.getWriter().println(this.analyseFS.unZipFile(v_FPath ,v_FN));
+                    }
+                    else if ( "UNZIP-C".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.unZipFileByCluster(v_FPath ,v_FN ,v_HIP));
                     }
                     else if ( "CALC-SIZE".equals(v_Action) )
                     {

@@ -9,7 +9,10 @@ import java.util.Map;
 import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.StringHelp;
+import org.hy.common.file.FileDataPacket;
 import org.hy.common.file.FileHelp;
+import org.hy.common.file.event.FileReadEvent;
+import org.hy.common.file.event.FileReadListener;
 import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
 import org.hy.common.net.data.CommunicationResponse;
@@ -31,7 +34,9 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
 public class AnalyseFS extends Analyse
 {
     
-    public static final String $WebHome = "$WebHome";
+    public static final String $WebHome   = "$WebHome";
+    
+    public static final String $CloudLock = ".cloudlock";
     
     
     
@@ -191,7 +196,7 @@ public class AnalyseFS extends Analyse
                 v_RKey.put(":FileName" ,"<a href='" + v_AUrl + "&FP=" + v_FReport.getFullName() + "'>" + v_FReport.getFileName() + "</a>");
                 v_RKey.put(":FileSize" ,"<a href='#' onclick='calcFileSize(\"" + v_FileNoName + "\")'>计算</a>");
                 
-                v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#'>集群克隆</a>"); 
+                v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='cloneFile(\"").append(v_FileNoName).append("\")'>集群克隆</a>");
                 v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='zipFile(\"").append(v_FileNoName).append("\")'>压缩</a>");
                 v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='delFile(\"").append(v_FileNoName).append("\")'>删除</a>");
             }
@@ -200,7 +205,7 @@ public class AnalyseFS extends Analyse
                 v_RKey.put(":FileName" ,v_FReport.getFileName()); 
                 v_RKey.put(":FileSize" ,StringHelp.getComputeUnit(v_FReport.getFileSize()));
                 
-                v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#'>集群克隆</a>");
+                v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='cloneFile(\"").append(v_FileNoName).append("\")'>集群克隆</a>");
                 
                 String v_FType = v_FReport.getFileType().toLowerCase();
                 if ( StringHelp.isContains(v_FType ,".zip" ,".tar" ,"gz") )
@@ -312,6 +317,122 @@ public class AnalyseFS extends Analyse
     
     
     /**
+     * 克隆文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-14
+     * @version     v1.0
+     *
+     * @param i_FilePath  路径
+     * @param i_FileName  名称
+     * @param i_HIP       资源存在的服务IP
+     * @return            返回值：0.成功
+     *                           1.异常
+     *                           2.文件不存在
+     */
+    public String cloneFile(String i_FilePath ,String i_FileName ,String i_HIP)
+    {
+        File     v_File      = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
+        File     v_CloudLock = null;
+        FileHelp v_FileHelp  = new FileHelp();
+        
+        v_FileHelp.setBufferSize(1024 * 1024);
+        v_FileHelp.setReturnContent(false);  // 不获取返回，可用于真超大文件的读取
+        
+        if ( v_File.exists() )
+        {
+            try
+            {
+                v_CloudLock = new File(v_File.toString() + $CloudLock); 
+                v_FileHelp.create(v_CloudLock.toString() ,Date.getNowTime().getFullMilli() ,"UTF-8");
+                
+                if ( v_File.isDirectory() )
+                {
+                    
+                }
+                else
+                {
+                    v_FileHelp.addReadListener(new CloneListener(i_FilePath ,v_File ,v_FileHelp.getBufferSize() ,i_HIP));
+                    v_FileHelp.getContentByte(v_File);
+                }
+                
+                return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+            }
+            catch (Exception exce)
+            {
+                exce.printStackTrace();
+            }
+            finally
+            {
+                if ( v_CloudLock != null && v_CloudLock.exists() && v_CloudLock.isFile() )
+                {
+                    v_CloudLock.delete();
+                }
+            }
+            
+            return StringHelp.replaceAll("{'retCode':'1'}" ,"'" ,"\"");
+        }
+        
+        return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
+    }
+    
+    
+    
+    /**
+     * 集群克隆文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-14
+     * @version     v1.0
+     *
+     * @param i_Dir
+     * @param i_DataPacket
+     * @return
+     */
+    public int cloneFileUpload(String i_Dir ,FileDataPacket i_DataPacket)
+    {
+        String v_Dir     = toTruePath(i_Dir);
+        File   v_DirFile = new File(v_Dir);
+        if ( !v_DirFile.exists() || !v_DirFile.isDirectory() )
+        {
+            // 如果目录不存在，则克隆到WebHome下。
+            v_Dir = Help.getWebHomePath();
+        }
+        
+        File     v_CloudLock = new File(v_Dir + Help.getSysPathSeparator() + i_DataPacket.getName() + $CloudLock);
+        FileHelp v_FileHelp  = new FileHelp();
+        
+        try
+        {
+            if ( !v_CloudLock.exists() )
+            {
+                if ( i_DataPacket.getDataNo().intValue() == 1 )
+                {
+                    File v_Old = new File(v_Dir + Help.getSysPathSeparator() + i_DataPacket.getName());
+                    if ( v_Old.exists() && v_Old.isFile() )
+                    {
+                        v_Old.delete();
+                    }
+                }
+                
+                return v_FileHelp.uploadServer(v_Dir ,i_DataPacket);
+            }
+            else
+            {
+                // 克隆的原文件，不再二次克隆
+            }
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+        }
+        
+        return FileHelp.$Upload_Error;
+    }
+    
+    
+    
+    /**
      * 删除本地文件
      * 
      * @author      ZhengWei(HY)
@@ -359,6 +480,75 @@ public class AnalyseFS extends Analyse
     
     
     /**
+     * 集群删除文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-15
+     * @version     v1.0
+     *
+     * @param i_FilePath
+     * @param i_FileName
+     * @param i_HIP
+     * @return            返回值：0.成功
+     *                           1.异常，同时返回失效服务器的IP。
+     */
+    public String delFileByCluster(String i_FilePath ,String i_FileName ,String i_HIP)
+    {
+        String             v_HIP     = "";
+        int                v_ExecRet = 0;
+        List<ClientSocket> v_Servers = Cluster.getClusters();
+        
+        removeHIP(v_Servers ,i_HIP ,false);
+        
+        if ( !Help.isNull(v_Servers) )
+        {
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"delFile" ,new Object[]{i_FilePath ,i_FileName});
+            
+            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            {
+                CommunicationResponse v_ResponseData = v_Item.getValue();
+                
+                if ( v_ResponseData.getResult() == 0 )
+                {
+                    if ( v_ResponseData.getData() != null )
+                    {
+                        String v_RetValue = v_ResponseData.getData().toString();
+                        v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                        
+                        if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                        {
+                            v_ExecRet++;
+                        }
+                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
+                        {
+                            if ( !Help.isNull(v_HIP) )
+                            {
+                                v_HIP += ",";
+                            }
+                            v_HIP += v_Item.getKey().getHostName();
+                        }
+                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
+                        {
+                            v_ExecRet++;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if ( v_ExecRet == v_Servers.size() )
+        {
+            return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+        }
+        else
+        {
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+        }
+    }
+    
+    
+    
+    /**
      * 压缩文件
      * 
      * @author      ZhengWei(HY)
@@ -367,11 +557,12 @@ public class AnalyseFS extends Analyse
      *
      * @param i_FilePath
      * @param i_FileName
+     * @param i_TimeID    时间ID
      * @return            返回值：0.成功
      *                           1.异常
      *                           2.文件不存在
      */
-    public String zipFile(String i_FilePath ,String i_FileName)
+    public String zipFile(String i_FilePath ,String i_FileName ,String i_TimeID)
     {
         File       v_File     = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
         FileHelp   v_FileHelp = new FileHelp();
@@ -381,7 +572,7 @@ public class AnalyseFS extends Analyse
         {
             try
             {
-                String v_SaveFile = toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName + "_" + Date.getNowTime().getFullMilli_ID() + ".zip";
+                String v_SaveFile = toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName + "_" + i_TimeID + ".zip";
                 if ( v_File.isDirectory() )
                 {
                     v_Files = v_FileHelp.getFiles(v_File);
@@ -404,6 +595,75 @@ public class AnalyseFS extends Analyse
         }
         
         return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
+    }
+    
+    
+    
+    /**
+     * 集群压缩文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-15
+     * @version     v1.0
+     *
+     * @param i_FilePath
+     * @param i_FileName
+     * @param i_HIP
+     * @return            返回值：0.成功
+     *                           1.异常，同时返回失效服务器的IP。
+     */
+    public String zipFileByCluster(String i_FilePath ,String i_FileName ,String i_HIP)
+    {
+        String             v_HIP     = "";
+        int                v_ExecRet = 0;
+        List<ClientSocket> v_Servers = Cluster.getClusters();
+        
+        removeHIP(v_Servers ,i_HIP ,false);
+        
+        if ( !Help.isNull(v_Servers) )
+        {
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"zipFile" ,new Object[]{i_FilePath ,i_FileName ,Date.getNowTime().getFullMilli_ID()});
+            
+            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            {
+                CommunicationResponse v_ResponseData = v_Item.getValue();
+                
+                if ( v_ResponseData.getResult() == 0 )
+                {
+                    if ( v_ResponseData.getData() != null )
+                    {
+                        String v_RetValue = v_ResponseData.getData().toString();
+                        v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                        
+                        if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                        {
+                            v_ExecRet++;
+                        }
+                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
+                        {
+                            if ( !Help.isNull(v_HIP) )
+                            {
+                                v_HIP += ",";
+                            }
+                            v_HIP += v_Item.getKey().getHostName();
+                        }
+                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
+                        {
+                            v_ExecRet++;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if ( v_ExecRet == v_Servers.size() )
+        {
+            return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+        }
+        else
+        {
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+        }
     }
     
     
@@ -444,6 +704,75 @@ public class AnalyseFS extends Analyse
         }
         
         return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
+    }
+    
+    
+    
+    /**
+     * 集群解压文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-15
+     * @version     v1.0
+     *
+     * @param i_FilePath
+     * @param i_FileName
+     * @param i_HIP
+     * @return            返回值：0.成功
+     *                           1.异常，同时返回失效服务器的IP。
+     */
+    public String unZipFileByCluster(String i_FilePath ,String i_FileName ,String i_HIP)
+    {
+        String             v_HIP     = "";
+        int                v_ExecRet = 0;
+        List<ClientSocket> v_Servers = Cluster.getClusters();
+        
+        removeHIP(v_Servers ,i_HIP ,false);
+        
+        if ( !Help.isNull(v_Servers) )
+        {
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"unZipFile" ,new Object[]{i_FilePath ,i_FileName});
+            
+            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            {
+                CommunicationResponse v_ResponseData = v_Item.getValue();
+                
+                if ( v_ResponseData.getResult() == 0 )
+                {
+                    if ( v_ResponseData.getData() != null )
+                    {
+                        String v_RetValue = v_ResponseData.getData().toString();
+                        v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                        
+                        if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                        {
+                            v_ExecRet++;
+                        }
+                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
+                        {
+                            if ( !Help.isNull(v_HIP) )
+                            {
+                                v_HIP += ",";
+                            }
+                            v_HIP += v_Item.getKey().getHostName();
+                        }
+                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
+                        {
+                            v_ExecRet++;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if ( v_ExecRet == v_Servers.size() )
+        {
+            return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+        }
+        else
+        {
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+        }
     }
     
     
@@ -547,6 +876,56 @@ public class AnalyseFS extends Analyse
     
     
     
+    /**
+     * 1.   删除已有资源的服务器信息
+     * 2. 或删除没有资源的服务器信息
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-15
+     * @version     v1.0
+     *
+     * @param io_Servers
+     * @param i_HIP
+     * @param i_IsRemoveHave  有资源时删除服务器，还是无资源时删除服务器
+     */
+    public static void removeHIP(List<ClientSocket> io_Servers ,String i_HIP ,boolean i_IsRemoveHave)
+    {
+        if ( Help.isNull(io_Servers) )
+        {
+            return;
+        }
+        
+        if ( !Help.isNull(i_HIP) )
+        {
+            String v_HIP = i_HIP + ",";
+            
+            if ( i_IsRemoveHave )
+            {
+                for (int i=io_Servers.size()-1; i>=0; i--)
+                {
+                    if ( v_HIP.indexOf(io_Servers.get(i).getHostName() + ",") >= 0 )
+                    {
+                        // 删除有资源的服务器，对没有资源的服务进行操作
+                        io_Servers.remove(i);
+                    }
+                }
+            }
+            else
+            {
+                for (int i=io_Servers.size()-1; i>=0; i--)
+                {
+                    if ( v_HIP.indexOf(io_Servers.get(i).getHostName() + ",") < 0 )
+                    {
+                        // 删除没有资源的服务器，对有资源的服务进行操作
+                        io_Servers.remove(i);
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    
     private String getTemplateShowFiles()
     {
         return this.getTemplateContent("template.showFiles.html");
@@ -557,6 +936,116 @@ public class AnalyseFS extends Analyse
     private String getTemplateShowFilesContent()
     {
         return this.getTemplateContent("template.showFilesContent.html");
+    }
+    
+    
+    
+    
+    
+    /**
+     * 克隆文件的监听器
+     *
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-15
+     * @version     v1.0
+     */
+    class CloneListener implements FileReadListener
+    {
+        
+        private String             savePath;
+        
+        private FileDataPacket     dataPacket;
+        
+        private List<ClientSocket> servers;
+        
+        
+        
+        public CloneListener(String i_SavePath ,File i_File ,int i_BufferSize ,String i_HIP)
+        {
+            this.savePath   = i_SavePath;
+            this.dataPacket = new FileDataPacket();
+            this.dataPacket.setName(     i_File.getName());
+            this.dataPacket.setDataCount((int)Math.ceil(Help.division(i_File.length() , i_BufferSize)));
+            this.dataPacket.setDataNo(0);
+            
+            this.servers = Cluster.getClusters();
+            removeHIP(this.servers ,i_HIP ,true);
+        }
+        
+        
+        
+        /**
+         * 读取文件内容之前
+         * 
+         * @param e
+         * @return   返回值表示是否继续拷贝
+         */
+        public boolean readBefore(FileReadEvent i_Event)
+        {
+            return true;
+        }
+        
+        
+
+        /**
+         * 读取文件内容的进度
+         * 
+         * @param e
+         * @return   返回值表示是否继续拷贝
+         */
+        public boolean readProcess(FileReadEvent i_Event)
+        {
+            if ( Help.isNull(this.servers) )
+            {
+                return false;
+            }
+            
+            this.dataPacket.setDataNo(this.dataPacket.getDataNo() + 1);
+            this.dataPacket.setDataByte(i_Event.getDataByte());
+            
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(this.servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"cloneFileUpload" ,new Object[]{this.savePath ,this.dataPacket});
+            
+            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            {
+                CommunicationResponse v_ResponseData = v_Item.getValue();
+                
+                if ( v_ResponseData.getResult() == 0 )
+                {
+                    if ( v_ResponseData.getData() != null )
+                    {
+                        int v_UploadValue = (Integer)v_ResponseData.getData();
+                        
+                        if ( v_UploadValue == FileHelp.$Upload_Finish )
+                        {
+                            
+                        }
+                        else if ( v_UploadValue == FileHelp.$Upload_GoOn )
+                        {
+                            
+                        }
+                        else 
+                        {
+                            
+                        }
+                    }
+                }
+            }
+            
+            return true;
+        }
+        
+        
+        
+        /**
+         * 读取文件内容完成之后
+         * 
+         * @param e
+         */
+        public void readAfter(FileReadEvent i_Event)
+        {
+            
+        }
+        
     }
     
 }
