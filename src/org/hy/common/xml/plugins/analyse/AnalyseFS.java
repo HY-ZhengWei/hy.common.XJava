@@ -337,7 +337,7 @@ public class AnalyseFS extends Analyse
         FileHelp v_FileHelp  = new FileHelp();
         
         v_FileHelp.setBufferSize(1024 * 1024);
-        v_FileHelp.setReturnContent(false);  // 不获取返回，可用于真超大文件的读取
+        v_FileHelp.setReturnContent(false);  // 不获取返回，可用于超大文件的读取
         
         if ( v_File.exists() )
         {
@@ -348,7 +348,16 @@ public class AnalyseFS extends Analyse
                 
                 if ( v_File.isDirectory() )
                 {
-                    
+                    List<File> v_Files = v_FileHelp.getFiles(v_File);
+                    if ( !Help.isNull(v_Files) )
+                    {
+                        String v_SaveFile = toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName + "_" + Date.getNowTime().getFullMilli_ID() + ".zip";
+                        v_FileHelp.createZip(v_SaveFile ,v_File.getParent() ,v_Files ,true);
+                    }
+                    else
+                    {
+                        // 空目录时，可集群创建空目录即可，无须压缩目录
+                    }
                 }
                 else
                 {
@@ -561,6 +570,7 @@ public class AnalyseFS extends Analyse
      * @return            返回值：0.成功
      *                           1.异常
      *                           2.文件不存在
+     *                           3.压缩目录中无任何文件，即空目录
      */
     public String zipFile(String i_FilePath ,String i_FileName ,String i_TimeID)
     {
@@ -576,7 +586,14 @@ public class AnalyseFS extends Analyse
                 if ( v_File.isDirectory() )
                 {
                     v_Files = v_FileHelp.getFiles(v_File);
-                    v_FileHelp.createZip(v_SaveFile ,v_File.getParent() ,v_Files ,true);
+                    if ( !Help.isNull(v_Files) )
+                    {
+                        v_FileHelp.createZip(v_SaveFile ,v_File.getParent() ,v_Files ,true);
+                    }
+                    else
+                    {
+                        return StringHelp.replaceAll("{'retCode':'3'}" ,"'" ,"\"");
+                    }
                 }
                 else
                 {
