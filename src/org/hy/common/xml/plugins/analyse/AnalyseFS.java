@@ -361,12 +361,13 @@ public class AnalyseFS extends Analyse
                         
                         // 删除临时的打包文件
                         v_SaveFile.delete();
-                        this.unZipFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP);  // 集群解压
-                        this.delFileByCluster(  i_FilePath ,v_SaveFileName ,i_HIP);  // 集群删除
+                        this.unZipFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP);         // 集群解压
+                        return this.delFileByCluster(  i_FilePath ,v_SaveFileName ,i_HIP);  // 集群删除
                     }
                     else
                     {
                         // 空目录时，可集群创建空目录即可，无须压缩目录
+                        return this.mkdirByCluster(i_FilePath ,i_FileName ,i_HIP);
                     }
                 }
                 else
@@ -806,6 +807,114 @@ public class AnalyseFS extends Analyse
     
     
     /**
+     * 创建目录
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-16
+     * @version     v1.0
+     *
+     * @param i_FilePath
+     * @param i_FileName
+     * @return            返回值：0.成功
+     *                           1.异常
+     *                           2.目录已存在
+     */
+    public String mkdir(String i_FilePath ,String i_FileName)
+    {
+        File v_File = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
+        
+        if ( !v_File.exists() || !v_File.isDirectory() )
+        {
+            try
+            {
+                v_File.mkdirs();
+                
+                return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+            }
+            catch (Exception exce)
+            {
+                exce.printStackTrace();
+            }
+            
+            return StringHelp.replaceAll("{'retCode':'1'}" ,"'" ,"\"");
+        }
+        
+        return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
+    }
+    
+    
+    
+    /**
+     * 集群创建目录
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-16
+     * @version     v1.0
+     *
+     * @param i_FilePath
+     * @param i_FileName
+     * @param i_HIP
+     * @return            返回值：0.成功
+     *                           1.异常，同时返回失效服务器的IP。
+     */
+    public String mkdirByCluster(String i_FilePath ,String i_FileName ,String i_HIP)
+    {
+        String             v_HIP     = "";
+        int                v_ExecRet = 0;
+        List<ClientSocket> v_Servers = Cluster.getClusters();
+        
+        removeHIP(v_Servers ,i_HIP ,true);
+        
+        if ( !Help.isNull(v_Servers) )
+        {
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"mkdir" ,new Object[]{i_FilePath ,i_FileName});
+            
+            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            {
+                CommunicationResponse v_ResponseData = v_Item.getValue();
+                
+                if ( v_ResponseData.getResult() == 0 )
+                {
+                    if ( v_ResponseData.getData() != null )
+                    {
+                        String v_RetValue = v_ResponseData.getData().toString();
+                        v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                        
+                        if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                        {
+                            v_ExecRet++;
+                        }
+                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
+                        {
+                            if ( !Help.isNull(v_HIP) )
+                            {
+                                v_HIP += ",";
+                            }
+                            v_HIP += v_Item.getKey().getHostName();
+                        }
+                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
+                        {
+                            // 目录存在时，也认为是成功的
+                            v_ExecRet++;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if ( v_ExecRet == v_Servers.size() )
+        {
+            return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+        }
+        else
+        {
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+        }
+    }
+    
+    
+    
+    /**
      * 计算目录的大小
      * 
      * @author      ZhengWei(HY)
@@ -905,8 +1014,8 @@ public class AnalyseFS extends Analyse
     
     
     /**
-     * 1.   删除已有资源的服务器信息
-     * 2. 或删除没有资源的服务器信息
+     * 1. i_IsRemoveHave = true ， 删除已有资源的服务器信息
+     * 2. i_IsRemoveHave = false， 删除没有资源的服务器信息
      * 
      * @author      ZhengWei(HY)
      * @createDate  2018-03-15
