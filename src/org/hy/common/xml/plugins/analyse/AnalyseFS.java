@@ -351,8 +351,18 @@ public class AnalyseFS extends Analyse
                     List<File> v_Files = v_FileHelp.getFiles(v_File);
                     if ( !Help.isNull(v_Files) )
                     {
-                        String v_SaveFile = toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName + "_" + Date.getNowTime().getFullMilli_ID() + ".zip";
-                        v_FileHelp.createZip(v_SaveFile ,v_File.getParent() ,v_Files ,true);
+                        String v_SaveFileName = i_FileName + "_" + Date.getNowTime().getFullMilli_ID() + ".zip";
+                        String v_SaveFileFull = toTruePath(i_FilePath) + Help.getSysPathSeparator() + v_SaveFileName;
+                        File   v_SaveFile     = new File(v_SaveFileFull);
+                        v_FileHelp.createZip(v_SaveFileFull ,v_SaveFile.getParent() ,v_Files ,true);
+                        
+                        v_FileHelp.addReadListener(new CloneListener(i_FilePath ,v_SaveFile ,v_FileHelp.getBufferSize() ,i_HIP));
+                        v_FileHelp.getContentByte(v_SaveFile);
+                        
+                        // 删除临时的打包文件
+                        v_SaveFile.delete();
+                        this.unZipFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP);  // 集群解压
+                        this.delFileByCluster(  i_FilePath ,v_SaveFileName ,i_HIP);  // 集群删除
                     }
                     else
                     {
@@ -775,6 +785,7 @@ public class AnalyseFS extends Analyse
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                         {
+                            // 不存在需解压的压缩包时，也认为是成功的
                             v_ExecRet++;
                         }
                     }
