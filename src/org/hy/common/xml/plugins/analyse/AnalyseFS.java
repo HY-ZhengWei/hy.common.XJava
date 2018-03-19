@@ -348,7 +348,7 @@ public class AnalyseFS extends Analyse
                 
                 if ( v_File.isDirectory() )
                 {
-                    List<File> v_Files = v_FileHelp.getFiles(v_File);
+                    List<File> v_Files = v_FileHelp.getFiles(v_File ,false);
                     if ( !Help.isNull(v_Files) )
                     {
                         String v_SaveFileName = i_FileName + "_" + Date.getNowTime().getFullMilli_ID() + ".zip";
@@ -356,13 +356,32 @@ public class AnalyseFS extends Analyse
                         File   v_SaveFile     = new File(v_SaveFileFull);
                         v_FileHelp.createZip(v_SaveFileFull ,v_SaveFile.getParent() ,v_Files ,true);
                         
-                        v_FileHelp.addReadListener(new CloneListener(i_FilePath ,v_SaveFile ,v_FileHelp.getBufferSize() ,i_HIP));
+                        CloneListener v_CloneListener = new CloneListener(i_FilePath ,v_SaveFile ,v_FileHelp.getBufferSize() ,i_HIP);
+                        v_FileHelp.addReadListener(v_CloneListener);
                         v_FileHelp.getContentByte(v_SaveFile);
                         
-                        // 删除临时的打包文件
-                        v_SaveFile.delete();
-                        this.unZipFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP);         // 集群解压
-                        return this.delFileByCluster(  i_FilePath ,v_SaveFileName ,i_HIP);  // 集群删除
+                        if ( Help.isNull(v_CloneListener.getHip()) )
+                        {
+                            // 删除临时的打包文件
+                            v_SaveFile.delete();
+                            
+                            // 集群解压
+                            String v_UnZipRet = this.unZipFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP); 
+                            v_UnZipRet = StringHelp.replaceAll(v_UnZipRet ,"\"" ,"'");
+                            if ( StringHelp.isContains(v_UnZipRet ,"'retCode':'0'") )
+                            {
+                                // 集群删除
+                                return this.delFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP); 
+                            }
+                            else
+                            {
+                                return v_UnZipRet;
+                            }
+                        }
+                        else
+                        {
+                            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_CloneListener.getHip() + "'}" ,"'" ,"\"");
+                        }
                     }
                     else
                     {
@@ -372,8 +391,14 @@ public class AnalyseFS extends Analyse
                 }
                 else
                 {
-                    v_FileHelp.addReadListener(new CloneListener(i_FilePath ,v_File ,v_FileHelp.getBufferSize() ,i_HIP));
+                    CloneListener v_CloneListener = new CloneListener(i_FilePath ,v_File ,v_FileHelp.getBufferSize() ,i_HIP);
+                    v_FileHelp.addReadListener(v_CloneListener);
                     v_FileHelp.getContentByte(v_File);
+                    
+                    if ( !Help.isNull(v_CloneListener) )
+                    {
+                        return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_CloneListener.getHip() + "'}" ,"'" ,"\"");
+                    }
                 }
                 
                 return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
@@ -390,7 +415,7 @@ public class AnalyseFS extends Analyse
                 }
             }
             
-            return StringHelp.replaceAll("{'retCode':'1'}" ,"'" ,"\"");
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':''}" ,"'" ,"\"");
         }
         
         return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
@@ -596,7 +621,8 @@ public class AnalyseFS extends Analyse
                 String v_SaveFile = toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName + "_" + i_TimeID + ".zip";
                 if ( v_File.isDirectory() )
                 {
-                    v_Files = v_FileHelp.getFiles(v_File);
+                    v_Files.add(v_File);
+                    v_Files.addAll(v_FileHelp.getFiles(v_File ,false));
                     if ( !Help.isNull(v_Files) )
                     {
                         v_FileHelp.createZip(v_SaveFile ,v_File.getParent() ,v_Files ,true);
@@ -1095,10 +1121,13 @@ public class AnalyseFS extends Analyse
         
         private List<ClientSocket> servers;
         
+        private String             hip;
+        
         
         
         public CloneListener(String i_SavePath ,File i_File ,int i_BufferSize ,String i_HIP)
         {
+            this.hip        = "";
             this.savePath   = i_SavePath;
             this.dataPacket = new FileDataPacket();
             this.dataPacket.setName(     i_File.getName());
@@ -1111,6 +1140,16 @@ public class AnalyseFS extends Analyse
         
         
         
+        /**
+         * 获取：执行异常的服务IP
+         */
+        public String getHip()
+        {
+            return hip;
+        }
+        
+
+
         /**
          * 读取文件内容之前
          * 
@@ -1140,6 +1179,7 @@ public class AnalyseFS extends Analyse
             this.dataPacket.setDataNo(this.dataPacket.getDataNo() + 1);
             this.dataPacket.setDataByte(i_Event.getDataByte());
             
+            int                                      v_ExecRet       = 0;
             Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(this.servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"cloneFileUpload" ,new Object[]{this.savePath ,this.dataPacket});
             
             for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
@@ -1154,21 +1194,25 @@ public class AnalyseFS extends Analyse
                         
                         if ( v_UploadValue == FileHelp.$Upload_Finish )
                         {
-                            
+                            v_ExecRet++;
                         }
                         else if ( v_UploadValue == FileHelp.$Upload_GoOn )
                         {
-                            
+                            v_ExecRet++;
                         }
                         else 
                         {
-                            
+                            if ( !Help.isNull(hip) )
+                            {
+                                hip += ",";
+                            }
+                            hip += v_Item.getKey().getHostName();
                         }
                     }
                 }
             }
             
-            return true;
+            return v_ExecRet == this.servers.size();
         }
         
         
