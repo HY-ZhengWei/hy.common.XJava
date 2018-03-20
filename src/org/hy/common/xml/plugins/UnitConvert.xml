@@ -67,6 +67,16 @@
 			<item><name>吨/小时</name><value>t/h</value></item>
 			<item><name>磅/小时</name><value>lb/h</value></item>
 			<item><name>千克/秒</name><value>kg/s</value></item>
+			
+			
+			<!-- 粘度单位 -->
+			<item><name>平方毫米/秒</name><value>mm^2/s</value></item>
+			<item><name>平方米/秒</name><value>m^2/s</value></item>
+			<item><name>平方米/小时</name><value>m^2/h</value></item>
+			<item><name>厘斯</name><value>cST</value></item>
+			<item><name>毫帕斯卡.秒</name><value>mPa.s</value></item>
+			<item><name>厘泊</name><value>mPa.s</value></item>       <!-- 厘泊的缩写是cP，但与mPa.s等同 -->
+			<item><name>cP</name><value>mPa.s</value></item>        <!-- 厘泊的缩写是cP，但与mPa.s等同 -->
 		</alias>
 		
 		
@@ -123,6 +133,13 @@
 			<item><value>kg/h</value><name>lb/h</name></item>
 			<item><value>kg/h</value><name>kg/s</name></item>
 			
+			
+			<!-- 粘度单位 -->
+			<item><value>mm^2/s</value><name>mm^2/s</name></item>
+			<item><value>mm^2/s</value><name>m^2/s</name></item>
+			<item><value>mm^2/s</value><name>m^2/h</name></item>
+			<item><value>mm^2/s</value><name>cST</name></item>
+			<item><value>mm^2/s</value><name>mPa.s</name></item>  <!-- 两个入参 -->
 		</standards>
 		
 		
@@ -458,57 +475,15 @@
 			
 			<!-- 粘度单位 -->
 			<call name="putRow">
-				<String>毫帕斯卡.秒</String>
-				<String>厘泊</String>
-				<String>UCE</String>
-			</call>
-			
-			<call name="putRow">
-				<String>mPa.s</String>
-				<String>cP</String>
-				<String>UCE</String>                            <!-- 别名：毫帕斯卡.秒 to 厘泊 -->
-			</call>
-			
-			<call name="putRow">
-				<String>厘泊</String>
-				<String>毫帕斯卡.秒</String>
-				<String>UCE</String>
-			</call>
-			
-			<call name="putRow">
-				<String>cP</String>
-				<String>mPa.s</String>
-				<String>UCE</String>                            <!-- 别名：厘泊 to 毫帕斯卡.秒 -->
-			</call>
-			
-			<call name="putRow">
-				<String>平方毫米/秒</String>
-				<String>厘斯</String>
-				<String>UCE</String>
-			</call>
-			
-			<call name="putRow">
 				<String>mm^2/s</String>
 				<String>cST</String>
-				<String>UCE</String>                            <!-- 别名：平方毫米/秒 to 厘斯 -->
-			</call>
-			
-			<call name="putRow">
-				<String>厘斯</String>
-				<String>平方毫米/秒</String>
-				<String>UCE</String>
+				<String>UCE</String>                            <!-- 平方毫米/秒 to 厘斯 -->
 			</call>
 			
 			<call name="putRow">
 				<String>cST</String>
 				<String>mm^2/s</String>
-				<String>UCE</String>                            <!-- 别名：厘斯 to 平方毫米/秒 -->
-			</call>
-			
-			<call name="putRow">
-				<String>平方毫米/秒</String>
-				<String>平方米/秒</String>
-				<String>UCE / 1000000</String>
+				<String>UCE</String>                            <!-- 厘斯 to 平方毫米/秒 -->
 			</call>
 			
 			<call name="putRow">
@@ -518,33 +493,15 @@
 			</call>
 			
 			<call name="putRow">
-				<String>平方米/秒</String>
-				<String>平方毫米/秒</String>
-				<String>UCE * 1000000</String>
-			</call>
-			
-			<call name="putRow">
 				<String>m^2/s</String>
 				<String>mm^2/s</String>
 				<String>UCE * 1000000</String>                  <!-- 平方米/秒 to 平方毫米/秒 -->
 			</call>
 			
 			<call name="putRow">
-				<String>平方毫米/秒</String>
-				<String>平方米/小时</String>
-				<String>UCE / 277.777</String>
-			</call>
-			
-			<call name="putRow">
 				<String>mm^2/s</String>
 				<String>m^2/h</String>
 				<String>UCE / 277.777</String>                  <!-- 平方毫米/秒 to 平方米/小时 -->
-			</call>
-			
-			<call name="putRow">
-				<String>平方米/小时</String>
-				<String>平方毫米/秒</String>
-				<String>UCE * 277.777</String>
 			</call>
 			
 			<call name="putRow">
@@ -644,28 +601,16 @@
 			
 			<!-- 操作密度、标准密度相关的流量单位（有两个入参） -->
 			<call name="putRow">
-				<String>平方毫米/秒</String>
-				<String>毫帕斯卡.秒</String>
-				<String>UCE * P01 / 1000</String>
-			</call>
-			
-			<call name="putRow">
 				<String>mm^2/s</String>
 				<String>mPa.s</String>
 				<String>UCE * P01 / 1000</String>               <!-- 操作密度：平方毫米/秒 to 毫帕斯卡.秒 -->
-			</call>
-			
-			<call name="putRow">
-				<String>毫帕斯卡.秒</String>
-				<String>平方毫米/秒</String>
-				<String>UCE * 1000 / P01</String>
-			</call>
+			</call>                                             <!-- P01：操作密度，单位：kg/m^3 -->
 			
 			<call name="putRow">
 				<String>mPa.s</String>
 				<String>mm^2/s</String>
 				<String>UCE * 1000 / P01</String>               <!-- 操作密度：毫帕斯卡.秒 to 平方毫米/秒 -->
-			</call>
+			</call>                                             <!-- P01：操作密度，单位：kg/m^3 -->
 			
 			<call name="putRow">
 				<String>千克/小时</String>
