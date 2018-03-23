@@ -381,6 +381,8 @@ public final class XSQL implements Comparable<XSQL>
         {
             i_XSQL.getDataSourceGroup().setException(true);
         }
+        
+        System.err.println(i_SQL);
     }
     
     
