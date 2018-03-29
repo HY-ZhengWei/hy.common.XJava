@@ -1494,7 +1494,7 @@ public final class XSQLGroup
                 v_Interval = ThreadPool.getIntervalTime() * 3;
             }
             
-            while ( !i_XSQLGroupResult.taskGroup.isTasksFinish() )
+            do 
             {
                 // 一直等待并且的执行结果
                 try
@@ -1505,7 +1505,7 @@ public final class XSQLGroup
                 {
                     // Nothing.
                 }
-            }
+            } while ( !i_XSQLGroupResult.taskGroup.isTasksFinish() );
             
             // 获取执行结果
             XSQLGroupTask v_Task = (XSQLGroupTask)i_XSQLGroupResult.taskGroup.getTask(0);
@@ -1555,7 +1555,7 @@ public final class XSQLGroup
     public XSQLGroupResult waitClouds(XSQLNode i_CloudWaitNode ,XSQLGroupResult i_XSQLGroupResult)
     {
         long v_Interval = Math.max(i_CloudWaitNode.getCloudWaitInterval() ,i_CloudWaitNode.getCloudExecInterval());
-        while ( i_CloudWaitNode.getCloudBusyCount() - i_CloudWaitNode.getCloudErrorCount() >= 1 )
+        do
         {
             // 一直等待并且的执行结果
             try
@@ -1566,7 +1566,7 @@ public final class XSQLGroup
             {
                 // Nothing.
             }
-        }
+        } while ( i_CloudWaitNode.getCloudBusyCount() - i_CloudWaitNode.getCloudErrorCount() >= 1 );
         
         // 2018-02-22 还原各状态参数
         i_CloudWaitNode.setCloudBusyCount (0);
