@@ -68,6 +68,7 @@ import com.greenpineyu.fel.context.FelContext;
  *                                2.添加：云计算异常时，尝试交给其它云服务计算。当重试多次(this.cloudRetryCount)云计算仍然异常时，放弃计算。
  *              v13.0 2018-03-05  1.添加：执行异常时重试XSQLNode.retryCount功能。
  *              v13.1 2018-03-08  1.添加：执行异常时重试等待的时间间隔XSQLNode.retryInterval功能。
+ *              v13.2 2018-03-29  1.添加：针对具体SQL节点的Java断言调试功能。方面问题的定位。
  */
 public class XSQLNode
 {
@@ -454,6 +455,9 @@ public class XSQLNode
     /** 是否采用大数据模式控制循环遍历 */
     private boolean                      bigData;
     
+    /** 是否断言(assert)调试 */
+    private boolean                      debug;
+    
     
     
     public XSQLNode()
@@ -490,6 +494,7 @@ public class XSQLNode
         this.freeConnection     = false;
         this.oneConnection      = false;
         this.bigData            = false;
+        this.debug              = false;
     }
     
     
@@ -1811,6 +1816,28 @@ public class XSQLNode
     public void setBigData(boolean bigData)
     {
         this.bigData = bigData;
+    }
+
+
+    
+    /**
+     * 获取：是否断言(assert)调试
+     */
+    public boolean isDebug()
+    {
+        return debug;
+    }
+    
+
+    
+    /**
+     * 设置：是否断言(assert)调试
+     * 
+     * @param debug 
+     */
+    public void setDebug(boolean debug)
+    {
+        this.debug = debug;
     }
     
 }

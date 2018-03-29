@@ -137,6 +137,7 @@ import org.hy.common.xml.XSQLBigData;
  *              v20.0 2018-03-05  1.添加：重置统计数据的功能。
  *                                2.添加：执行异常时重试XSQLNode.retryCount功能。
  *              v20.1 2018-03-08  1.添加：执行异常时重试等待的时间间隔XSQLNode.retryInterval功能。
+ *              v20.2 2018-03-29  1.添加：针对具体SQL节点的Java断言调试功能。方面问题的定位。
  */
 public final class XSQLGroup
 {
@@ -813,6 +814,11 @@ public final class XSQLGroup
         }
         
         XSQLNode v_Node = this.xsqlNodes.get(v_NodeIndex);
+        if ( v_Node.isDebug() )
+        {
+            assert v_Node.isDebug() : "Use assert debug.";
+        }
+        
         // 在整个组合XSQLGroup的最后执行，并只执行一次。不在查询类型XSQL节点的循环之中执行
         if ( v_Node.isLastOnce() )
         {
