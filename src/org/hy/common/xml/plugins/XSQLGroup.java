@@ -137,7 +137,7 @@ import org.hy.common.xml.XSQLBigData;
  *              v20.0 2018-03-05  1.添加：重置统计数据的功能。
  *                                2.添加：执行异常时重试XSQLNode.retryCount功能。
  *              v20.1 2018-03-08  1.添加：执行异常时重试等待的时间间隔XSQLNode.retryInterval功能。
- *              v20.2 2018-03-29  1.添加：针对具体SQL节点的Java断言调试功能。方面问题的定位。
+ *              v20.2 2018-03-29  1.添加：针对具体XSQL节点的Java断言调试功能。方面问题的定位。
  */
 public final class XSQLGroup
 {
@@ -517,6 +517,8 @@ public final class XSQLGroup
         int             v_NodeIndex = i_SuperNodeIndex + 1;
         XSQLNode        v_Node      = this.xsqlNodes.get(v_NodeIndex);
         
+        debug(v_Node);
+        
         // 检查条件是否通过
         if ( !v_Node.isPass(io_Params) )
         {
@@ -585,6 +587,8 @@ public final class XSQLGroup
         for (int v_NodeIndex=0; v_Ret.isSuccess() && v_NodeIndex<this.xsqlNodes.size(); v_NodeIndex++)
         {
             XSQLNode v_Node = this.xsqlNodes.get(v_NodeIndex);
+            
+            debug(v_Node);
             
             if ( !v_Node.isLastOnce() 
               || ( XSQLNode.$Type_Query            .equals(v_Node.getType()) && Help.isNull(v_Node.getReturnID()) )
@@ -814,10 +818,8 @@ public final class XSQLGroup
         }
         
         XSQLNode v_Node = this.xsqlNodes.get(v_NodeIndex);
-        if ( v_Node.isDebug() )
-        {
-            assert v_Node.isDebug() : "Use assert debug.";
-        }
+        
+        debug(v_Node);
         
         // 在整个组合XSQLGroup的最后执行，并只执行一次。不在查询类型XSQL节点的循环之中执行
         if ( v_Node.isLastOnce() )
@@ -2233,8 +2235,29 @@ public final class XSQLGroup
     {
         this.comment = comment;
     }
-
-
+    
+    
+    
+    /**
+     * 针对具体XSQL节点的Java断言调试功能。方面问题的定位。
+     * 
+     * 在XSQL节点准备开始执行前触发。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-29
+     * @version     v1.0
+     *
+     * @param v_Node
+     */
+    private void debug(XSQLNode v_Node)
+    {
+        if ( v_Node.isDebug() )
+        {
+            assert v_Node.isDebug() : "Use assert debug.";
+        }
+    }
+    
+    
 
     /**
      *
