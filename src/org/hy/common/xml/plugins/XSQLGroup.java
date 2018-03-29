@@ -137,7 +137,7 @@ import org.hy.common.xml.XSQLBigData;
  *              v20.0 2018-03-05  1.添加：重置统计数据的功能。
  *                                2.添加：执行异常时重试XSQLNode.retryCount功能。
  *              v20.1 2018-03-08  1.添加：执行异常时重试等待的时间间隔XSQLNode.retryInterval功能。
- *              v20.2 2018-03-29  1.添加：针对具体XSQL节点的Java断言调试功能。方面问题的定位。
+ *              v20.2 2018-03-29  1.添加：针对具体XSQL节点的Java断言调试功能。方便问题的定位。
  */
 public final class XSQLGroup
 {
