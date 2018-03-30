@@ -138,6 +138,7 @@ import org.hy.common.xml.XSQLBigData;
  *                                2.添加：执行异常时重试XSQLNode.retryCount功能。
  *              v20.1 2018-03-08  1.添加：执行异常时重试等待的时间间隔XSQLNode.retryInterval功能。
  *              v20.2 2018-03-29  1.添加：针对具体XSQL节点的Java断言调试功能。方便问题的定位。
+ *              v20.3 2018-03-30  1.添加：集合当作SQL查询集合用的功能，支持从返回值数据集合中获取集合对象。即，支持动态缓存功能。
  */
 public final class XSQLGroup
 {
@@ -684,7 +685,7 @@ public final class XSQLGroup
                     }
                     else if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_Node.getType()) )
                     {
-                        List<Object> v_CollectionParam = getCollectionToQueryOrDB(v_Node ,io_Params);
+                        List<Object> v_CollectionParam = getCollectionToQueryOrDB(v_Node ,io_Params ,v_Ret);
                         
                         if ( !Help.isNull(v_CollectionParam) )
                         {
@@ -890,7 +891,7 @@ public final class XSQLGroup
                         
                         if ( XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
                         {
-                            v_QueryRet = getCollectionToQueryOrDB(v_Node ,io_Params);
+                            v_QueryRet = getCollectionToQueryOrDB(v_Node ,io_Params ,v_Ret);
                         }
                         else if ( v_Node.isBigData() )
                         {
@@ -1322,7 +1323,7 @@ public final class XSQLGroup
                     
                     if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_Node.getType()) )
                     {
-                        List<Object> v_CollectionParam = getCollectionToQueryOrDB(v_Node ,io_Params);
+                        List<Object> v_CollectionParam = getCollectionToQueryOrDB(v_Node ,io_Params ,v_Ret);
                         
                         if ( !Help.isNull(v_CollectionParam) )
                         {
@@ -1637,13 +1638,15 @@ public final class XSQLGroup
      * @author      ZhengWei(HY)
      * @createDate  2016-07-30
      * @version     v1.0
+     *              v2.0  2018-03-30  添加：支持从返回值数据集合中获取集合对象。即，支持动态缓存功能。
      *
      * @param i_Node            XSQL节点
      * @param io_Params         执行或查询参数
+     * @param i_Return          返回数据
      * @return
      */
     @SuppressWarnings("unchecked")
-    private List<Object> getCollectionToQueryOrDB(XSQLNode i_Node ,Map<String ,Object> io_Params)
+    private List<Object> getCollectionToQueryOrDB(XSQLNode i_Node ,Map<String ,Object> io_Params ,XSQLGroupResult i_Return)
     {
         List<Object> v_QueryRet = null;
         
@@ -1657,9 +1660,16 @@ public final class XSQLGroup
             
             if ( v_MapValue == null )
             {
-                // Nothing.
+                // 支持从返回值数据集合中获取集合对象。即，支持动态缓存功能。 ZhengWei(HY) Add 2018-03-30
+                v_MapValue = MethodReflect.getMapValue(i_Return.getReturns() ,i_Node.getCollectionID());
+                
+                if ( v_MapValue == null )
+                {
+                    return null;
+                }
             }
-            else if ( MethodReflect.isExtendImplement(v_MapValue ,List.class) )
+            
+            if ( MethodReflect.isExtendImplement(v_MapValue ,List.class) )
             {
                 v_QueryRet = (List<Object>)v_MapValue;
             }
