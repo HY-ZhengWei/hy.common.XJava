@@ -20,6 +20,7 @@ import org.hy.common.db.DataSourceGroup;
 import org.hy.common.thread.Task;
 import org.hy.common.thread.TaskGroup;
 import org.hy.common.thread.ThreadPool;
+import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQLBigData;
 
 
@@ -139,6 +140,7 @@ import org.hy.common.xml.XSQLBigData;
  *              v20.1 2018-03-08  1.添加：执行异常时重试等待的时间间隔XSQLNode.retryInterval功能。
  *              v20.2 2018-03-29  1.添加：针对具体XSQL节点的Java断言调试功能。方便问题的定位。
  *              v20.3 2018-03-30  1.添加：集合当作SQL查询集合用的功能，支持从返回值数据集合中获取集合对象。即，支持动态缓存功能。
+ *              v20.4 2018-04-02  1.添加：集合当作SQL查询集合用的功能，支持从XJava对象池中获取集合对象。即支持持久缓存功能。
  */
 public final class XSQLGroup
 {
@@ -1639,6 +1641,7 @@ public final class XSQLGroup
      * @createDate  2016-07-30
      * @version     v1.0
      *              v2.0  2018-03-30  添加：支持从返回值数据集合中获取集合对象。即，支持动态缓存功能。
+     *              v3.0  2018-04-02  添加：支持从XJava对象池中获取集合对象。即支持持久缓存功能。
      *
      * @param i_Node            XSQL节点
      * @param io_Params         执行或查询参数
@@ -1665,7 +1668,13 @@ public final class XSQLGroup
                 
                 if ( v_MapValue == null )
                 {
-                    return null;
+                    // 支持从XJava对象池中获取集合对象。即支持持久缓存功能。ZhengWei(HY) Add 2018-04-02
+                    v_MapValue = XJava.getObject(i_Node.getCollectionID());
+                    
+                    if ( v_MapValue == null )
+                    {
+                        return null;
+                    }
                 }
             }
             
