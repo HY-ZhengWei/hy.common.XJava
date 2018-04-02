@@ -35,7 +35,7 @@ public class XSQLGroupControl
     /** 累计影响(Insert、Update、Delete)的总行数 */
     protected Counter<String>                   execSumCount;
     
-    protected TaskGroup                         taskGroup;
+    protected Map<String ,TaskGroup>            taskGroup;
     
     
     
