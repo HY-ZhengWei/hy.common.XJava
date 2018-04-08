@@ -92,6 +92,7 @@ public class XSQLNode
      *  即执行数据库操作，不获取操作结果。执行参数由外界或其它查询类型的节点(XSQLNode)提供。
      *  
      *  注意：此类型的数据库连接与freeConnection同义，不再由XSQL组控制及管理。每次执行均使用独立的数据库连接。
+     *       也因此，在云计算时，建议高并发的更新操作(Insert、Update、Delete)均使用此类型
      */
     public static final String  $Type_Execute                    = "Execute";
     
