@@ -228,13 +228,21 @@ function cloneFile(i_File)
 	{
 		f_OpenDialog("Dialog-Default" 
 				    ,"确认克隆资源吗？" 
-				    ,"<b>" + v_FileName + "</b><br>克隆将会覆盖，确定克隆吗？"
-				    ,v_Height_Msg
+				    ,"<b>" + v_FileName + "</b><br>克隆将会覆盖，确定克隆吗？<br><br>" + ":SelectHIP"
+				    ,v_Height_Msg + 40
 				    ,{
 			        	"全部克隆": function() 
 			        	{
 			        		$(this).dialog("close");
 			        		cloneFileAction(v_FileName ,"");
+			          	},
+			          	"定向克隆": function() 
+			        	{
+			          		if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
+			          		{
+				        		$(this).dialog("close");
+				        		cloneFileAction(v_FileName ,"!" + $("#SelectHIP").val());
+			        		}
 			          	},
 			          	"取　　消": function() 
 			          	{

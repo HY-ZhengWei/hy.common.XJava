@@ -277,9 +277,24 @@ public class AnalyseFS extends Analyse
             v_Goto += "<a href='analyseObject?FS=Y&S=" + i_SortType +"&cluster=Y&FP=" + v_FPath + "' style='color:#AA66CC'>查看集群</a>";
         }
         
+        StringBuilder v_SelectHIP = new StringBuilder();
+        List<ClientSocket> v_Servers = Cluster.getClusters();
+        if ( !Help.isNull(v_Servers) )
+        {
+            v_SelectHIP.append("<select id='SelectHIP' name='SelectHIP' width='300px'>");
+            v_SelectHIP.append("<option disabled selected>请选择定向克隆的服务器</option>");
+            
+            for (ClientSocket v_Server : v_Servers)
+            {
+                v_SelectHIP.append("<option>").append(v_Server.getHostName()).append("</option>");
+            }
+            
+            v_SelectHIP.append("</select>");
+        }
+        
         return StringHelp.replaceAll(this.getTemplateShowFiles()
-                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":cluster"             ,":Content"}
-                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,(i_Cluster ? "Y" : "") ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":cluster"             ,":SelectHIP"           ,":Content"}
+                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,(i_Cluster ? "Y" : "") ,v_SelectHIP.toString() ,v_Buffer.toString()});
     }
     
     
@@ -351,7 +366,7 @@ public class AnalyseFS extends Analyse
                     String v_SaveFileFull = toTruePath(i_FilePath) + Help.getSysPathSeparator() + v_SaveFileName;
                     File   v_SaveFile     = new File(v_SaveFileFull);
                     
-                    v_FileHelp.createZip4j(v_SaveFileFull ,v_SaveFile.getParent());
+                    v_FileHelp.createZip4j(v_SaveFileFull ,v_File.toString());
                     
                     CloneListener v_CloneListener = new CloneListener(i_FilePath ,v_SaveFile ,v_FileHelp.getBufferSize() ,i_HIP);
                     v_FileHelp.addReadListener(v_CloneListener);
@@ -1055,9 +1070,15 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(i_HIP) )
         {
-            String v_HIP = i_HIP + ",";
+            String  v_HIP          = i_HIP + ",";
+            boolean v_IsRemoveHave = i_IsRemoveHave;
+            if ( v_HIP.startsWith("!") )
+            {
+                // 当为定向操作时，如定向克隆
+                v_IsRemoveHave = false;
+            }
             
-            if ( i_IsRemoveHave )
+            if ( v_IsRemoveHave )
             {
                 for (int i=io_Servers.size()-1; i>=0; i--)
                 {
@@ -1118,12 +1139,15 @@ public class AnalyseFS extends Analyse
         
         private String             hip;
         
+        private boolean            isClone;
+        
         
         
         public CloneListener(String i_SavePath ,File i_File ,int i_BufferSize ,String i_HIP)
         {
             this.hip        = "";
             this.savePath   = i_SavePath;
+            this.isClone    = false;
             this.dataPacket = new FileDataPacket();
             this.dataPacket.setName(     i_File.getName());
             this.dataPacket.setDataCount((int)Math.ceil(Help.division(i_File.length() , i_BufferSize)));
@@ -1166,6 +1190,7 @@ public class AnalyseFS extends Analyse
          */
         public boolean readProcess(FileReadEvent i_Event)
         {
+            this.isClone = true;
             if ( Help.isNull(this.servers) )
             {
                 return false;
@@ -1219,7 +1244,11 @@ public class AnalyseFS extends Analyse
          */
         public void readAfter(FileReadEvent i_Event)
         {
-            
+            // 当文件大小为0时，readProcess(...)方法是不会被调用的，所以是此特殊处理一下。
+            if ( !this.isClone )
+            {
+                readProcess(i_Event);
+            }
         }
         
     }
