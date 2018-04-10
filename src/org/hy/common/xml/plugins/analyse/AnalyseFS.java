@@ -1,7 +1,6 @@
 package org.hy.common.xml.plugins.analyse;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -348,45 +347,37 @@ public class AnalyseFS extends Analyse
                 
                 if ( v_File.isDirectory() )
                 {
-                    List<File> v_Files = v_FileHelp.getFiles(v_File ,false);
-                    if ( !Help.isNull(v_Files) )
+                    String v_SaveFileName = i_FileName + "_" + Date.getNowTime().getFullMilli_ID() + ".zip";
+                    String v_SaveFileFull = toTruePath(i_FilePath) + Help.getSysPathSeparator() + v_SaveFileName;
+                    File   v_SaveFile     = new File(v_SaveFileFull);
+                    
+                    v_FileHelp.createZip4j(v_SaveFileFull ,v_SaveFile.getParent());
+                    
+                    CloneListener v_CloneListener = new CloneListener(i_FilePath ,v_SaveFile ,v_FileHelp.getBufferSize() ,i_HIP);
+                    v_FileHelp.addReadListener(v_CloneListener);
+                    v_FileHelp.getContentByte(v_SaveFile);
+                    
+                    if ( Help.isNull(v_CloneListener.getHip()) )
                     {
-                        String v_SaveFileName = i_FileName + "_" + Date.getNowTime().getFullMilli_ID() + ".zip";
-                        String v_SaveFileFull = toTruePath(i_FilePath) + Help.getSysPathSeparator() + v_SaveFileName;
-                        File   v_SaveFile     = new File(v_SaveFileFull);
-                        v_FileHelp.createZip(v_SaveFileFull ,v_SaveFile.getParent() ,v_Files ,true);
+                        // 删除临时的打包文件
+                        v_SaveFile.delete();
                         
-                        CloneListener v_CloneListener = new CloneListener(i_FilePath ,v_SaveFile ,v_FileHelp.getBufferSize() ,i_HIP);
-                        v_FileHelp.addReadListener(v_CloneListener);
-                        v_FileHelp.getContentByte(v_SaveFile);
-                        
-                        if ( Help.isNull(v_CloneListener.getHip()) )
+                        // 集群解压
+                        String v_UnZipRet = this.unZipFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP); 
+                        v_UnZipRet = StringHelp.replaceAll(v_UnZipRet ,"\"" ,"'");
+                        if ( StringHelp.isContains(v_UnZipRet ,"'retCode':'0'") )
                         {
-                            // 删除临时的打包文件
-                            v_SaveFile.delete();
-                            
-                            // 集群解压
-                            String v_UnZipRet = this.unZipFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP); 
-                            v_UnZipRet = StringHelp.replaceAll(v_UnZipRet ,"\"" ,"'");
-                            if ( StringHelp.isContains(v_UnZipRet ,"'retCode':'0'") )
-                            {
-                                // 集群删除
-                                return this.delFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP); 
-                            }
-                            else
-                            {
-                                return v_UnZipRet;
-                            }
+                            // 集群删除
+                            return this.delFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP); 
                         }
                         else
                         {
-                            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_CloneListener.getHip() + "'}" ,"'" ,"\"");
+                            return v_UnZipRet;
                         }
                     }
                     else
                     {
-                        // 空目录时，可集群创建空目录即可，无须压缩目录
-                        return this.mkdirByCluster(i_FilePath ,i_FileName ,i_HIP);
+                        return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_CloneListener.getHip() + "'}" ,"'" ,"\"");
                     }
                 }
                 else
@@ -610,33 +601,36 @@ public class AnalyseFS extends Analyse
      */
     public String zipFile(String i_FilePath ,String i_FileName ,String i_TimeID)
     {
-        File       v_File     = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
-        FileHelp   v_FileHelp = new FileHelp();
-        List<File> v_Files    = new ArrayList<File>();
+        File     v_File     = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
+        FileHelp v_FileHelp = new FileHelp();
         
         if ( v_File.exists() )
         {
             try
             {
                 String v_SaveFile = toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName + "_" + i_TimeID + ".zip";
-                if ( v_File.isDirectory() )
-                {
-                    v_Files.add(v_File);
-                    v_Files.addAll(v_FileHelp.getFiles(v_File ,false));
-                    if ( !Help.isNull(v_Files) )
-                    {
-                        v_FileHelp.createZip(v_SaveFile ,v_File.getParent() ,v_Files ,true);
-                    }
-                    else
-                    {
-                        return StringHelp.replaceAll("{'retCode':'3'}" ,"'" ,"\"");
-                    }
-                }
-                else
-                {
-                    v_Files.add(v_File);
-                    v_FileHelp.createZip(v_SaveFile ,null ,v_Files ,true);
-                }
+                
+                v_FileHelp.createZip4j(v_SaveFile ,v_File.toString());
+                
+//                List<File> v_Files = new ArrayList<File>();
+//                if ( v_File.isDirectory() )
+//                {
+//                    v_Files.add(v_File);
+//                    v_Files.addAll(v_FileHelp.getFiles(v_File ,false));
+//                    if ( !Help.isNull(v_Files) )
+//                    {
+//                        v_FileHelp.createZip(v_SaveFile ,v_File.getParent() ,v_Files ,true);
+//                    }
+//                    else
+//                    {
+//                        return StringHelp.replaceAll("{'retCode':'3'}" ,"'" ,"\"");
+//                    }
+//                }
+//                else
+//                {
+//                    v_Files.add(v_File);
+//                    v_FileHelp.createZip(v_SaveFile ,null ,v_Files ,true);
+//                }
                 
                 return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
             }
@@ -744,8 +738,9 @@ public class AnalyseFS extends Analyse
         {
             try
             {
-                v_FileHelp.setOverWrite(true);
-                v_FileHelp.UnCompressZip(v_File.toString() ,v_File.getParent() ,true);
+//                v_FileHelp.setOverWrite(true);
+//                v_FileHelp.UnCompressZip(v_File.toString() ,v_File.getParent() ,true);
+                v_FileHelp.UnCompressZip4j(v_File.toString() ,v_File.getParent());
                 
                 return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
             }
