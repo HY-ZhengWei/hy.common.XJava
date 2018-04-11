@@ -15,7 +15,9 @@ import org.hy.common.file.event.FileReadListener;
 import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
 import org.hy.common.net.data.CommunicationResponse;
+import org.hy.common.xml.XJava;
 import org.hy.common.xml.annotation.Xjava;
+import org.hy.common.xml.plugins.AppInitConfig;
 import org.hy.common.xml.plugins.analyse.data.FileReport;
 
 
@@ -28,6 +30,9 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
  * @author      ZhengWei(HY)
  * @createDate  2018-03-11
  * @version     v1.0
+ *              v2.0  2018-04-10  添加：定向克隆功能。
+ *                                添加：定向删除功能。
+ *                                添加：XJava配置xml文件热加载功能。
  */
 @Xjava
 public class AnalyseFS extends Analyse
@@ -221,6 +226,16 @@ public class AnalyseFS extends Analyse
                 }
                 
                 v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='delFile(\"").append(v_FileNoName).append("\")'>删除</a>");
+                
+                // 热加载xml配置文件
+                if ( StringHelp.isContains(v_FType ,".xml") )
+                {
+                    String v_XmlFile = getReloadName(v_FReport);
+                    if ( v_XmlFile != null )
+                    {
+                        v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='reload(\"").append(v_XmlFile).append("\")'>热加载</a>");
+                    }
+                }
             }
             v_RKey.put(":Operate" ,v_Operate.toString());
             
@@ -277,12 +292,62 @@ public class AnalyseFS extends Analyse
             v_Goto += "<a href='analyseObject?FS=Y&S=" + i_SortType +"&cluster=Y&FP=" + v_FPath + "' style='color:#AA66CC'>查看集群</a>";
         }
         
+        return StringHelp.replaceAll(this.getTemplateShowFiles()
+                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":cluster"             ,":SelectHIP"    ,":Content"}
+                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,(i_Cluster ? "Y" : "") ,makeSelectHIP() ,v_Buffer.toString()});
+    }
+    
+    
+    
+    /**
+     * 获取有效的支持热加载的xml配置文件Key
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-04-10
+     * @version     v1.0
+     *
+     * @param i_FileReport
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private String getReloadName(FileReport i_FileReport)
+    {
+        Map<String ,Object> v_XFileNames = (Map<String ,Object>)XJava.getObject(AppInitConfig.$XFileNames_XID);
+        
+        for (String v_XFileName : v_XFileNames.keySet())
+        {
+            if ( v_XFileName.equals(i_FileReport.getFileName()) )
+            {
+                return v_XFileName;
+            }
+            else if ( i_FileReport.getFullName().endsWith(v_XFileName) )
+            {
+                return v_XFileName;
+            }
+        }
+        
+        return null;
+    }
+    
+    
+    
+    /**
+     * 生成定向操作的Html选择列表框
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-04-10
+     * @version     v1.0
+     *
+     * @return
+     */
+    private String makeSelectHIP()
+    {
         StringBuilder v_SelectHIP = new StringBuilder();
         List<ClientSocket> v_Servers = Cluster.getClusters();
         if ( !Help.isNull(v_Servers) )
         {
-            v_SelectHIP.append("<select id='SelectHIP' name='SelectHIP' width='300px'>");
-            v_SelectHIP.append("<option disabled selected>请选择定向克隆的服务器</option>");
+            v_SelectHIP.append("<select id='SelectHIP' name='SelectHIP'>");
+            v_SelectHIP.append("<option disabled selected>请选择定向操作的服务器</option>");
             
             for (ClientSocket v_Server : v_Servers)
             {
@@ -292,9 +357,7 @@ public class AnalyseFS extends Analyse
             v_SelectHIP.append("</select>");
         }
         
-        return StringHelp.replaceAll(this.getTemplateShowFiles()
-                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":cluster"             ,":SelectHIP"           ,":Content"}
-                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,(i_Cluster ? "Y" : "") ,v_SelectHIP.toString() ,v_Buffer.toString()});
+        return v_SelectHIP.toString();
     }
     
     
@@ -984,6 +1047,102 @@ public class AnalyseFS extends Analyse
             }
             
             return StringHelp.replaceAll("{'retCode':'1'}" ,"'" ,"\"");
+        }
+        
+        return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
+    }
+    
+    
+    
+    /**
+     * 重新加载配置文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-04-11
+     * @version     v1.0
+     *
+     * @param i_XFile     XJava配置文件名称
+     * @param i_IsCluster 是否为集群
+     * @return            返回值：0.成功
+     *                           1.异常
+     *                           2.文件不存在
+     */
+    @SuppressWarnings("unchecked")
+    public String reload(String i_XFile ,boolean i_Cluster)
+    {
+        Map<String ,Object> v_XFileNames = (Map<String ,Object>)XJava.getObject(AppInitConfig.$XFileNames_XID);
+        
+        if ( v_XFileNames.containsKey(i_XFile) )
+        {
+            // 本机重新加载
+            if ( !i_Cluster )
+            {
+                AppInitConfig v_AConfig  = (AppInitConfig)v_XFileNames.get(i_XFile);
+                File          v_XFileObj = new File(Help.getWebINFPath() + i_XFile);
+                
+                if ( v_XFileObj.exists() && v_XFileObj.isFile() )
+                {
+                    v_AConfig.initW(i_XFile ,Help.getWebINFPath());
+                }
+                else
+                {
+                    v_AConfig.init(i_XFile);
+                }
+                
+                return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+            }
+            // 集群重新加载 
+            else
+            {
+                int                v_ExecRet = 0 ;
+                List<ClientSocket> v_Servers = Cluster.getClusters();
+                
+                if ( !Help.isNull(v_Servers) )
+                {
+                    Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"reload" ,new Object[]{i_XFile ,false});
+                    StringBuilder                            v_ErrorInfo     = new StringBuilder();
+                    
+                    for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                    {
+                        CommunicationResponse v_ResponseData = v_Item.getValue();
+                        
+                        if ( v_ResponseData.getResult() == 0 )
+                        {
+                            if ( v_ResponseData.getData() != null )
+                            {
+                                String v_RetValue = v_ResponseData.getData().toString();
+                                v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                                
+                                if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                                {
+                                    v_ExecRet++;
+                                }
+                                else
+                                {
+                                    v_ErrorInfo.append(",").append(v_Item.getKey().getHostName());
+                                }
+                            }
+                        }
+                        else
+                        {
+                            v_ErrorInfo.append(",").append(v_Item.getKey().getHostName());
+                        }
+                    }
+                    
+                    if ( v_ExecRet == v_Servers.size() )
+                    {
+                        return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+                    }
+                    else
+                    {
+                        return StringHelp.replaceAll("{'retCode':'1' ,'retHIP':'" + v_ErrorInfo.toString().substring(1) + "'}" ,"'" ,"\"");
+                    }
+                }
+                else
+                {
+                    return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+                }
+            }
         }
         
         return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");

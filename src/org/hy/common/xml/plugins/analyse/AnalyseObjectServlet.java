@@ -55,6 +55,8 @@ import org.hy.common.xml.XJava;
  * 
  * 功能15：本机线程池运行情况             http://IP:Port/WebService/../analyseObject?DSG=Y
  * 功能16：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?DSG=Y&cluster=Y
+ * 
+ * 功能17：Web文件资源管理器             http://IP:Port/WebService/../analyseObject?FS=Y
  *
  * @author      ZhengWei(HY)
  * @createDate  2015-12-16
@@ -67,6 +69,7 @@ import org.hy.common.xml.XJava;
  *              v4.0  2018-02-27  添加：本机线程池运行情况
  *                                添加：集群线程池运行情况 
  *              v5.0  2018-02-28  添加：本机定时任务运行情况。之前合并在 "查看前缀匹配的对象列表" 任务中
+ *              v6.0  2018-03-11  添加：Web文件资源管理器（支持集群）
  *              
  */
 public class AnalyseObjectServlet extends HttpServlet
@@ -160,7 +163,11 @@ public class AnalyseObjectServlet extends HttpServlet
                     String v_FN  = Help.NVL(i_Request.getParameter("FN"));
                     String v_HIP = Help.NVL(i_Request.getParameter("HIP"));
                     
-                    if ( "CLONE-C".equalsIgnoreCase(v_Action) )
+                    if ( "RELOAD".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.reload(v_FN ,"Y".equalsIgnoreCase(v_HIP)));
+                    }
+                    else if ( "CLONE-C".equalsIgnoreCase(v_Action) )
                     {
                         i_Response.getWriter().println(this.analyseFS.cloneFile(v_FPath ,v_FN ,v_HIP));
                     }
