@@ -1727,6 +1727,7 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":JobID"        ,v_JReport.getJobID());
             v_RKey.put(":IntervalType" ,v_JReport.getIntervalType());
             v_RKey.put(":IntervalLen"  ,v_JReport.getIntervalLen());
+            v_RKey.put(":RunCount"     ,v_JReport.getRunCount() + "");
             v_RKey.put(":LastTime"     ,v_JReport.getLastTime());
             v_RKey.put(":NextTime"     ,v_JReport.getNextTime());
             v_RKey.put(":JobDesc"      ,v_JReport.getJobDesc());
