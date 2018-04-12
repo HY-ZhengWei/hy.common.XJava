@@ -195,9 +195,13 @@ public class AnalyseObjectServlet extends HttpServlet
                     {
                         i_Response.getWriter().println(this.analyseFS.unZipFileByCluster(v_FPath ,v_FN ,v_HIP));
                     }
-                    else if ( "CALC-SIZE".equals(v_Action) )
+                    else if ( "CALC-SIZE".equalsIgnoreCase(v_Action) )
                     {
                         i_Response.getWriter().println(this.analyseFS.calcFileSize(v_FPath ,v_FN));
+                    }
+                    else if ( "DIFF".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.diffFile(v_BasePath ,v_FPath ,v_FN ,v_HIP));
                     }
                 }
                 else

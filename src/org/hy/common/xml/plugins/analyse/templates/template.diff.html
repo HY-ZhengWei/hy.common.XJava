@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>文件比较</title>
+
+<script type="text/javascript"          src=":HttpBasePath/diff/dojo.js"     ></script>
+<script type="text/javascript"          src=":HttpBasePath/diff/diffview.js" ></script>
+<script type="text/javascript"          src=":HttpBasePath/diff/difflib.js"  ></script>
+<link rel="stylesheet" type="text/css" href=":HttpBasePath/diff/diffview.css" />
+
+<script language="javascript">
+
+	var $ = dojo.byId;
+	dojo.require("dojo.io");
+	
+	var v_URL             = window.location.toString().split("?")[0];
+	var v_IsAllowOnChange = false;
+	
+	function diffUsingJS() 
+	{
+		var base          = difflib.stringAsLines($("baseText").value);
+		var newtxt        = difflib.stringAsLines($("newText").value);
+		var sm            = new difflib.SequenceMatcher(base, newtxt);
+		var opcodes       = sm.get_opcodes();
+		var diffoutputdiv = $("diffoutput");
+
+		while (diffoutputdiv.firstChild)
+		{
+			diffoutputdiv.removeChild(diffoutputdiv.firstChild);
+		}
+		
+		var contextSize = $("contextSize").value;
+		contextSize = contextSize ? contextSize : null;
+		diffoutputdiv.appendChild(diffview.buildView({
+			baseTextLines : base,
+			newTextLines : newtxt,
+			opcodes : opcodes,
+			baseTextName : ":FName",
+			newTextName : $("HIP").value == "" ? "请选择对比的服务器" : $("HIP").value + "@:FName",
+			contextSize : contextSize,
+			viewType : $("HIP").value == "" ? 1 : 0
+		}));
+		
+		var v_HIP = $("HIP").value;
+		if ( v_HIP != null && v_HIP != "" )
+		{
+			$("SelectHIP").value = v_HIP;
+		}
+		v_IsAllowOnChange = true;
+	}
+	
+	
+	
+	function SelectHIP_OnChange()
+	{
+		if ( !v_IsAllowOnChange )
+		{
+			return;
+		}
+		
+		var v_HIP = $("SelectHIP").value;
+		if ( v_HIP != null && v_HIP != "" )
+		{
+			window.location = v_URL 
+			                + "?FS=Y&Action=DIFF&FP=" + $("FPath").value 
+					        + "&FN=" + $("FName").value
+					        + "&HIP=!" + v_HIP;
+		}
+	}
+	
+</script>
+<!-- viewType=0 左右并排  -->
+<!-- viewType=1 上下对比 -->
+</head>
+
+<body>
+
+<input    id="FPath"       type="hidden" value=":FPath" />
+<input    id="FName"       type="hidden" value=":FName" />
+<input    id="HIP"         type="hidden" value=":HIP" />
+<input    id="contextSize" type="hidden" value="" /> 
+<textarea id="baseText"    style="display:none">:TextContent01</textarea>
+<textarea id="newText"     style="display:none">:TextContent02</textarea>
+
+
+:SelectHIP<br/><br/>
+<div id="diffoutput" style="width:100%"></div>
+
+
+<script language="javascript">
+	diffUsingJS();
+</script>
+
+</body>
+</html>

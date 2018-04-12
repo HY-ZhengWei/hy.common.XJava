@@ -33,6 +33,7 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
  *              v2.0  2018-04-10  添加：定向克隆功能。
  *                                添加：定向删除功能。
  *                                添加：XJava配置xml文件热加载功能。
+ *              v3.0  2018-04-12  添加：文件内容查看，及与其它服务器对比的功能。
  */
 @Xjava
 public class AnalyseFS extends Analyse
@@ -206,7 +207,6 @@ public class AnalyseFS extends Analyse
             }
             else
             {
-                v_RKey.put(":FileName" ,v_FReport.getFileName()); 
                 v_RKey.put(":FileSize" ,StringHelp.getComputeUnit(v_FReport.getFileSize()));
                 
                 v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='cloneFile(\"").append(v_FileNoName).append("\")'>集群克隆</a>");
@@ -235,6 +235,15 @@ public class AnalyseFS extends Analyse
                     {
                         v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='reload(\"").append(v_XmlFile).append("\")'>热加载</a>");
                     }
+                }
+                
+                if ( StringHelp.isContains(v_FType ,".xml" ,".txt" ,".json" ,".properties"  ,".jsp" ,".html" ,".js" ,".css" ,".mf" ,".sh" ,".bat" ,".profile") )
+                {
+                    v_RKey.put(":FileName" ,"<a target='_blank' style='color:#AA66CC' href='" + v_AUrl + "&Action=DIFF&FP=" + v_FReport.getFilePath() + "&FN=" + v_FReport.getFileName() + "'>" + v_FReport.getFileName() + "</a>");
+                }
+                else
+                {
+                    v_RKey.put(":FileName" ,v_FReport.getFileName()); 
                 }
             }
             v_RKey.put(":Operate" ,v_Operate.toString());
@@ -293,8 +302,112 @@ public class AnalyseFS extends Analyse
         }
         
         return StringHelp.replaceAll(this.getTemplateShowFiles()
-                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":cluster"             ,":SelectHIP"    ,":Content"}
-                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,(i_Cluster ? "Y" : "") ,makeSelectHIP() ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":cluster"             ,":SelectHIP"        ,":Content"}
+                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,(i_Cluster ? "Y" : "") ,makeSelectHIP(null) ,v_Buffer.toString()});
+    }
+    
+    
+    
+    /**
+     * 对比文件内容
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-04-12
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_FPath           文件目录路径
+     * @param  i_FName           文件名称
+     * @param  i_HIP             云服务器IP（前缀加有一个叹号!），如 !127.0.0.1
+     */
+    public String diffFile(String i_BasePath ,String i_FPath ,String i_FName ,String i_HIP)
+    {
+        String   v_FPath    = toWebHome(i_FPath);
+        File     v_File     = new File(toTruePath(i_FPath) + Help.getSysPathSeparator() + i_FName);
+        FileHelp v_FileHelp = new FileHelp();
+        String   v_HIP      = "";
+        
+        if ( !v_File.exists() || !v_File.isFile() )
+        {
+            return "文件不存在或不是一个文件！";
+        }
+        
+        String v_TextContent01 = "";
+        String v_TextContent02 = null;
+        try
+        {
+            v_TextContent01 = v_FileHelp.getContent(v_File ,"UTF-8" ,true);
+            
+            if ( !Help.isNull(i_HIP) )
+            {
+                List<ClientSocket> v_Servers = Cluster.getClusters();
+                
+                removeHIP(v_Servers ,i_HIP ,false);
+                
+                if ( !Help.isNull(v_Servers) )
+                {
+                    CommunicationResponse v_ResponseData = v_Servers.get(0).sendCommand("AnalyseFS" ,"getFileContent" ,new Object[]{v_FPath ,i_FName});
+                    
+                    if ( v_ResponseData.getResult() == 0 )
+                    {
+                        if ( v_ResponseData.getData() != null )
+                        {
+                            v_TextContent02 = v_ResponseData.getData().toString();
+                        }
+                    }
+                    
+                    v_HIP = v_Servers.get(0).getHostName();
+                }
+            }
+            else
+            {
+                v_TextContent02 = v_TextContent01;
+            }
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+        }
+        
+        return StringHelp.replaceAll(this.getTemplateDiff()
+                ,new String[]{":HttpBasePath" ,":FPath" ,":FName" ,":HIP"          ,":TextContent01" ,":TextContent02" ,":SelectHIP"}
+                ,new String[]{i_BasePath      ,i_FPath  ,i_FName  ,Help.NVL(v_HIP) ,v_TextContent01  ,v_TextContent02  ,makeSelectHIP("SelectHIP_OnChange")});
+    }
+    
+    
+    
+    /**
+     * 获取文件内容
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-04-12
+     * @version     v1.0
+     *
+     * @param i_FPath
+     * @param i_FName
+     * @return
+     */
+    public String getFileContent(String i_FPath ,String i_FName)
+    {
+        File     v_File     = new File(toTruePath(i_FPath) + Help.getSysPathSeparator() + i_FName);
+        FileHelp v_FileHelp = new FileHelp();
+        
+        if ( !v_File.exists() || !v_File.isFile() )
+        {
+            return "[" + v_File.toString() + "]文件不存在或不是一个文件！";
+        }
+        
+        String v_Content = "";
+        try
+        {
+            v_Content = v_FileHelp.getContent(v_File ,"UTF-8" ,true);
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+        }
+        
+        return v_Content;
     }
     
     
@@ -340,13 +453,18 @@ public class AnalyseFS extends Analyse
      *
      * @return
      */
-    private String makeSelectHIP()
+    private String makeSelectHIP(String i_OnChangeFunName)
     {
         StringBuilder v_SelectHIP = new StringBuilder();
         List<ClientSocket> v_Servers = Cluster.getClusters();
         if ( !Help.isNull(v_Servers) )
         {
-            v_SelectHIP.append("<select id='SelectHIP' name='SelectHIP'>");
+            v_SelectHIP.append("<select id='SelectHIP' name='SelectHIP'");
+            if ( !Help.isNull(i_OnChangeFunName) )
+            {
+                v_SelectHIP.append(" onchange='").append(i_OnChangeFunName).append("()'");
+            }
+            v_SelectHIP.append(">");
             v_SelectHIP.append("<option disabled selected>请选择定向操作的服务器</option>");
             
             for (ClientSocket v_Server : v_Servers)
@@ -1274,6 +1392,13 @@ public class AnalyseFS extends Analyse
     private String getTemplateShowFilesContent()
     {
         return this.getTemplateContent("template.showFilesContent.html");
+    }
+    
+    
+    
+    private String getTemplateDiff()
+    {
+        return this.getTemplateContent("template.diff.html");
     }
     
     
