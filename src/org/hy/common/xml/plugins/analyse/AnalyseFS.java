@@ -39,9 +39,17 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
 public class AnalyseFS extends Analyse
 {
     
-    public static final String $WebHome   = "$WebHome";
+    /** 虚拟的Web服务的主目录。有了它，就支持集群中各个服务可以在不同目录中的功能 */
+    public static final String    $WebHome   = "$WebHome";
     
-    public static final String $CloudLock = ".cloudlock";
+    /** 集群操作时，防止对本服务重复无效的操作时的文件锁 */
+    public static final String    $CloudLock = ".cloudlock";
+    
+    /** 允许对比查看文件内容的文件类型 */
+    public static final String [] $DiffTypes = new String[]{".xml" ,".txt" ,".json"    ,".properties" 
+                                                           ,".log" ,".out" ,".mf"      ,".jsp"  
+                                                           ,".js"  ,".css" ,".html"    ,".htm" 
+                                                           ,".sh"  ,".bat" ,".profile" ,".policy"};
     
     
     
@@ -237,7 +245,7 @@ public class AnalyseFS extends Analyse
                     }
                 }
                 
-                if ( StringHelp.isContains(v_FType ,".xml" ,".txt" ,".json" ,".properties"  ,".jsp" ,".html" ,".js" ,".css" ,".mf" ,".sh" ,".bat" ,".profile") )
+                if ( StringHelp.isContains(v_FType ,$DiffTypes) )
                 {
                     v_RKey.put(":FileName" ,"<a target='_blank' style='color:#AA66CC' href='" + v_AUrl + "&Action=DIFF&FP=" + v_FReport.getFilePath() + "&FN=" + v_FReport.getFileName() + "'>" + v_FReport.getFileName() + "</a>");
                 }
