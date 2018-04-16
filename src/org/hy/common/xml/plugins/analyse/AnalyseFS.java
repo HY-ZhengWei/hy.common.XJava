@@ -14,6 +14,7 @@ import org.hy.common.file.event.FileReadEvent;
 import org.hy.common.file.event.FileReadListener;
 import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
+import org.hy.common.net.ServerSocket;
 import org.hy.common.net.data.CommunicationResponse;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.annotation.Xjava;
@@ -34,6 +35,7 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
  *                                添加：定向删除功能。
  *                                添加：XJava配置xml文件热加载功能。
  *              v3.0  2018-04-12  添加：文件内容查看，及与其它服务器对比的功能。
+ *              v4.0  2018-04-16  添加：定向下载功能。
  */
 @Xjava
 public class AnalyseFS extends Analyse
@@ -310,8 +312,8 @@ public class AnalyseFS extends Analyse
         }
         
         return StringHelp.replaceAll(this.getTemplateShowFiles()
-                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":cluster"             ,":SelectHIP"        ,":Content"}
-                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,(i_Cluster ? "Y" : "") ,makeSelectHIP(null) ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":cluster"             ,":SelectHIP"        ,":SelectLocalIP"        ,":Content"}
+                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,(i_Cluster ? "Y" : "") ,makeSelectHIP(null) ,makeSelectLocalIP(null) ,v_Buffer.toString()});
     }
     
     
@@ -458,6 +460,8 @@ public class AnalyseFS extends Analyse
      * @author      ZhengWei(HY)
      * @createDate  2018-04-10
      * @version     v1.0
+     * 
+     * @param  i_OnChangeFunName  下拉列表框选择改变时的触动发JS函数名称
      *
      * @return
      */
@@ -484,6 +488,50 @@ public class AnalyseFS extends Analyse
         }
         
         return v_SelectHIP.toString();
+    }
+    
+    
+    
+    /**
+     * 生成定向操作本地IP地址的Html选择列表框
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-04-16
+     * @version     v1.0
+     * 
+     * @param  i_OnChangeFunName  下拉列表框选择改变时的触动发JS函数名称
+     *
+     * @return
+     */
+    private String makeSelectLocalIP(String i_OnChangeFunName)
+    {
+        StringBuilder v_SelectLocalIP = new StringBuilder();
+        String []     v_IPs           = Help.getIPs().split(" ");
+        ServerSocket  v_LocalServer   = (ServerSocket)XJava.getObject(ServerSocket.class);
+        
+        if ( v_LocalServer != null && !Help.isNull(v_IPs) )
+        {
+            v_SelectLocalIP.append("<select id='SelectLocalIP' name='SelectLocalIP'");
+            if ( !Help.isNull(i_OnChangeFunName) )
+            {
+                v_SelectLocalIP.append(" onchange='").append(i_OnChangeFunName).append("()'");
+            }
+            v_SelectLocalIP.append(">");
+            v_SelectLocalIP.append("<option disabled selected>请选择本服务器的通讯IP</option>");
+            
+            for (String v_IP : v_IPs)
+            {
+                String [] v_IPHostName = v_IP.split("=");
+                if ( v_IPHostName.length >= 2 && v_IP.indexOf("127.0.0.1") < 0 )
+                {
+                    v_SelectLocalIP.append("<option>").append(v_IPHostName[1].split(";")[0]).append(":").append(v_LocalServer.getPort()).append("</option>");
+                }
+            }
+            
+            v_SelectLocalIP.append("</select>");
+        }
+        
+        return v_SelectLocalIP.toString();
     }
     
     
@@ -520,6 +568,51 @@ public class AnalyseFS extends Analyse
     
     
     /**
+     * 下载文件。定向克隆文件到本服务
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-04-16
+     * @version     v1.0
+     *
+     * @param i_FilePath     路径
+     * @param i_FileName     名称
+     * @param i_HIP          定向从哪台云服务器IP克隆文件（前缀加有一个叹号!），如 !127.0.0.1
+     * @param i_LocalIPPort  本服务IP和端口Port
+     * @return               返回值：0.成功
+     *                           1.云服务在克隆时，文件异常
+     *                           2.云服务在克隆时，文件不存在
+     *                           3.本服务与云服务通讯异常
+     *                           4.云服务HIP地址不存在
+     */
+    public String cloneFileDownload(String i_FilePath ,String i_FileName ,String i_HIP ,String i_LocalIP)
+    {
+        List<ClientSocket> v_Servers = Cluster.getClusters();
+        
+        removeHIP(v_Servers ,i_HIP ,false);
+        
+        if ( !Help.isNull(v_Servers) )
+        {
+            CommunicationResponse v_ResponseData = v_Servers.get(0).sendCommand("AnalyseFS" ,"cloneFile" ,new Object[]{toWebHome(i_FilePath) ,i_FileName ,i_LocalIP});
+            
+            if ( v_ResponseData.getResult() == 0 )
+            {
+                if ( v_ResponseData.getData() != null )
+                {
+                    return v_ResponseData.getData().toString();
+                }
+            }
+            
+            return StringHelp.replaceAll("{'retCode':'3'}" ,"'" ,"\"");
+        } 
+        else
+        {
+            return StringHelp.replaceAll("{'retCode':'4'}" ,"'" ,"\"");
+        }
+    }
+    
+    
+    
+    /**
      * 克隆文件
      * 
      * @author      ZhengWei(HY)
@@ -528,7 +621,7 @@ public class AnalyseFS extends Analyse
      *
      * @param i_FilePath  路径
      * @param i_FileName  名称
-     * @param i_HIP       资源存在的服务IP
+     * @param i_HIP       详细说明参见方法：removeHIP()
      * @return            返回值：0.成功
      *                           1.异常
      *                           2.文件不存在
@@ -635,8 +728,8 @@ public class AnalyseFS extends Analyse
         File   v_DirFile = new File(v_Dir);
         if ( !v_DirFile.exists() || !v_DirFile.isDirectory() )
         {
-            // 如果目录不存在，则克隆到WebHome下。
-            v_Dir = Help.getWebHomePath();
+            // 目录不存在时，就创建目录
+            v_DirFile.mkdirs();
         }
         
         File     v_CloudLock = new File(v_Dir + Help.getSysPathSeparator() + i_DataPacket.getName() + $CloudLock);
@@ -728,7 +821,7 @@ public class AnalyseFS extends Analyse
      *
      * @param i_FilePath
      * @param i_FileName
-     * @param i_HIP
+     * @param i_HIP       详细说明参见方法：removeHIP()
      * @return            返回值：0.成功
      *                           1.异常，同时返回失效服务器的IP。
      */
@@ -860,7 +953,7 @@ public class AnalyseFS extends Analyse
      *
      * @param i_FilePath
      * @param i_FileName
-     * @param i_HIP
+     * @param i_HIP       详细说明参见方法：removeHIP()
      * @return            返回值：0.成功
      *                           1.异常，同时返回失效服务器的IP。
      */
@@ -970,7 +1063,7 @@ public class AnalyseFS extends Analyse
      *
      * @param i_FilePath
      * @param i_FileName
-     * @param i_HIP
+     * @param i_HIP       详细说明参见方法：removeHIP()
      * @return            返回值：0.成功
      *                           1.异常，同时返回失效服务器的IP。
      */
@@ -1078,7 +1171,7 @@ public class AnalyseFS extends Analyse
      *
      * @param i_FilePath
      * @param i_FileName
-     * @param i_HIP
+     * @param i_HIP       详细说明参见方法：removeHIP()
      * @return            返回值：0.成功
      *                           1.异常，同时返回失效服务器的IP。
      */
@@ -1343,7 +1436,10 @@ public class AnalyseFS extends Analyse
      * @version     v1.0
      *
      * @param io_Servers
-     * @param i_HIP
+     * @param i_HIP       云服务器IP地址。可能出现的形式如下
+     *                      形式1 - 多服务同时操作，IP逗号分隔，如 127.0.0.1,127.0.0.2
+     *                      形式2 - 定向服务指定操作（仅限一台服务，一个IP），如 !127.0.0.1
+     *                      形式3 - 集群之外的临时服务的定向操作（仅限一台服务，一个IP），如下载 !127.0.0.1:1721
      * @param i_IsRemoveHave  有资源时删除服务器，还是无资源时删除服务器
      */
     public static void removeHIP(List<ClientSocket> io_Servers ,String i_HIP ,boolean i_IsRemoveHave)
@@ -1359,7 +1455,7 @@ public class AnalyseFS extends Analyse
             boolean v_IsRemoveHave = i_IsRemoveHave;
             if ( v_HIP.startsWith("!") )
             {
-                // 当为定向操作时，如定向克隆
+                // 形式2 - 定向服务指定操作（仅限一台服务，一个IP），如 !127.0.0.1
                 v_IsRemoveHave = false;
             }
             
@@ -1383,6 +1479,18 @@ public class AnalyseFS extends Analyse
                         // 删除没有资源的服务器，对有资源的服务进行操作
                         io_Servers.remove(i);
                     }
+                }
+            }
+            
+            // 形式3 - 集群之外的临时服务的定向操作（仅限一台服务，一个IP），如下载 !127.0.0.1:1721
+            if ( Help.isNull(io_Servers) && v_HIP.startsWith("!")  )
+            {
+                String [] v_IPPort = i_HIP.split(":");
+                if ( v_IPPort.length == 2 && Help.isNumber(v_IPPort[1]) )
+                {
+                    ClientSocket v_NewServer = new ClientSocket(v_IPPort[0].substring(1) ,Integer.parseInt(v_IPPort[1]));
+                    
+                    io_Servers.add(v_NewServer);
                 }
             }
         }

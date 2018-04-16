@@ -137,7 +137,7 @@ var v_Height_Msg = 180;
 var v_Height_HIP = 400;
 
 
-function executeAction(i_FileName ,i_HIP ,i_Action ,i_FunCallBack)
+function executeAction(i_FileName ,i_HIP ,i_LocalIPPort ,i_Action ,i_FunCallBack)
 {
 	$.post("analyseObject" 
 		  ,{
@@ -148,6 +148,7 @@ function executeAction(i_FileName ,i_HIP ,i_Action ,i_FunCallBack)
 		    ,Action:  i_Action
 		    ,FN:      i_FileName
 		    ,HIP:     i_HIP
+		    ,LIP:     i_LocalIPPort
 		   }
 	      ,i_FunCallBack
 	      ,"json"
@@ -161,6 +162,7 @@ function cloneFileAction(i_FileName ,i_HIP)
 	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
 	executeAction(i_FileName 
 			     ,i_HIP
+			     ,""
 			     ,"CLONE-C"
 			     ,function (i_Ret)
 			     {
@@ -182,6 +184,42 @@ function cloneFileAction(i_FileName ,i_HIP)
 
 
 
+
+function cloneDownloadAction(i_FileName ,i_HIP ,i_LocalIPPort)
+{
+	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
+	executeAction(i_FileName 
+			     ,i_HIP
+			     ,i_LocalIPPort
+			     ,"CLONE-DL"
+			     ,function (i_Ret)
+			     {
+					v_Loading.dialog("close");
+					if ( i_Ret.retCode == "0" )
+					{
+						f_Goto();
+					}
+					else if ( i_Ret.retCode == "1" )
+					{
+						f_ShowMsg("消息" ,"未能成功克隆！" ,v_Height_Msg);
+					}
+					else if ( i_Ret.retCode == "2" )
+					{
+						f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
+					}
+					else if ( i_Ret.retCode == "3" )
+					{
+						f_ShowMsg("消息" ,"本服务与云服务通讯异常！" ,v_Height_Msg);
+					}
+					else if ( i_Ret.retCode == "4" )
+					{
+						f_ShowMsg("消息" ,"云服务IP地址不存在！" ,v_Height_Msg);
+					}
+			     });
+}
+
+
+
 function cloneFile(i_File)
 {
 	var v_FileNo   = i_File.split(":")[0];
@@ -194,13 +232,18 @@ function cloneFile(i_File)
 		var v_HIP_Prompt = v_HIP;
 		if ( v_HIP_Prompt == "" )
 		{
-			v_Height     = v_Height_Msg;
+			v_Height     = v_Height_Msg + 80;
 			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，克隆将会覆盖，确定克隆吗？"
+                         + "<br><br>:SelectHIP"
+                         + "<br><br>:SelectLocalIP";
 		}
 		else
 		{
 			v_Height     = v_Height_HIP;
-			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，克隆将会覆盖，确定克隆吗？<br><br>" + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>");
+			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，克隆将会覆盖，确定克隆吗？" 
+			             + "<br><br>:SelectHIP"
+			             + "<br><br>:SelectLocalIP<br><br>"
+			             + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>");
 		}
 		
 		f_OpenDialog("Dialog-Default" 
@@ -218,6 +261,25 @@ function cloneFile(i_File)
 			          		$(this).dialog("close");
 			          		cloneFileAction(v_FileName ,v_HIP);
 			          	},
+			          	"定向下载": function() 
+			        	{
+			          		if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
+		          			{
+				          		if ( $("#SelectLocalIP").val() != null && $("#SelectLocalIP").val() != "" )
+				          		{
+					        		$(this).dialog("close");
+					        		cloneDownloadAction(v_FileName ,"!" + $("#SelectHIP").val() ,"!" + $("#SelectLocalIP").val());
+				        		}
+				          		else
+			          			{
+				          			alert("请选择本服务器的通讯IP");
+			          			}
+		          			}
+			          		else
+		          			{
+		          				alert("请选择定向操作的服务器");
+		          			}
+			          	},
 			          	"取　　消": function() 
 			          	{
 			            	$(this).dialog("close");
@@ -228,8 +290,10 @@ function cloneFile(i_File)
 	{
 		f_OpenDialog("Dialog-Default" 
 				    ,"确认克隆资源吗？" 
-				    ,"<b>" + v_FileName + "</b><br>克隆将会覆盖，确定克隆吗？" + "<br><br>:SelectHIP"
-				    ,v_Height_Msg + 40
+				    ,"<b>" + v_FileName + "</b><br>克隆将会覆盖，确定克隆吗？" 
+				   + "<br><br>:SelectHIP"
+				   + "<br><br>:SelectLocalIP"
+				    ,v_Height_Msg + 80
 				    ,{
 			        	"全部克隆": function() 
 			        	{
@@ -243,6 +307,29 @@ function cloneFile(i_File)
 				        		$(this).dialog("close");
 				        		cloneFileAction(v_FileName ,"!" + $("#SelectHIP").val());
 			        		}
+			          		else
+		          			{
+		          				alert("请选择定向操作的服务器");
+		          			}
+			          	},
+			          	"定向下载": function() 
+			        	{
+			          		if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
+		          			{
+				          		if ( $("#SelectLocalIP").val() != null && $("#SelectLocalIP").val() != "" )
+				          		{
+					        		$(this).dialog("close");
+					        		cloneDownloadAction(v_FileName ,"!" + $("#SelectHIP").val() ,"!" + $("#SelectLocalIP").val());
+				        		}
+				          		else
+			          			{
+				          			alert("请选择本服务器的通讯IP");
+			          			}
+		          			}
+			          		else
+		          			{
+		          				alert("请选择定向操作的服务器");
+		          			}
 			          	},
 			          	"取　　消": function() 
 			          	{
@@ -262,6 +349,7 @@ function calcFileSize(i_File)
 	$("#HFSize_" + v_FileNo).html("计算中");
 	
 	executeAction(v_FileName 
+			     ,""
 			     ,""
 			     ,"CALC-SIZE"
 			     ,function (i_Ret)
@@ -288,6 +376,7 @@ function zipFileAction(i_FileName)
 {
 	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
 	executeAction(i_FileName 
+			     ,""
 			     ,""
 			     ,"ZIP"
 			     ,function (i_Ret)
@@ -319,6 +408,7 @@ function zipFileByClusterAction(i_FileName ,i_HIP)
 	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
 	executeAction(i_FileName 
 			     ,i_HIP
+			     ,""
 			     ,"ZIP-C"
 			     ,function (i_Ret)
 			     {
@@ -405,6 +495,7 @@ function unZipFileAction(i_FileName)
 	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
 	executeAction(i_FileName 
 			     ,""
+			     ,""
 			     ,"UNZIP"
 			     ,function (i_Ret)
 			     {
@@ -431,6 +522,7 @@ function unZipFileByClusterAction(i_FileName ,i_HIP)
 	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
 	executeAction(i_FileName 
 			     ,i_HIP
+			     ,""
 			     ,"UNZIP-C"
 			     ,function (i_Ret)
 			     {
@@ -517,6 +609,7 @@ function delFileAction(i_FileName)
 	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
 	executeAction(i_FileName 
 			     ,""
+			     ,""
 			     ,"DEL"
 			     ,function (i_Ret)
 			     {
@@ -543,6 +636,7 @@ function delFileByClusterAction(i_FileName ,i_HIP)
 	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
 	executeAction(i_FileName 
 			     ,i_HIP
+			     ,""
 			     ,"DEL-C"
 			     ,function (i_Ret)
 			     {
@@ -602,6 +696,10 @@ function delFile(i_File)
 				        		$(this).dialog("close");
 				        		delFileByClusterAction(v_FileName ,"!" + $("#SelectHIP").val());
 			        		}
+			          		else
+		          			{
+		          				alert("请选择定向操作的服务器");
+		          			}
 			          	},
 			          	"取　　消": function() 
 			          	{
@@ -636,6 +734,7 @@ function reloadAction(i_FileName ,i_IsCluster)
 	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
 	executeAction(i_FileName 
 			     ,i_IsCluster
+			     ,""
 			     ,"RELOAD"
 			     ,function (i_Ret)
 			     {

@@ -162,6 +162,7 @@ public class AnalyseObjectServlet extends HttpServlet
                 {
                     String v_FN  = Help.NVL(i_Request.getParameter("FN"));
                     String v_HIP = Help.NVL(i_Request.getParameter("HIP"));
+                    String v_LIP = Help.NVL(i_Request.getParameter("LIP"));
                     
                     if ( "RELOAD".equalsIgnoreCase(v_Action) )
                     {
@@ -170,6 +171,10 @@ public class AnalyseObjectServlet extends HttpServlet
                     else if ( "CLONE-C".equalsIgnoreCase(v_Action) )
                     {
                         i_Response.getWriter().println(this.analyseFS.cloneFile(v_FPath ,v_FN ,v_HIP));
+                    }
+                    else if ( "CLONE-DL".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.cloneFileDownload(v_FPath ,v_FN ,v_HIP ,v_LIP));
                     }
                     else if ( "DEL".equalsIgnoreCase(v_Action) )
                     {
