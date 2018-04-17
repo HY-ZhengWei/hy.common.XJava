@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="xconfig"         class="java.util.ArrayList" />
+	<import name="transforms"      class="java.util.HashMap" />
+	<import name="transform"       class="org.hy.common.app.Param" />
+	
+	
+	
+	<!-- 各类信息转换配置 -->
+	<xconfig>
+	
+		<!-- 数据库类型与Java类型的转换关系 -->
+	    <transforms id="DBTypeTransforms" key="name">
+	        <transform>
+	            <name>char</name>
+				<value>String</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>varchar</name>
+				<value>String</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>nvarchar</name>
+				<value>String</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>text</name>
+				<value>String</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>ntext</name>
+				<value>String</value>
+	        </transform>
+	        
+	        
+	        
+	        <transform>
+	            <name>int</name>
+				<value>Integer</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>smallint</name>
+				<value>Integer</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>tinyint</name>
+				<value>Integer</value>
+	        </transform>
+	        
+	        
+	        
+	        <transform>
+	            <name>double</name>
+				<value>Double</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>float</name>
+				<value>Double</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>numeric</name>
+				<value>Double</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>decimal</name>
+				<value>Double</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>real</name>
+				<value>Double</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>money</name>
+				<value>Double</value>
+	        </transform>
+	        
+	        
+	        
+	        <transform>
+	            <name>date</name>
+				<value>Date</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>time</name>
+				<value>Date</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>datetime</name>
+				<value>Date</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>datetime2</name>
+				<value>Date</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>datetimeoffset</name>
+				<value>Date</value>
+	        </transform>
+	        
+	        <transform>
+	            <name>smalldatetime</name>
+				<value>Date</value>
+	        </transform>
+		</transforms>
+		
+	</xconfig>
+	
+</config>

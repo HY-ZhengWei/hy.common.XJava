@@ -1,0 +1,20 @@
+	
+	
+	/**
+     * 获取：:attributeDesc
+     */
+    public :attributeType get:attributeNameUpper()
+    {
+        return this.:attributeName;
+    }
+
+    
+    /**
+     * 设置：:attributeDesc
+     * 
+     * @param i_:attributeNameUpper
+     */
+    public void set:attributeNameUpper(:attributeType i_:attributeNameUpper)
+    {
+        this.:attributeName = i_:attributeNameUpper;
+    }

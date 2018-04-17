@@ -1,0 +1,22 @@
+package :packageName;
+
+import org.hy.common.Date;
+
+
+
+
+
+/**
+ * :classDesc
+ *
+ * @author      :author
+ * @createDate  :createDate
+ * @version     v1.0
+ */
+public class :className extends SerializableDef
+{
+    private static final long serialVersionUID = -4724247321457107633L;
+	
+    
+:attributes:methods
+}

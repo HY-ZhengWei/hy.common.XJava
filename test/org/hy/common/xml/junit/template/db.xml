@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="sqls"            class="java.util.ArrayList" />
+	<import name="sql"             class="org.hy.common.xml.XSQL" />
+	
+	
+	
+	<sqls>
+	
+		<sql id="XSQL_TablesColumns"> 
+		
+			<dataSourceGroup ref="DSG_Template" />
+					
+			<content if="MYSQL == DSG.getDbProductType">
+			<![CDATA[
+				ALTER TABLE TLog_:sysID ADD INDEX (logID)
+			]]>
+			</content>
+			
+			<content if="SQLSERVER == DSG.getDbProductType">
+			<![CDATA[
+				SELECT  A.name          AS nameDB
+				       ,B.name          AS "tableColumns.name"
+				       ,C.name          AS "tableColumns.typeDB"
+				       ,B.max_length    AS "tableColumns.length"
+				       ,B.is_nullable   AS "tableColumns.nullAble"
+				       ,(
+                         SELECT  SA.value
+                           FROM  sys.extended_properties  SA
+                          WHERE  SA.major_id = B.object_id
+				            AND  SA.minor_id = B.column_id
+                        )               AS "tableColumns.description"
+				  FROM  sys.tables               A
+				       ,sys.columns              B
+				       ,sys.systypes             C
+				 WHERE  A.object_id    = B.object_id
+				   AND  B.user_type_id = C.xusertype
+				 ORDER  BY A.name ,B.column_id
+			]]>
+			</content>
+			
+			<result>
+				<row>org.hy.common.template.TableInfo</row>
+				<cfill>setter(colValue)</cfill>
+				<relationKeys>nameDB</relationKeys>
+			</result> 
+					
+		</sql>
+	
+	</sqls>
+
+</config>
