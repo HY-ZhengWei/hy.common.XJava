@@ -144,28 +144,36 @@ public class DatabaseToJson extends AppInitConfig
     
     
     
+    public void jsonsToJavas(String i_JsonFolder ,String i_JavaFolder)
+    {
+        File v_JsonFolder = new File(i_JsonFolder);
+        if ( v_JsonFolder.isDirectory() )
+        {
+            File [] v_ChildFiles = v_JsonFolder.listFiles();
+            for (File v_JsonFile : v_ChildFiles)
+            {
+                String v_JsonName = v_JsonFile.getName();
+                if ( v_JsonName.toLowerCase().endsWith(".json") )
+                {
+                    jsonToJava(v_JsonFile.toString() ,i_JavaFolder + Help.getSysPathSeparator() + v_JsonName.substring(0 ,v_JsonName.length()-5) + ".java");
+                }
+            }
+        }
+    }
+    
+    
+    
     @SuppressWarnings("unchecked")
-    public void jsonToJava(String i_JsonFolderOrFile ,String i_JavaFile)
+    public void jsonToJava(String i_JsonFile ,String i_JavaFile)
     {
         this.initConfig(null);
-        
-        File v_JsonFolderOrFile = new File(i_JsonFolderOrFile); 
-        
-        if ( v_JsonFolderOrFile.isFile() )
-        {
-            
-        }
-        else if ( v_JsonFolderOrFile.isDirectory() )
-        {
-            
-        }
         
         XJSON v_XJson = new XJSON();
         
         try
         {
             FileHelp      v_FileHelp   = new FileHelp();
-            PackageInfo   v_Package    = (PackageInfo)v_XJson.parser(v_FileHelp.getContent(i_JsonFolderOrFile ,"UTF-8") ,PackageInfo.class);
+            PackageInfo   v_Package    = (PackageInfo)v_XJson.parser(v_FileHelp.getContent(i_JsonFile ,"UTF-8") ,PackageInfo.class);
             StringBuilder v_Attributes = new StringBuilder();
             StringBuilder v_Methods    = new StringBuilder();
             

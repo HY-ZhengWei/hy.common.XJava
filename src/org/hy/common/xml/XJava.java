@@ -2602,7 +2602,13 @@ public final class XJava
 							}
 							catch (Exception exce)
 							{
-							    throw new NoSuchMethodException("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + exce.getMessage());
+							    String v_Msg = "";
+							    if ( null != exce.getCause()
+							      && null != exce.getCause().getMessage() )
+							    {
+							        v_Msg += exce.getCause().getMessage() + "\n";
+							    }
+							    throw new NoSuchMethodException("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + v_Msg + exce.getMessage());
 							}
 						}
 					}

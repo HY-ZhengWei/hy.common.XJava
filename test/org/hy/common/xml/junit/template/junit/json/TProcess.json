@@ -1,0 +1,197 @@
+{
+	"packageName" : "",
+	"table" : {
+		"author" : "",
+		"description" : "",
+		"nameDB" : "TProcess",
+		"nameJava" : "TProcess",
+		"tableColumns" : [
+			{
+				"description" : "工作流的过程ID",
+				"name" : "processID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "工作流实例ID",
+				"name" : "workID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "分单前的过程ID。合单前持续记录ID值。不一定与previousProcessID同值",
+				"name" : "splitProcessID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "工作流的过程编号。下标从1开始",
+				"name" : "processNo",
+				"typeDB" : "int",
+				"typeJava" : "Integer"
+			},
+			{
+				"description" : "当前活动ID",
+				"name" : "currentActivityID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "当前活动名称",
+				"name" : "currentActivity",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "上一过程ID",
+				"name" : "previousProcessID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "上一活动ID",
+				"name" : "previousActivityID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "上一活动名称",
+				"name" : "previousActivity",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "下一过程ID",
+				"name" : "nextProcessID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "下一活动ID",
+				"name" : "nextActivityID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "下一活动名称",
+				"name" : "nextActivity",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "创建人员ID",
+				"name" : "createrID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "创建人员名称",
+				"name" : "creater",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "创建部门ID",
+				"name" : "createOrgID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "创建部门名称",
+				"name" : "createOrg",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "创建时间",
+				"name" : "createTime",
+				"typeDB" : "datetime",
+				"typeJava" : "Date"
+			},
+			{
+				"description" : "限制操作人员ID",
+				"name" : "limitUserID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "限制操作部门ID",
+				"name" : "limitOrgID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "限制操作时间",
+				"name" : "limitTime",
+				"typeDB" : "datetime",
+				"typeJava" : "Date"
+			},
+			{
+				"description" : "操作时间",
+				"name" : "operateTime",
+				"typeDB" : "datetime",
+				"typeJava" : "Date"
+			},
+			{
+				"description" : "操作时长（单位：秒）",
+				"name" : "operateTimeLen",
+				"typeDB" : "int",
+				"typeJava" : "Integer"
+			},
+			{
+				"description" : "操作类型ID",
+				"name" : "operateTypeID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "操作类型名称",
+				"name" : "operateType",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "操作人员ID",
+				"name" : "operateUserID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "操作人员名称",
+				"name" : "operateUser",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "操作部门ID",
+				"name" : "operateOrgID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "操作部门名称",
+				"name" : "operateOrg",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "操作文件信息，由第三方使用者定义其内容（拓展性数据）",
+				"name" : "operateFiles",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "操作数据信息，由第三方使用者定义其内容（拓展性数据）",
+				"name" : "operateDatas",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "备注说明",
+				"name" : "infoComment",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			}
+		]
+	}
+}

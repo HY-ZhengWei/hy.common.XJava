@@ -5620,10 +5620,14 @@ public final class XSQL implements Comparable<XSQL>
         {
             throw new NullPointerException("CreateObjectName is null.");
         }
+        else if ( Help.isNull(this.content.getSqlText()) )
+        {
+            return true;
+        }
         else if ( !this.getContent().getSqlText().toUpperCase().contains(this.create.toUpperCase()) )
         {
             // 简单的检查创建的对象名称，是否在执行SQL语句中存在
-            throw new RuntimeException("CreateObjectName is invalid.");
+            throw new RuntimeException("CreateObjectName[" + this.create + "] is invalid.");
         }
         
         try

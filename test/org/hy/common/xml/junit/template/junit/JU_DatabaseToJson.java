@@ -22,9 +22,9 @@ public class JU_DatabaseToJson
     
     private static boolean $isInit = false;
     
-    private static String $JsonPath = "/Users/hy/WSS/WorkSpace_SearchDesktop/SearchDesktop/src/org/hy/common/template/junit/json";
+    private static String $JsonPath = "D:/WorkSpace_SearchDesktop/XJava/test/org/hy/common/xml/junit/template/junit/json";
     
-    private static String $JavaPath = "/Users/hy/WSS/WorkSpace_SearchDesktop/SearchDesktop/src/org/hy/common/template/junit/java";
+    private static String $JavaPath = "D:/WorkSpace_SearchDesktop/XJava/test/org/hy/common/xml/junit/template/junit/java";
     
     
     
@@ -39,7 +39,6 @@ public class JU_DatabaseToJson
     
     
     
-    @Test
     public void test01_dbToJson() throws IOException
     {
         DatabaseToJson v_DatabaseToJson = new DatabaseToJson();
@@ -48,10 +47,11 @@ public class JU_DatabaseToJson
     
     
     
+    @Test
     public void test02_jsonToJava()
     {
         DatabaseToJson v_DatabaseToJson = new DatabaseToJson();
-        v_DatabaseToJson.jsonToJava($JsonPath + "/ht_Outline.json" ,$JavaPath + "/HTOutline.java");
+        v_DatabaseToJson.jsonsToJavas($JsonPath ,$JavaPath);
     }
     
 }

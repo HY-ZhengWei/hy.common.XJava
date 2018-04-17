@@ -1,0 +1,113 @@
+{
+	"packageName" : "",
+	"table" : {
+		"author" : "",
+		"description" : "",
+		"nameDB" : "TActivityInfo",
+		"nameJava" : "TActivityInfo",
+		"tableColumns" : [
+			{
+				"description" : "工作流活动ID",
+				"name" : "activityID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "工作流的模板ID",
+				"name" : "templateID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "活动名称",
+				"name" : "activityName",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "活动类型ID",
+				"name" : "activityTypeID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "位置x坐标值",
+				"name" : "x",
+				"typeDB" : "decimal",
+				"typeJava" : "Double"
+			},
+			{
+				"description" : "位置y坐标值",
+				"name" : "y",
+				"typeDB" : "decimal",
+				"typeJava" : "Double"
+			},
+			{
+				"description" : "位置z坐标值",
+				"name" : "z",
+				"typeDB" : "decimal",
+				"typeJava" : "Double"
+			},
+			{
+				"description" : "图标高度",
+				"name" : "height",
+				"typeDB" : "decimal",
+				"typeJava" : "Double"
+			},
+			{
+				"description" : "图标宽度",
+				"name" : "width",
+				"typeDB" : "decimal",
+				"typeJava" : "Double"
+			},
+			{
+				"description" : "图标路径",
+				"name" : "iconURL",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "备注说明",
+				"name" : "infoComment",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "创建人员ID",
+				"name" : "createrID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "创建人员名称",
+				"name" : "creater",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "创建时间",
+				"name" : "createTime",
+				"typeDB" : "datetime",
+				"typeJava" : "Date"
+			},
+			{
+				"description" : "最后修改人员ID",
+				"name" : "lastUserID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "最后修改人员名称",
+				"name" : "lastUser",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "最后修改时间",
+				"name" : "lastTime",
+				"typeDB" : "datetime",
+				"typeJava" : "Date"
+			}
+		]
+	}
+}

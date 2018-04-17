@@ -13,9 +13,23 @@
 		
 			<dataSourceGroup ref="DSG_Template" />
 					
-			<content if="MYSQL == DSG.getDbProductType">
+			<content if="ORACLE == DSG.getDbProductType">
 			<![CDATA[
-				ALTER TABLE TLog_:sysID ADD INDEX (logID)
+            SELECT  A.table_Name                                    AS nameDB
+                   ,B.column_Name                                   AS "tableColumns.name"
+                   ,B.data_Type                                     AS "tableColumns.typeDB"
+                   ,B.data_Length                                   AS "tableColumns.length"
+                   ,CASE B.nullAble WHEN 'Y' THEN '1' ELSE '0' END  AS "tableColumns.nullAble"
+                   ,(
+                     SELECT  SA.comments
+                       FROM  User_Col_Comments  SA
+                      WHERE  SA.table_Name  = B.table_Name
+                        AND  SA.column_Name = B.column_Name
+                    )                                           AS "tableColumns.description"
+              FROM  User_Tables              A
+                   ,User_Tab_Columns         B
+             WHERE  A.table_Name = B.table_Name
+             ORDER  BY A.table_Name ,B.column_id
 			]]>
 			</content>
 			
@@ -42,7 +56,7 @@
 			</content>
 			
 			<result>
-				<row>org.hy.common.template.TableInfo</row>
+				<row>org.hy.common.xml.junit.template.TableInfo</row>
 				<cfill>setter(colValue)</cfill>
 				<relationKeys>nameDB</relationKeys>
 			</result> 

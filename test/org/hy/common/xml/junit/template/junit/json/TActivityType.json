@@ -1,0 +1,29 @@
+{
+	"packageName" : "",
+	"table" : {
+		"author" : "",
+		"description" : "",
+		"nameDB" : "TActivityType",
+		"nameJava" : "TActivityType",
+		"tableColumns" : [
+			{
+				"description" : "工作流活动类型ID",
+				"name" : "activityTypeID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "工作流活动类型名称",
+				"name" : "activityType",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "备注说明",
+				"name" : "infoComment",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			}
+		]
+	}
+}

@@ -1,0 +1,83 @@
+{
+	"packageName" : "",
+	"table" : {
+		"author" : "",
+		"description" : "",
+		"nameDB" : "TProcessParticipants",
+		"nameJava" : "TProcessParticipants",
+		"tableColumns" : [
+			{
+				"description" : "主键ID",
+				"name" : "pwpID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "工作流的过程ID",
+				"name" : "processID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "工作流实例ID",
+				"name" : "workID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "参与者类型（1:任务执行人；2:任务执行部门；3:任务执行角色；11:抄送人；12:抄送部门；13:抄送角色）",
+				"name" : "objectType",
+				"typeDB" : "int",
+				"typeJava" : "Integer"
+			},
+			{
+				"description" : "参与者ID",
+				"name" : "objectID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "参与者名称",
+				"name" : "objectName",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "参与者序号，表示前后顺序。系统自动生成，下标从1开始",
+				"name" : "objectNo",
+				"typeDB" : "int",
+				"typeJava" : "Integer"
+			},
+			{
+				"description" : "创建人员ID",
+				"name" : "createrID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "创建人员名称",
+				"name" : "creater",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "创建部门ID",
+				"name" : "createOrgID",
+				"typeDB" : "varchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "创建部门名称",
+				"name" : "createOrg",
+				"typeDB" : "nvarchar",
+				"typeJava" : "String"
+			},
+			{
+				"description" : "创建时间",
+				"name" : "createTime",
+				"typeDB" : "datetime",
+				"typeJava" : "Date"
+			}
+		]
+	}
+}
