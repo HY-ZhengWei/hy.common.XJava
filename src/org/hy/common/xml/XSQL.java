@@ -45,6 +45,8 @@ import org.hy.common.xml.event.BLobEvent;
 
 
 /**
+ * 《XSQL开发说明》见：https://github.com/HY-ZhengWei/XJava/blob/master/doc/XSQL%E5%BC%80%E5%8F%91%E8%AF%B4%E6%98%8E.docx
+ * 
  * 解释Xml文件，执行占位符SQL，再分析数据库结果集转化为Java实例对象。
  * 
  * 1. 必须是数据库连接池的。但微型应用(如手机App)，可用无连接池概念的 org.hy.common.DataSourceNoPool 代替。
@@ -124,7 +126,7 @@ public final class XSQL implements Comparable<XSQL>
     /** SQL类型。F: 函数 */
     public  static final String            $Type_Function  = "F";
     
-    /** SQL类型。C：DML创建表，创建对象等 */
+    /** SQL类型。C：DDL、DCL、TCL创建表，创建对象等 */
     public  static final String            $Type_Create    = "C";
     
     /** execute()方法中执行多条SQL语句的分割符 */
