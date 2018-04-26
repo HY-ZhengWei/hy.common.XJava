@@ -683,7 +683,7 @@ public class AnalyseFS extends Analyse
                     v_FileHelp.addReadListener(v_CloneListener);
                     v_FileHelp.getContentByte(v_File);
                     
-                    if ( !Help.isNull(v_CloneListener) )
+                    if ( !Help.isNull(v_CloneListener.getHip()) )
                     {
                         return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_CloneListener.getHip() + "'}" ,"'" ,"\"");
                     }
