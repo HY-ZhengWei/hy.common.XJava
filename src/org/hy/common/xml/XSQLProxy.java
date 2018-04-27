@@ -39,6 +39,7 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  *              v1.2  2018-01-25  添加：对查询SQL的记录行数功能的支持。
  *              v1.3  2018-01-27  添加：普通方式的，批量数据的更新功能。
  *                                添加：预解析方式，批量数据的更新功能。
+ *              v1.4  2018-04-27  添加：returnOne注解属性支持Map、Set集合随机获取一个元素的功能。
  */
 public class XSQLProxy implements InvocationHandler ,Serializable
 {
@@ -660,6 +661,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @author      ZhengWei(HY)
      * @createDate  2017-12-15
      * @version     v1.0
+     *              v2.0  2018-04-27  添加：returnOne注解属性支持Map、Set集合随机获取一个元素的功能。
      *
      * @param i_Method
      * @param i_Anno
@@ -738,6 +740,38 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                     if ( v_List.size() >= 1 )
                     {
                         v_Ret = v_List.get(0);
+                    }
+                    else
+                    {
+                        v_Ret = null;
+                    }
+                }
+                // 支持Set集合随机获取一个元素的功能
+                else if ( MethodReflect.isExtendImplement(v_Ret ,Set.class) )
+                {
+                    Set<?> v_Set = (Set<?>)v_Ret;
+                    
+                    if ( v_Set.size() >= 1 )
+                    {
+                        v_Ret = v_Set.iterator().next();
+                    }
+                    else
+                    {
+                        v_Ret = null;
+                    }
+                }
+                // 支持Map集合随机获取一个元素的功能
+                else if ( MethodReflect.isExtendImplement(v_Ret ,Map.class) )
+                {
+                    Map<? ,?> v_Map = (Map<? ,?>)v_Ret;
+                    
+                    if ( v_Map.size() >= 1 )
+                    {
+                        v_Ret = v_Map.values().iterator().next();
+                    }
+                    else
+                    {
+                        v_Ret = null;
                     }
                 }
             }
