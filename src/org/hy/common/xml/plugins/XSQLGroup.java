@@ -142,6 +142,7 @@ import org.hy.common.xml.XSQLBigData;
  *              v20.3 2018-03-30  1.添加：集合当作SQL查询集合用的功能，支持从返回值数据集合中获取集合对象。即，支持动态缓存功能。
  *              v20.4 2018-04-02  1.添加：集合当作SQL查询集合用的功能，支持从XJava对象池中获取集合对象。即支持持久缓存功能。
  *                                2.添加：在线程任务组执行功能中，添加多个任务组并行执行的功能。
+ *              v20.5 2018-05-02  1.添加：SELECT查询节点未查询出结果时，可控制其是否允许其后节点的执行。建议人：马龙。
  */
 public final class XSQLGroup
 {
@@ -1215,6 +1216,12 @@ public final class XSQLGroup
                 }
                 else
                 {
+                    if ( v_Node.isNoDataContinue() )
+                    {
+                        // 继续向后击鼓传花  2018-05-02  ZhengWei(HY) Add
+                        v_Ret = this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
+                    }
+                    
                     // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
                     v_Ret = waitThreads(v_Node ,io_Params ,v_Ret);
                     if ( v_Ret.isSuccess() )

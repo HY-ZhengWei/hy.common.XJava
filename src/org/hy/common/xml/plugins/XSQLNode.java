@@ -69,6 +69,7 @@ import com.greenpineyu.fel.context.FelContext;
  *              v13.0 2018-03-05  1.添加：执行异常时重试XSQLNode.retryCount功能。
  *              v13.1 2018-03-08  1.添加：执行异常时重试等待的时间间隔XSQLNode.retryInterval功能。
  *              v13.2 2018-03-29  1.添加：针对具体XSQL节点的Java断言调试功能。方便问题的定位。
+ *              v13.3 2018-05-02  1.添加：SELECT查询节点未查询出结果时，可控制其是否允许其后节点的执行。建议人：马龙。
  */
 public class XSQLNode
 {
@@ -174,6 +175,14 @@ public class XSQLNode
      * Map.Value  为占位符原文本信息
      */
     private Map<String ,Object>          placeholders;
+    
+    
+    /**
+     * 当SELECT查询节点未查询出结果时，是否允许其后的XSQL节点执行。默认为：false，即不执行其后的节点。
+     * 
+     * 只用于 $Type_Query、$Type_CollectionToQuery 两个节点类型
+     */
+    private boolean                      noDataContinue;
     
     /**
      * 当检查不通过时，是否允许其后的XSQL节点执行。默认为：true
@@ -463,6 +472,7 @@ public class XSQLNode
     
     public XSQLNode()
     {
+        this.noDataContinue     = false;
         this.noPassContinue     = true;
         this.beforeCommit       = false;
         this.afterCommit        = false;
@@ -583,6 +593,30 @@ public class XSQLNode
     
     
     
+    /**
+     * 当SELECT查询节点未查询出结果时，是否允许其后的XSQL节点执行。默认为：false，即不执行其后的节点。
+     * 
+     * 只用于 $Type_Query、$Type_CollectionToQuery 两个节点类型
+     */
+    public boolean isNoDataContinue()
+    {
+        return noDataContinue;
+    }
+    
+
+
+    /**
+     * 当SELECT查询节点未查询出结果时，是否允许其后的XSQL节点执行。默认为：false，即不执行其后的节点。
+     * 
+     * 只用于 $Type_Query、$Type_CollectionToQuery 两个节点类型
+     */
+    public void setNoDataContinue(boolean noDataContinue)
+    {
+        this.noDataContinue = noDataContinue;
+    }
+    
+
+
     /**
      * 获取：当检查不通过时，是否允许其后的XSQL节点执行。默认为：true
      * 
