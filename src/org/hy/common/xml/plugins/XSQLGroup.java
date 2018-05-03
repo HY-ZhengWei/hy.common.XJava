@@ -143,6 +143,7 @@ import org.hy.common.xml.XSQLBigData;
  *              v20.4 2018-04-02  1.添加：集合当作SQL查询集合用的功能，支持从XJava对象池中获取集合对象。即支持持久缓存功能。
  *                                2.添加：在线程任务组执行功能中，添加多个任务组并行执行的功能。
  *              v20.5 2018-05-02  1.添加：SELECT查询节点未查询出结果时，可控制其是否允许其后节点的执行。建议人：马龙。
+ *              v20.6 2018-05-03  1.添加：线程等待功能，在原先事后等待的基础上，新添加事前等待。建议人：马龙。
  */
 public final class XSQLGroup
 {
@@ -542,10 +543,22 @@ public final class XSQLGroup
         v_Node.getSqlGroup().setLog(this.isLog());
         // 嵌套XSQLGroup组的执行
         v_Node.getSqlGroup().superGroup = this;
+        
+        // 事前等待 ZhengWei(HY) Add 2018-05-03
+        if ( v_Node.getThreadWait() != null && v_Node.getThreadWait() != v_Node )
+        {
+            v_Ret = waitThreads(v_Node ,io_Params ,v_Ret);
+        }
+        
+        // 执行本节点前，对之前的所有XSQL节点进行统一提交操作
+        if ( v_Node.isBeforeCommit() )
+        {
+            this.commits(io_DSGConns ,v_Ret.getExecSumCount());
+        }
+        
         v_Ret = v_Node.getSqlGroup().executeGroup(io_Params ,io_DSGConns ,v_Ret); 
         
         // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
-
         v_Ret = waitThreads(v_Node ,io_Params ,v_Ret);
         if ( v_Ret.isSuccess() )
         {
@@ -615,6 +628,12 @@ public final class XSQLGroup
                     // 整体退出
                     break;
                 }
+            }
+            
+            // 事前等待 ZhengWei(HY) Add 2018-05-03
+            if ( v_Node.getThreadWait() != null && v_Node.getThreadWait() != v_Node )
+            {
+                v_Ret = waitThreads(v_Node ,io_Params ,v_Ret);
             }
             
             // 执行本节点前，对之前的所有XSQL节点进行统一提交操作
@@ -845,6 +864,12 @@ public final class XSQLGroup
             {
                 return v_Ret.setSuccess(true).setExecLastNode(i_SuperNodeIndex);
             }
+        }
+        
+        // 事前等待 ZhengWei(HY) Add 2018-05-03
+        if ( v_Node.getThreadWait() != null && v_Node.getThreadWait() != v_Node )
+        {
+            v_Ret = waitThreads(v_Node ,io_Params ,v_Ret);
         }
         
         // 执行本节点前，对之前的所有XSQL节点进行统一提交操作
@@ -1511,55 +1536,61 @@ public final class XSQLGroup
      */
     public XSQLGroupResult waitThreads(XSQLNode i_Node ,Map<String ,Object> i_Params ,XSQLGroupResult i_XSQLGroupResult)
     {
-        if ( i_Node.isThreadWait() && i_XSQLGroupResult.taskGroup != null )
+        if ( i_Node.getThreadWait() != null && i_XSQLGroupResult.taskGroup != null )
         {
-            String    v_TaskGroupName = getSQL(i_Node ,i_Params);
-            TaskGroup v_TaskGroup     = i_XSQLGroupResult.taskGroup.get(v_TaskGroupName);
-            long      v_Interval      = i_Node.getThreadWaitInterval();
-            if ( v_Interval <= 0 )
+            String v_TaskGroupName = getSQL(i_Node.getThreadWait() ,i_Params);
+            if ( v_TaskGroupName != null )
             {
-                v_Interval = ThreadPool.getIntervalTime() * 3;
-            }
-            
-            while ( !v_TaskGroup.isTasksFinish() ) 
-            {
-                // 一直等待并且的执行结果
-                try
+                TaskGroup v_TaskGroup = i_XSQLGroupResult.taskGroup.get(v_TaskGroupName);
+                if ( v_TaskGroup != null )
                 {
-                    Thread.sleep(v_Interval);
-                }
-                catch (Exception exce)
-                {
-                    // Nothing.
-                }
-            }
-            
-            // 获取执行结果
-            XSQLGroupTask v_Task = (XSQLGroupTask)v_TaskGroup.getTask(0);
-            i_XSQLGroupResult = v_Task.getXsqlGroupResult();
-            
-            try
-            {
-                for (int v_TaskIndex=0; v_TaskIndex<v_TaskGroup.size(); v_TaskIndex++)
-                {
-                    v_Task = (XSQLGroupTask)v_TaskGroup.getTask(v_TaskIndex);
-                    
-                    if ( v_Task != null )
+                    long v_Interval = i_Node.getThreadWaitInterval();
+                    if ( v_Interval <= 0 )
                     {
-                        if ( v_Task.getXsqlGroupResult() != null )
+                        v_Interval = ThreadPool.getIntervalTime() * 3;
+                    }
+                    
+                    while ( !v_TaskGroup.isTasksFinish() ) 
+                    {
+                        // 一直等待并且的执行结果
+                        try
                         {
-                            if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                            Thread.sleep(v_Interval);
+                        }
+                        catch (Exception exce)
+                        {
+                            // Nothing.
+                        }
+                    }
+                    
+                    // 获取执行结果
+                    XSQLGroupTask v_Task = (XSQLGroupTask)v_TaskGroup.getTask(0);
+                    i_XSQLGroupResult = v_Task.getXsqlGroupResult();
+                    
+                    try
+                    {
+                        for (int v_TaskIndex=0; v_TaskIndex<v_TaskGroup.size(); v_TaskIndex++)
+                        {
+                            v_Task = (XSQLGroupTask)v_TaskGroup.getTask(v_TaskIndex);
+                            
+                            if ( v_Task != null )
                             {
-                                return v_Task.getXsqlGroupResult();
+                                if ( v_Task.getXsqlGroupResult() != null )
+                                {
+                                    if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                                    {
+                                        return v_Task.getXsqlGroupResult();
+                                    }
+                                }
                             }
                         }
                     }
+                    finally
+                    {
+                        // 任务组执行完成后，删除。
+                        i_XSQLGroupResult.taskGroup.remove(v_TaskGroupName);
+                    }
                 }
-            }
-            finally
-            {
-                // 任务组执行完成后，删除。
-                i_XSQLGroupResult.taskGroup.remove(v_TaskGroupName);
             }
         }
         

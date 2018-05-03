@@ -70,6 +70,7 @@ import com.greenpineyu.fel.context.FelContext;
  *              v13.1 2018-03-08  1.添加：执行异常时重试等待的时间间隔XSQLNode.retryInterval功能。
  *              v13.2 2018-03-29  1.添加：针对具体XSQL节点的Java断言调试功能。方便问题的定位。
  *              v13.3 2018-05-02  1.添加：SELECT查询节点未查询出结果时，可控制其是否允许其后节点的执行。建议人：马龙。
+ *              v13.4 2018-05-03  1.添加：线程等待功能，在原先事后等待的基础上，新添加事前等待。建议人：马龙。
  */
 public class XSQLNode
 {
@@ -424,11 +425,25 @@ public class XSQLNode
     private boolean                      thread;
     
     /**
-     * 当发起多线程时，标记哪个节点等待所有线程均执行完成。与 this.thread 配合使用。默认值：false。
+     * 当发起多线程时，标记哪个节点等待所有线程均执行完成。与 this.thread 配合使用。
      * 
-     * 当某一节点设置为等待(this.threadWait=true)时，将在此节点的SQL语句执行完成后执行等待。
+     * 事后等待：
+     *     节点A发起多线程，并在节点A "等待(this.threadWait=this)" 时，
+     *     节点A发起的多线程均执行完成(包括节点A控制循环内的节点)后，
+     *     才继续执行节点A控制的循环外的下一个节点。
+     *     
+     * 事前等待：
+     *     节点A发起多线程，并且节点A "不等待(this.threadWait=null)" ，
+     *     设置在节点B处等待节点A(节点B.threadWait=节点)时，
+     *     节点A发起的多线程均执行完成后(包括节点A控制循环内的节点)，才执行节点B的SQL。
+     *     注意1：节点B不在节点A控制的循环内。
+     *     注意2：事前等待的动作是在 this.beforeCommit 之前等待的。
+     * 
+     * 与 thread、threadWaitInterval 配置使用。
+     * 
+     * 默认值：null。当 this.thread 设置为真时，自动设置 this.threadWait = this。
      */
-    private boolean                      threadWait;
+    private XSQLNode                     threadWait;
     
     /**
      * 监控所有线程完成情况的时间间隔(单位：毫秒)。
@@ -500,7 +515,7 @@ public class XSQLNode
         this.xjavaMethod        = null;
         this.collectionID       = null;
         this.thread             = false;
-        this.threadWait         = false;
+        this.threadWait         = null;
         this.threadWaitInterval = 0;
         this.freeConnection     = false;
         this.oneConnection      = false;
@@ -1677,6 +1692,9 @@ public class XSQLNode
      * 
      * 只对 $Type_Query、$Type_CollectionToQuery 两个类型有效。
      * 
+     * 注：当thread设置为ture时，threadWait默认也设置为this，
+     *    表示同一节点发起的多线程任务的同时，也在同一节点等待所有线程执行完成。
+     * 
      * @return
      */
     public boolean isThread()
@@ -1691,7 +1709,7 @@ public class XSQLNode
      * 
      * 只对 $Type_Query、$Type_CollectionToQuery 两个类型有效。
      * 
-     * 注：当thread设置为ture时，threadWait默认也设置为true，
+     * 注：当thread设置为ture时，threadWait默认也设置为this，
      *    表示同一节点发起的多线程任务的同时，也在同一节点等待所有线程执行完成。
      * 
      * @param i_Thread
@@ -1699,40 +1717,96 @@ public class XSQLNode
     public void setThread(boolean i_Thread)
     {
         this.thread     = i_Thread;
-        this.threadWait = i_Thread;
+        this.threadWait = this.thread ? this : null;
     }
 
     
     
     /**
-     * 获取：当发起多线程时，标记哪个节点等待所有线程均执行完成。与 this.thread 配合使用。默认值：false。
+     * 获取：当发起多线程时，标记哪个节点等待所有线程均执行完成。与 this.thread 配合使用。
      * 
-     * 当某一节点设置为等待(this.threadWait=true)时，将在此节点的SQL语句执行完成后执行等待。
+     * 事后等待：
+     *     节点A发起多线程，并在节点A "等待(this.threadWait=this)" 时，
+     *     节点A发起的多线程均执行完成(包括节点A控制循环内的节点)后，
+     *     才继续执行节点A控制的循环外的下一个节点。
+     *     
+     * 事前等待：
+     *     节点A发起多线程，并且节点A "不等待(this.threadWait=null)" ，
+     *     设置在节点B处等待节点A(节点B.threadWait=节点)时，
+     *     节点A发起的多线程均执行完成后(包括节点A控制循环内的节点)，才执行节点B的SQL。
+     *     注意1：节点B不在节点A控制的循环内。
+     *     注意2：事前等待的动作是在 this.beforeCommit 之前等待的
      * 
-     * 注：当thread设置为ture时，threadWait默认也设置为true，
-     *    表示同一节点发起的多线程任务的同时，也在同一节点等待所有线程执行完成。
+     * 与 thread、threadWaitInterval 配置使用。
+     * 
+     * 默认值：null。当 this.thread 设置为真时，自动设置 this.threadWait = this。
      */
-    public boolean isThreadWait()
+    public XSQLNode getThreadWait()
     {
         return threadWait;
     }
     
-
+    
     
     /**
-     * 设置：当发起多线程时，标记哪个节点等待所有线程均执行完成。与 this.thread 配合使用。默认值：false。
+     * 设置：当发起多线程时，标记哪个节点等待所有线程均执行完成。与 this.thread 配合使用。
      * 
-     * 当某一节点设置为等待(this.threadWait=true)时，将在此节点的SQL语句执行完成后执行等待。
+     * 事后等待：
+     *     节点A发起多线程，并在节点A "等待(this.threadWait=this)" 时，
+     *     节点A发起的多线程均执行完成(包括节点A控制循环内的节点)后，
+     *     才继续执行节点A控制的循环外的下一个节点。
+     *     
+     * 事前等待：
+     *     节点A发起多线程，并且节点A "不等待(this.threadWait=null)" ，
+     *     设置在节点B处等待节点A(节点B.threadWait=节点)时，
+     *     节点A发起的多线程均执行完成后(包括节点A控制循环内的节点)，才执行节点B的SQL。
+     *     注意1：节点B不在节点A控制的循环内。
+     *     注意2：事前等待的动作是在 this.beforeCommit 之前等待的
      * 
-     * @param threadWait 
+     * 与 thread、threadWaitInterval 配置使用。
+     * 
+     * 默认值：null。当 this.thread 设置为真时，自动设置 this.threadWait = this。
+     * 
+     * @param i_ThreadWait 
      */
-    public void setThreadWait(boolean threadWait)
+    public void setThreadWait(boolean i_ThreadWait)
     {
-        this.threadWait = threadWait;
+        if ( !i_ThreadWait )
+        {
+            this.threadWait = null;
+        }
     }
     
 
     
+    /**
+     * 设置：当发起多线程时，标记哪个节点等待所有线程均执行完成。与 this.thread 配合使用。
+     * 
+     * 事后等待：
+     *     节点A发起多线程，并在节点A "等待(this.threadWait=this)" 时，
+     *     节点A发起的多线程均执行完成(包括节点A控制循环内的节点)后，
+     *     才继续执行节点A控制的循环外的下一个节点。
+     *     
+     * 事前等待：
+     *     节点A发起多线程，并且节点A "不等待(this.threadWait=null)" ，
+     *     设置在节点B处等待节点A(节点B.threadWait=节点)时，
+     *     节点A发起的多线程均执行完成后(包括节点A控制循环内的节点)，才执行节点B的SQL。
+     *     注意1：节点B不在节点A控制的循环内。
+     *     注意2：事前等待的动作是在 this.beforeCommit 之前等待的
+     * 
+     * 与 thread、threadWaitInterval 配置使用。
+     * 
+     * 默认值：null。当 this.thread 设置为真时，自动设置 this.threadWait = this。
+     * 
+     * @param i_ThreadWait 
+     */
+    public void setThreadWait(XSQLNode i_ThreadWait)
+    {
+        this.threadWait = i_ThreadWait;
+    }
+    
+
+
     /**
      * 获取：监控所有线程完成情况的时间间隔(单位：毫秒)。
      * 
