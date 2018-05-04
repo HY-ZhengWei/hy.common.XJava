@@ -81,6 +81,7 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *              v1.10 2018-01-20  添加：@XRequest注解添加对secrets()属性的支持。用注解定义各个系统的接口级消息密钥。
  *              v1.11 2018-01-29  添加：对部分异常日志，添加更详细的说明。
  *              v1.12 2018-03-09  添加：将配置在XML配置文件中的ID值，自动赋值给Java实例对象。须实现接口 org.hy.common.XJavaID 才有效。
+ *              v1.13 2018-05-04  添加：支持Setter方法重载情况下的XML解析赋值。
  */
 public final class XJava
 {
@@ -2532,7 +2533,7 @@ public final class XJava
 				{
 					if ( v_AttrInstance == null || v_RefID != null )
 					{
-						Method              v_SetMethod  = MethodReflect.getSetMethod(i_SuperClass, v_Node.getNodeName() ,true);
+						List<Method>        v_SetMethods = MethodReflect.getSetMethods(i_SuperClass, v_Node.getNodeName() ,true);
 						Object              v_ParamValue = null;
 						Map<String ,Object> v_SubmitMap  = getChildObjects(this.getNodeAttribute(v_Node ,$XML_OBJECT_SUBMIT));
 						
@@ -2549,11 +2550,11 @@ public final class XJava
 						else if ( getChildNodesSize(v_Node) >= 1 )
 						{
 							// 本节点 v_Node 在父节点有 setter 方法时，从setter方法的入参中获取本节点的Java的Class类型 
-							if ( v_SetMethod != null )
+							if ( !Help.isNull(v_SetMethods) )
 							{
 								try
 								{
-									v_AttrClass  = v_SetMethod.getParameterTypes()[0];
+									v_AttrClass  = v_SetMethods.get(0).getParameterTypes()[0];
                                     v_ParamValue = this.setInstance(v_AttrClass ,v_AttrInstance ,v_Node ,v_TreeNode);
 								}
 								catch (Exception exce)
@@ -2577,7 +2578,7 @@ public final class XJava
 							}
 						}
 						
-						if ( v_SetMethod == null )
+						if ( Help.isNull(v_SetMethods) )
 						{
 						    // 对无Setter方法的成员属性赋值  ZhengWei(HY) Add 2017-11-24
 						    Field v_Field = FieldReflect.get(i_SuperClass ,v_Node.getNodeName());
@@ -2596,9 +2597,53 @@ public final class XJava
 						}
 						else
 						{
+						    Method v_SetMethod = null ;
+						    int    v_MSize     = v_SetMethods.size();
+						    if ( v_MSize > 1 )
+						    {
+						        // 尝试Setter方法重载时，方法参数类型的匹配 ZhengWei(HY) Add 2018-05-04
+						        for (int i=0; i<v_MSize; i++)
+    						    {
+    						        Method v_MTemp = v_SetMethods.get(i);
+    						        
+    						        if ( MethodReflect.isExtendImplement(v_ParamValue ,v_MTemp.getParameterTypes()[0]) )
+    						        {
+    						            v_SetMethod = v_MTemp;
+    						            break;
+    						        }
+    						    }
+						        
+						        if ( v_SetMethod == null )
+						        {
+						            if ( v_ParamValue.getClass().equals(String.class) )
+						            {
+						                Class<?> v_ParamClass = Help.getClass(v_ParamValue.toString());
+						                
+						                for (int i=0; i<v_MSize; i++)
+		                                {
+		                                    Method v_MTemp = v_SetMethods.get(i);
+		                                    
+		                                    if ( MethodReflect.isExtendImplement(v_ParamClass ,v_MTemp.getParameterTypes()[0]) )
+		                                    {
+		                                        v_SetMethod = v_MTemp;
+		                                        break;
+		                                    }
+		                                }
+						            }
+						            else
+						            {
+						                // Nothing. 暂时没有想好怎么处理
+						            }
+						        }
+						    }
+						    else
+						    {
+						        v_SetMethod = v_SetMethods.get(0);
+						    }
+						    
 							try
 							{
-								MethodReflect.invokeSet(v_SetMethod ,io_SuperInstance ,v_ParamValue ,this.replaces);
+							    MethodReflect.invokeSet(v_SetMethod ,io_SuperInstance ,v_ParamValue ,this.replaces);
 							}
 							catch (Exception exce)
 							{
