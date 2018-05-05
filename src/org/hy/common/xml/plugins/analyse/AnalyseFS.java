@@ -1296,19 +1296,26 @@ public class AnalyseFS extends Analyse
             // 本机重新加载
             if ( !i_Cluster )
             {
-                AppInitConfig v_AConfig  = (AppInitConfig)v_XFileNames.get(i_XFile);
-                File          v_XFileObj = new File(Help.getWebINFPath() + i_XFile);
-                
-                if ( v_XFileObj.exists() && v_XFileObj.isFile() )
+                try
                 {
-                    v_AConfig.initW(i_XFile ,Help.getWebINFPath());
+                    AppInitConfig v_AConfig  = (AppInitConfig)v_XFileNames.get(i_XFile);
+                    File          v_XFileObj = new File(Help.getWebINFPath() + i_XFile);
+                    
+                    if ( v_XFileObj.exists() && v_XFileObj.isFile() )
+                    {
+                        v_AConfig.initW(i_XFile ,Help.getWebINFPath());
+                    }
+                    else
+                    {
+                        v_AConfig.init(i_XFile);
+                    }
+                    
+                    return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
                 }
-                else
+                catch (Exception exce)
                 {
-                    v_AConfig.init(i_XFile);
+                    return StringHelp.replaceAll("{'retCode':'1'}" ,"'" ,"\"");
                 }
-                
-                return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
             }
             // 集群重新加载 
             else
