@@ -634,10 +634,11 @@ class MachiningMyDate implements MachiningValue<Date ,Timestamp>
  * 枚举类型的加工类
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0  
  * @createDate  2014-04-16
+ * @version     v1.0  
+ *              v2.0  2018-05-08  添加：支持枚举名称的匹配       
  */
-class MachiningEnum implements MachiningValue<Enum<?> ,Integer>
+class MachiningEnum implements MachiningValue<Enum<?> ,Object>
 {
     private Enum<?> [] enums;
     
@@ -648,7 +649,7 @@ class MachiningEnum implements MachiningValue<Enum<?> ,Integer>
     }
     
     
-    public Enum<?> getValue(Integer i_Value) 
+    public Enum<?> getValue(Object i_Value) 
     {
         if ( i_Value == null )
         {
@@ -656,14 +657,36 @@ class MachiningEnum implements MachiningValue<Enum<?> ,Integer>
         }
         else
         {
-            if ( 0 <= i_Value && i_Value < this.enums.length )
+            String v_Value = i_Value.toString();
+            // ZhengWei(HY) Add 2018-05-08  支持枚举名称的匹配 
+            for (Enum<?> v_Enum : this.enums)
             {
-                return this.enums[i_Value.intValue()];
+                if ( v_Value.equalsIgnoreCase(v_Enum.name()) )
+                {
+                    return v_Enum;
+                }
             }
-            else
+            
+            // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配 
+            for (Enum<?> v_Enum : this.enums)
             {
-                return null;
+                if ( v_Value.equalsIgnoreCase(v_Enum.toString()) )
+                {
+                    return v_Enum;
+                }
             }
+            
+            // 尝试用枚举值匹配 
+            if ( Help.isNumber(v_Value) )
+            {
+                int v_IntValue = Integer.parseInt(v_Value.trim());
+                if ( 0 <= v_IntValue && v_IntValue < this.enums.length )
+                {
+                    return this.enums[v_IntValue];
+                }
+            }
+            
+            return null;
         }
     }
     

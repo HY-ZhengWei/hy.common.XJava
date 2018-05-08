@@ -105,6 +105,7 @@ import org.hy.common.xml.event.BLobEvent;
  *                                     在高并发的情况下，提高整体查询速度，查询锁、查询阻塞等问题均能得到一定的解决。
  *                                     在高并发的情况下，突破数据库可分配的连接数量，会话数量将翻数倍（与数据库个数有正相关的关系）。
  *              v11.1 2018-03-05  添加：重置统计数据的功能。
+ *              v11.2 2018-05-08  添加：支持枚举toString()的匹配
  */
 /*
  * 游标类型的说明
@@ -3110,15 +3111,49 @@ public final class XSQL implements Comparable<XSQL>
         {
             @SuppressWarnings("unchecked")
             Enum<?> [] v_EnumValues = StaticReflect.getEnums((Class<? extends Enum<?>>) v_Class);
+            String     v_Value      = i_Value.toString();
+            boolean    v_Continue   = true;
             
-            int v_Index = Integer.parseInt((String)i_Value);
-            if ( 0 <= v_Index && v_Index < v_EnumValues.length )
+            // ZhengWei(HY) Add 2018-05-08  支持枚举名称的匹配 
+            for (Enum<?> v_Enum : v_EnumValues)
             {
-                io_PStatement.setInt(i_ParamIndex ,v_EnumValues[v_Index].ordinal());
+                if ( v_Value.equalsIgnoreCase(v_Enum.name()) )
+                {
+                    io_PStatement.setInt(i_ParamIndex ,v_Enum.ordinal());
+                    v_Continue = false;
+                }
             }
-            else
+            
+            if ( v_Continue )
             {
-                throw new java.lang.IndexOutOfBoundsException("Enum [" + v_Class.getName() + "] is not find Value[" + v_Index + "].");
+                // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配 
+                for (Enum<?> v_Enum : v_EnumValues)
+                {
+                    if ( v_Value.equalsIgnoreCase(v_Enum.toString()) )
+                    {
+                        io_PStatement.setInt(i_ParamIndex ,v_Enum.ordinal());
+                        v_Continue = false;
+                    }
+                }
+            }
+            
+            if ( v_Continue )
+            {
+                // 尝试用枚举值匹配 
+                if ( Help.isNumber(v_Value) )
+                {
+                    int v_IntValue = Integer.parseInt(v_Value.trim());
+                    if ( 0 <= v_IntValue && v_IntValue < v_EnumValues.length )
+                    {
+                        io_PStatement.setInt(i_ParamIndex ,v_EnumValues[v_IntValue].ordinal());
+                        v_Continue = false;
+                    }
+                }
+            }
+            
+            if ( v_Continue )
+            {
+                throw new java.lang.IndexOutOfBoundsException("Enum [" + v_Class.getName() + "] is not find Value[" + i_Value.toString() + "].");
             }
         }
         else if ( v_Class == Short.class || v_Class == short.class)
