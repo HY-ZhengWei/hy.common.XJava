@@ -27,6 +27,7 @@ import org.hy.common.StringHelp;
  * @createDate  2012-11-01
  * @version     v1.0
  *              v2.0  2017-03-02  添加：支持一对多关系的对象填充功能。
+ *              v2.1  2018-05-11  添加：在支持数字常量类的基础上，添加对字符类型的常量类的解析。
  *              
  */
 public final class XSQLMethod
@@ -321,6 +322,7 @@ public final class XSQLMethod
             }
             else if ( MethodReflect.isExtendImplement(v_SetterParamClass ,Enum.class) )
             {
+                // 从原来的getInt方法改为getString方法，支持数字、字符类型的常量类  ZhengWei(HY) Edit 2018-05-11
                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getString"    ,int.class);
                 this.machiningValue   = new MachiningEnum((Class<? extends Enum<?>>)v_SetterParamClass);
             }

@@ -106,6 +106,7 @@ import org.hy.common.xml.event.BLobEvent;
  *                                     在高并发的情况下，突破数据库可分配的连接数量，会话数量将翻数倍（与数据库个数有正相关的关系）。
  *              v11.1 2018-03-05  添加：重置统计数据的功能。
  *              v11.2 2018-05-08  添加：支持枚举toString()的匹配
+ *              v11.3 2018-05-11  修正：预解析处理时间时，getSQLDate()的精度只到天，未到时分秒，所以换成getSQLTimestamp()方法。
  */
 /*
  * 游标类型的说明
@@ -3093,11 +3094,13 @@ public final class XSQL implements Comparable<XSQL>
         }
         else if ( v_Class == Date.class )
         {
-            io_PStatement.setDate(i_ParamIndex ,((Date)i_Value).getSQLDate());
+            // getSQLDate()的精度只到天，未到时分秒，所以换成getSQLTimestamp()方法  ZhengWei(HY) Edit 2018-05-11
+            io_PStatement.setTimestamp(i_ParamIndex ,((Date)i_Value).getSQLTimestamp());
         }
         else if ( v_Class == java.util.Date.class )
         {
-            io_PStatement.setDate(i_ParamIndex ,(new Date((java.util.Date)i_Value)).getSQLDate());
+            // getSQLDate()的精度只到天，未到时分秒，所以换成getSQLTimestamp()方法  ZhengWei(HY) Edit 2018-05-11
+            io_PStatement.setTimestamp(i_ParamIndex ,(new Date((java.util.Date)i_Value)).getSQLTimestamp());
         }
         else if ( v_Class == BigDecimal.class )
         {
