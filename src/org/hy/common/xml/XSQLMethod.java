@@ -321,7 +321,7 @@ public final class XSQLMethod
             }
             else if ( MethodReflect.isExtendImplement(v_SetterParamClass ,Enum.class) )
             {
-                this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getInt"       ,int.class);
+                this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getString"    ,int.class);
                 this.machiningValue   = new MachiningEnum((Class<? extends Enum<?>>)v_SetterParamClass);
             }
 			else
@@ -658,19 +658,20 @@ class MachiningEnum implements MachiningValue<Enum<?> ,Object>
         else
         {
             String v_Value = i_Value.toString();
-            // ZhengWei(HY) Add 2018-05-08  支持枚举名称的匹配 
-            for (Enum<?> v_Enum : this.enums)
-            {
-                if ( v_Value.equalsIgnoreCase(v_Enum.name()) )
-                {
-                    return v_Enum;
-                }
-            }
             
             // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配 
             for (Enum<?> v_Enum : this.enums)
             {
                 if ( v_Value.equalsIgnoreCase(v_Enum.toString()) )
+                {
+                    return v_Enum;
+                }
+            }
+            
+            // ZhengWei(HY) Add 2018-05-08  支持枚举名称的匹配 
+            for (Enum<?> v_Enum : this.enums)
+            {
+                if ( v_Value.equalsIgnoreCase(v_Enum.name()) )
                 {
                     return v_Enum;
                 }
