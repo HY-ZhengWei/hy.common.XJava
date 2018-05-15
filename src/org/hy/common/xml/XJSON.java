@@ -2,6 +2,7 @@ package org.hy.common.xml;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -57,6 +58,7 @@ import net.minidev.json.parser.JSONParser;
  *              2017-08-18  V2.0  修复：对于对象的getClass()方法，不进行转Json处理。
  *              2017-08-30  V3.0  修复：对于Json字符串去除回车符\n，特别是最后一个回车符会影响net.minidev.json.JSONObject的解释出错。
  *                                     发现人：李浩
+ *              2018-05-15  V3.1  添加：数据库java.sql.Timestamp时间的转换
  */
 public final class XJSON
 {
@@ -552,8 +554,7 @@ public final class XJSON
                         {
                             if ( v_Value == null || Help.isNull(v_Value.toString()) )
                             {
-                                Date v_Null = null;
-                                v_Method.invoke(v_NewObj ,v_Null);
+                                v_Method.invoke(v_NewObj ,(Date)null);
                             }
                             else
                             {
@@ -564,12 +565,23 @@ public final class XJSON
                         {
                             if ( v_Value == null || Help.isNull(v_Value.toString()) )
                             {
-                                java.util.Date v_Null = null;
-                                v_Method.invoke(v_NewObj ,v_Null);
+                                v_Method.invoke(v_NewObj ,(java.util.Date)null);
                             }
                             else
                             {
                                 v_Method.invoke(v_NewObj ,(new Date(v_Value.toString())).getDateObject());
+                            }
+                        }
+                        // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15 
+                        else if ( Timestamp.class == v_ParamClass )
+                        {
+                            if ( v_Value == null || Help.isNull(v_Value.toString()) )
+                            {
+                                v_Method.invoke(v_NewObj ,(Timestamp)null);
+                            }
+                            else
+                            {
+                                v_Method.invoke(v_NewObj ,(new Date(v_Value.toString())).getSQLTimestamp());
                             }
                         }
                         else if ( MethodReflect.isExtendImplement(v_ParamClass ,List.class)
@@ -904,6 +916,11 @@ public final class XJSON
         else if ( java.util.Date.class == v_ObjClass )
         {
             v_ObjValue = (new Date((java.util.Date)i_Obj)).getFull();
+        }
+        // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15 
+        else if ( Timestamp.class == v_ObjClass )
+        {
+            v_ObjValue = (new Date((Timestamp)i_Obj)).getFull();
         }
         else if ( MethodReflect.isExtendImplement(v_ObjClass ,Enum.class) )
         {

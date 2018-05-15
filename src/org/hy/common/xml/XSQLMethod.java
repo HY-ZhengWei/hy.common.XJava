@@ -28,7 +28,7 @@ import org.hy.common.StringHelp;
  * @version     v1.0
  *              v2.0  2017-03-02  添加：支持一对多关系的对象填充功能。
  *              v2.1  2018-05-11  添加：在支持数字常量类的基础上，添加对字符类型的常量类的解析。
- *              
+ *              v2.2  2018-05-15  添加：数据库java.sql.Timestamp时间的转换
  */
 public final class XSQLMethod
 {
@@ -305,6 +305,12 @@ public final class XSQLMethod
 				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getTimestamp" ,int.class);
 				this.machiningValue   = new MachiningDate();
 			}
+			// 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15 
+			else if ( v_SetterParamClass == Timestamp.class )
+            {
+                this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getTimestamp" ,int.class);
+                this.machiningValue   = new MachiningDate();
+            }
 			else if ( v_SetterParamClass == boolean.class 
 				   || v_SetterParamClass == Boolean.class )
 			{

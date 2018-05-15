@@ -3,6 +3,7 @@ package org.hy.common.xml;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.CallableStatement;
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.hy.common.Date;
@@ -29,8 +30,9 @@ import org.hy.common.StaticReflect;
  *       当为输出型参数时，JDBCTypeName 为 "java.sql.Types.VARCHAR" 这样的字符串。
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0  
  * @createDate  2013-08-01
+ * @version     v1.0  
+ *              v1.1  2018-05-15  添加：数据库java.sql.Timestamp时间的转换
  */
 public final class XSQLCallParam
 {
@@ -311,6 +313,11 @@ public final class XSQLCallParam
             else if ( java.util.Date.class.equals(i_ParamValue.getClass()) )
             {
                 i_SetParamMethod.invoke(i_Callable ,new Object [] {i_ParamIndex ,(new Date((java.util.Date)i_ParamValue)).getSQLDate()});
+            }
+            // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15 
+            else if ( Timestamp.class.equals(i_ParamValue.getClass()) )
+            {
+                i_SetParamMethod.invoke(i_Callable ,new Object [] {i_ParamIndex ,(new Date((Timestamp)i_ParamValue)).getSQLDate()});
             }
             else
             {

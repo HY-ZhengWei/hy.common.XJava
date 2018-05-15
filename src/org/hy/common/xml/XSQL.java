@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -107,6 +108,7 @@ import org.hy.common.xml.event.BLobEvent;
  *              v11.1 2018-03-05  添加：重置统计数据的功能。
  *              v11.2 2018-05-08  添加：支持枚举toString()的匹配
  *              v11.3 2018-05-11  修正：预解析处理时间时，getSQLDate()的精度只到天，未到时分秒，所以换成getSQLTimestamp()方法。
+ *              v11.4 2018-05-15  添加：数据库java.sql.Timestamp时间的转换
  */
 /*
  * 游标类型的说明
@@ -3101,6 +3103,11 @@ public final class XSQL implements Comparable<XSQL>
         {
             // getSQLDate()的精度只到天，未到时分秒，所以换成getSQLTimestamp()方法  ZhengWei(HY) Edit 2018-05-11
             io_PStatement.setTimestamp(i_ParamIndex ,(new Date((java.util.Date)i_Value)).getSQLTimestamp());
+        }
+        // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15 
+        else if ( v_Class == Timestamp.class )
+        {
+            io_PStatement.setTimestamp(i_ParamIndex ,(Timestamp)i_Value);
         }
         else if ( v_Class == BigDecimal.class )
         {
