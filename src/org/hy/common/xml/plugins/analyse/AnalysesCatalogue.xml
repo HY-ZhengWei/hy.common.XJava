@@ -11,7 +11,7 @@
 	<!-- 大纲目录 -->
 	<xconfig>
 		
-	    <xparam id="AnalysesCatalogue">
+	    <xparam id="AnalysesCatalogue" this="AnalysesCatalogue">
 	    
 	    	<item>
 	            <name>查看配置文件（支持集群）</name>
