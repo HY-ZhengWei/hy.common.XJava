@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -58,7 +59,11 @@ import net.minidev.json.parser.JSONParser;
  *              2017-08-18  V2.0  修复：对于对象的getClass()方法，不进行转Json处理。
  *              2017-08-30  V3.0  修复：对于Json字符串去除回车符\n，特别是最后一个回车符会影响net.minidev.json.JSONObject的解释出错。
  *                                     发现人：李浩
- *              2018-05-15  V3.1  添加：数据库java.sql.Timestamp时间的转换
+ *              2018-05-08  V3.1  添加：支持枚举toString()的匹配 
+ *                                     支持枚举名称的匹配 
+ *              2018-05-15  V3.2  添加：数据库java.sql.Timestamp时间的转换
+ *              2018-05-18  V3.3  添加：将Java转Json时，防止用户递归引用，而造成无法解释的问题。
+ *                                
  */
 public final class XJSON
 {
@@ -605,11 +610,42 @@ public final class XJSON
                         else if ( MethodReflect.isExtendImplement(v_ParamClass ,Enum.class) )
                         {
                             Enum<?> [] v_EnumValues = StaticReflect.getEnums((Class<? extends Enum<?>>) v_ParamClass);
+                            boolean    v_EnumOK     = false;
+                            String     v_ValueStr   = v_Value.toString();
                             
-                            int v_ParamValueInt = Integer.parseInt(v_Value.toString());
-                            if ( 0 <= v_ParamValueInt && v_ParamValueInt < v_EnumValues.length )
+                            // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配 
+                            for (Enum<?> v_Enum : v_EnumValues)
                             {
-                                v_Method.invoke(v_NewObj ,v_EnumValues[v_ParamValueInt]);
+                                if ( v_ValueStr.equalsIgnoreCase(v_Enum.toString()) )
+                                {
+                                    v_Method.invoke(v_NewObj ,v_Enum);
+                                    v_EnumOK = true;
+                                    break;
+                                }
+                            }
+                            
+                            if ( !v_EnumOK )
+                            {
+                                // ZhengWei(HY) Add 2018-05-08  支持枚举名称的匹配 
+                                for (Enum<?> v_Enum : v_EnumValues)
+                                {
+                                    if ( v_ValueStr.equalsIgnoreCase(v_Enum.name()) )
+                                    {
+                                        v_Method.invoke(v_NewObj ,v_Enum);
+                                        v_EnumOK = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            // 尝试用枚举值匹配 
+                            if ( !v_EnumOK && Help.isNumber(v_ValueStr) )
+                            {
+                                int v_ParamValueInt = Integer.parseInt(v_ValueStr.trim());
+                                if ( 0 <= v_ParamValueInt && v_ParamValueInt < v_EnumValues.length )
+                                {
+                                    v_Method.invoke(v_NewObj ,v_EnumValues[v_ParamValueInt]);
+                                }
                             }
                         }
                         else if ( v_ParamClass.isArray() )
@@ -813,7 +849,8 @@ public final class XJSON
             throw new NullPointerException("XJSON parser(Object) parameter is null.");
         }
         
-        Return<XJSONObject> v_Ret = parser("" ,i_Obj ,null);
+        Map<Object ,Object> v_ParserObjects = new HashMap<Object ,Object>();   // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+        Return<XJSONObject> v_Ret           = parser("" ,i_Obj ,null ,v_ParserObjects);
         
         this.rootJSON = v_Ret.paramObj;
         
@@ -841,7 +878,8 @@ public final class XJSON
             throw new NullPointerException("XJSON parser(Object) parameter is null.");
         }
         
-        Return<XJSONObject> v_Ret = parser(i_JSONRootName ,i_Obj ,null);
+        Map<Object ,Object> v_ParserObjects = new HashMap<Object ,Object>();   // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+        Return<XJSONObject> v_Ret           = parser(i_JSONRootName ,i_Obj ,null ,v_ParserObjects);
         
         this.rootJSON = v_Ret.paramObj;
         
@@ -856,10 +894,11 @@ public final class XJSON
      * @param i_JSONName
      * @param i_Obj
      * @param i_JsonSuperObj
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
      * @return
      * @throws Exception
      */
-    private Return<XJSONObject> parser(String i_JSONName ,final Object i_Obj ,XJSONObject i_JsonSuperObj) throws Exception
+    private Return<XJSONObject> parser(String i_JSONName ,final Object i_Obj ,XJSONObject i_JsonSuperObj ,Map<Object ,Object> i_ParserObjects) throws Exception
     {
         Class<?>            v_ObjClass = i_Obj.getClass();
         String              v_ObjValue = "";
@@ -952,13 +991,20 @@ public final class XJSON
         }
         else if ( i_Obj instanceof List )
         {
+            // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题  ZhengWei(HY) Add 2018-05-18
+            if ( i_ParserObjects.containsKey(i_Obj) )
+            {
+                return v_Ret;
+            }
+            i_ParserObjects.put(i_Obj ,null);
+            
             JSONArray v_JSONArray = new JSONArray();
             List<?>   v_List      = (List<?>)i_Obj;
             
             for (int i=0; i<v_List.size(); i++)
             {
                 Object              v_Value   = v_List.get(i); 
-                Return<XJSONObject> v_RetTemp = this.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject());
+                Return<XJSONObject> v_RetTemp = this.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects);
                 
                 if ( v_RetTemp.paramInt == 0 )
                 {
@@ -996,13 +1042,20 @@ public final class XJSON
         // ZhengWei(HY) Add 2016-07-05 支持数组
         else if ( i_Obj instanceof Object [] )
         {
+            // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题  ZhengWei(HY) Add 2018-05-18
+            if ( i_ParserObjects.containsKey(i_Obj) )
+            {
+                return v_Ret;
+            }
+            i_ParserObjects.put(i_Obj ,null);
+            
             JSONArray v_JSONArray = new JSONArray();
             Object [] v_List      = (Object [])i_Obj;
             
             for (int i=0; i<v_List.length; i++)
             {
                 Object              v_Value   = v_List[i]; 
-                Return<XJSONObject> v_RetTemp = this.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject());
+                Return<XJSONObject> v_RetTemp = this.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects);
                 
                 if ( v_RetTemp.paramInt == 0 )
                 {
@@ -1039,6 +1092,13 @@ public final class XJSON
         }
         else if ( i_Obj instanceof Set )
         {
+            // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题  ZhengWei(HY) Add 2018-05-18
+            if ( i_ParserObjects.containsKey(i_Obj) )
+            {
+                return v_Ret;
+            }
+            i_ParserObjects.put(i_Obj ,null);
+            
             JSONArray   v_JSONArray = new JSONArray();
             Set<?>      v_Set       = (Set<?>)i_Obj;
             Iterator<?> v_Values    = v_Set.iterator();
@@ -1047,7 +1107,7 @@ public final class XJSON
             while ( v_Values.hasNext() )
             {
                 Object              v_Value   = v_Values.next();
-                Return<XJSONObject> v_RetTemp = this.parser("" + (v_SetIndex++) ,v_Value == null ? "" : v_Value ,new XJSONObject());
+                Return<XJSONObject> v_RetTemp = this.parser("" + (v_SetIndex++) ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects);
                 
                 if ( v_RetTemp.paramInt == 0 )
                 {
@@ -1084,6 +1144,13 @@ public final class XJSON
         }
         else if ( i_Obj instanceof Map )
         {
+            // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题  ZhengWei(HY) Add 2018-05-18
+            if ( i_ParserObjects.containsKey(i_Obj) )
+            {
+                return v_Ret;
+            }
+            i_ParserObjects.put(i_Obj ,null);
+            
             Map<? ,?>   v_Map  = (Map<? ,?>)i_Obj;
             Iterator<?> v_Keys = v_Map.keySet().iterator();
             
@@ -1105,7 +1172,7 @@ public final class XJSON
                     {
                         v_Value = "";
                     }
-                    parser(v_Name ,v_Value ,v_ChildJsonObj);
+                    parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects);
                 }
                 
                 if ( i_JsonSuperObj == null )
@@ -1124,6 +1191,13 @@ public final class XJSON
         }
         else
         {
+            // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题  ZhengWei(HY) Add 2018-05-18
+            if ( i_ParserObjects.containsKey(i_Obj) )
+            {
+                return v_Ret;
+            }
+            i_ParserObjects.put(i_Obj ,null);
+            
             XJSONObject  v_ChildJsonObj = new XJSONObject();
             int          v_ChildCount   = 0;
             
@@ -1154,7 +1228,7 @@ public final class XJSON
                             {
                                 v_Value = "";
                             }
-                            parser(v_Name ,v_Value ,v_ChildJsonObj);
+                            parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects);
                         }
                         catch (Exception e)
                         {
@@ -1214,7 +1288,7 @@ public final class XJSON
                             {
                                 v_Value = "";
                             }
-                            parser(v_Name ,v_Value ,v_ChildJsonObj);
+                            parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects);
                         }
                         catch (Exception e)
                         {
