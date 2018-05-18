@@ -95,7 +95,14 @@ public final class AppInterfaces
             v_Ret = (AppMessage<?>)i_AppMessage.clone();
             v_Ret.setRc("-1");
             v_Ret.setResult(false);
-            v_Ret.setRi(exce.getMessage());
+            if ( exce.getCause() != null  )
+            {
+                v_Ret.setRi(exce.getCause().toString() + "   " + Help.NVL(exce.getMessage()));
+            }
+            else
+            {
+                v_Ret.setRi(exce.getMessage());
+            }
         }
         
         return v_Ret;
