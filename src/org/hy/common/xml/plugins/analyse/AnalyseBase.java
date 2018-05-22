@@ -1281,10 +1281,11 @@ public class AnalyseBase extends Analyse
     @SuppressWarnings("unchecked")
     public String analyseXFile(String i_BasePath ,String i_ReLoadPath ,String i_XFile ,boolean i_Cluster)
     {
-        Map<String ,Object>  v_XFileNames   = (Map<String ,Object>)XJava.getObject(AppInitConfig.$XFileNames_XID);
-        StringBuilder        v_Buffer       = new StringBuilder();
-        int                  v_Index        = 0;
-        String               v_Content      = this.getTemplateShowXFilesContent();
+        Map<String ,Object> v_XFileNames = (Map<String ,Object>)XJava.getObject(AppInitConfig.$XFileNames_XID);
+        Map<String ,Date>   v_XFileTime  = (Map<String ,Date>)  XJava.getObject(AppInitConfig.$XFileNames_XID_Time);
+        StringBuilder       v_Buffer     = new StringBuilder();
+        int                 v_Index      = 0;
+        String              v_Content    = this.getTemplateShowXFilesContent();
         
         if ( Help.isNull(i_XFile) )
         {
@@ -1295,12 +1296,14 @@ public class AnalyseBase extends Analyse
                     v_Buffer.append(StringHelp.replaceAll(v_Content 
                                                          ,new String[]{":No" 
                                                                       ,":Name" 
+                                                                      ,":OperTime"
                                                                       ,":OperateURL1" 
                                                                       ,":OperateTitle1"
                                                                       ,":OperateURL2" 
                                                                       ,":OperateTitle2"} 
                                                          ,new String[]{String.valueOf(++v_Index)
                                                                       ,v_XFile
+                                                                      ,v_XFileTime.get(v_XFile).getFull()
                                                                       ,i_ReLoadPath + "?xfile=" + v_XFile
                                                                       ,"重新加载"
                                                                       ,i_ReLoadPath + "?xfile=" + v_XFile + "&cluster=Y"

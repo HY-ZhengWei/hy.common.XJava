@@ -2,11 +2,13 @@ package org.hy.common.xml.plugins;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.hy.common.xml.XJava;
+import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.app.Param;
 import org.hy.common.file.FileHelp;
@@ -35,7 +37,10 @@ public class AppInitConfig
 {
     
     /** 保存所有初始化过的XJava配置文件的XID标记 */
-    public static final String $XFileNames_XID = "XFILENAMES";
+    public static final String $XFileNames_XID      = "XFILENAMES";
+    
+    /** 记录配置文件加载时间的标记 */
+    public static final String $XFileNames_XID_Time = $XFileNames_XID + "_Time";
     
     
     /** 日志类型 */
@@ -159,11 +164,15 @@ public class AppInitConfig
         String              v_FFullName  = null;
         File                v_FObject    = null;
         Map<String ,Object> v_XFileNames = (Map<String ,Object>)XJava.getObject($XFileNames_XID);
+        Map<String ,Date>   v_XFileTimes = (Map<String ,Date>)  XJava.getObject($XFileNames_XID_Time);
         
         if ( v_XFileNames == null )
         {
             v_XFileNames = new LinkedHashMap<String ,Object>();
-            XJava.putObject($XFileNames_XID ,v_XFileNames);
+            v_XFileTimes = new HashMap      <String ,Date>();
+            
+            XJava.putObject($XFileNames_XID      ,v_XFileNames);
+            XJava.putObject($XFileNames_XID_Time ,v_XFileTimes);
         }
         
         try
@@ -239,6 +248,7 @@ public class AppInitConfig
                             
                             v_OK++;
                             v_XFileNames.put(v_XmlName ,this);
+                            v_XFileTimes.put(v_XmlName ,new Date());
                             
                             if ( this.isLog )
                             {
@@ -263,6 +273,7 @@ public class AppInitConfig
                         }
                         v_OK++;
                         v_XFileNames.put(v_Param.getValue() ,this);
+                        v_XFileTimes.put(v_Param.getValue() ,new Date());
                         
                         if ( this.isLog )
                         {
