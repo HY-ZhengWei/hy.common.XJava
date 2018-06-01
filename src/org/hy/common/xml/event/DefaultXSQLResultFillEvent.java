@@ -41,6 +41,26 @@ public class DefaultXSQLResultFillEvent implements XSQLResultFillEvent
     
     
     /**
+     * 在整体开始填充之前触发，并且只触发一次。
+     * 
+     * 方便在整体开始填充前统一的初始化等操作。
+     * 
+     * 在before()方法前触发调用。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-06-01
+     * @version     v1.0
+     *
+     * @param i_Table
+     */
+    public void start(final Object i_Table)
+    {
+        // Nothing.
+    }
+    
+    
+    
+    /**
      * 填充之前触发的事件方法
      * 
      * @author      ZhengWei(HY)

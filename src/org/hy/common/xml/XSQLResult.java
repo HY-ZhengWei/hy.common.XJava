@@ -35,6 +35,7 @@ import org.hy.common.StringHelp;
  *              v5.0  2017-03-02  添加：支持一对多关系的对象填充功能。在使用时，须对SQL按一对多关系排序。建议人：李浩
  *              v5.1  2017-07-17  修正：在SQL结构改变时(只发生在超级SQL上)，须重新解释字段信息时，未能重新设置 dbMetaData 的问题。
  *              v6.0  2018-01-17  添加：getBigDatas()系列关于大数据操作的方法
+ *              v7.0  2018-06-01  添加：XSQLResultFillEvent.start()在整体开始填充之前触发，并且只触发一次。
  */
 public final class XSQLResult 
 {
@@ -573,6 +574,8 @@ public final class XSQLResult
 	            {
 	                Object v_RowPrevious = null;
 	                
+	                this.fillEvent.start(v_Table);
+	                
 	                // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
 	                if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
 	                {
@@ -676,6 +679,8 @@ public final class XSQLResult
 	            else
 	            {
 	                Object v_RowPrevious = null;
+	                
+	                this.fillEvent.start(v_Table);
 	                
 	                // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
 	                if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
@@ -1030,6 +1035,8 @@ public final class XSQLResult
                 // 外界用户定义了，行级对象填充到表级对象时的事件接口
                 else
                 {
+                    this.fillEvent.start(v_Table);
+                    
                     // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
                     if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
                     {
@@ -1236,6 +1243,8 @@ public final class XSQLResult
                 // 外界用户定义了，行级对象填充到表级对象时的事件接口
                 else
                 {
+                    this.fillEvent.start(v_Table);
+                    
                     // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
                     if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
                     {
