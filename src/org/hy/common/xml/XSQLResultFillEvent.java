@@ -8,9 +8,10 @@ package org.hy.common.xml;
  * 行级对象填充到表级对象时，在填充之前触发的事件接口
  * 
  *   1. 支持一行转多行功能
- *   2. 支持一行转多列功能
- *   3. 支持过滤行记录功能
- *   4. 支持一对多关系功能。见 org.hy.common.xml.event.DefaultXSQLResultFillEvent
+ *   2. 支持一列转多列功能（即行转列）
+ *   3. 支持多行转一行功能（如，多行字符串合并功能）
+ *   4. 支持过滤行记录功能
+ *   5. 支持一对多关系功能。见 org.hy.common.xml.event.DefaultXSQLResultFillEvent
  *
  * @author      ZhengWei(HY)
  * @createDate  2016-01-25
