@@ -2,6 +2,7 @@ package org.hy.common.xml.event;
 
 import org.hy.common.MethodReflect;
 import org.hy.common.SumObjectMap;
+import org.hy.common.SumStringMap;
 import org.hy.common.xml.XSQLResultFillEvent;
 
 
@@ -11,7 +12,9 @@ import org.hy.common.xml.XSQLResultFillEvent;
 /**
  * 多行字符串合并功能。
  * 
- * 要求：XSQL.result.table(<table>...</table>)必须是 org.hy.common.SumObjectMap 类型的结构。
+ * 要求：XSQL.result.table(<table>...</table>)必须是如下两种类型结构之一
+ *      1. org.hy.common.SumObjectMap
+ *      2. org.hy.common.SumStringMap 
  *
  * @author      ZhengWei(HY)
  * @createDate  2018-06-01
@@ -45,14 +48,20 @@ public class SumStringXSQLResultFillEvent implements XSQLResultFillEvent
     {
         if ( MethodReflect.isExtendImplement(i_Table ,SumObjectMap.class) )
         {
-            SumObjectMap<? ,?> v_SumObjectMap = (SumObjectMap<? ,?>)i_Table;
+            SumObjectMap<? ,?> v_SumMap = (SumObjectMap<? ,?>)i_Table;
             
-            v_SumObjectMap.setConnector(this.connector);
-            v_SumObjectMap.setMethodURL(this.methodURL);
+            v_SumMap.setConnector(this.connector);
+            v_SumMap.setMethodURL(this.methodURL);
+        }
+        else if ( MethodReflect.isExtendImplement(i_Table ,SumStringMap.class) )
+        {
+            SumStringMap<?> v_SumMap = (SumStringMap<?>)i_Table;
+            
+            v_SumMap.setConnector(this.connector);
         }
         else
         {
-            throw new java.lang.ClassCastException("XSQL.result.table(<table>...</table>) is not SumObjectMap.");
+            throw new java.lang.ClassCastException("XSQL.result.table(<table>...</table>) is not SumObjectMap or SumStringMap.");
         }
     }
     
