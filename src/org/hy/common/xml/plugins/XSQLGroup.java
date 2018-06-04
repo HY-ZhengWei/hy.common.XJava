@@ -142,8 +142,10 @@ import org.hy.common.xml.XSQLBigData;
  *              v20.3 2018-03-30  1.添加：集合当作SQL查询集合用的功能，支持从返回值数据集合中获取集合对象。即，支持动态缓存功能。
  *              v20.4 2018-04-02  1.添加：集合当作SQL查询集合用的功能，支持从XJava对象池中获取集合对象。即支持持久缓存功能。
  *                                2.添加：在线程任务组执行功能中，添加多个任务组并行执行的功能。
- *              v20.5 2018-05-02  1.添加：SELECT查询节点未查询出结果时，可控制其是否允许其后节点的执行。建议人：马龙。
- *              v20.6 2018-05-03  1.添加：线程等待功能，在原先事后等待的基础上，新添加事前等待。建议人：马龙。
+ *              v21.0 2018-05-02  1.添加：SELECT查询节点未查询出结果时，可控制其是否允许其后节点的执行。建议人：马龙。
+ *              v21.1 2018-05-03  1.添加：线程等待功能，在原先事后等待的基础上，新添加事前等待。建议人：马龙。
+ *              v22.0 2018-06-03  1.添加：XSQL组线程：在XSQLNode节点线程类型的基础上，新添加XSQL组线程类型。平行、平等关系的XSQL节点的执行方式。
+ *                                       建议人：马龙。
  */
 public final class XSQLGroup
 {
@@ -192,6 +194,39 @@ public final class XSQLGroup
      */
     private XSQLNode                 cloudWait;
     
+    /**
+     * 是否为多线程并发执行。默认值：false。
+     * 
+     * 对所有XSQLNode类均有效，常用于执行类型的节点$Type_Execute或组嵌套。
+     * 对 $Type_Query、$Type_CollectionToQuery 两种类型，也只做普通查询动作，不再作为循环控制节点。
+     * 即，不配置XSQLNode.returnID属性的情况下，$Type_Query、$Type_CollectionToQuery两种类型没有实现意义。
+     * 
+     * 当XSQL组标记多线程时 this.thread = true，
+     * 表示组内所有XSQLNode节点均为平等、平行的关系，没有循环控制、上下级的关系。
+     * 同时，XSQL组在整体完成前，默认是等待所有XSQLNode节点都执行完成后，才表示XSQL组完成的。
+     */
+    private boolean                  thread;
+    
+    /**
+     * 当发起多线程时，XSQL组是否等待所有XSQLNode节点都执行完成后才退出XSQL组。
+     * 
+     * 等待类型为：事后等待。
+     *     
+     * 与 thread、threadWaitInterval 配置使用。
+     * 
+     * 默认值：true。
+     */
+    private boolean                  threadWait;
+    
+    /**
+     * 监控所有线程完成情况的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.threadWait 属性配合使用。
+     * 
+     * 默认为0值，表示取时间间隔为：ThreadPool.getIntervalTime() * 3
+     */
+    private long                     threadWaitInterval;
+    
     /** 是否打印执行轨迹日志。默认为：false */
     private boolean                  isLog;
     
@@ -233,16 +268,19 @@ public final class XSQLGroup
     
     public XSQLGroup()
     {
-        this.superGroup     = null;
-        this.xsqlNodes      = new ArrayList<XSQLNode>();
-        this.cloudWait      = null;
-        this.isLog          = false;
-        this.isAutoCommit   = true;
-        this.requestCount   = 0;
-        this.successCount   = 0;
-        this.successTimeLen = 0D;
-        this.executeTime    = null;
-        this.comment        = null;
+        this.superGroup         = null;
+        this.xsqlNodes          = new ArrayList<XSQLNode>();
+        this.thread             = false;
+        this.threadWait         = true;
+        this.threadWaitInterval = 0L;
+        this.cloudWait          = null;
+        this.isLog              = false;
+        this.isAutoCommit       = true;
+        this.requestCount       = 0;
+        this.successCount       = 0;
+        this.successTimeLen     = 0D;
+        this.executeTime        = null;
+        this.comment            = null;
     }
     
     
@@ -446,7 +484,16 @@ public final class XSQLGroup
         
         long                              v_BeginTime = this.request().getTime();
         Map<DataSourceGroup ,XConnection> v_DSGConns  = io_DSGConns;
-        XSQLGroupResult                   v_Ret       = this.executeGroup(-1 ,io_Params ,io_XSQLGroupResult ,v_DSGConns);
+        XSQLGroupResult                   v_Ret       = null;
+        
+        if ( this.thread )
+        {
+            v_Ret = this.executeGroup_GroupThread(io_Params ,io_XSQLGroupResult ,v_DSGConns);
+        }
+        else
+        {
+            v_Ret = this.executeGroup(-1 ,io_Params ,io_XSQLGroupResult ,v_DSGConns);
+        }
         
         // v_Ret.getExecSumCount().putAll(i_ExecSumCount);
         
@@ -500,6 +547,45 @@ public final class XSQLGroup
         {
             return v_Ret;
         }
+    }
+    
+    
+    
+    /**
+     * 组级别的多线程。平行、平等关系的XSQL节点。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-06-03
+     * @version     v1.0
+     *
+     * @param i_SuperNodeIndex    父XSQL节点的索引。下标从0开始。
+     * @param io_Params           执行或查询参数
+     * @param io_XSQLGroupResult  执行结果
+     * @param io_DSGConns         数据库连接池控制(提交、回滚、关闭)集合
+     * @return
+     */
+    private XSQLGroupResult executeGroup_GroupThread(Map<String ,Object> io_Params ,XSQLGroupResult io_XSQLGroupResult ,Map<DataSourceGroup ,XConnection> io_DSGConns)
+    {
+        XSQLGroupResult v_Ret       = io_XSQLGroupResult;
+        TaskGroup       v_TaskGroup = newTaskGroupByThreads();
+        
+        for (int v_NodeIndex=0; v_NodeIndex<this.xsqlNodes.size(); v_NodeIndex++)
+        {
+            XSQLNode v_Node = this.xsqlNodes.get(v_NodeIndex);
+            
+            if ( !v_Node.isLastOnce() 
+             || ( XSQLNode.$Type_Query            .equals(v_Node.getType()) && Help.isNull(v_Node.getReturnID()) )
+             ||   XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
+            {
+                continue;
+            }
+            
+            // 多线程并发执
+            XSQLGroupTask v_Task = new XSQLGroupTask(this ,v_NodeIndex - 1 ,io_Params ,v_Ret ,io_DSGConns);
+            v_TaskGroup.addTaskAndStart(v_Task);
+        }
+        
+        return waitThreads(v_TaskGroup ,v_Ret);
     }
     
     
@@ -1493,7 +1579,7 @@ public final class XSQLGroup
     
     
     /**
-     * 创建多线程任务组
+     * 创建XSQL节点级别的多线程任务组
      * 
      * @author      ZhengWei(HY)
      * @createDate  2018-01-25
@@ -1504,7 +1590,7 @@ public final class XSQLGroup
      * @param i_XSQLGroupResult
      * @param io_Params
      * 
-     * @return  返回任务组名称
+     * @return  返回任务组
      */
     public synchronized TaskGroup newTaskGroupByThreads(XSQLNode i_Node ,XSQLGroupResult i_XSQLGroupResult ,Map<String ,Object> io_Params)
     {
@@ -1527,7 +1613,85 @@ public final class XSQLGroup
     
     
     /**
-     * 等待所有线程均执行完成
+     * 创建XSQL组级别的多线程任务组
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-06-03
+     * @version     v1.0
+     *
+     * @return  返回任务组
+     */
+    public TaskGroup newTaskGroupByThreads()
+    {
+        String    v_TaskGroupName = "XSQLGroup_Thread：" + Date.getNowTime().getFullMilli();
+        TaskGroup v_TaskGroup     = new TaskGroup(v_TaskGroupName);
+        
+        return v_TaskGroup;
+    }
+    
+    
+    
+    /**
+     * XSQL组级别的：等待所有线程均执行完成
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-06-03
+     * @version     v1.0
+     *
+     */
+    public XSQLGroupResult waitThreads(TaskGroup i_TaskGroup ,XSQLGroupResult i_XSQLGroupResult)
+    {
+        XSQLGroupResult v_XSQLGroupResult = i_XSQLGroupResult;
+        
+        if ( i_TaskGroup != null )
+        {
+            long v_Interval = this.getThreadWaitInterval();
+            if ( v_Interval <= 0 )
+            {
+                v_Interval = ThreadPool.getIntervalTime() * 3;
+            }
+            
+            while ( !i_TaskGroup.isTasksFinish() ) 
+            {
+                // 一直等待并且的执行结果
+                try
+                {
+                    Thread.sleep(v_Interval);
+                }
+                catch (Exception exce)
+                {
+                    // Nothing.
+                }
+            }
+            
+            // 获取执行结果
+            XSQLGroupTask v_Task = (XSQLGroupTask)i_TaskGroup.getTask(0);
+            v_XSQLGroupResult = v_Task.getXsqlGroupResult();
+            
+            for (int v_TaskIndex=0; v_TaskIndex<i_TaskGroup.size(); v_TaskIndex++)
+            {
+                v_Task = (XSQLGroupTask)i_TaskGroup.getTask(v_TaskIndex);
+                
+                if ( v_Task != null )
+                {
+                    if ( v_Task.getXsqlGroupResult() != null )
+                    {
+                        if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                        {
+                            return v_Task.getXsqlGroupResult();
+                        }
+                    }
+                }
+            }
+        }
+        
+        return v_XSQLGroupResult;
+    }
+    
+    
+    
+    /**
+     * XSQL节点级别的：等待所有线程均执行完成
      * 
      * @author      ZhengWei(HY)
      * @createDate  2018-01-24
@@ -2187,6 +2351,106 @@ public final class XSQLGroup
     
     
     /**
+     * 是否为多线程并发执行。默认值：false。
+     * 
+     * 对所有XSQLNode类均有效，常用于执行类型的节点$Type_Execute或组嵌套。
+     * 对 $Type_Query、$Type_CollectionToQuery 两种类型，也只做普通查询动作，不再作为循环控制节点。
+     * 即，不配置XSQLNode.returnID属性的情况下，$Type_Query、$Type_CollectionToQuery两种类型没有实现意义。
+     * 
+     * 当XSQL组标记多线程时 this.thread = true，
+     * 表示组内所有XSQLNode节点均为平等、平行的关系，没有循环控制、上下级的关系。
+     * 同时，XSQL组在整体完成前，默认是等待所有XSQLNode节点都执行完成后，才表示XSQL组完成的。
+     *
+     * @return
+     */
+    public boolean isThread()
+    {
+        return thread;
+    }
+
+
+    
+    /**
+     * 是否为多线程并发执行。默认值：false。
+     * 
+     * 对所有XSQLNode类均有效，常用于执行类型的节点$Type_Execute或组嵌套。
+     * 对 $Type_Query、$Type_CollectionToQuery 两种类型，也只做普通查询动作，不再作为循环控制节点。
+     * 即，不配置XSQLNode.returnID属性的情况下，$Type_Query、$Type_CollectionToQuery两种类型没有实现意义。
+     * 
+     * 当XSQL组标记多线程时 this.thread = true，
+     * 表示组内所有XSQLNode节点均为平等、平行的关系，没有循环控制、上下级的关系。
+     * 同时，XSQL组在整体完成前，默认是等待所有XSQLNode节点都执行完成后，才表示XSQL组完成的。
+     *
+     * @return
+     */
+    public void setThread(boolean thread)
+    {
+        this.thread = thread;
+    }
+    
+    
+    
+    /**
+     * 当发起多线程时，XSQL组是否等待所有XSQLNode节点都执行完成后才退出XSQL组。
+     * 
+     * 等待类型为：事后等待。
+     *     
+     * 与 thread、threadWaitInterval 配置使用。
+     * 
+     * 默认值：true。
+     */
+    public boolean isThreadWait()
+    {
+        return threadWait;
+    }
+    
+    
+    
+    /**
+     * 当发起多线程时，XSQL组是否等待所有XSQLNode节点都执行完成后才退出XSQL组。
+     * 
+     * 等待类型为：事后等待。
+     *     
+     * 与 thread、threadWaitInterval 配置使用。
+     * 
+     * 默认值：true。
+     */
+    public void setThreadWait(boolean threadWait)
+    {
+        this.threadWait = threadWait;
+    }
+
+
+    
+    /**
+     * 监控所有线程完成情况的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.threadWait 属性配合使用。
+     * 
+     * 默认为0值，表示取时间间隔为：ThreadPool.getIntervalTime() * 3
+     */
+    public void setThreadWaitInterval(long threadWaitInterval)
+    {
+        this.threadWaitInterval = threadWaitInterval;
+    }
+    
+    
+    
+    /**
+     * 监控所有线程完成情况的时间间隔(单位：毫秒)。
+     * 
+     * 与 this.threadWait 属性配合使用。
+     * 
+     * 默认为0值，表示取时间间隔为：ThreadPool.getIntervalTime() * 3
+     */
+    public long getThreadWaitInterval()
+    {
+        return threadWaitInterval;
+    }
+
+    
+
+    /**
      * 获取：等待哪个节点上的云服务计算完成。与XSQLNode.cloudWait同义
      *      但，此属性表示XSQL组整体完成前的最后等待哪个节点上的云服务计算。
      *      
@@ -2427,7 +2691,7 @@ public final class XSQLGroup
     
     
     /**
-     * 多线程并发执行SQLNode节点及其后的关联节点
+     * XSQLNode节点级的线程：多线程并发执行SQLNode节点及其后的关联节点
      *
      * @author      ZhengWei(HY)
      * @createDate  2017-02-21

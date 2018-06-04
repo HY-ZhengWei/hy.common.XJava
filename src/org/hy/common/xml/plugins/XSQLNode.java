@@ -415,7 +415,7 @@ public class XSQLNode
     private String                       collectionID;
     
     /**
-     * 是否为多线程并且发执行。默认值：false。
+     * 是否为多线程并发执行。默认值：false。
      * 
      * 只对 $Type_Query、$Type_CollectionToQuery 两个类型有效。
      * 
@@ -1688,7 +1688,7 @@ public class XSQLNode
     
     
     /**
-     * 是否为多线程并且发执行。默认值：false。
+     * 是否为多线程并发执行。默认值：false。
      * 
      * 只对 $Type_Query、$Type_CollectionToQuery 两个类型有效。
      * 
@@ -1705,7 +1705,7 @@ public class XSQLNode
     
     
     /**
-     * 是否为多线程并且发执行。默认值：false。
+     * 是否为多线程并发执行。默认值：false。
      * 
      * 只对 $Type_Query、$Type_CollectionToQuery 两个类型有效。
      * 
