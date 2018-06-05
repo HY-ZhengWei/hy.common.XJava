@@ -130,7 +130,7 @@ public class SumStringXSQLResultFillEvent implements XSQLResultFillEvent
      * 
      * @param methodURLs 
      */
-    public void setMethodURL(String i_MethodURLs)
+    public void setMethodURLs(String i_MethodURLs)
     {
         this.methodURLs = i_MethodURLs;
     }
