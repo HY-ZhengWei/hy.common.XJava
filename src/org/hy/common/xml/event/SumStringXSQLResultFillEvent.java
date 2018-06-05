@@ -23,11 +23,14 @@ import org.hy.common.xml.XSQLResultFillEvent;
 public class SumStringXSQLResultFillEvent implements XSQLResultFillEvent
 {
     
-    /** 连接符。默认是空字符串 */
-    private String connector;
+    /** 连接符、对象属性名称的分隔符。默认是逗号 */
+    private String split;
     
-    /** 合并或拼接对象的哪个属性。支持面向对象，可实现xxx.yyy.www全路径的解释 */
-    private String methodURL;
+    /** 连接符。默认是空字符串。多个属性间用this.split指定字符分隔 */
+    private String connectors;
+    
+    /** 合并或拼接对象的哪个属性。支持面向对象，可实现xxx.yyy.www全路径的解释。多个属性间用this.split指定字符分隔 */
+    private String methodURLs;
     
     
     
@@ -50,14 +53,15 @@ public class SumStringXSQLResultFillEvent implements XSQLResultFillEvent
         {
             SumObjectMap<? ,?> v_SumMap = (SumObjectMap<? ,?>)i_Table;
             
-            v_SumMap.setConnector(this.connector);
-            v_SumMap.setMethodURL(this.methodURL);
+            v_SumMap.setSplit(     this.split);
+            v_SumMap.setConnectors(this.connectors);
+            v_SumMap.setMethodURLs(this.methodURLs);
         }
         else if ( MethodReflect.isExtendImplement(i_Table ,SumStringMap.class) )
         {
             SumStringMap<?> v_SumMap = (SumStringMap<?>)i_Table;
             
-            v_SumMap.setConnector(this.connector);
+            v_SumMap.setConnector(this.connectors);
         }
         else
         {
@@ -90,45 +94,67 @@ public class SumStringXSQLResultFillEvent implements XSQLResultFillEvent
 
     
     /**
-     * 获取：连接符。默认是空字符串
+     * 获取：连接符。默认是空字符串。多个属性间用this.split指定字符分隔。多个属性间用this.split指定字符分隔
      */
-    public String getConnector()
+    public String getConnectors()
     {
-        return connector;
+        return connectors;
     }
     
 
     
     /**
-     * 获取：合并或拼接对象的哪个属性。支持面向对象，可实现xxx.yyy.www全路径的解释
+     * 获取：合并或拼接对象的哪个属性。支持面向对象，可实现xxx.yyy.www全路径的解释。多个属性间用this.split指定字符分隔
      */
-    public String getMethodURL()
+    public String getMethodURLs()
     {
-        return methodURL;
+        return methodURLs;
     }
     
 
     
     /**
-     * 设置：连接符。默认是空字符串
+     * 设置：连接符。默认是空字符串。多个属性间用this.split指定字符分隔
      * 
      * @param connector 
      */
-    public void setConnector(String connector)
+    public void setConnectors(String i_Connectors)
     {
-        this.connector = connector;
+        this.connectors = i_Connectors;
     }
     
-
+    
     
     /**
-     * 设置：合并或拼接对象的哪个属性。支持面向对象，可实现xxx.yyy.www全路径的解释
+     * 设置：合并或拼接对象的哪个属性。支持面向对象，可实现xxx.yyy.www全路径的解释。多个属性间用this.split指定字符分隔
      * 
-     * @param methodURL 
+     * @param methodURLs 
      */
-    public void setMethodURL(String methodURL)
+    public void setMethodURL(String i_MethodURLs)
     {
-        this.methodURL = methodURL;
+        this.methodURLs = i_MethodURLs;
+    }
+    
+    
+    
+    /**
+     * 获取：连接符、对象属性名称的分隔符。默认是逗号。多个属性间用this.split指定字符分隔
+     */
+    public String getSplit()
+    {
+        return split;
+    }
+    
+    
+    
+    /**
+     * 设置：连接符、对象属性名称的分隔符。默认是逗号。多个属性间用this.split指定字符分隔
+     * 
+     * @param split 
+     */
+    public void setSplit(String split)
+    {
+        this.split = split;
     }
     
 }
