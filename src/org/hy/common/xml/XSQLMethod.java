@@ -1,6 +1,7 @@
 package org.hy.common.xml;
 
 import java.lang.reflect.Method;
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import org.hy.common.StringHelp;
  *              v2.0  2017-03-02  添加：支持一对多关系的对象填充功能。
  *              v2.1  2018-05-11  添加：在支持数字常量类的基础上，添加对字符类型的常量类的解析。
  *              v2.2  2018-05-15  添加：数据库java.sql.Timestamp时间的转换
+ *              v3.0  2018-06-14  添加：支持Clob大类型字段类型的读取
  */
 public final class XSQLMethod
 {
@@ -134,6 +136,17 @@ public final class XSQLMethod
 		for (int i=0; i<this.paramList.size(); i++)
 		{
 			v_Values[i] = this.paramList.get(i).invoke(i_Child ,i_ChildNo ,i_ChildName);
+		}
+		
+		for (int i=0; i<v_Values.length; i++)
+		{
+		    Object v_Value = v_Values[i];
+		    
+		    // 支持Clob大类型字段类型的读取  ZhengWei(HY) Add 2018-06-14
+		    if ( MethodReflect.isExtendImplement(v_Value ,Clob.class) )
+		    {
+		        v_Values[i] = XSQLClob.toString((Clob)v_Value);
+		    }
 		}
 		
 		try 

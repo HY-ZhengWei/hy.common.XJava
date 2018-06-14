@@ -37,10 +37,12 @@ public class JU_Fel
         FelEngine           v_Fel            = new FelEngineImpl();
         FelContext          v_FelContext     = v_Fel.getContext();
         
-        v_FelContext.set("接线盒" ,"304");
-        v_FelContext.set("A" ,"");
-        v_FelContext.set("fcProject.actionType" ,"NEW");
+        v_FelContext.set("tableName" ,"ORDER_PRODUCT_PLAN_DETAIL");
+        //v_FelContext.set("接线盒" ,"304");
+        //v_FelContext.set("A" ,"");
+        //v_FelContext.set("fcProject.actionType" ,"NEW");
         
+        System.out.println(v_Fel.eval("tableName == 'ORDER_PRODUCT_PLAN_DETAIL'"));
         System.out.println(v_Fel.eval("A == NULL || A == ''"));
         System.out.println(v_Fel.eval("A != NULL && A != ''"));
         System.out.println(v_Fel.eval("接线盒==304"));
