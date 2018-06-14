@@ -143,7 +143,7 @@ public final class XSQLMethod
 		    Object v_Value = v_Values[i];
 		    
 		    // 支持Clob大类型字段类型的读取  ZhengWei(HY) Add 2018-06-14
-		    if ( MethodReflect.isExtendImplement(v_Value ,Clob.class) )
+		    if ( v_Value != null && MethodReflect.isExtendImplement(v_Value ,Clob.class) )
 		    {
 		        v_Values[i] = XSQLClob.toString((Clob)v_Value);
 		    }
