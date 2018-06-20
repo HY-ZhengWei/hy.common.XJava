@@ -32,6 +32,7 @@ import org.hy.common.file.FileHelp;
  *              v3.2  2017-12-20  修复：无论Windows、Linux系统，统一均使用 / 符号分隔路径。
  *                                     防止Tomcat 7.0.82+ 版本以上出现如下异常的问题
  *                                     Invalid character found in the request target. The valid characters are defined in RFC 7230 and RFC 3986
+ *              v4.0  2018-06-20  添加：按文件名称排序后的顺序加载XML配置文件。
  */
 public class AppInitConfig
 {
@@ -199,7 +200,11 @@ public class AppInitConfig
                             File []     v_ChildFiles  = v_FObject.listFiles();
                             if ( !Help.isNull(v_ChildFiles) )
                             {
-                                for (File v_ChildFile : v_ChildFiles)
+                                // 先按文件名称排序
+                                List<File> v_ChildFilesList = Help.toList(v_ChildFiles);
+                                Help.toSort(v_ChildFilesList ,"name");
+                                
+                                for (File v_ChildFile : v_ChildFilesList)
                                 {
                                     if (  v_ChildFile.isHidden()
                                       || (v_ChildFile.isFile() && !v_ChildFile.getName().toLowerCase().endsWith(".xml")) )
