@@ -1,5 +1,6 @@
 package org.hy.common.xml;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import org.hy.common.xml.annotation.Doc;
@@ -17,9 +18,13 @@ import org.hy.common.xml.annotation.Doc;
  * @createDate  2014-12-01
  * @version     v1.0  
  */
-public class DocInfo
+public class DocInfo implements Serializable
 {
     
+    private static final long serialVersionUID = 5590371408236141711L;
+    
+    
+
     /** 
      * 注解信息
      * 
