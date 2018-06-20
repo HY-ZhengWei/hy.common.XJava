@@ -376,10 +376,11 @@ public final class XSQLResult
 		}
 		
 		
-		Object v_Table       = null;
-		int [] v_ColArr      = null;
-		long   v_RowNo       = 0;
-    	int    v_ColNo       = 0;
+		Object  v_Table     = null;
+		int []  v_ColArr    = null;
+		long    v_RowNo     = 0;
+    	int     v_ColNo     = 0;
+    	boolean v_FillEvent = false;
     	this.initTotalInfo();
 		
 		try
@@ -591,11 +592,13 @@ public final class XSQLResult
 	                            this.cfillMethodArr[0].invoke(v_Row ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
 	                        }
 	                        
+	                        v_FillEvent = true;
 	                        if ( this.fillEvent.before(v_Table ,v_Row ,v_RowNo ,v_RowPrevious) )
 	                        {
 	                            this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo++ ,null);
 	                            v_RowPrevious = v_Row;
 	                        }
+	                        v_FillEvent = false;
 	                        v_Count++;
 	                    }
 	                }
@@ -617,12 +620,14 @@ public final class XSQLResult
 	                            // 最后的入参可是为null。原因是 setter(colValue) 方法的入参只有一个，且只能是 colValue，所以不需要字段名称
 	                            this.cfillMethodArr[v_ColNo].invoke(v_Row ,v_ColValue ,v_ColNo ,null);
 	                        }
-	                        
+
+	                        v_FillEvent = true;
 	                        if ( this.fillEvent.before(v_Table ,v_Row ,v_RowNo ,v_RowPrevious) )
 	                        {
 	                            this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo++ ,null);
 	                            v_RowPrevious = v_Row;
 	                        }
+	                        v_FillEvent = false;
 	                        v_Count++;
 	                    }
 	                }
@@ -697,11 +702,13 @@ public final class XSQLResult
 	                            this.cfillMethodArr[0].invoke(v_Row ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
 	                        }
 	                        
+	                        v_FillEvent = true;
 	                        if ( this.fillEvent.before(v_Table ,v_Row ,v_RowNo ,v_RowPrevious) )
 	                        {
 	                            this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo++ ,null);
 	                            v_RowPrevious = v_Row;
 	                        }
+	                        v_FillEvent = false;
 	                    }
 	                }
 	                // 列级对象填充到行级对象中行级对象的方法类型: 变化方法 -- setter(colValue)
@@ -723,11 +730,13 @@ public final class XSQLResult
 	                            this.cfillMethodArr[v_ColNo].invoke(v_Row ,v_ColValue ,v_ColNo ,null);
 	                        }
 	                        
+	                        v_FillEvent = true;
 	                        if ( this.fillEvent.before(v_Table ,v_Row ,v_RowNo ,v_RowPrevious) )
 	                        {
 	                            this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo++ ,null);
 	                            v_RowPrevious = v_Row;
 	                        }
+	                        v_FillEvent = false;
 	                    }
 	                }
 	            }
@@ -741,7 +750,14 @@ public final class XSQLResult
 			this.getDatasTimes   = -1;
 			this.getDatasRowSize = v_RowNo;
 			
-			throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  " + exce.getMessage());
+			if ( !v_FillEvent )
+			{
+			    throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  " + exce.getMessage());
+			}
+			else
+			{
+			    throw new java.lang.RuntimeException("Call FillEvent Error for RowNo=" + v_RowNo + "  " + exce.getMessage());
+			}
 		}
 		
 		return v_Table;
@@ -784,10 +800,11 @@ public final class XSQLResult
         }
         
         
-        Object v_Table       = null;
-        int [] v_ColArr      = null;
-        long   v_RowNo       = 0;
-        int    v_ColNo       = 0;
+        Object  v_Table     = null;
+        int []  v_ColArr    = null;
+        long    v_RowNo     = 0;
+        int     v_ColNo     = 0;
+        boolean v_FillEvent = false;
         this.initTotalInfo();
         
         try
@@ -1053,7 +1070,9 @@ public final class XSQLResult
                                 this.cfillMethodArr[0].invoke(v_Row ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
                             }
                             
+                            v_FillEvent       = true;
                             v_FillEventBefore = this.fillEvent.before(v_Table ,v_Row ,v_RowNo ,v_RowPrevious);
+                            v_FillEvent       = false;
                             if ( v_FillEventBefore )
                             {
                                 this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
@@ -1073,7 +1092,9 @@ public final class XSQLResult
                                 this.cfillMethodArr[0].invoke(v_RowNext ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
                             }
                             
-                            v_FillEventBefore= this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
+                            v_FillEvent       = true;
+                            v_FillEventBefore = this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
+                            v_FillEvent       = false;
                             if ( v_FillEventBefore )
                             {
                                 v_BigDataRet  = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
@@ -1107,7 +1128,9 @@ public final class XSQLResult
                                 this.cfillMethodArr[v_ColNo].invoke(v_Row ,v_ColValue ,v_ColNo ,null);
                             }
                             
+                            v_FillEvent       = true;
                             v_FillEventBefore = this.fillEvent.before(v_Table ,v_Row ,v_RowNo ,v_RowPrevious);
+                            v_FillEvent       = false;
                             if ( v_FillEventBefore )
                             {
                                 this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
@@ -1131,7 +1154,9 @@ public final class XSQLResult
                                 this.cfillMethodArr[v_ColNo].invoke(v_RowNext ,v_ColValue ,v_ColNo ,null);
                             }
                             
+                            v_FillEvent       = true;
                             v_FillEventBefore = this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
+                            v_FillEvent       = false;
                             if ( v_FillEventBefore )
                             {
                                 v_BigDataRet  = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
@@ -1261,7 +1286,9 @@ public final class XSQLResult
                                 this.cfillMethodArr[0].invoke(v_Row ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
                             }
                             
+                            v_FillEvent       = true;
                             v_FillEventBefore = this.fillEvent.before(v_Table ,v_Row ,v_RowNo ,v_RowPrevious);
+                            v_FillEvent       = false;
                             if ( v_FillEventBefore )
                             {
                                 this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
@@ -1280,7 +1307,9 @@ public final class XSQLResult
                                 this.cfillMethodArr[0].invoke(v_RowNext ,v_ColValue ,v_ColNo ,this.dbMetaData.getColumnName(v_ColNo));
                             }
                             
-                            v_FillEventBefore= this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
+                            v_FillEvent       = true;
+                            v_FillEventBefore = this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
+                            v_FillEvent       = false;
                             if ( v_FillEventBefore )
                             {
                                 v_BigDataRet  = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
@@ -1313,7 +1342,9 @@ public final class XSQLResult
                                 this.cfillMethodArr[v_ColNo].invoke(v_Row ,v_ColValue ,v_ColNo ,null);
                             }
                             
+                            v_FillEvent       = true;
                             v_FillEventBefore = this.fillEvent.before(v_Table ,v_Row ,v_RowNo ,v_RowPrevious);
+                            v_FillEvent       = false;
                             if ( v_FillEventBefore )
                             {
                                 this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
@@ -1336,7 +1367,9 @@ public final class XSQLResult
                                 this.cfillMethodArr[v_ColNo].invoke(v_RowNext ,v_ColValue ,v_ColNo ,null);
                             }
                             
+                            v_FillEvent       = true;
                             v_FillEventBefore = this.fillEvent.before(v_Table ,v_RowNext ,v_RowNo ,v_RowPrevious);
+                            v_FillEvent       = false;
                             if ( v_FillEventBefore )
                             {
                                 v_BigDataRet  = i_XSQLBigData.row(v_RowNo++ ,v_Row ,v_RowPrevious ,v_RowNext);
@@ -1380,7 +1413,14 @@ public final class XSQLResult
             this.getDatasTimes   = -1;
             this.getDatasRowSize = v_RowNo;
             
-            throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  " + exce.getMessage());
+            if ( !v_FillEvent )
+            {
+                throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  " + exce.getMessage());
+            }
+            else
+            {
+                throw new java.lang.RuntimeException("Call FillEvent Error for RowNo=" + v_RowNo + "  " + exce.getMessage());
+            }
         }
         
         return v_Table;
