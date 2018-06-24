@@ -109,6 +109,8 @@ import org.hy.common.xml.event.BLobEvent;
  *              v11.2 2018-05-08  添加：支持枚举toString()的匹配
  *              v11.3 2018-05-11  修正：预解析处理时间时，getSQLDate()的精度只到天，未到时分秒，所以换成getSQLTimestamp()方法。
  *              v11.4 2018-05-15  添加：数据库java.sql.Timestamp时间的转换
+ *              v12.0 2018-06-24  添加：allowExecutesSplit属性，是否允许或支持execute()方法中执行多条SQL语句，
+ *                                     即$Executes_Split = ";/"分割符是否生效。
  */
 /*
  * 游标类型的说明
@@ -227,6 +229,15 @@ public final class XSQL implements Comparable<XSQL>
      */
     private int                            batchCommit;
     
+    /**
+     * 是否允许或支持execute()方法中执行多条SQL语句，即$Executes_Split = ";/"分割符是否生效。
+     * 默认情况下，通过XSQL模板自动判定$Executes_Split分割符是否生效的。
+     * 
+     * 但特殊情况下，允许外界通过本属性启用或关闭execute()方法中执行多条SQL语句的功能。
+     * 如，SQL语句中就包含;/文本字符的情况，不是分割符是意思。
+     */
+    private boolean                        allowExecutesSplit;
+    
     /** 唯一标示，主用于对比等操作 */
     private String                         uuid;
     
@@ -259,23 +270,24 @@ public final class XSQL implements Comparable<XSQL>
 	
 	public XSQL()
 	{
-		this.dataSourceGroups  = new CycleNextList<DataSourceGroup>(1);
-		this.domain            = null;
-		this.content           = new DBSQL();
-		this.result            = new XSQLResult();
-		this.trigger           = null;
-		this.blobSafe          = false;
-        this.type              = $Type_NormalSQL;
-        this.create            = null;
-        this.callParamInCount  = 0;
-        this.callParamOutCount = 0;
-        this.batchCommit       = 0;
-        this.uuid              = StringHelp.getUUID();
-        this.requestCount      = 0;
-        this.successCount      = 0;
-        this.successTimeLen    = 0D;
-        this.executeTime       = null;
-        this.comment           = null;
+		this.dataSourceGroups   = new CycleNextList<DataSourceGroup>(1);
+		this.domain             = null;
+		this.content            = new DBSQL();
+		this.result             = new XSQLResult();
+		this.trigger            = null;
+		this.blobSafe           = false;
+        this.type               = $Type_NormalSQL;
+        this.create             = null;
+        this.callParamInCount   = 0;
+        this.callParamOutCount  = 0;
+        this.batchCommit        = 0;
+        this.allowExecutesSplit = false;
+        this.uuid               = StringHelp.getUUID();
+        this.requestCount       = 0;
+        this.successCount       = 0;
+        this.successTimeLen     = 0D;
+        this.executeTime        = null;
+        this.comment            = null;
 	}
 	
 	
@@ -4342,12 +4354,20 @@ public final class XSQL implements Comparable<XSQL>
 			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement();
 			
-			String [] v_SQLs = v_SQL.split($Executes_Split);
-			for (int i=0; i<v_SQLs.length; i++)
+			if ( this.allowExecutesSplit )
 			{
-			    v_SQL = v_SQLs[i].trim();
+    			String [] v_SQLs = v_SQL.split($Executes_Split);
+    			for (int i=0; i<v_SQLs.length; i++)
+    			{
+    			    v_SQL = v_SQLs[i].trim();
+    			    v_Statement.execute(v_SQL);
+    			    $SQLBusway.put(new XSQLLog(v_SQL));
+    			}
+			}
+			else
+			{
 			    v_Statement.execute(v_SQL);
-			    $SQLBusway.put(new XSQLLog(v_SQL));
+                $SQLBusway.put(new XSQLLog(v_SQL));
 			}
 			
 			Date v_EndTime = Date.getNowTime();
@@ -5358,6 +5378,7 @@ public final class XSQL implements Comparable<XSQL>
 	public void setContent(String i_SQLText) 
 	{
 		this.content.setSqlText(i_SQLText);
+		this.isAllowExecutesSplit(i_SQLText);
 	}
 	
 	
@@ -5372,11 +5393,74 @@ public final class XSQL implements Comparable<XSQL>
 	public void setContentDB(DBSQL i_DBSQL) 
     {
         this.content = i_DBSQL;
+        
+        if ( this.content != null )
+        {
+            this.isAllowExecutesSplit(this.content.getSqlText());
+        }
     }
 	
 	
 	
 	/**
+	 * 默认情况下，通过XSQL模板自动判定$Executes_Split分割符是否生效的。
+	 * 
+	 * @author      ZhengWei(HY)
+	 * @createDate  2018-06-24
+	 * @version     v1.0
+	 *
+	 * @param i_SQLText
+	 */
+	private void isAllowExecutesSplit(String i_SQLText)
+	{
+	    if ( !Help.isNull(i_SQLText) )
+        {
+            if ( i_SQLText.split($Executes_Split).length >= 2 )
+            {
+                this.allowExecutesSplit = true;
+            }
+            else
+            {
+                this.allowExecutesSplit = false;
+            }
+        }
+        else
+        {
+            this.allowExecutesSplit = false;
+        }
+	}
+	
+	
+	
+	/**
+     * 是否允许或支持execute()方法中执行多条SQL语句，即$Executes_Split = ";/"分割符是否生效。
+     * 默认情况下，通过XSQL模板自动判定$Executes_Split分割符是否生效的。
+     * 
+     * 但特殊情况下，允许外界通过本属性启用或关闭execute()方法中执行多条SQL语句的功能。
+     * 如，SQL语句中就包含;/文本字符的情况，不是分割符是意思。
+     */
+    public boolean isAllowExecutesSplit()
+    {
+        return allowExecutesSplit;
+    }
+
+    
+
+    /**
+     * 是否允许或支持execute()方法中执行多条SQL语句，即$Executes_Split = ";/"分割符是否生效。
+     * 默认情况下，通过XSQL模板自动判定$Executes_Split分割符是否生效的。
+     * 
+     * 但特殊情况下，允许外界通过本属性启用或关闭execute()方法中执行多条SQL语句的功能。
+     * 如，SQL语句中就包含;/文本字符的情况，不是分割符是意思。
+     */
+    public void setAllowExecutesSplit(boolean allowExecutesSplit)
+    {
+        this.allowExecutesSplit = allowExecutesSplit;
+    }
+    
+
+
+    /**
 	 * 多个数据库连接批量提交
 	 * 
 	 * @author      ZhengWei(HY)
