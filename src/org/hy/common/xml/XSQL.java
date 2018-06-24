@@ -5458,7 +5458,7 @@ public final class XSQL implements Comparable<XSQL>
         this.allowExecutesSplit = allowExecutesSplit;
     }
     
-
+    
 
     /**
 	 * 多个数据库连接批量提交
