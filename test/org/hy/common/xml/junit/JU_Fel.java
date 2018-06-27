@@ -39,7 +39,7 @@ public class JU_Fel
         
         v_FelContext.set("tableName" ,"ORDER_PRODUCT_PLAN_DETAIL");
         //v_FelContext.set("接线盒" ,"304");
-        //v_FelContext.set("A" ,"");
+        v_FelContext.set("A" ,null);
         //v_FelContext.set("fcProject.actionType" ,"NEW");
         
         System.out.println(v_Fel.eval("tableName == 'ORDER_PRODUCT_PLAN_DETAIL'"));

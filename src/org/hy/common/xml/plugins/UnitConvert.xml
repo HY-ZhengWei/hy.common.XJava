@@ -150,13 +150,13 @@
 			<call name="putRow">
 				<String>Kv</String>
 				<String>Cv</String>
-				<String>UCE * 1.167</String>
+				<String>UCE * 1.156</String>
 			</call>
 			
 			<call name="putRow">
 				<String>Cv</String>
 				<String>Kv</String>
-				<String>UCE / 1.167</String>
+				<String>UCE / 1.156</String>
 			</call>
 			
 			
