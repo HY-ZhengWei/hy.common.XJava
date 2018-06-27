@@ -31,6 +31,59 @@ import com.greenpineyu.fel.context.FelContext;
 public class JU_Fel
 {
     
+    /**
+     * 性能测试
+     */
+    @Test
+    public void test_Fel_BigData()
+    {
+        Date v_BeginTime = null;
+        Date v_EndTime   = null;
+        
+        v_BeginTime = new Date();
+        for (int i=1; i<=10; i++)
+        {
+            FelEngine  v_Fel        = new FelEngineImpl();
+            FelContext v_FelContext = v_Fel.getContext();
+            
+            v_FelContext.set("A" ,i);
+            
+            System.out.println(v_Fel.eval("A == 1"));
+        }
+        v_EndTime = new Date();
+        System.out.println(Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
+        
+        
+        
+        FelEngine  v_Fel        = new FelEngineImpl();
+        v_BeginTime = new Date();
+        for (int i=1; i<=10; i++)
+        {
+            FelContext v_FelContext = v_Fel.getContext();
+            v_FelContext.set("A" ,i);
+            
+            System.out.println(v_Fel.eval("A == 1"));
+        }
+        v_EndTime = new Date();
+        System.out.println(Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
+        
+        
+        
+        v_Fel        = new FelEngineImpl();
+        FelContext v_FelContext = v_Fel.getContext();
+        v_BeginTime = new Date();
+        for (int i=1; i<=10; i++)
+        {
+            v_FelContext.set("A" ,i);
+            
+            System.out.println(v_Fel.eval("A == 1"));
+        }
+        v_EndTime = new Date();
+        System.out.println(Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
+    }
+    
+    
+    
     @Test
     public void test_Fel_IF()
     {

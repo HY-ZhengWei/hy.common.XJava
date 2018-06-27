@@ -71,6 +71,7 @@ import com.greenpineyu.fel.context.FelContext;
  *              v13.2 2018-03-29  1.添加：针对具体XSQL节点的Java断言调试功能。方便问题的定位。
  *              v13.3 2018-05-02  1.添加：SELECT查询节点未查询出结果时，可控制其是否允许其后节点的执行。建议人：马龙。
  *              v13.4 2018-05-03  1.添加：线程等待功能，在原先事后等待的基础上，新添加事前等待。建议人：马龙。
+ *              v13.5 2018-06-27  1.优化：XSQL节点是否允许通过的Fel表达式性能优化。不是重复创建Fel引擎对象。
  */
 public class XSQLNode
 {
@@ -156,7 +157,9 @@ public class XSQLNode
     /** 
      * 执行前的前提条件，只有当满足这个条件后，XSQL才会被执行
      * 
-     * 形式为带占位符的Fel条件，如：:c01=='1' && :c02=='2'
+     * 形式为带占位符的Fel条件，
+     *    如：:c01=='1' && :c02=='2' 
+     *    如：:c01==NULL || :c01==''  判定是否为NULL对象或空字符串
      * 
      * 为空时，表示任何情况下都允许执行
      */
@@ -165,7 +168,8 @@ public class XSQLNode
     /** 
      * 解释出来的Fel条件。与this.condition的区别是：它是没有占位符
      * 
-     * 如：c01=='1' && c02=='2'
+     *    如：c01=='1' && c02=='2' 
+     *    如：c01==NULL || c01==''  判定是否为NULL对象或空字符串
      */
     private String                       conditionFel;
     
@@ -177,6 +181,8 @@ public class XSQLNode
      */
     private Map<String ,Object>          placeholders;
     
+    /** 为了性能，先行创建出Fel对象，并且不再重复创建Fel对象 */
+    private FelEngine                    felEngine;
     
     /**
      * 当SELECT查询节点未查询出结果时，是否允许其后的XSQL节点执行。默认为：false，即不执行其后的节点。
@@ -603,6 +609,8 @@ public class XSQLNode
             {
                 this.conditionFel = StringHelp.replaceAll(this.conditionFel ,":" + v_Key ,StringHelp.replaceAll(v_Key ,"." ,"_"));
             }
+            
+            this.felEngine = new FelEngineImpl();
         }
     }
     
@@ -1628,26 +1636,18 @@ public class XSQLNode
         
         try
         {
-            FelEngine  v_Fel        = new FelEngineImpl();
-            FelContext v_FelContext = v_Fel.getContext();
+            FelContext v_FelContext = this.felEngine.getContext();
             
             for (String v_Key : this.placeholders.keySet())
             {
                 Object v_Value = MethodReflect.getMapValue(i_ConditionValues ,v_Key);
                 
-                v_Key = StringHelp.replaceAll(v_Key ,"." ,"_"); // 点原本就是Fel关键字，所以要替换 ZhengWei(HY) Add 2017-05-23
+                v_Key = StringHelp.replaceAll(v_Key ,"." ,"_"); // "点" 原本就是Fel关键字，所以要替换 ZhengWei(HY) Add 2017-05-23
                 
-                if ( null == v_Value )
-                {
-                    v_FelContext.set(v_Key ,"NULL");
-                }
-                else
-                {
-                    v_FelContext.set(v_Key ,v_Value);
-                }
+                v_FelContext.set(v_Key ,v_Value);
             }
             
-            return (Boolean) v_Fel.eval(this.conditionFel);
+            return (Boolean) this.felEngine.eval(this.conditionFel);
         }
         catch (Exception exce)
         {
