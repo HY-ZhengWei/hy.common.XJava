@@ -71,7 +71,6 @@ import com.greenpineyu.fel.context.FelContext;
  *              v13.2 2018-03-29  1.添加：针对具体XSQL节点的Java断言调试功能。方便问题的定位。
  *              v13.3 2018-05-02  1.添加：SELECT查询节点未查询出结果时，可控制其是否允许其后节点的执行。建议人：马龙。
  *              v13.4 2018-05-03  1.添加：线程等待功能，在原先事后等待的基础上，新添加事前等待。建议人：马龙。
- *              v13.5 2018-06-27  1.优化：XSQL节点是否允许通过的Fel表达式性能优化。不是重复创建Fel引擎对象。
  */
 public class XSQLNode
 {
@@ -180,9 +179,6 @@ public class XSQLNode
      * Map.Value  为占位符原文本信息
      */
     private Map<String ,Object>          placeholders;
-    
-    /** 为了性能，先行创建出Fel对象，并且不再重复创建Fel对象 */
-    private FelEngine                    felEngine;
     
     /**
      * 当SELECT查询节点未查询出结果时，是否允许其后的XSQL节点执行。默认为：false，即不执行其后的节点。
@@ -609,8 +605,6 @@ public class XSQLNode
             {
                 this.conditionFel = StringHelp.replaceAll(this.conditionFel ,":" + v_Key ,StringHelp.replaceAll(v_Key ,"." ,"_"));
             }
-            
-            this.felEngine = new FelEngineImpl();
         }
     }
     
@@ -1636,7 +1630,8 @@ public class XSQLNode
         
         try
         {
-            FelContext v_FelContext = this.felEngine.getContext();
+            FelEngine  v_FelEngine  = new FelEngineImpl();
+            FelContext v_FelContext = v_FelEngine.getContext();
             
             for (String v_Key : this.placeholders.keySet())
             {
@@ -1647,7 +1642,7 @@ public class XSQLNode
                 v_FelContext.set(v_Key ,v_Value);
             }
             
-            return (Boolean) this.felEngine.eval(this.conditionFel);
+            return (Boolean) v_FelEngine.eval(this.conditionFel);
         }
         catch (Exception exce)
         {

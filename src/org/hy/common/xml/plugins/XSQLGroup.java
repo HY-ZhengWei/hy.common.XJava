@@ -146,6 +146,7 @@ import org.hy.common.xml.XSQLBigData;
  *              v21.1 2018-05-03  1.添加：线程等待功能，在原先事后等待的基础上，新添加事前等待。建议人：马龙。
  *              v22.0 2018-06-03  1.添加：XSQL组线程：在XSQLNode节点线程类型的基础上，新添加XSQL组线程类型。平行、平等关系的XSQL节点的执行方式。
  *                                       建议人：马龙。
+ *              v22.1 2018-06-28  1.修正：在XSQL组执行异常时，未清空所有创建的多任务组中的任务信息。 
  */
 public final class XSQLGroup
 {
@@ -1751,6 +1752,19 @@ public final class XSQLGroup
                     }
                     finally
                     {
+                        if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                        {
+                            // 清空的多任务组中的任务信息  ZhengWei(HY) Add 2018-06-28 
+                            try
+                            {
+                                v_TaskGroup.clear();
+                            }
+                            catch (Exception exce)
+                            {
+                                exce.printStackTrace();
+                            }
+                        }
+                        
                         // 任务组执行完成后，删除。
                         i_XSQLGroupResult.taskGroup.remove(v_TaskGroupName);
                     }
