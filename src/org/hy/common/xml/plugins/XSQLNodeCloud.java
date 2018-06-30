@@ -173,6 +173,14 @@ public class XSQLNodeCloud
               &&  i_Event.getResult() != null
               &&  ((CommunicationResponse)i_Event.getResult()).getResult() == 0 )
             {
+                System.out.println("\n" 
+                                 + Date.getNowTime().getFullMilli() 
+                                 + "  Cloud computing " 
+                                 + this.cloud.getClient().getHostName() 
+                                 + ":"
+                                 + this.cloud.getClient().getPort() 
+                                 + " Finish.");
+                
                 this.cloud.isIdle = true;
                 this.xsqlNode.cloudIdle();
             }
