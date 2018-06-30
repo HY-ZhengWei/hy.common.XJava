@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.PrintStream;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
@@ -28,6 +29,7 @@ import org.hy.common.xml.event.BLobListener;
 import org.hy.common.xml.event.DefaultBLobEvent;
 
 import oracle.sql.BLOB;
+import oracle.sql.CLOB;
 
 import org.hy.common.Busway;
 import org.hy.common.ByteHelp;
@@ -39,6 +41,7 @@ import org.hy.common.PartitionMap;
 import org.hy.common.Return;
 import org.hy.common.StaticReflect;
 import org.hy.common.StringHelp;
+import org.hy.common.XJavaID;
 import org.hy.common.xml.event.BLobEvent;
 
 
@@ -92,25 +95,27 @@ import org.hy.common.xml.event.BLobEvent;
  *              v7.0  2017-09-18  添加：数据库连接的域。实现相同数据库结构下的，多个数据库间的分域功能。
  *                                     多个数据库间的相同SQL语句，不用重复写多次，只须通过"分域"动态改变数据库连接池组即可。
  *              v7.1  2017-11-06  修正：当预处理 this.executeUpdatesPrepared_Inner() 执行的同时 batchCommit >= 1时，可能出现未"执行executeBatch"情况。
- *                                     发现人：向以前同学
+ *                                       发现人：向以前同学
  *              v8.0  2017-12-19  添加：将参数效验检查抛出的异常，也包括在try{}cacth{}内，自己抛出自己捕获，并记录在统计数据中。
- *                                     记录完成后再向外抛出。
- *                                     方便异常定位页面统计数据：http://IP:Port/服务名/analyses/analyseDB
+ *                                       记录完成后再向外抛出。
+ *                                       方便异常定位页面统计数据：http://IP:Port/服务名/analyses/analyseDB
  *              v9.0  2018-01-12  添加：setCreate()实现服务启动时检查并创建数据库对象(如数据库表)，已存在不创建。
  *                                添加：execute()方法支持多条SQL语句的执行。
  *              v10.0 2018-01-17  添加：queryBigData()系列关于大数据操作的方法
  *                                添加：setComment()注释。可用于日志的输出等帮助性的信息
  *              v11.0 2018-01-21  添加：executeUpdates(Map<XSQL ,?> ...)系列方法支持不同类型的多个不同数据库的操作。之前，只支持同一数据库的操作。
  *                                添加：实现多个平行、平等的数据库的负载均衡（简单级的）。
- *                                     目前建议只用在查询SQL上，当多个相同数据的数据库（如主备数据库），
- *                                     在高并发的情况下，提高整体查询速度，查询锁、查询阻塞等问题均能得到一定的解决。
- *                                     在高并发的情况下，突破数据库可分配的连接数量，会话数量将翻数倍（与数据库个数有正相关的关系）。
+ *                                       目前建议只用在查询SQL上，当多个相同数据的数据库（如主备数据库），
+ *                                       在高并发的情况下，提高整体查询速度，查询锁、查询阻塞等问题均能得到一定的解决。
+ *                                       在高并发的情况下，突破数据库可分配的连接数量，会话数量将翻数倍（与数据库个数有正相关的关系）。
  *              v11.1 2018-03-05  添加：重置统计数据的功能。
  *              v11.2 2018-05-08  添加：支持枚举toString()的匹配
  *              v11.3 2018-05-11  修正：预解析处理时间时，getSQLDate()的精度只到天，未到时分秒，所以换成getSQLTimestamp()方法。
  *              v11.4 2018-05-15  添加：数据库java.sql.Timestamp时间的转换
  *              v12.0 2018-06-24  添加：allowExecutesSplit属性，是否允许或支持execute()方法中执行多条SQL语句，
- *                                     即$Executes_Split = ";/"分割符是否生效。
+ *                                       即$Executes_Split = ";/"分割符是否生效。
+ *              v13.0 2018-07-01  添加：实现Oracle数据库Clob的写入方法executeUpdateCLob()。
+ *                                       对于Clob的读取已在hy.common.db包中实现，对于开发者来说，查询SQL无须任何特殊处理，就当Clob是普通字段。
  */
 /*
  * 游标类型的说明
@@ -121,7 +126,7 @@ import org.hy.common.xml.event.BLobEvent;
  * TYPE_SCROLL_SENSITIVE     支持backforward，random，last，first操作，对其它数据session对选择数据做出的更改是敏感，可见的。但是这种可见性仅限于update操作
  *                           在jvm中cache所有fetch到的记录rowid，需要进行二次查询，效率最低，开销最大
  */
-public final class XSQL implements Comparable<XSQL>
+public final class XSQL implements Comparable<XSQL> ,XJavaID
 {
     /** SQL类型。N: 增、删、改、查的普通SQL语句  (默认值) */
     public  static final String            $Type_NormalSQL = "N";
@@ -165,6 +170,9 @@ public final class XSQL implements Comparable<XSQL>
 	private static final int               $BufferSize     = 4 * 1024;
 	
 	
+	
+	/** XJava池中对象的ID标识 */
+    private String                         xjavaID;
 	
 	/** 多个平行、平等的数据库的负载数据库集合 */
 	private CycleNextList<DataSourceGroup> dataSourceGroups;
@@ -3770,6 +3778,238 @@ public final class XSQL implements Comparable<XSQL>
     }
     
     
+    
+    /**
+     * 针对数据库的CLob类型的填充数据的操作。
+     * 可以简单理解为Update语句的操作
+     * 
+     * 占位符SQL的的执行 -- 无填充值的
+     * 
+     * 1. CLob类型必须在SELECT语句的第一个输出字段的位置
+     * 2. 对于Oracle数据库，必须有 FOR UPDATE 关键字
+     * 
+     * @param i_ClobText         文本
+     * @return                   返回语句影响的记录数。正常情况下，只操作首条数据记录，即返回 1。
+     */
+    public int executeUpdateCLob(String i_ClobText)
+    {
+        checkContent();
+        
+        return this.executeUpdateCLob(this.content.getSQL() ,i_ClobText);
+    }
+    
+    
+    
+    /**
+     * 针对数据库的CLob类型的填充数据的操作。
+     * 可以简单理解为Update语句的操作
+     * 
+     * 占位符SQL的的执行。
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 2. CLob类型必须在SELECT语句的第一个输出字段的位置
+     * 3. 对于Oracle数据库，必须有 FOR UPDATE 关键字
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @param i_ClobText         文本
+     * @return                   返回语句影响的记录数。正常情况下，只操作首条数据记录，即返回 1。
+     */
+    public int executeUpdateCLob(Map<String ,?> i_Values ,String i_ClobText)
+    {
+        checkContent();
+        
+        return this.executeUpdateCLob(this.content.getSQL(i_Values) ,i_ClobText);
+    }
+    
+    
+    
+    /**
+     * 针对数据库的CLob类型的填充数据的操作。
+     * 可以简单理解为Update语句的操作
+     * 
+     * 占位符SQL的的执行。
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 2. CLob类型必须在SELECT语句的第一个输出字段的位置
+     * 3. 对于Oracle数据库，必须有 FOR UPDATE 关键字
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_ClobText         文本
+     * @return                   返回语句影响的记录数。正常情况下，只操作首条数据记录，即返回 1。
+     */
+    public int executeUpdateCLob(Object i_Obj ,String i_ClobText)
+    {
+        checkContent();
+        
+        return this.executeUpdateCLob(this.content.getSQL(i_Obj) ,i_ClobText);
+    }
+    
+    
+    
+    /**
+     * 针对数据库的CLob类型的填充数据的操作。
+     * 可以简单理解为Update语句的操作 
+     * 
+     * 写入Clob方法1（本类实现的方法）：
+     *    Oracle中Clob数据类型是不能够直接插入的，但是可以通过流的形式对Clob类型数据写入或者读取。
+     *    INSERT INTO tablename
+     *               (
+     *                id 
+     *               ,clobColumn
+     *               ) 
+     *        VALUES (
+     *                1
+     *               ,EMPTY_CLOB()
+     *               );
+     *    
+     *    SELECT  clobColumn 
+     *      FROM  tablename 
+     *     WHERE  id = 1 
+     *       FOR  UPDATE
+     *    
+     * 写入Clob方法2：
+     *    通过TO_CLOB将字符转为clob类型，每个转换的参数不能超过2000个字符，多个部分通过连接符 || 连接
+     *    INSERT INTO tablename
+     *               (
+     *                varcharColumn 
+     *               ,clobColumn
+     *               ) 
+     *        VALUES (
+     *                'string part'
+     *               ,TO_CLOB('clob chars part1 ') || TO_CLOB('clob chars part2')
+     *               );
+     *               
+     * @author      ZhengWei(HY)
+     * @createDate  2018-07-01
+     * @version     v1.0
+     * 
+     * @param i_SQL              带有Clob字段的查询SQL语句 
+     *                           1. CLob类型必须在SELECT语句的第一个输出字段的位置
+     *                           2. 对于Oracle数据库，必须有 FOR UPDATE 关键字
+     *                           3. 只操作首条数据记录
+     * @param i_ClobText         文本
+     * @return                   返回语句影响的记录数。正常情况下，只操作首条数据记录，即返回 1。
+     */
+    @SuppressWarnings("deprecation")
+    public int executeUpdateCLob(String i_SQL ,String i_ClobText)
+    {
+        DataSourceGroup     v_DSG            = null;
+        Connection          v_Conn           = null;
+        Statement           v_Statement      = null;
+        ResultSet           v_ResultSet      = null;
+        boolean             v_Old_AutoCommit = false; // 保存原始状态，使用完后，再恢复原状
+        int                 v_ExecResult     = -1;    // 执行结果。0:没有执行  1:需要Commit  -1:需要RollBack
+        Writer              v_Output         = null;
+        BufferedInputStream v_Input          = null;
+        long                v_BeginTime      = this.request().getTime();
+        
+        try
+        {
+            v_DSG = this.getDataSourceGroup();
+            if ( !v_DSG.isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup is not valid.");
+            }
+            
+            if ( Help.isNull(i_SQL) )
+            {
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+            }
+            
+            if ( i_ClobText == null )
+            {
+                throw new NullPointerException("ClobText is null of XSQL.");
+            }
+            
+            
+            v_Conn           = this.getConnection(v_DSG);
+            v_Old_AutoCommit = v_Conn.getAutoCommit();
+            v_Conn.setAutoCommit(false);
+            v_Statement      = v_Conn.createStatement();
+            v_ResultSet      = v_Statement.executeQuery(i_SQL);
+            $SQLBusway.put(new XSQLLog(i_SQL));
+            
+            if ( v_ResultSet.next() )
+            {
+                // 获取数据流
+                CLOB v_CLob = (CLOB)v_ResultSet.getClob(1);
+                v_Output = v_CLob.getCharacterOutputStream();
+                
+                v_Output.write(i_ClobText);
+                
+                Date v_EndTime = Date.getNowTime();
+                this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
+                v_ExecResult = 1;
+            }
+            else
+            {
+                v_ExecResult = 0;
+            }
+        }
+        catch (Exception exce)
+        {
+            erroring(i_SQL ,exce ,this);
+            throw new RuntimeException(exce.getMessage());
+        }
+        finally
+        {
+            if ( v_Input != null )
+            {
+                try
+                {
+                    v_Input.close();
+                }
+                catch (Exception exce)
+                {
+                    exce.printStackTrace();
+                }
+                
+                v_Input = null;
+            }
+            
+            if ( v_Output != null )
+            {
+                try
+                {
+                    v_Output.flush();
+                    v_Output.close();
+                }
+                catch (Exception exce)
+                {
+                    exce.printStackTrace();
+                }
+                
+                v_Output = null;
+            }
+            
+            if ( v_Conn != null )
+            {
+                try
+                {
+                    if ( v_ExecResult == 1 )
+                    {
+                        v_Conn.commit();
+                    }
+                    else if ( v_ExecResult == -1 )
+                    {
+                        v_Conn.rollback();
+                    }
+                    
+                    v_Conn.setAutoCommit(v_Old_AutoCommit);
+                }
+                catch (Exception exce)
+                {
+                    exce.printStackTrace();
+                }
+            }
+            
+            this.closeDB(v_ResultSet ,v_Statement ,v_Conn);
+        }
+        
+        return v_ExecResult;
+    }
+    
+    
 	
 	/**
 	 * 针对数据库的BLob类型的填充数据的操作。
@@ -3842,7 +4082,24 @@ public final class XSQL implements Comparable<XSQL>
 	 * 针对数据库的BLob类型的填充数据的操作。
 	 * 可以简单理解为Update语句的操作 
 	 * 
-	 * @param i_SQL              常规SQL语句 
+     * 写入Blob方法：
+     *    Oracle中Blob数据类型是不能够直接插入的，但是可以通过流的形式对Blob类型数据写入或者读取。
+     *    INSERT INTO tablename
+     *               (
+     *                id 
+     *               ,blobColumn
+     *               ) 
+     *        VALUES (
+     *                1
+     *               ,EMPTY_BLOB()
+     *               );
+     *    
+     *    SELECT  blobColumn 
+     *      FROM  tablename 
+     *     WHERE  id = 1 
+     *       FOR  UPDATE
+	 * 
+	 * @param i_SQL              带有Blob字段的查询SQL语句 
 	 *                           1. BLob类型必须在SELECT语句的第一个输出字段的位置
 	 *                           2. 对于Oracle数据库，必须有 FOR UPDATE 关键字
 	 *                           3. 只操作首条数据记录
@@ -5817,6 +6074,30 @@ public final class XSQL implements Comparable<XSQL>
     public void setDomain(XSQLDomain domain)
     {
         this.domain = domain;
+    }
+    
+    
+    
+    /**
+     * 设置XJava池中对象的ID标识。此方法不用用户调用设置值，是自动的。
+     * 
+     * @param i_XJavaID
+     */
+    public void setXJavaID(String i_XJavaID)
+    {
+        this.xjavaID = i_XJavaID;
+    }
+    
+    
+    
+    /**
+     * 获取XJava池中对象的ID标识。
+     * 
+     * @return
+     */
+    public String getXJavaID()
+    {
+        return this.xjavaID;
     }
     
 
