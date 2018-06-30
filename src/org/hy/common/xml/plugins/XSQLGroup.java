@@ -147,6 +147,8 @@ import org.hy.common.xml.XSQLBigData;
  *              v22.0 2018-06-03  1.添加：XSQL组线程：在XSQLNode节点线程类型的基础上，新添加XSQL组线程类型。平行、平等关系的XSQL节点的执行方式。
  *                                       建议人：马龙。
  *              v22.1 2018-06-28  1.修正：在XSQL组执行异常时，未清空所有创建的多任务组中的任务信息。 
+ *              v23.0 2018-06-30  1.添加：异常时是否继续执行的功能errorContinue。并能与retryCount异常时重试功能配合使用。
+ *                                2.添加：能从任一层次的循环中，获取之前任一层次的循环信息。
  */
 public final class XSQLGroup
 {
@@ -895,7 +897,19 @@ public final class XSQLGroup
                 
                 v_RetryCount--;
             } while ( !v_Ret.isSuccess() && v_RetryCount > 0 );
-            if ( !v_Ret.isSuccess() ) return v_Ret;
+            
+            if ( !v_Ret.isSuccess() ) 
+            {
+                // 异常时是否继续执行 ZhengWei(HY) Add 2018-06-30
+                if ( v_Node.isErrorContinue() )
+                {
+                    v_Ret.setSuccess(true);
+                }
+                else
+                {
+                    return v_Ret;
+                }
+            }
         }
         
         return v_Ret;
@@ -1079,7 +1093,19 @@ public final class XSQLGroup
                     
                     v_RetryCount--;
                 } while ( !v_Ret.isSuccess() && v_RetryCount > 0 );
-                if ( !v_Ret.isSuccess() ) return v_Ret;
+                
+                if ( !v_Ret.isSuccess() ) 
+                {
+                    // 异常时是否继续执行 ZhengWei(HY) Add 2018-06-30
+                    if ( v_Node.isErrorContinue() )
+                    {
+                        v_Ret.setSuccess(true);
+                    }
+                    else
+                    {
+                        return v_Ret;
+                    }
+                }
                 
                 // 查询并返回：返回结果集，控制其后节点执行：返回结果集的同时，还将控制其后XSQL节点的执行次数。ZhengWei(HY) Add 2017-05-17
                 if ( !Help.isNull(v_Node.getReturnID()) )
@@ -1118,18 +1144,7 @@ public final class XSQLGroup
                                 Map<String ,Object> v_Params    = new HashMap<String ,Object>(io_Params);
                                 
                                 v_Params.putAll(v_QRItemMap);
-                                v_Params.put($Param_RowIndex ,v_RowIndex);
-                                v_Params.put($Param_RowSize  ,v_QueryRet.size());
-                                if ( v_RowIndex == v_QueryRet.size() - 1 )
-                                {
-                                    v_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                    v_Params.put($Param_RowNext     ,null);
-                                }
-                                else
-                                {
-                                    v_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                    v_Params.put($Param_RowNext     ,v_QueryRet.get(v_RowIndex + 1));
-                                }
+                                makeForExecuteParams(v_Params ,v_RowIndex ,v_QueryRet ,v_RowPrevious);
                                 
                                 if ( v_Node.isThread() )
                                 {
@@ -1165,18 +1180,7 @@ public final class XSQLGroup
                                 Map<String ,Object> v_Params    = new HashMap<String ,Object>(io_Params);
                                 
                                 v_Params.putAll(v_QRItemMap);
-                                v_Params.put($Param_RowIndex ,v_RowIndex);
-                                v_Params.put($Param_RowSize  ,v_QueryRet.size());
-                                if ( v_RowIndex == v_QueryRet.size() - 1 )
-                                {
-                                    v_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                    v_Params.put($Param_RowNext     ,null);
-                                }
-                                else
-                                {
-                                    v_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                    v_Params.put($Param_RowNext     ,v_QueryRet.get(v_RowIndex + 1));
-                                }
+                                makeForExecuteParams(v_Params ,v_RowIndex ,v_QueryRet ,v_RowPrevious);
                                 
                                 if ( v_Node.isThread() )
                                 {
@@ -1225,18 +1229,7 @@ public final class XSQLGroup
                                     Map<String ,Object> v_Params    = new HashMap<String ,Object>(io_Params);
                                     
                                     v_Params.putAll(v_QRItemMap);
-                                    v_Params.put($Param_RowIndex ,v_RowIndex);
-                                    v_Params.put($Param_RowSize  ,v_QueryRet.size());
-                                    if ( v_RowIndex == v_QueryRet.size() - 1 )
-                                    {
-                                        v_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                        v_Params.put($Param_RowNext     ,null);
-                                    }
-                                    else
-                                    {
-                                        v_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                        v_Params.put($Param_RowNext     ,v_QueryRet.get(v_RowIndex + 1));
-                                    }
+                                    makeForExecuteParams(v_Params ,v_RowIndex ,v_QueryRet ,v_RowPrevious);
                                     
                                     if ( v_Node.isThread() )
                                     {
@@ -1272,18 +1265,7 @@ public final class XSQLGroup
                                     Map<String ,Object> v_Params    = new HashMap<String ,Object>(io_Params);
                                     
                                     v_Params.putAll(v_QRItemMap);
-                                    v_Params.put($Param_RowIndex ,v_RowIndex);
-                                    v_Params.put($Param_RowSize  ,v_QueryRet.size());
-                                    if ( v_RowIndex == v_QueryRet.size() - 1 )
-                                    {
-                                        v_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                        v_Params.put($Param_RowNext     ,null);
-                                    }
-                                    else
-                                    {
-                                        v_Params.put($Param_RowPrevious ,v_RowPrevious);
-                                        v_Params.put($Param_RowNext     ,v_QueryRet.get(v_RowIndex + 1));
-                                    }
+                                    makeForExecuteParams(v_Params ,v_RowIndex ,v_QueryRet ,v_RowPrevious);
                                     
                                     if ( v_Node.isThread() )
                                     {
@@ -1390,7 +1372,19 @@ public final class XSQLGroup
                     
                     v_RetryCount--;
                 } while ( !v_Ret.isSuccess() && v_RetryCount > 0 );
-                if ( !v_Ret.isSuccess() ) return v_Ret;
+                
+                if ( !v_Ret.isSuccess() ) 
+                {
+                    // 异常时是否继续执行 ZhengWei(HY) Add 2018-06-30
+                    if ( v_Node.isErrorContinue() )
+                    {
+                        v_Ret.setSuccess(true);
+                    }
+                    else
+                    {
+                        return v_Ret;
+                    }
+                }
                 
                 // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
                 v_Ret = waitThreads(v_Node ,io_Params ,v_Ret);
@@ -1571,10 +1565,83 @@ public final class XSQLGroup
                 
                 v_RetryCount--;
             } while ( !v_Ret.isSuccess() && v_RetryCount > 0 );
-            if ( !v_Ret.isSuccess() ) return v_Ret;
+            
+            if ( !v_Ret.isSuccess() ) 
+            {
+                // 异常时是否继续执行 ZhengWei(HY) Add 2018-06-30
+                if ( v_Node.isErrorContinue() )
+                {
+                    v_Ret.setSuccess(true);
+                }
+                else
+                {
+                    return v_Ret;
+                }
+            }
         }
         
         return v_Ret;
+    }
+    
+    
+    
+    /**
+     * 将同名称的老参数的名称+1。
+     * 
+     * 如："RowIndex"已存时，变为"RowIndex1"，同时在此之前递归判定"RowIndex1"是否存在，如果存在也同样名称+1处理。
+     * 
+     * 好处是：能从任一层次的循环中，获取之前任一层次的循环信息。
+     *  
+     * @author      ZhengWei(HY)
+     * @createDate  2018-06-30
+     * @version     v1.0
+     *
+     * @param io_Params
+     * @param i_ParamName
+     * @param i_Level
+     */
+    private static void makeParamNameUpgrade(Map<String ,Object> io_Params ,String i_ParamName ,String i_Level)
+    {
+        Object v_ParamValue = io_Params.get(i_ParamName + i_Level);
+        
+        if ( v_ParamValue != null )
+        {
+            makeParamNameUpgrade(io_Params ,i_ParamName ,"" + (Integer.parseInt(Help.NVL(i_Level ,"0")) + 1));
+            io_Params.put(i_ParamName + i_Level ,v_ParamValue);
+        }
+    }
+    
+    
+    
+    /**
+     * 生成循环控制执行的下一节点的执行参数
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-06-30
+     * @version     v1.0
+     *
+     * @param io_Params
+     * @param v_RowIndex
+     * @param i_Datas
+     * @param i_RowPrevious
+     */
+    private static void makeForExecuteParams(Map<String ,Object> io_Params ,int v_RowIndex ,List<Object> i_Datas ,Map<String ,Object> i_RowPrevious)
+    {
+        makeParamNameUpgrade(io_Params ,$Param_RowIndex ,"");
+        makeParamNameUpgrade(io_Params ,$Param_RowSize  ,"");
+        
+        io_Params.put($Param_RowIndex ,i_Datas);
+        io_Params.put($Param_RowSize  ,i_Datas.size());
+        if ( v_RowIndex == i_Datas.size() - 1 )
+        {
+            io_Params.put($Param_RowPrevious ,i_RowPrevious);
+            io_Params.put($Param_RowNext     ,null);
+        }
+        else
+        {
+            io_Params.put($Param_RowPrevious ,i_RowPrevious);
+            io_Params.put($Param_RowNext     ,i_Datas.get(v_RowIndex + 1));
+        }
     }
     
     
@@ -1669,18 +1736,36 @@ public final class XSQLGroup
             XSQLGroupTask v_Task = (XSQLGroupTask)i_TaskGroup.getTask(0);
             v_XSQLGroupResult = v_Task.getXsqlGroupResult();
             
-            for (int v_TaskIndex=0; v_TaskIndex<i_TaskGroup.size(); v_TaskIndex++)
+            try
             {
-                v_Task = (XSQLGroupTask)i_TaskGroup.getTask(v_TaskIndex);
-                
-                if ( v_Task != null )
+                for (int v_TaskIndex=0; v_TaskIndex<i_TaskGroup.size(); v_TaskIndex++)
                 {
-                    if ( v_Task.getXsqlGroupResult() != null )
+                    v_Task = (XSQLGroupTask)i_TaskGroup.getTask(v_TaskIndex);
+                    
+                    if ( v_Task != null )
                     {
-                        if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                        if ( v_Task.getXsqlGroupResult() != null )
                         {
-                            return v_Task.getXsqlGroupResult();
+                            if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                            {
+                                return v_Task.getXsqlGroupResult();
+                            }
                         }
+                    }
+                }
+            }
+            finally
+            {
+                if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                {
+                    // 清空的多任务组中的任务信息  ZhengWei(HY) Add 2018-06-28 
+                    try
+                    {
+                        i_TaskGroup.clear();
+                    }
+                    catch (Exception exce)
+                    {
+                        exce.printStackTrace();
                     }
                 }
             }

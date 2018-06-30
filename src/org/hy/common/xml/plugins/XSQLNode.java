@@ -71,6 +71,7 @@ import com.greenpineyu.fel.context.FelContext;
  *              v13.2 2018-03-29  1.添加：针对具体XSQL节点的Java断言调试功能。方便问题的定位。
  *              v13.3 2018-05-02  1.添加：SELECT查询节点未查询出结果时，可控制其是否允许其后节点的执行。建议人：马龙。
  *              v13.4 2018-05-03  1.添加：线程等待功能，在原先事后等待的基础上，新添加事前等待。建议人：马龙。
+ *              v14.0 2018-06-30  1.添加：异常时是否继续执行的功能errorContinue。
  */
 public class XSQLNode
 {
@@ -300,6 +301,18 @@ public class XSQLNode
     /** 注解说明。当开启日志模式(XSQLGroup.isLog)时，此注解说明也会被同时输出。 */
     private String                       comment;
     
+    /** 
+     * 异常时是否继续执行。默认是：false。
+     * 
+     * errorContinue与retryCount两属性可同时生效，在重试次数retryCount用尽时，
+     * 再根据errorContinue判定是否断续执行。
+     * 
+     * 注意：建议与$Type_Execute类型配合使用，因为$Type_Execute的数据库连接是自行管理的，
+     *      非XSQL组控制及管理。每次执行均使用独立的数据库连接。
+     *      在异常时，不影响后续XSQL组的事务提交。
+     */
+    private boolean                      errorContinue;
+    
     /**
      * 异常重试次数。执行SQL语句，因争抢锁等原因异常时，尝试重新执行。当重试多次仍然异常时，放弃执行。
      * 
@@ -501,6 +514,7 @@ public class XSQLNode
         this.returnQuery        = false;
         this.queryReturnID      = null;
         this.sqlGroup           = null;
+        this.errorContinue      = false;
         this.retryCount         = 0;
         this.retryInterval      = 5 * 1000;
         this.cloudServers       = null;
@@ -1079,9 +1093,42 @@ public class XSQLNode
         this.cloudServersList = cloudServersList;
     }
     
+    
+    
+    /** 
+     * 异常时是否继续执行。默认是：false。
+     * 
+     * errorContinue与retryCount两属性可同时生效，在重试次数retryCount用尽时，
+     * 再根据errorContinue判定是否断续执行。
+     * 
+     * 注意：建议与$Type_Execute类型配合使用，因为$Type_Execute的数据库连接是自行管理的，
+     *      非XSQL组控制及管理。每次执行均使用独立的数据库连接。
+     *      在异常时，不影响后续XSQL组的事务提交。
+     */
+    public boolean isErrorContinue()
+    {
+        return errorContinue;
+    }
+    
 
+
+    /** 
+     * 异常时是否继续执行。默认是：false。
+     * 
+     * errorContinue与retryCount两属性可同时生效，在重试次数retryCount用尽时，
+     * 再根据errorContinue判定是否断续执行。
+     * 
+     * 注意：建议与$Type_Execute类型配合使用，因为$Type_Execute的数据库连接是自行管理的，
+     *      非XSQL组控制及管理。每次执行均使用独立的数据库连接。
+     *      在异常时，不影响后续XSQL组的事务提交。
+     */
+    public void setErrorContinue(boolean errorContinue)
+    {
+        this.errorContinue = errorContinue;
+    }
     
-    
+
+
     /**
      * 获取：异常重试的时间间隔(单位：毫秒)。
      * 
