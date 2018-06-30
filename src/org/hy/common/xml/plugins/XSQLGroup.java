@@ -1631,7 +1631,7 @@ public final class XSQLGroup
         makeParamNameUpgrade(io_Params ,$Param_RowIndex ,"");
         makeParamNameUpgrade(io_Params ,$Param_RowSize  ,"");
         
-        io_Params.put($Param_RowIndex ,i_Datas);
+        io_Params.put($Param_RowIndex ,v_RowIndex);
         io_Params.put($Param_RowSize  ,i_Datas.size());
         if ( v_RowIndex == i_Datas.size() - 1 )
         {
