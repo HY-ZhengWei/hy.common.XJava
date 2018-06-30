@@ -1606,8 +1606,9 @@ public final class XSQLGroup
         
         if ( v_ParamValue != null )
         {
-            makeParamNameUpgrade(io_Params ,i_ParamName ,"" + (Integer.parseInt(Help.NVL(i_Level ,"0")) + 1));
-            io_Params.put(i_ParamName + i_Level ,v_ParamValue);
+            String v_Level = "" + (Integer.parseInt(Help.NVL(i_Level ,"0")) + 1);
+            makeParamNameUpgrade(io_Params ,i_ParamName ,v_Level);
+            io_Params.put(i_ParamName + v_Level ,v_ParamValue);
         }
     }
     
