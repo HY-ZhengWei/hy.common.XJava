@@ -903,6 +903,7 @@ public final class XSQLGroup
                 // 异常时是否继续执行 ZhengWei(HY) Add 2018-06-30
                 if ( v_Node.isErrorContinue() )
                 {
+                    logErrorContinue(v_Node ,io_Params ,v_NodeIndex ,v_Ret);
                     v_Ret.setSuccess(true);
                 }
                 else
@@ -1099,6 +1100,7 @@ public final class XSQLGroup
                     // 异常时是否继续执行 ZhengWei(HY) Add 2018-06-30
                     if ( v_Node.isErrorContinue() )
                     {
+                        logErrorContinue(v_Node ,io_Params ,v_NodeIndex ,v_Ret);
                         v_Ret.setSuccess(true);
                     }
                     else
@@ -1378,6 +1380,7 @@ public final class XSQLGroup
                     // 异常时是否继续执行 ZhengWei(HY) Add 2018-06-30
                     if ( v_Node.isErrorContinue() )
                     {
+                        logErrorContinue(v_Node ,io_Params ,v_NodeIndex ,v_Ret);
                         v_Ret.setSuccess(true);
                     }
                     else
@@ -1571,6 +1574,7 @@ public final class XSQLGroup
                 // 异常时是否继续执行 ZhengWei(HY) Add 2018-06-30
                 if ( v_Node.isErrorContinue() )
                 {
+                    logErrorContinue(v_Node ,io_Params ,v_NodeIndex ,v_Ret);
                     v_Ret.setSuccess(true);
                 }
                 else
@@ -2295,6 +2299,72 @@ public final class XSQLGroup
     
     
     /**
+     * 生成日志信息
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-07-01
+     * @version     v1.0
+     *
+     * @param i_Node
+     * @param i_Params
+     * @param i_NodeIndex
+     * @return
+     */
+    private String logMake(XSQLNode i_Node ,Map<String ,Object> i_Params ,int i_NodeIndex)
+    {
+        StringBuilder v_Buffer = new StringBuilder();
+        
+        v_Buffer.append("\n-- ").append(Date.getNowTime().getFullMilli());
+        
+        if ( !Help.isNull(i_Node.getComment()) )
+        {
+            v_Buffer.append(" ").append(i_Node.getComment()).append("：");
+        }
+        else
+        {
+            v_Buffer.append(" ");
+        }
+        
+        if ( XSQLNode.$Type_ExecuteJava.equals(i_Node.getType()) )
+        {
+            v_Buffer.append(i_Node.getXjavaID()).append(".").append(i_Node.getMethodName()).append("(Map ,Map).");
+        }
+        else if ( XSQLNode.$Type_CollectionToQuery.equals(i_Node.getType()) )
+        {
+            v_Buffer.append("CollectionToQuery = ").append(Help.NVL(i_Node.getCollectionID() ,"整个入参对象"));
+        }
+        else
+        {
+            v_Buffer.append(this.getSQL(i_Node ,i_Params)).append(" ... ... ");
+        }
+        
+        return v_Buffer.toString();
+    }
+    
+    
+    
+    /**
+     * 异常时断续的日志输出
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-07-01
+     * @version     v1.0
+     *
+     * @param i_Node
+     * @param i_Params
+     * @param i_NodeIndex
+     * @param i_XSQLGroupResult
+     */
+    private void logErrorContinue(XSQLNode i_Node ,Map<String ,Object> i_Params ,int i_NodeIndex ,XSQLGroupResult i_XSQLGroupResult)
+    {
+        System.err.println(logMake(i_Node ,i_Params ,i_NodeIndex) 
+                          + "\n" + Help.NVL(i_XSQLGroupResult.getException().getMessage())
+                          + "\n\nError Continue：To forge ahead.");
+    }
+    
+    
+    
+    /**
      * 输出执行SQL之前的轨迹日志
      * 
      * @author      ZhengWei(HY)
@@ -2304,33 +2374,12 @@ public final class XSQLGroup
      * @param i_Node
      * @param i_Params
      * @param i_NodeIndex
-     * @throws InvocationTargetException 
-     * @throws IllegalArgumentException 
-     * @throws IllegalAccessException 
      */
-    private synchronized void logExecuteBefore(XSQLNode i_Node ,Map<String ,Object> i_Params ,int i_NodeIndex) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    private void logExecuteBefore(XSQLNode i_Node ,Map<String ,Object> i_Params ,int i_NodeIndex)
     {
         if ( this.isLog )
         {
-            if ( XSQLNode.$Type_ExecuteJava.equals(i_Node.getType()) )
-            {
-                System.out.println("\n-- " + Date.getNowTime().getFullMilli() + " " + i_Node.getXjavaID() + "." + i_Node.getMethodName() + "(Map ,Map).");
-            }
-            else if ( XSQLNode.$Type_CollectionToQuery.equals(i_Node.getType()) )
-            {
-                System.out.println("\n-- " + Date.getNowTime().getFullMilli() + " CollectionToQuery = " + Help.NVL(i_Node.getCollectionID() ,"整个入参对象"));
-            }
-            else
-            {
-                if ( Help.isNull(i_Node.getComment()) )
-                {
-                    System.out.print("\n-- " + Date.getNowTime().getFullMilli() + " " + this.getSQL(i_Node ,i_Params) + " ... ... ");
-                }
-                else
-                {
-                    System.out.print("\n-- " + Date.getNowTime().getFullMilli() + " " + i_Node.getComment() + "：" + this.getSQL(i_Node ,i_Params) + " ... ... ");
-                }
-            }
+            System.out.println(logMake(i_Node ,i_Params ,i_NodeIndex));
         }
     }
     
@@ -2347,7 +2396,7 @@ public final class XSQLGroup
      * @param i_Params
      * @param i_NodeIndex
      */
-    private synchronized void logExecuteAfter(XSQLNode i_Node ,Map<String ,Object> i_Params ,int i_NodeIndex)
+    private void logExecuteAfter(XSQLNode i_Node ,Map<String ,Object> i_Params ,int i_NodeIndex)
     {
         if ( this.isLog )
         {
