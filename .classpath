@@ -20,7 +20,7 @@
 	<classpathentry kind="lib" path="lib/javax.ws.rs-api-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/javax.inject-2.3.0-b05.jar"/>
 	<classpathentry kind="lib" path="lib/antlr-runtime-3.4.jar"/>
-	<classpathentry kind="lib" path="lib/fel-0.8.jar"/>
+	<classpathentry kind="lib" path="lib/fel-0.8.jar" sourcepath="lib/fel-0.8-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jtds-1.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

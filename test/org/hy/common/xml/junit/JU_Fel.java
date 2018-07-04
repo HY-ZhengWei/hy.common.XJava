@@ -3,7 +3,10 @@ package org.hy.common.xml.junit;
 import java.util.Map;
 
 import org.hy.common.Date;
+import org.hy.common.DualChannelPool;
 import org.hy.common.Help;
+import org.hy.common.PianoKeyboardPool;
+import org.hy.common.QueuePool;
 import org.hy.common.StringHelp;
 import org.hy.common.TablePartitionRID;
 import org.hy.common.xml.XJava;
@@ -31,6 +34,170 @@ import com.greenpineyu.fel.context.FelContext;
 public class JU_Fel
 {
     
+    @Test
+    public void test_Fel_Pool()
+    {
+        this.test_Fel_QueuePool();
+        this.test_Fel_DualChannelPool();
+        
+        this.test_Fel_QueuePool();
+        this.test_Fel_DualChannelPool();
+    }
+    
+    
+    
+    @Test
+    public void test_Fel_JU_FelObject()
+    {
+        Date v_BeginTime = null;
+        Date v_EndTime   = null;
+        
+        
+        v_BeginTime = new Date();
+        PianoKeyboardPool<JU_FelObject> v_FelPool = new PianoKeyboardPool<JU_FelObject>(JU_FelObject.class ,10);
+        v_EndTime = new Date();
+        System.out.println("PianoKeyboardPool创建Fel队列缓存池的用时\t" + Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
+        
+        
+        v_BeginTime = new Date();
+        for (int i=1; i<=1000; i++)
+        {
+            JU_FelObject  v_Fel        = v_FelPool.get();
+            
+            v_Fel.calc();
+        }
+        v_EndTime = new Date();
+        System.out.println("PianoKeyboardPool执行Fel计算的用时\t" + Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
+        System.out.println("队列池的大小：" + v_FelPool.size());
+        System.out.println("取对象的总次数：" + v_FelPool.getReadCount());
+        System.out.println("队列池中无资源时，额外创建的对象次数：" + v_FelPool.getReadNewCount());
+        System.out.println(Date.toTimeLen(v_FelPool.getReadTime()) + "获取对象的总用时");
+        System.out.println(Date.toTimeLen(v_FelPool.getReadNewTime()) + "获取对象时，队列池中无资源时，额外创建对象用时");
+        System.out.println(Date.toTimeLen((v_FelPool.getReadTime() - v_FelPool.getReadNewTime())) + "排除额外创建对象的用时");
+    }
+    
+    
+    
+    
+    @Test
+    public void test_Fel_PianoKeyboardPool()
+    {
+        Date v_BeginTime = null;
+        Date v_EndTime   = null;
+        
+        long v_Time = System.currentTimeMillis();
+        new FelEngineImpl();
+        System.out.println("1个对象" + Date.toTimeLen(System.currentTimeMillis() - v_Time));
+        
+        v_Time = System.currentTimeMillis();
+        new FelEngineImpl();
+        System.out.println("2个对象" + Date.toTimeLen(System.currentTimeMillis() - v_Time));
+        
+        v_Time = System.currentTimeMillis();
+        new FelEngineImpl();
+        System.out.println("3个对象" + Date.toTimeLen(System.currentTimeMillis() - v_Time));
+        
+        v_Time = System.currentTimeMillis();
+        new FelEngineImpl();
+        System.out.println("4个对象" + Date.toTimeLen(System.currentTimeMillis() - v_Time));
+        
+        long v_Total = 0;
+        for (int i=0; i<100; i++)
+        {
+            long v_Time2 = System.currentTimeMillis();
+            new FelEngineImpl();
+            v_Total += System.currentTimeMillis() - v_Time2;
+        }
+        System.out.println("100个对象" + Date.toTimeLen(v_Total));
+        
+        v_BeginTime = new Date();
+        PianoKeyboardPool<FelEngineImpl> v_FelPool = new PianoKeyboardPool<FelEngineImpl>(FelEngineImpl.class ,100);
+        v_EndTime = new Date();
+        System.out.println("PianoKeyboardPool创建Fel队列缓存池的用时\t" + Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
+        
+        
+        v_BeginTime = new Date();
+        for (int i=1; i<=1000; i++)
+        {
+            FelEngine  v_Fel        = v_FelPool.get();
+            FelContext v_FelContext = v_Fel.getContext();
+            
+            v_FelContext.set("A" ,i);
+            
+            v_Fel.eval("A == 1");
+        }
+        v_EndTime = new Date();
+        System.out.println("PianoKeyboardPool执行Fel计算的用时\t" + Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
+        System.out.println("队列池的大小：" + v_FelPool.size());
+        System.out.println("取对象的总次数：" + v_FelPool.getReadCount());
+        System.out.println("队列池中无资源时，额外创建的对象次数：" + v_FelPool.getReadNewCount());
+        System.out.println(Date.toTimeLen(v_FelPool.getReadTime()) + "获取对象的总用时");
+        System.out.println(Date.toTimeLen(v_FelPool.getReadNewTime()) + "获取对象时，队列池中无资源时，额外创建对象用时");
+        System.out.println(Date.toTimeLen((v_FelPool.getReadTime() - v_FelPool.getReadNewTime())) + "排除额外创建对象的用时");
+    }
+    
+    
+    
+    @Test
+    public void test_Fel_DualChannelPool()
+    {
+        Date v_BeginTime = null;
+        Date v_EndTime   = null;
+        
+        
+        v_BeginTime = new Date();
+        DualChannelPool<FelEngineImpl> v_FelPool = new DualChannelPool<FelEngineImpl>(FelEngineImpl.class ,1000 ,1000);
+        v_EndTime = new Date();
+        System.out.println("DualChannelPool创建Fel队列缓存池的用时\t" + Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
+        
+        
+        v_BeginTime = new Date();
+        for (int i=1; i<=1000; i++)
+        {
+            FelEngine  v_Fel        = v_FelPool.get();
+            FelContext v_FelContext = v_Fel.getContext();
+            
+            v_FelContext.set("A" ,i);
+            
+            v_Fel.eval("A == 1");
+        }
+        v_EndTime = new Date();
+        System.out.println("DualChannelPool执行Fel计算的用时\t" + Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
+        System.out.println(v_FelPool.size());
+    }
+    
+    
+    
+    @Test
+    public void test_Fel_QueuePool()
+    {
+        Date v_BeginTime = null;
+        Date v_EndTime   = null;
+        
+        
+        v_BeginTime = new Date();
+        QueuePool<FelEngineImpl> v_FelPool = new QueuePool<FelEngineImpl>(FelEngineImpl.class ,1100 ,1000);
+        v_EndTime = new Date();
+        System.out.println("QueuePool创建Fel队列缓存池的用时\t" + Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
+        
+        
+        v_BeginTime = new Date();
+        for (int i=1; i<=1000; i++)
+        {
+            FelEngine  v_Fel        = v_FelPool.get();
+            FelContext v_FelContext = v_Fel.getContext();
+            
+            v_FelContext.set("A" ,i);
+            
+            v_Fel.eval("A == 1");
+        }
+        v_EndTime = new Date();
+        System.out.println("QueuePool执行Fel计算的用时\t" + Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
+        System.out.println(v_FelPool.size());
+    }
+    
+    
+    
     /**
      * 性能测试
      */
@@ -39,16 +206,17 @@ public class JU_Fel
     {
         Date v_BeginTime = null;
         Date v_EndTime   = null;
+        int  v_Size      = 1000;
         
         v_BeginTime = new Date();
-        for (int i=1; i<=10; i++)
+        for (int i=1; i<=v_Size; i++)
         {
             FelEngine  v_Fel        = new FelEngineImpl();
             FelContext v_FelContext = v_Fel.getContext();
             
             v_FelContext.set("A" ,i);
             
-            System.out.println(v_Fel.eval("A == 1"));
+            v_Fel.eval("A == 1");
         }
         v_EndTime = new Date();
         System.out.println(Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
@@ -57,12 +225,12 @@ public class JU_Fel
         
         FelEngine  v_Fel        = new FelEngineImpl();
         v_BeginTime = new Date();
-        for (int i=1; i<=10; i++)
+        for (int i=1; i<=v_Size; i++)
         {
             FelContext v_FelContext = v_Fel.getContext();
             v_FelContext.set("A" ,i);
             
-            System.out.println(v_Fel.eval("A == 1"));
+            v_Fel.eval("A == 1");
         }
         v_EndTime = new Date();
         System.out.println(Date.toTimeLen(v_EndTime.differ(v_BeginTime)));
@@ -72,11 +240,11 @@ public class JU_Fel
         v_Fel        = new FelEngineImpl();
         FelContext v_FelContext = v_Fel.getContext();
         v_BeginTime = new Date();
-        for (int i=1; i<=10; i++)
+        for (int i=1; i<=v_Size; i++)
         {
             v_FelContext.set("A" ,i);
             
-            System.out.println(v_Fel.eval("A == 1"));
+            v_Fel.eval("A == 1");
         }
         v_EndTime = new Date();
         System.out.println(Date.toTimeLen(v_EndTime.differ(v_BeginTime)));

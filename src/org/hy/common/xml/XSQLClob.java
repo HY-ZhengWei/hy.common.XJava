@@ -2,7 +2,6 @@ package org.hy.common.xml;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.sql.Clob;
 import java.sql.SQLException;
 
@@ -47,7 +46,7 @@ public final class XSQLClob
         
         try
         {
-            v_Reader = new BufferedReader(new InputStreamReader(i_Clob.getAsciiStream()));
+            v_Reader = new BufferedReader(i_Clob.getCharacterStream());
             
             while ((v_Line = v_Reader.readLine()) != null) 
             {  
