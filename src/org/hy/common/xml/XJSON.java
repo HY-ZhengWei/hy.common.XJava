@@ -63,6 +63,7 @@ import net.minidev.json.parser.JSONParser;
  *                                     支持枚举名称的匹配 
  *              2018-05-15  V3.2  添加：数据库java.sql.Timestamp时间的转换
  *              2018-05-18  V3.3  添加：将Java转Json时，防止用户递归引用，而造成无法解释的问题。
+ *              2018-07-05  V3.4  添加：将Java转Json时，支持为BigDecimal类型的转换。发现人：马龙
  *                                
  */
 public final class XJSON
@@ -456,25 +457,6 @@ public final class XJSON
                                 v_Method.invoke(v_NewObj ,v_Null);
                             }
                         }
-                        else if ( float.class == v_ParamClass )
-                        {
-                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,Float.parseFloat(v_Value.toString()));
-                            }
-                        }
-                        else if ( Float.class == v_ParamClass )
-                        {
-                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,Float.valueOf(v_Value.toString()));
-                            }
-                            else
-                            {
-                                Float v_Null = null;
-                                v_Method.invoke(v_NewObj ,v_Null);
-                            }
-                        }
                         else if ( double.class == v_ParamClass )
                         {
                             if ( v_Value != null && !Help.isNull(v_Value.toString()) )
@@ -503,6 +485,25 @@ public final class XJSON
                             else
                             {
                                 BigDecimal v_Null = null;
+                                v_Method.invoke(v_NewObj ,v_Null);
+                            }
+                        }
+                        else if ( float.class == v_ParamClass )
+                        {
+                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
+                            {
+                                v_Method.invoke(v_NewObj ,Float.parseFloat(v_Value.toString()));
+                            }
+                        }
+                        else if ( Float.class == v_ParamClass )
+                        {
+                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
+                            {
+                                v_Method.invoke(v_NewObj ,Float.valueOf(v_Value.toString()));
+                            }
+                            else
+                            {
+                                Float v_Null = null;
                                 v_Method.invoke(v_NewObj ,v_Null);
                             }
                         }
@@ -916,13 +917,9 @@ public final class XJSON
         {
             v_ObjValue = ((Integer)i_Obj).toString();
         }
-        else if ( float.class == v_ObjClass )
+        else if ( BigDecimal.class == v_ObjClass )
         {
-            v_ObjValue = String.valueOf(i_Obj);
-        }
-        else if ( Float.class == v_ObjClass )
-        {
-            v_ObjValue = ((Float)i_Obj).toString();
+            v_ObjValue = ((BigDecimal)i_Obj).toPlainString();
         }
         else if ( double.class == v_ObjClass )
         {
@@ -931,6 +928,14 @@ public final class XJSON
         else if ( Double.class == v_ObjClass )
         {
             v_ObjValue = ((Double)i_Obj).toString();
+        }
+        else if ( float.class == v_ObjClass )
+        {
+            v_ObjValue = String.valueOf(i_Obj);
+        }
+        else if ( Float.class == v_ObjClass )
+        {
+            v_ObjValue = ((Float)i_Obj).toString();
         }
         else if ( boolean.class == v_ObjClass )
         {
@@ -1151,28 +1156,25 @@ public final class XJSON
             }
             i_ParserObjects.put(i_Obj ,null);
             
-            Map<? ,?>   v_Map  = (Map<? ,?>)i_Obj;
-            Iterator<?> v_Keys = v_Map.keySet().iterator();
-            
-            if ( v_Map.size() >= 1 )
+            Map<? ,?> v_Map = (Map<? ,?>)i_Obj;
+            if ( !Help.isNull(v_Map) )
             {
                 XJSONObject v_ChildJsonObj = new XJSONObject();
             
-                while ( v_Keys.hasNext() )
+                for (Map.Entry<?, ?> v_Item : v_Map.entrySet())
                 {
-                    Object v_Key   = v_Keys.next();
-                    String v_Name  = v_Key.toString();
-                    Object v_Value = v_Map.get(v_Key);
+                    Object v_Name  = v_Item.getKey();
+                    Object v_Value = v_Item.getValue();
                     
-                    if ( Help.isNull(v_Name) )
+                    if ( v_Name == null )
                     {
-                        throw new NullPointerException("Map.key is null.");
+                        v_Name = "";
                     }
-                    if ( v_Value == null )
+                    if ( v_Item.getValue() == null )
                     {
                         v_Value = "";
                     }
-                    parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects);
+                    parser(v_Name.toString() ,v_Value ,v_ChildJsonObj ,i_ParserObjects);
                 }
                 
                 if ( i_JsonSuperObj == null )
