@@ -9,12 +9,13 @@ import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.StringHelp;
 import org.hy.common.net.ClientSocket;
-import org.hy.common.xml.FelPool;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
 
 import com.greenpineyu.fel.FelEngine;
+import com.greenpineyu.fel.FelEngineImpl;
 import com.greenpineyu.fel.context.FelContext;
+import com.greenpineyu.fel.context.MapContext;
 
 
 
@@ -72,7 +73,7 @@ import com.greenpineyu.fel.context.FelContext;
  *              v13.3 2018-05-02  1.添加：SELECT查询节点未查询出结果时，可控制其是否允许其后节点的执行。建议人：马龙。
  *              v13.4 2018-05-03  1.添加：线程等待功能，在原先事后等待的基础上，新添加事前等待。建议人：马龙。
  *              v14.0 2018-06-30  1.添加：异常时是否继续执行的功能errorContinue。
- *              v14.1 2018-07-03  1.优化：通过Fel队列缓存池，提高性能。测试数据：创建1000个Fel用时23秒，但1000次计算只需0.600秒。
+ *              v14.1 2018-07-05  1.优化：Fel表达式计算的性能。
  */
 public class XSQLNode
 {
@@ -146,6 +147,9 @@ public class XSQLNode
      *   配合属性为：this.collectionID
      */
     public static final String  $Type_CollectionToExecuteUpdate  = "CollectionToExecuteUpdate";
+    
+    /** 表达式引擎 */
+    private static final FelEngine $FelEngine = new FelEngineImpl();
     
     
     
@@ -1678,8 +1682,7 @@ public class XSQLNode
         
         try
         {
-            FelEngine  v_FelEngine  = FelPool.$Fels.get();
-            FelContext v_FelContext = v_FelEngine.getContext();
+            FelContext v_FelContext = new MapContext();
             
             for (String v_Key : this.placeholders.keySet())
             {
@@ -1690,7 +1693,7 @@ public class XSQLNode
                 v_FelContext.set(v_Key ,v_Value);
             }
             
-            return (Boolean) v_FelEngine.eval(this.conditionFel);
+            return (Boolean) $FelEngine.eval(this.conditionFel ,v_FelContext);
         }
         catch (Exception exce)
         {
