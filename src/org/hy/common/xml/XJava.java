@@ -6,6 +6,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -85,84 +86,94 @@ import org.hy.common.xml.plugins.XSQLGroup;
  */
 public final class XJava
 {
-	private final static String                    $XML_JAVA_DATATYPE_CHAR      = "char";
+	private final static String                    $XML_JAVA_DATATYPE_CHAR       = "char";
 	
-	private final static String                    $XML_JAVA_DATATYPE_INT       = "int";
+	private final static String                    $XML_JAVA_DATATYPE_BYTE       = "byte";
 	
-	private final static String                    $XML_JAVA_DATATYPE_DOUBLE    = "doulbe";
+	private final static String                    $XML_JAVA_DATATYPE_SHORT      = "short";
 	
-	private final static String                    $XML_JAVA_DATATYPE_FLOAT     = "float";
+	private final static String                    $XML_JAVA_DATATYPE_INT        = "int";
 	
-	private final static String                    $XML_JAVA_DATATYPE_BOOLEAN   = "boolean";
+	private final static String                    $XML_JAVA_DATATYPE_LONG       = "long";
 	
-	private final static String                    $XML_JAVA_DATATYPE_STRING    = "string";
+	private final static String                    $XML_JAVA_DATATYPE_BIGDECIMAL = "bigdecimal";
 	
-	private final static String                    $XML_JAVA_DATATYPE_DATE      = "date";
+	private final static String                    $XML_JAVA_DATATYPE_DOUBLE     = "doulbe";
 	
-	private final static String                    $XML_JAVA_DATATYPE_OBJECT    = "object";
+	private final static String                    $XML_JAVA_DATATYPE_FLOAT      = "float";
 	
-	private final static String                    $XML_JAVA_DATATYPE_CLASS     = "class";
+	private final static String                    $XML_JAVA_DATATYPE_BOOLEAN    = "boolean";
+	
+	private final static String                    $XML_JAVA_DATATYPE_STRING     = "string";
+	
+	private final static String                    $XML_JAVA_DATATYPE_DATE       = "date";
+	
+	private final static String                    $XML_JAVA_DATATYPE_OBJECT     = "object";
+	
+	private final static String                    $XML_JAVA_DATATYPE_CLASS      = "class";
+	
+	
 	
 	/** 导入功能的节点的标记 */
-	private final static String                    $XML_IMPORT                  = "import";
+	private final static String                    $XML_IMPORT                   = "import";
 	
 	/** 导入功能的 xml 节点名称标记 */
-	private final static String                    $XML_IMPORT_NAME             = "name";
+	private final static String                    $XML_IMPORT_NAME              = "name";
 	
 	/** 导入功能的 name 对应的 Java 类 */
-	private final static String                    $XML_IMPORT_CLASS            = "class";
+	private final static String                    $XML_IMPORT_CLASS             = "class";
 	
 	/** 节点为 Map 类型的集合时，统一标记获取元素哪个方法为Map.key值 */
-	private final static String                    $XML_MAP_KEY                 = "key";
+	private final static String                    $XML_MAP_KEY                  = "key";
 	
 	/** 节点为 Map 类型的集合时，对于元素的添加方法名称 */
-	private final static String                    $XML_MAP_DEF_SETTER          = "put";
+	private final static String                    $XML_MAP_DEF_SETTER           = "put";
 	
 	/** 节点为 List 类型的集合时，对于元素的添加方法名称 */
-	private final static String                    $XML_LIST_DEF_SETTER         = "add";
+	private final static String                    $XML_LIST_DEF_SETTER          = "add";
 	
 	/** 构造器节点关键字。此关键字必须为构造节点的第一个子节点 */
-	private final static String                    $XML_OBJECT_CONSTRUCTOR      = "constructor";
+	private final static String                    $XML_OBJECT_CONSTRUCTOR       = "constructor";
 	
 	/** 节点对应的 Java 类 */
-	private final static String                    $XML_OBJECT_CLASS            = "class";
+	private final static String                    $XML_OBJECT_CLASS             = "class";
 	
 	/** 指定setter方法的节点标记 */
-	private final static String                    $XML_OBJECT_SETTER           = "setter";
+	private final static String                    $XML_OBJECT_SETTER            = "setter";
 	
 	/** 
 	 * this关键字
 	 * 
 	 * 还有赋值功能。即 Bean v_Bean = v_Other 这样的功能
 	 */
-	private final static String                    $XML_OBJECT_THIS             = "this";
+	private final static String                    $XML_OBJECT_THIS              = "this";
 	
 	/** 对象惟一属性的节点标记 */
-	private final static String                    $XML_OBJECT_ID               = "id";
+	private final static String                    $XML_OBJECT_ID                = "id";
 	
 	/** 引用对象的节点标记 */
-	private final static String                    $XML_OBJECT_REF              = "ref";
+	private final static String                    $XML_OBJECT_REF               = "ref";
 	
 	/** 节点为调用方法Call节点标记 */
-	private final static String                    $XML_OBJECT_CALL             = "call";
+	private final static String                    $XML_OBJECT_CALL              = "call";
 	
 	/** Call节点调用的方法名称 */
-	private final static String                    $XML_OBJECT_CALL_NAME        = "name";
+	private final static String                    $XML_OBJECT_CALL_NAME         = "name";
 	
 	/** Call节点调用的方法后的返回结果的ID标记，此结果也将存在 $XML_OBJECTS 中 */
-	private final static String                    $XML_OBJECT_CALL_RETURNID    = "returnid";
+	private final static String                    $XML_OBJECT_CALL_RETURNID     = "returnid";
 	
 	/** 
 	 * submit表示 TreeMap.TreeNode.nodeID 的值。
 	 * 将对于树目录的子树目录的全部TreeNode.nodeID及TreeNode.info存在Map中，
 	 * 再将Map传递(setter)给对象
 	 */
-	private final static String                    $XML_OBJECT_SUBMIT           = "submit";
+	private final static String                    $XML_OBJECT_SUBMIT            = "submit";
     
     /**
      * 表示是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
      */
-    private final static String                    $XML_OBJECT_NEWOBJECT        = "new";
+    private final static String                    $XML_OBJECT_NEWOBJECT         = "new";
     
     /** 
      * 真值才解释XJava。
@@ -170,7 +181,7 @@ public final class XJava
      * 与Ref关键字类似，但比其多一个功能，就是 if="xx" 时，xx不是引用对象时，当字符串处理，
      * 即可以写成 if="true"
      */
-    private final static String                    $XML_OBJECT_IF               = "if";
+    private final static String                    $XML_OBJECT_IF                = "if";
     
     /** 
      * 假值才解释XJava 
@@ -178,33 +189,33 @@ public final class XJava
      * 与Ref关键字类似，但比其多一个功能，就是 if="xx" 时，xx不是引用对象时，当字符串处理，
      * 即可以写成 if="true"
      */
-    private final static String                    $XML_OBJECT_IFNOT            = "ifnot";
+    private final static String                    $XML_OBJECT_IFNOT             = "ifnot";
     
     /** if 关键字的对比关系"或"分割符 */
-    private final static String                    $XML_OBJECT_IF_OR            = "||";
+    private final static String                    $XML_OBJECT_IF_OR             = "||";
     
     /** if 关键字的对比关系"与"分割符 */
-    private final static String                    $XML_OBJECT_IF_AND           = "&&";
+    private final static String                    $XML_OBJECT_IF_AND            = "&&";
     
     /** if 关键字的对比分割符 */
-    private final static String                    $XML_OBJECT_IF_EQUALS        = "==";
+    private final static String                    $XML_OBJECT_IF_EQUALS         = "==";
     
     /** 
      * 此为节点文本内容的关键字标记。表示解译xml文件的URL的路径（父目录路径）。
      * 如果节点文本内容中出现 classpath: 将为自动替换为解译xml文件的URL的路径（父目录路径）。
      * 如：org.hy.common.xml
      */
-    private final static String                    $XML_CLASSPATH               = "classpath:";
+    private final static String                    $XML_CLASSPATH                = "classpath:";
 	
     /** 
      * 此为节点文本内容的关键字标记的集合。此集合中的key将自动替换为value
      *   1. classhome: 将为自动替换为classes的根目录。                   如：C:/xx/bin
      *   2. webhome: 将为自动替换为Web服务的根目录。                      如：C:/Tomcat/Webapps/Web项目名称/
      */
-    private final static Map<String ,String>       $XML_Replace_Keys            = new LinkedHashMap<String ,String>();
+    private final static Map<String ,String>       $XML_Replace_Keys             = new LinkedHashMap<String ,String>();
 	
 	/** 标记有 id 的节点都将存入 $XML_OBJECTS 集合中的 TreeNode.info 中 */
-	private final static TreeMap<XJavaObject>      $XML_OBJECTS                 = new TreeMap<XJavaObject>();
+	private final static TreeMap<XJavaObject>      $XML_OBJECTS                  = new TreeMap<XJavaObject>();
 	
 	/** 
 	 * 专用于保存有限生命的对象实例。
@@ -213,7 +224,7 @@ public final class XJava
 	 * 
 	 * $SessionMap 只负责运行过程中动态添加的对象，不对XML配置文件中的对象生效。
 	 */
-	private final static ExpireMap<String ,Object> $SessionMap                  = new ExpireMap<String ,Object>();
+	private final static ExpireMap<String ,Object> $SessionMap                   = new ExpireMap<String ,Object>();
 	
 	/** 
 	 * TreeMap.TreeNode.orderByID的最大长度。
@@ -221,7 +232,7 @@ public final class XJava
      * 
      * 6 表示最大支持 999999 个对象实例
 	 */
-	private final static int                       $TREE_NODE_ORDERBYID_MAXLEN  = 6;
+	private final static int                       $TREE_NODE_ORDERBYID_MAXLEN   = 6;
 	
 	
 	
@@ -2879,6 +2890,18 @@ public final class XJava
 					v_ParamValue = Integer.valueOf(getNodeTextContent(v_ParamNode));
 					v_ParamClassChangeList.add(Boolean.FALSE);
 				}
+				else if ( $XML_JAVA_DATATYPE_LONG.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = long.class;
+                    v_ParamValue = Long.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
+				else if ( $XML_JAVA_DATATYPE_BIGDECIMAL.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = BigDecimal.class;
+                    v_ParamValue = new BigDecimal(getNodeTextContent(v_ParamNode));
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
 				else if ( $XML_JAVA_DATATYPE_DOUBLE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = double.class;
@@ -2923,6 +2946,18 @@ public final class XJava
                 {
                     v_ParamClass = Class.class;
                     v_ParamValue = getNodeTextContent(v_ParamNode);
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
+				else if ( $XML_JAVA_DATATYPE_BYTE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = byte.class;
+                    v_ParamValue = Byte.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
+				else if ( $XML_JAVA_DATATYPE_SHORT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = short.class;
+                    v_ParamValue = Short.valueOf(getNodeTextContent(v_ParamNode));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
 				else
@@ -3196,6 +3231,18 @@ public final class XJava
 					v_ParamValue = Integer.valueOf(getNodeTextContent(v_ParamNode));
 					v_ParamClassChangeList.add(Boolean.FALSE);
 				}
+				else if ( $XML_JAVA_DATATYPE_LONG.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = long.class;
+                    v_ParamValue = Long.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
+                else if ( $XML_JAVA_DATATYPE_BIGDECIMAL.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = BigDecimal.class;
+                    v_ParamValue = new BigDecimal(getNodeTextContent(v_ParamNode));
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
 				else if ( $XML_JAVA_DATATYPE_DOUBLE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
 				{
 					v_ParamClass = double.class;
@@ -3240,6 +3287,18 @@ public final class XJava
                 {
                     v_ParamClass = Class.class;
                     v_ParamValue = Help.forName(getNodeTextContent(v_ParamNode));
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
+				else if ( $XML_JAVA_DATATYPE_BYTE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = byte.class;
+                    v_ParamValue = Byte.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
+				else if ( $XML_JAVA_DATATYPE_SHORT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = short.class;
+                    v_ParamValue = Short.valueOf(getNodeTextContent(v_ParamNode));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
 				else

@@ -1,6 +1,7 @@
 package org.hy.common.xml;
 
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -296,58 +297,67 @@ public final class XSQLMethod
 			
 			if ( v_SetterParamClass == String.class )
 			{
-				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getString"    ,int.class);
+				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getString"     ,int.class);
 			}
 			else if ( v_SetterParamClass == int.class 
 				   || v_SetterParamClass == Integer.class )
 			{
-				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getInt"       ,int.class);
+				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getInt"        ,int.class);
 			}
+			else if ( v_SetterParamClass == BigDecimal.class )
+            {
+                this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getBigDecimal" ,int.class);
+            }
 			else if ( v_SetterParamClass == double.class 
 				   || v_SetterParamClass == Double.class )
 			{
-				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getDouble"    ,int.class);
+				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getDouble"     ,int.class);
 			}
 			else if ( v_SetterParamClass == Date.class )
 			{
-				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getTimestamp" ,int.class);
+				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getTimestamp"  ,int.class);
 				this.machiningValue   = new MachiningMyDate();
 			}
 			else if ( v_SetterParamClass == java.util.Date.class )
 			{
-				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getTimestamp" ,int.class);
+				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getTimestamp"  ,int.class);
 				this.machiningValue   = new MachiningDate();
 			}
 			// 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15 
 			else if ( v_SetterParamClass == Timestamp.class )
             {
-                this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getTimestamp" ,int.class);
+                this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getTimestamp"  ,int.class);
                 this.machiningValue   = new MachiningDate();
             }
 			else if ( v_SetterParamClass == boolean.class 
 				   || v_SetterParamClass == Boolean.class )
 			{
-				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getBoolean"   ,int.class);
+				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getBoolean"    ,int.class);
 			}
 			else if ( v_SetterParamClass == long.class 
 				   || v_SetterParamClass == Long.class )
 			{
-				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getLong"      ,int.class);
+				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getLong"       ,int.class);
 			}
+			else if ( v_SetterParamClass == short.class 
+	               || v_SetterParamClass == Short.class )
+            {
+                this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getShort"      ,int.class);
+            }
             else if ( v_SetterParamClass == byte.class 
                    || v_SetterParamClass == Byte.class )
             {
-                this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getByte"      ,int.class);
+                this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getByte"       ,int.class);
             }
             else if ( MethodReflect.isExtendImplement(v_SetterParamClass ,Enum.class) )
             {
                 // 从原来的getInt方法改为getString方法，支持数字、字符类型的常量类  ZhengWei(HY) Edit 2018-05-11
-                this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getString"    ,int.class);
+                this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getString"     ,int.class);
                 this.machiningValue   = new MachiningEnum((Class<? extends Enum<?>>)v_SetterParamClass);
             }
 			else
 			{
-				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getObject"    ,int.class);
+				this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getObject"     ,int.class);
 			}
 		}
 		catch (Exception exce)
