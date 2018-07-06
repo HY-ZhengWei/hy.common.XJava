@@ -31,6 +31,14 @@ import net.minidev.json.parser.JSONParser;
 
 
 /**
+ * 与市面上其它转Json类的主要区别有以下几点：
+ *   1. 有顺序的生成Json字符串，使后续的加密工作变的可行。
+ *   2. 可控制Jsonp字符串中key的首写字母是否大写。
+ *   3. 可选择性的只对getter\setter方法成对的属性转Json或转Java。
+ *   4. 对NULL值是否生成Json字符串，也有控制属性。
+ *   5. 可四舍五入小数，可控制保留小数位数。
+ *   
+ * 
  * 主要功能1：解释Java对象成为JSON
  * 主要功能2：解释JSON字符串成为Java实例对象
  * 
@@ -51,7 +59,7 @@ import net.minidev.json.parser.JSONParser;
  * 12.支持是否精确解释 (见 this.isAccuracy 属性)
  * 13.支持Java对象方法返回值为null时，是否生成JSON字符串 (见 this.isReturnNVL 属性)
  * 
- * 14.支持格式Json字符串
+ * 14.支持格式化Json字符串
  * 
  * @author      ZhengWei(HY)
  * @version     v1.0  
@@ -64,10 +72,14 @@ import net.minidev.json.parser.JSONParser;
  *              2018-05-15  V3.2  添加：数据库java.sql.Timestamp时间的转换
  *              2018-05-18  V3.3  添加：将Java转Json时，防止用户递归引用，而造成无法解释的问题。
  *              2018-07-05  V3.4  添加：将Java转Json时，支持为BigDecimal类型的转换。发现人：马龙
+ *              2018-07-06  V3.5  添加：1.通过isBigDecimalFormat属性控制BigDecimal类型生成Json字符串时的格式，是否为科学计数法。
+ *                                     2.通过digit属性控制Java转Json时，数值转字符串时保留小数位数。建议人：马龙
+ *                                     3.将parser分为toJava、toJson两个系列的方法，方便使用者好理解。
  *                                
  */
 public final class XJSON
 {
+    
     private XJSONObject rootJSON;
     
     /** 
@@ -99,6 +111,12 @@ public final class XJSON
      */
     private boolean     isReturnNVL;
     
+    /** Java转Json时，BigDecimal的显示格式。是否启用科学计数法（默认为：自然数字，而非科学计数法） */
+    private boolean     isBigDecimalFormat; 
+    
+    /** Java转Json时，数值转字符串时保留小数位数（默认为：NULL表示原样转Json字符串） */
+    private Integer     digit;
+    
     /**
      * 解释成为Java实例对象的元类型（默认为：java.util.Hashtable.class）
      * 
@@ -110,10 +128,12 @@ public final class XJSON
     
     public XJSON()
     {
-        this.firstCharIsUpper  = false;
-        this.isAccuracy        = false;
-        this.isReturnNVL       = true;
-        this.parserObjectClass = Hashtable.class;
+        this.firstCharIsUpper   = false;
+        this.isAccuracy         = false;
+        this.isReturnNVL        = true;
+        this.isBigDecimalFormat = false;
+        this.digit              = null;
+        this.parserObjectClass  = Hashtable.class;
     }
     
     
@@ -135,9 +155,178 @@ public final class XJSON
      * @param i_JSONObject
      * @return
      */
+    public Object toJava(JSONObject i_JSONObject)
+    {
+        return parser(i_JSONObject ,this.getObjectClass());
+    }
+    
+    
+    
+    /**
+     * 将JSONObject解释成纯Map的Java实例对象
+     * 或
+     * 将JSONObject解释成预设的Java实例对象
+     * 
+     * @param i_JSONObject
+     * @param i_ObjectClass  JSONObject对应的Java类型
+     * @return
+     */
+    public Object toJava(JSONObject i_JSONObject ,Class<?> i_ObjectClass)
+    {
+        return parser(i_JSONObject ,i_ObjectClass);
+    }
+    
+    
+    
+    /**
+     * 将JSONObject解释成纯Map的Java实例对象
+     * 或
+     * 将JSONObject解释成预设的Java实例对象
+     * 
+     * @param i_JSONObject
+     * @return
+     */
+    public Object toJava(XJSONObject i_JSONObject)
+    {
+        return parser(i_JSONObject ,this.getObjectClass());
+    }
+    
+    
+    
+    /**
+     * 将JSONObject解释成Java实例对象
+     * 
+     * @param i_JSONObject   
+     * @param i_ObjectClass  JSONObject对应的Java类型
+     * @return
+     */
+    public Object toJava(XJSONObject i_JSONObject ,Class<?> i_ObjectClass)
+    {
+        return parser(i_JSONObject ,i_ObjectClass);
+    }
+    
+    
+    
+    /**
+     * 将JSONArray解释成纯Map的Java实例对象
+     * 或
+     * 将JSONArray解释成预设的Java实例对象
+     * 
+     * @param i_JSONArray   JSONArray数组
+     * @return
+     */
+    public List<Object> toJava(JSONArray i_JSONArray)
+    {
+        return parser(i_JSONArray ,this.getObjectClass());
+    }
+    
+    
+    
+    /**
+     * 将JSONArray数组解释成Java实例对象
+     * 
+     * @param i_JSONArray     JSONArray数组
+     * @param i_ElementClass  JSONArray数组中元素的Java类型
+     * @return                
+     */
+    public List<Object> toJava(JSONArray i_JSONArray ,Class<?> i_ElementClass)
+    {
+        return parser(i_JSONArray ,i_ElementClass);
+    }
+    
+    
+    
+    /**
+     * 将JSON字符串解释成纯Map的Java实例对象
+     * 或
+     * 将JSON字符串解释成预设的Java实例对象
+     * 
+     * @param i_JSONString   完整的Json字符串
+     * @return
+     * @throws Exception
+     */
+    public Object toJava(String i_JSONString) throws Exception
+    {
+        return parser(i_JSONString ,this.getObjectClass());
+    }
+    
+    
+    
+    /**
+     * 将JSON字符串解释成Java实例对象
+     * 
+     * @param i_JSONString   完整的Json字符串
+     * @param i_ObjectClass  JSONObject对应的Java类型
+     * @return
+     * @throws Exception
+     */
+    public Object toJava(String i_JSONString ,Class<?> i_ObjectClass) throws Exception
+    {
+        return parser(i_JSONString ,i_ObjectClass);
+    }
+    
+    
+    
+    /**
+     * 将JSON字符串中的某个JSONKey解释成纯Map的Java实例对象
+     * 或
+     * 将JSON字符串中的某个JSONKey解释成预设的Java实例对象
+     * 
+     * @param i_JSONString  完整的Json字符串
+     * @param i_JSONKey     只解析大Json字符串的某个子字符串
+     * @return
+     * @throws Exception
+     */
+    public Object toJava(String i_JSONString ,String i_JSONKey) throws Exception
+    {
+        return parser(i_JSONString ,i_JSONKey ,this.getObjectClass());
+    }
+    
+    
+    
+    /**
+     * 将JSON字符串中的某个JSONKey解释成Java实例对象
+     * 
+     * @param i_JSONString   完整的Json字符串
+     * @param i_JSONKey      只解析大Json字符串的某个子字符串
+     * @param i_ObjectClass  JSONObject对应的Java类型
+     * @return
+     * @throws Exception
+     */
+    public Object toJava(String i_JSONString ,String i_JSONKey ,Class<?> i_ObjectClass) throws Exception
+    {
+        return parser(i_JSONString ,i_JSONKey ,i_ObjectClass);
+    }
+    
+    
+    
+    /**
+     * 将JSONObject解释成纯Map的Java实例对象
+     * 或
+     * 将JSONObject解释成预设的Java实例对象
+     * 
+     * @param i_JSONObject
+     * @return
+     */
     public Object parser(JSONObject i_JSONObject)
     {
         return parser(new XJSONObject(i_JSONObject) ,this.getObjectClass());
+    }
+    
+    
+    
+    /**
+     * 将JSONObject解释成纯Map的Java实例对象
+     * 或
+     * 将JSONObject解释成预设的Java实例对象
+     * 
+     * @param i_JSONObject
+     * @param i_ObjectClass
+     * @return
+     */
+    public Object parser(JSONObject i_JSONObject ,Class<?> i_ObjectClass)
+    {
+        return parser(new XJSONObject(i_JSONObject) ,i_ObjectClass);
     }
     
     
@@ -837,21 +1026,53 @@ public final class XJSON
     /**
      * 解释Java对象成为JSON
      * 
-     * 1. 参数可以是Java Bean
-     * 2. 参数可以是Map
-     * 
-     * @param i_Obj
+     * @param i_JavaData      Java对象。
+     *                             1. 参数可以是Java Bean
+     *                             2. 参数可以是Map
      * @throws Exception
      */
-    public XJSONObject parser(Object i_Obj) throws Exception
+    public XJSONObject toJson(Object i_JavaData) throws Exception
     {
-        if ( i_Obj == null )
+        return parser(i_JavaData);
+    }
+    
+    
+    
+    /**
+     * 解释Java对象成为JSON
+     * 
+     * 主要用于 i_JavaData 的类型为 List集合的情况
+     * 
+     * @param i_JavaData      Java对象。
+     *                             1. 参数可以是Java Bean
+     *                             2. 参数可以是Map
+     * @param i_JSONRootName  设置生成Json字符串的顶级节点名称
+     * @throws Exception
+     */
+    public XJSONObject toJson(Object i_JavaData ,String i_JSONRootName) throws Exception
+    {
+        return parser(i_JavaData ,i_JSONRootName);
+    }
+    
+    
+    
+    /**
+     * 解释Java对象成为JSON
+     * 
+     * @param i_JavaData      Java对象。
+     *                             1. 参数可以是Java Bean
+     *                             2. 参数可以是Map
+     * @throws Exception
+     */
+    public XJSONObject parser(Object i_JavaData) throws Exception
+    {
+        if ( i_JavaData == null )
         {
             throw new NullPointerException("XJSON parser(Object) parameter is null.");
         }
         
         Map<Object ,Object> v_ParserObjects = new HashMap<Object ,Object>();   // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
-        Return<XJSONObject> v_Ret           = parser("" ,i_Obj ,null ,v_ParserObjects);
+        Return<XJSONObject> v_Ret           = parser("" ,i_JavaData ,null ,v_ParserObjects);
         
         this.rootJSON = v_Ret.paramObj;
         
@@ -863,24 +1084,23 @@ public final class XJSON
     /**
      * 解释Java对象成为JSON
      * 
-     * 主要用于 i_Obj 的类型为 List集合的情况
+     * 主要用于 i_JavaData 的类型为 List集合的情况
      * 
-     * 1. 参数可以是Java Bean
-     * 2. 参数可以是Map
-     * 
-     * @param i_Obj
-     * @param i_JSONRootName
+     * @param i_JavaData      Java对象。
+     *                             1. 参数可以是Java Bean
+     *                             2. 参数可以是Map
+     * @param i_JSONRootName  设置生成Json字符串的顶级节点名称
      * @throws Exception
      */
-    public XJSONObject parser(Object i_Obj ,String i_JSONRootName) throws Exception
+    public XJSONObject parser(Object i_JavaData ,String i_JSONRootName) throws Exception
     {
-        if ( i_Obj == null )
+        if ( i_JavaData == null )
         {
             throw new NullPointerException("XJSON parser(Object) parameter is null.");
         }
         
         Map<Object ,Object> v_ParserObjects = new HashMap<Object ,Object>();   // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
-        Return<XJSONObject> v_Ret           = parser(i_JSONRootName ,i_Obj ,null ,v_ParserObjects);
+        Return<XJSONObject> v_Ret           = parser(i_JSONRootName ,i_JavaData ,null ,v_ParserObjects);
         
         this.rootJSON = v_Ret.paramObj;
         
@@ -919,23 +1139,45 @@ public final class XJSON
         }
         else if ( BigDecimal.class == v_ObjClass )
         {
-            v_ObjValue = ((BigDecimal)i_Obj).toPlainString();
+            BigDecimal v_BigValue = (BigDecimal)i_Obj;
+            
+            if ( this.digit != null )
+            {
+                v_BigValue.setScale(this.digit ,BigDecimal.ROUND_HALF_UP);
+            }
+            
+            if ( this.isBigDecimalFormat )
+            {
+                // 科学计数
+                v_ObjValue = v_BigValue.toString();
+            }
+            else
+            {
+                // 自然数字
+                v_ObjValue = v_BigValue.toPlainString();
+            }
         }
-        else if ( double.class == v_ObjClass )
+        else if ( double.class == v_ObjClass || Double.class == v_ObjClass )
         {
-            v_ObjValue = String.valueOf(i_Obj);
+            if ( this.digit != null )
+            {
+                v_ObjValue = String.valueOf(Help.round((Double)i_Obj ,this.digit));
+            }
+            else
+            {
+                v_ObjValue = ((Double)i_Obj).toString();
+            }
         }
-        else if ( Double.class == v_ObjClass )
+        else if ( float.class == v_ObjClass || Float.class == v_ObjClass )
         {
-            v_ObjValue = ((Double)i_Obj).toString();
-        }
-        else if ( float.class == v_ObjClass )
-        {
-            v_ObjValue = String.valueOf(i_Obj);
-        }
-        else if ( Float.class == v_ObjClass )
-        {
-            v_ObjValue = ((Float)i_Obj).toString();
+            if ( this.digit != null )
+            {
+                v_ObjValue = String.valueOf(Help.round((Float)i_Obj ,this.digit));
+            }
+            else
+            {
+                v_ObjValue = ((Float)i_Obj).toString();
+            }
         }
         else if ( boolean.class == v_ObjClass )
         {
@@ -1337,6 +1579,7 @@ public final class XJSON
     
     
     
+    @Deprecated
     public XJSONObject getRootJSON()
     {
         return this.rootJSON;
@@ -1344,46 +1587,143 @@ public final class XJSON
     
     
     
+    /**
+     * 获取：首写字母是否大写（默认：首写字母小写）
+     * 
+     * 当使用 object.getter() 的方法名称作为JSONObject.put(name ,value)的 name 值时，首写字母是否大小
+     * 
+     * 只用于Java对象实例解释成JSONObject对象
+     */
     public boolean isFirstCharIsUpper()
     {
         return firstCharIsUpper;
     }
+    
 
     
-    
+    /**
+     * 设置：首写字母是否大写（默认：首写字母小写）
+     * 
+     * 当使用 object.getter() 的方法名称作为JSONObject.put(name ,value)的 name 值时，首写字母是否大小
+     * 
+     * 只用于Java对象实例解释成JSONObject对象
+     * 
+     * @param firstCharIsUpper 
+     */
     public void setFirstCharIsUpper(boolean firstCharIsUpper)
     {
         this.firstCharIsUpper = firstCharIsUpper;
     }
-    
 
-    
+
+
+    /**
+     * 获取：* 是否精确解释（默认：false）
+     * 
+     * 当精确解释时=true，   JSON字符串中的Key必须找到Java的setter方法，否则报错。
+     * 当精确解释时=true，   Java对象转为JSON字符串时，必须getter方法与setter方法成对出现时，才会生成JSON字符串。
+     * 当非精确解释时=false，JSON字符串中的Key找到不Java的setter方法时，忽略JSON字符串Key对应的值。
+     * 当非精确解释时=false，Java对象转为JSON字符串时，不要求getter方法与setter方法必须成对出现。
+     * 
+     * 只用于解释JSON字符串成为Java实例对象
+     */
     public boolean isAccuracy()
     {
         return isAccuracy;
     }
-
+    
 
     
+    /**
+     * 设置：* 是否精确解释（默认：false）
+         * 
+         * 当精确解释时=true，   JSON字符串中的Key必须找到Java的setter方法，否则报错。
+         * 当精确解释时=true，   Java对象转为JSON字符串时，必须getter方法与setter方法成对出现时，才会生成JSON字符串。
+         * 当非精确解释时=false，JSON字符串中的Key找到不Java的setter方法时，忽略JSON字符串Key对应的值。
+         * 当非精确解释时=false，Java对象转为JSON字符串时，不要求getter方法与setter方法必须成对出现。
+         * 
+         * 只用于解释JSON字符串成为Java实例对象
+     * 
+     * @param isAccuracy 
+     */
     public void setAccuracy(boolean isAccuracy)
     {
         this.isAccuracy = isAccuracy;
     }
     
-    
-    
+
+
+
+    /**
+     * 获取：将对象转为Json字符串时，对象的方法返回 null 或 ""空字符串时，
+     * 是否还将其生成在Json字符串中。
+     * 
+     * (默认：true  即空值也生成Json字符串)
+     */
     public boolean isReturnNVL()
     {
         return isReturnNVL;
     }
-
+    
 
     
+    /**
+     * 设置：将对象转为Json字符串时，对象的方法返回 null 或 ""空字符串时，
+     * 是否还将其生成在Json字符串中。
+     * 
+     * (默认：true  即空值也生成Json字符串)
+     * 
+     * @param isReturnNVL 
+     */
     public void setReturnNVL(boolean isReturnNVL)
     {
         this.isReturnNVL = isReturnNVL;
     }
+    
 
+
+    /**
+     * 获取：Java转Json时，BigDecimal的显示格式。是否启用科学计数法（默认为：自然数字，而非科学计数法）
+     */
+    public boolean isBigDecimalFormat()
+    {
+        return isBigDecimalFormat;
+    }
+    
+
+    
+    /**
+     * 设置：Java转Json时，BigDecimal的显示格式。是否启用科学计数法（默认为：自然数字，而非科学计数法）
+     * 
+     * @param isBigDecimalFormat 
+     */
+    public void setBigDecimalFormat(boolean isBigDecimalFormat)
+    {
+        this.isBigDecimalFormat = isBigDecimalFormat;
+    }
+
+
+    
+    /**
+     * 获取：Java转Json时，数值转字符串时保留小数位数（默认为：NULL表示原样转Json字符串）
+     */
+    public Integer getDigit()
+    {
+        return digit;
+    }
+    
+
+    
+    /**
+     * 设置：Java转Json时，数值转字符串时保留小数位数（默认为：NULL表示原样转Json字符串）
+     * 
+     * @param digit 
+     */
+    public void setDigit(Integer digit)
+    {
+        this.digit = digit;
+    }
+    
 
 
     public void setObjectClassName(String i_ClassName) throws ClassNotFoundException
@@ -1419,6 +1759,7 @@ public final class XJSON
     
     
     
+    @Deprecated
     public String toJSONString()
     {
         if ( this.rootJSON != null )
