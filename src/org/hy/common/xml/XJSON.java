@@ -1143,7 +1143,7 @@ public final class XJSON
             
             if ( this.digit != null )
             {
-                v_BigValue.setScale(this.digit ,BigDecimal.ROUND_HALF_UP);
+                v_BigValue = new BigDecimal(Help.round(v_BigValue.toString() ,this.digit));
             }
             
             if ( this.isBigDecimalFormat )
@@ -1717,11 +1717,18 @@ public final class XJSON
     /**
      * 设置：Java转Json时，数值转字符串时保留小数位数（默认为：NULL表示原样转Json字符串）
      * 
-     * @param digit 
+     * @param i_Digit 
      */
-    public void setDigit(Integer digit)
+    public void setDigit(Integer i_Digit)
     {
-        this.digit = digit;
+        if ( i_Digit != null )
+        {
+            this.digit = Math.abs(i_Digit);
+        }
+        else
+        {
+            this.digit = i_Digit;
+        }
     }
     
 
