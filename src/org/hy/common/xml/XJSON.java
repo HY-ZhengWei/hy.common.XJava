@@ -75,6 +75,9 @@ import net.minidev.json.parser.JSONParser;
  *              2018-07-06  V3.5  添加：1.通过isBigDecimalFormat属性控制BigDecimal类型生成Json字符串时的格式，是否为科学计数法。
  *                                     2.通过digit属性控制Java转Json时，数值转字符串时保留小数位数。建议人：马龙
  *                                     3.将parser分为toJava、toJson两个系列的方法，方便使用者好理解。
+ *              2018-07-10  V3.6  修复：Json转Java（Map对象）时，Json字符串中的 "key":null 情况的异常处理。发现人：马龙。 
+ *                                     建议：当需要Map.value为NULL时，请在转换前设置此句this.setObjectClass(HashMap.class); 
+ *                                          否则，NULL的Json字符串将转成""空字符串写入Hashtable中。
  *                                
  */
 public final class XJSON
@@ -433,20 +436,36 @@ public final class XJSON
                 String v_Key   = v_Iter.next().toString();
                 Object v_Value = i_JSONObject.get(v_Key);
                 
-                if ( v_Value.getClass() == JSONArray.class )
+                // 2018-07-10 Add 为NULL时，Map.value写入NULL对象 
+                if ( v_Value != null )
                 {
-                    v_Value = parser((JSONArray)v_Value ,this.getObjectClass());
+                    if ( v_Value.getClass() == JSONArray.class )
+                    {
+                        v_Value = parser((JSONArray)v_Value ,this.getObjectClass());
+                    }
+                    else if ( v_Value.getClass() == JSONObject.class )
+                    {
+                        v_Value = parser(new XJSONObject((JSONObject)v_Value) ,this.getObjectClass());
+                    }
+                    else if ( v_Value.getClass() == XJSONObject.class )
+                    {
+                        v_Value = parser((XJSONObject)v_Value ,this.getObjectClass());
+                    }
+                    
+                    ((Map<String ,Object>)v_NewObj).put(v_Key ,v_Value);
                 }
-                else if ( v_Value.getClass() == JSONObject.class )
+                else
                 {
-                    v_Value = parser(new XJSONObject((JSONObject)v_Value) ,this.getObjectClass());
+                    if ( MethodReflect.isExtendImplement(i_ObjectClass ,Hashtable.class) )
+                    {
+                        // Nothing Hashtable.value 不能为NULL
+                        ((Map<String ,Object>)v_NewObj).put(v_Key ,"");
+                    }
+                    else
+                    {
+                        ((Map<String ,Object>)v_NewObj).put(v_Key ,v_Value);
+                    }
                 }
-                else if ( v_Value.getClass() == XJSONObject.class )
-                {
-                    v_Value = parser((XJSONObject)v_Value ,this.getObjectClass());
-                }
-                
-                ((Map<String ,Object>)v_NewObj).put(v_Key ,v_Value);
             }
         }
         else
