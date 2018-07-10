@@ -37,6 +37,8 @@ public class JU_XJSON
         
         XJSON v_XJson = new XJSON();
         
+        // 当需要Map.value为NULL时，请在转换前设置此句this.setObjectClass(HashMap.class); 
+        // 否则，NULL的Json字符串将转成""空字符串写入Hashtable中。
         v_XJson.setObjectClass(HashMap.class);
         
         Map<String, Object> v_Datas = (Map<String, Object>)v_XJson.toJava(json);
