@@ -75,9 +75,10 @@ import net.minidev.json.parser.JSONParser;
  *              2018-07-06  V3.5  添加：1.通过isBigDecimalFormat属性控制BigDecimal类型生成Json字符串时的格式，是否为科学计数法。
  *                                     2.通过digit属性控制Java转Json时，数值转字符串时保留小数位数。建议人：马龙
  *                                     3.将parser分为toJava、toJson两个系列的方法，方便使用者好理解。
- *              2018-07-10  V3.6  修复：Json转Java（Map对象）时，Json字符串中的 "key":null 情况的异常处理。发现人：马龙。 
- *                                     建议：当需要Map.value为NULL时，请在转换前设置此句this.setObjectClass(HashMap.class); 
- *                                          否则，NULL的Json字符串将转成""空字符串写入Hashtable中。
+ *              2018-07-10  V3.6  修复：1. Json转Java（Map对象）时，Json字符串中的 "key":null 情况的异常处理。发现人：马龙。 
+ *                                        建议：当需要Map.value为NULL时，请在转换前设置此句this.setObjectClass(HashMap.class); 
+ *                                             否则，NULL的Json字符串将转成""空字符串写入Hashtable中。
+ *                                     2. 防止递归功能，添加允许递归次数。允许一定范围内的递归或重复数据。发现人：马龙。 
  *                                
  */
 public final class XJSON
@@ -120,6 +121,9 @@ public final class XJSON
     /** Java转Json时，数值转字符串时保留小数位数（默认为：NULL表示原样转Json字符串） */
     private Integer     digit;
     
+    /** 允许递归出现在次数。Java转Json时，防止对象中递归引用对象，而造成无法解释的问题（默认值：0，表示不防止递归 ）  */
+    private int         recursionCount;
+    
     /**
      * 解释成为Java实例对象的元类型（默认为：java.util.Hashtable.class）
      * 
@@ -136,6 +140,7 @@ public final class XJSON
         this.isReturnNVL        = true;
         this.isBigDecimalFormat = false;
         this.digit              = null;
+        this.recursionCount     = 0;
         this.parserObjectClass  = Hashtable.class;
     }
     
@@ -1090,8 +1095,8 @@ public final class XJSON
             throw new NullPointerException("XJSON parser(Object) parameter is null.");
         }
         
-        Map<Object ,Object> v_ParserObjects = new HashMap<Object ,Object>();   // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
-        Return<XJSONObject> v_Ret           = parser("" ,i_JavaData ,null ,v_ParserObjects);
+        Map<Object ,Integer> v_ParserObjects = new HashMap<Object ,Integer>();   // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+        Return<XJSONObject>  v_Ret           = parser("" ,i_JavaData ,null ,v_ParserObjects);
         
         this.rootJSON = v_Ret.paramObj;
         
@@ -1118,8 +1123,8 @@ public final class XJSON
             throw new NullPointerException("XJSON parser(Object) parameter is null.");
         }
         
-        Map<Object ,Object> v_ParserObjects = new HashMap<Object ,Object>();   // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
-        Return<XJSONObject> v_Ret           = parser(i_JSONRootName ,i_JavaData ,null ,v_ParserObjects);
+        Map<Object ,Integer> v_ParserObjects = new HashMap<Object ,Integer>();   // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+        Return<XJSONObject>  v_Ret           = parser(i_JSONRootName ,i_JavaData ,null ,v_ParserObjects);
         
         this.rootJSON = v_Ret.paramObj;
         
@@ -1138,7 +1143,7 @@ public final class XJSON
      * @return
      * @throws Exception
      */
-    private Return<XJSONObject> parser(String i_JSONName ,final Object i_Obj ,XJSONObject i_JsonSuperObj ,Map<Object ,Object> i_ParserObjects) throws Exception
+    private Return<XJSONObject> parser(String i_JSONName ,final Object i_Obj ,XJSONObject i_JsonSuperObj ,Map<Object ,Integer> i_ParserObjects) throws Exception
     {
         Class<?>            v_ObjClass = i_Obj.getClass();
         String              v_ObjValue = "";
@@ -1257,12 +1262,10 @@ public final class XJSON
         }
         else if ( i_Obj instanceof List )
         {
-            // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题  ZhengWei(HY) Add 2018-05-18
-            if ( i_ParserObjects.containsKey(i_Obj) )
+            if ( isRecursion(i_ParserObjects ,i_Obj) )
             {
                 return v_Ret;
             }
-            i_ParserObjects.put(i_Obj ,null);
             
             JSONArray v_JSONArray = new JSONArray();
             List<?>   v_List      = (List<?>)i_Obj;
@@ -1308,12 +1311,10 @@ public final class XJSON
         // ZhengWei(HY) Add 2016-07-05 支持数组
         else if ( i_Obj instanceof Object [] )
         {
-            // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题  ZhengWei(HY) Add 2018-05-18
-            if ( i_ParserObjects.containsKey(i_Obj) )
+            if ( isRecursion(i_ParserObjects ,i_Obj) )
             {
                 return v_Ret;
             }
-            i_ParserObjects.put(i_Obj ,null);
             
             JSONArray v_JSONArray = new JSONArray();
             Object [] v_List      = (Object [])i_Obj;
@@ -1358,12 +1359,10 @@ public final class XJSON
         }
         else if ( i_Obj instanceof Set )
         {
-            // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题  ZhengWei(HY) Add 2018-05-18
-            if ( i_ParserObjects.containsKey(i_Obj) )
+            if ( isRecursion(i_ParserObjects ,i_Obj) )
             {
                 return v_Ret;
             }
-            i_ParserObjects.put(i_Obj ,null);
             
             JSONArray   v_JSONArray = new JSONArray();
             Set<?>      v_Set       = (Set<?>)i_Obj;
@@ -1410,12 +1409,10 @@ public final class XJSON
         }
         else if ( i_Obj instanceof Map )
         {
-            // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题  ZhengWei(HY) Add 2018-05-18
-            if ( i_ParserObjects.containsKey(i_Obj) )
+            if ( isRecursion(i_ParserObjects ,i_Obj) )
             {
                 return v_Ret;
             }
-            i_ParserObjects.put(i_Obj ,null);
             
             Map<? ,?> v_Map = (Map<? ,?>)i_Obj;
             if ( !Help.isNull(v_Map) )
@@ -1454,12 +1451,10 @@ public final class XJSON
         }
         else
         {
-            // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题  ZhengWei(HY) Add 2018-05-18
-            if ( i_ParserObjects.containsKey(i_Obj) )
+            if ( isRecursion(i_ParserObjects ,i_Obj) )
             {
                 return v_Ret;
             }
-            i_ParserObjects.put(i_Obj ,null);
             
             XJSONObject  v_ChildJsonObj = new XJSONObject();
             int          v_ChildCount   = 0;
@@ -1594,6 +1589,42 @@ public final class XJSON
         }
         
         return v_Ret.paramObj(i_JsonSuperObj);
+    }
+    
+    
+    
+    /**
+     * Java转Json时，解析过的对象，防止对象中递归引用对象，而造成无法解释的问题 
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-05-18
+     * @version     v1.0
+     *
+     * @param io_ParserObjects
+     * @param i_Obj
+     * @return
+     */
+    private boolean isRecursion(Map<Object ,Integer> io_ParserObjects ,Object i_Obj)
+    {
+        if ( this.recursionCount >= 1 )
+        {
+            Integer v_Count = io_ParserObjects.get(i_Obj);
+            if ( v_Count != null )
+            {
+                if ( v_Count.intValue() >= this.recursionCount )
+                {
+                    return true;
+                }
+                
+                io_ParserObjects.put(i_Obj ,v_Count.intValue() + 1);
+            }
+            else
+            {
+                io_ParserObjects.put(i_Obj ,1);
+            }
+        }
+        
+        return false;
     }
     
     
@@ -1748,6 +1779,28 @@ public final class XJSON
         {
             this.digit = i_Digit;
         }
+    }
+    
+
+    
+    /**
+     * 获取：允许递归出现在次数。Java转Json时，防止对象中递归引用对象，而造成无法解释的问题（默认值：0，表示不防止递归 ）
+     */
+    public int getRecursionCount()
+    {
+        return recursionCount;
+    }
+    
+
+    
+    /**
+     * 设置：允许递归出现在次数。Java转Json时，防止对象中递归引用对象，而造成无法解释的问题（默认值：0，表示不防止递归 ）
+     * 
+     * @param recursionCount 
+     */
+    public void setRecursionCount(int recursionCount)
+    {
+        this.recursionCount = recursionCount;
     }
     
 
