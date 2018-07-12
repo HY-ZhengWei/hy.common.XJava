@@ -1985,7 +1985,7 @@ public final class XSQLResult
 			}
 			
 			// 行级填充方法有多个重载方法，无法正确识别
-			if ( this.cfillMethodArr[0].getCall() == null )
+			if ( this.fillMethod.getCall() == null )
 			{
 				throw new NoSuchMethodError("Fill method name[" + this.fill + "] have much override methods.");
 			}
