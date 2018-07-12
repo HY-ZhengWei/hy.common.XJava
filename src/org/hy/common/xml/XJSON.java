@@ -33,7 +33,7 @@ import net.minidev.json.parser.JSONParser;
 /**
  * 与市面上其它转Json类的主要区别有以下几点：
  *   1. 有顺序的生成Json字符串，使后续的加密工作变的可行。
- *   2. 可控制Jsonp字符串中key的首写字母是否大写。
+ *   2. 可控制Json字符串中key的首写字母是否大写。
  *   3. 可选择性的只对getter\setter方法成对的属性转Json或转Java。
  *   4. 对NULL值是否生成Json字符串，也有控制属性。
  *   5. 可四舍五入小数，可控制保留小数位数。

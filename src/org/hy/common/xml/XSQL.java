@@ -408,7 +408,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             i_XSQL.getDataSourceGroup().setException(true);
         }
         
-        System.err.println(i_SQL);
+        System.err.println("-- Error time：  " + Date.getNowTime().getFull() 
+                       + "\n-- Error XSQL ID：  " + Help.NVL(i_XSQL.getXJavaID()) 
+                       + "\n-- Error SQL：  " + i_SQL);
     }
     
     
