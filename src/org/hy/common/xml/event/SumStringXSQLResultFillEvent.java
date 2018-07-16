@@ -101,7 +101,7 @@ public class SumStringXSQLResultFillEvent implements XSQLResultFillEvent
      */
     public boolean before(final Object i_Table ,final Object i_Row ,final long i_RowNo ,final Object i_PreviousRow)
     {
-        // 核心均是使用SumObjectMap集合实现的，所以这里无须任何代码
+        // 核心均是使用SumList、SumMap、SumStringMap集合实现的，所以这里无须任何代码
         return true;
     }
 
