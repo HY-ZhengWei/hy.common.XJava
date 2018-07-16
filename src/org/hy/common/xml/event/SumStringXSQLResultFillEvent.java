@@ -1,7 +1,8 @@
 package org.hy.common.xml.event;
 
 import org.hy.common.MethodReflect;
-import org.hy.common.SumObjectMap;
+import org.hy.common.SumList;
+import org.hy.common.SumMap;
 import org.hy.common.SumStringMap;
 import org.hy.common.xml.XSQLResultFillEvent;
 
@@ -12,9 +13,10 @@ import org.hy.common.xml.XSQLResultFillEvent;
 /**
  * 多行字符串合并功能。
  * 
- * 要求：XSQL.result.table(<table>...</table>)必须是如下两种类型结构之一
- *      1. org.hy.common.SumObjectMap
- *      2. org.hy.common.SumStringMap 
+ * 要求：XSQL.result.table(<table>...</table>)必须是如下类型结构之一
+ *      1. org.hy.common.SumList
+ *      2. org.hy.common.SumMap
+ *      3. org.hy.common.SumStringMap 
  *
  * @author      ZhengWei(HY)
  * @createDate  2018-06-01
@@ -31,6 +33,9 @@ public class SumStringXSQLResultFillEvent implements XSQLResultFillEvent
     
     /** 合并或拼接对象的哪个属性。支持面向对象，可实现xxx.yyy.www全路径的解释。多个属性间用this.split指定字符分隔 */
     private String methodURLs;
+    
+    /** 关键属性。按对象的哪个属性合并或拼接对象的其它属性的。支持面向对象，可实现xxx.yyy.www全路径的解释。（只能指定对象的一个属性） */
+    private String keyMethodURL;
     
     
     
@@ -49,9 +54,18 @@ public class SumStringXSQLResultFillEvent implements XSQLResultFillEvent
      */
     public void start(final Object i_Table)
     {
-        if ( MethodReflect.isExtendImplement(i_Table ,SumObjectMap.class) )
+        if ( MethodReflect.isExtendImplement(i_Table ,SumList.class) )
         {
-            SumObjectMap<? ,?> v_SumMap = (SumObjectMap<? ,?>)i_Table;
+            SumList<?> v_SumList = (SumList<?>)i_Table;
+            
+            v_SumList.setSplit(       this.split);
+            v_SumList.setConnectors(  this.connectors);
+            v_SumList.setMethodURLs(  this.methodURLs);
+            v_SumList.setKeyMethodURL(this.keyMethodURL);
+        }
+        else if ( MethodReflect.isExtendImplement(i_Table ,SumMap.class) )
+        {
+            SumMap<? ,?> v_SumMap = (SumMap<? ,?>)i_Table;
             
             v_SumMap.setSplit(     this.split);
             v_SumMap.setConnectors(this.connectors);
@@ -65,7 +79,7 @@ public class SumStringXSQLResultFillEvent implements XSQLResultFillEvent
         }
         else
         {
-            throw new java.lang.ClassCastException("XSQL.result.table(<table>...</table>) is not SumObjectMap or SumStringMap.");
+            throw new java.lang.ClassCastException("XSQL.result.table(<table>...</table>) is not SumMap or SumStringMap.");
         }
     }
     
@@ -155,6 +169,28 @@ public class SumStringXSQLResultFillEvent implements XSQLResultFillEvent
     public void setSplit(String split)
     {
         this.split = split;
+    }
+
+
+    
+    /**
+     * 获取：关键属性。按对象的哪个属性合并或拼接对象的其它属性的。支持面向对象，可实现xxx.yyy.www全路径的解释。（只能指定对象的一个属性）
+     */
+    public String getKeyMethodURL()
+    {
+        return keyMethodURL;
+    }
+    
+
+    
+    /**
+     * 设置：关键属性。按对象的哪个属性合并或拼接对象的其它属性的。支持面向对象，可实现xxx.yyy.www全路径的解释。（只能指定对象的一个属性）
+     * 
+     * @param keyMethodURL 
+     */
+    public void setKeyMethodURL(String keyMethodURL)
+    {
+        this.keyMethodURL = keyMethodURL;
     }
     
 }
