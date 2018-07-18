@@ -116,6 +116,9 @@ import org.hy.common.xml.event.BLobEvent;
  *                                       即$Executes_Split = ";/"分割符是否生效。
  *              v13.0 2018-07-01  添加：实现Oracle数据库Clob的写入方法executeUpdateCLob()。
  *                                       对于Clob的读取已在hy.common.db包中实现，对于开发者来说，查询SQL无须任何特殊处理，就当Clob是普通字段。
+ *              v13.1 2018-07-18  添加：实现普通Insert、Update语句就能写入Clob字段的能力。
+ *                                       将两次对数据库的操作，封装在一个普通SQL中，再通过程序自动化拆分两个具体的数据库操作。
+ *                                       大大简化开发的工作量。
  */
 /*
  * 游标类型的说明
@@ -220,6 +223,17 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     private String                         create;
     
+    /** 大数据字段类型(如,CLob)的占位符名称。只用于Insert、Update语句 */
+    private String                         lobName;
+    
+    /** 
+     * 写入大数据字段类型(如,CLob)的所在行的查询条件SQL片段(不包含WHERE关键字)。只用于Insert、Update语句。
+     */
+    private String                         lobWheres;
+    
+    /** 内部属性。标记创建出来的用于写入大数据库类型的XSQL的XJava标记 */
+    private String                         lobXSQLID;
+    
     /** 当调用存储过程或函数时的参数对象 */
     private List<XSQLCallParam>            callParams;
     
@@ -286,6 +300,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		this.blobSafe           = false;
         this.type               = $Type_NormalSQL;
         this.create             = null;
+        this.lobName            = null;
+        this.lobWheres          = null;
+        this.lobXSQLID          = null;
         this.callParamInCount   = 0;
         this.callParamOutCount  = 0;
         this.batchCommit        = 0;
@@ -2501,6 +2518,148 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	
 	
 	/**
+     * 根据写入大数据的SQL语法(如下)，创建一个XSQL对象。
+     * 
+     *    SELECT  clobColumn 
+     *      FROM  tablename 
+     *     WHERE  id = 1 
+     *       FOR  UPDATE
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-07-18
+     * @version     v1.0
+     *
+     * @return  返回创建XSQL对象实例，对应的XJava标记 
+     */
+    private String createLobXSQL()
+    {
+        String v_DBType   = this.getDataSourceGroup().getDbProductType();
+        Param  v_Template = XSQLWriteLob.getLobTempalte(v_DBType);
+        
+        if ( v_Template == null || Help.isNull(v_Template.getValue()) )
+        {
+            return null;
+        }
+        
+        String v_SQL = StringHelp.replaceAll(v_Template.getValue() 
+                                            ,new String[]{":TableName"                        ,":LobName"   ,":IdWheres"}
+                                            ,new String[]{this.getContent().getSqlTableName() ,this.lobName ,this.lobWheres});
+        
+        XSQL v_LobXSQL = new XSQL();
+        
+        v_LobXSQL.setDataSourceGroup(this.getDataSourceGroup());
+        v_LobXSQL.setContent(v_SQL);
+        v_LobXSQL.setXJavaID(Help.NVL(this.getXJavaID() ,"XSQL_WriteLob") + "_" + this.lobName + "_" + Date.getNowTime().getFull_ID());
+        
+        XJava.putObject(v_LobXSQL.getXJavaID() ,v_LobXSQL);
+        
+        return v_LobXSQL.getXJavaID();
+    }
+    
+    
+    
+    /**
+     * 插入或更新一行数据之后再写入大数据字段（如,CLob）。
+     * 
+     * 在executeUpdate()或execute()方法内部被自动执行
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-07-18
+     * @version     v1.0
+     *
+     * @param i_Values     占位符SQL的填充集合。
+     * @param i_DataCount  插入或更新语句影响的记录数
+     * @return
+     */
+    private int executeUpdate_AfterWriteLob(Map<String ,?> i_Values ,int i_DataCount)
+    {
+        if ( i_DataCount <= 0 )
+        {
+            return i_DataCount;
+        }
+        
+        if ( !Help.isNull(this.lobName) && !Help.isNull(this.lobWheres) )
+        {
+            Object v_LobValue = MethodReflect.getMapValue(i_Values ,this.lobName);
+            
+            if ( v_LobValue != null )
+            {
+                synchronized ( this.lobXSQLID )
+                {
+                    if ( Help.isNull(this.lobXSQLID) )
+                    {
+                        this.lobXSQLID = this.createLobXSQL();
+                    }
+                }
+                
+                return XJava.getXSQL(this.lobXSQLID).executeUpdateCLob(i_Values ,v_LobValue.toString());
+            }
+        }
+        
+        return i_DataCount;
+    }
+    
+    
+    
+    /**
+     * 插入或更新一行数据之后再写入大数据字段（如,CLob）。
+     * 
+     * 在executeUpdate()或execute()方法内部被自动执行
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-07-18
+     * @version     v1.0
+     *
+     * @param i_Values     占位符SQL的填充集合。
+     * @param i_DataCount  插入或更新语句影响的记录数
+     * @return
+     */
+    private int executeUpdate_AfterWriteLob(Object i_Obj ,int i_DataCount)
+    {
+        if ( i_DataCount <= 0 )
+        {
+            return i_DataCount;
+        }
+        
+        if ( !Help.isNull(this.lobName) && !Help.isNull(this.lobWheres) )
+        {
+            Object v_LobValue = null;
+            try
+            {
+                MethodReflect v_MethodReflect = new MethodReflect(i_Obj ,this.lobName ,true ,MethodReflect.$NormType_Getter);
+                
+                if ( v_MethodReflect != null )
+                {
+                    v_LobValue = v_MethodReflect.invoke();
+                }
+            }
+            catch (Exception exce)
+            {
+                // 有些:xx占位符可能找不到对应Java的Getter方法，所以忽略
+                // Nothing.
+                return i_DataCount;
+            }
+            
+            if ( v_LobValue != null )
+            {
+                synchronized ( this.lobXSQLID )
+                {
+                    if ( Help.isNull(this.lobXSQLID) )
+                    {
+                        this.lobXSQLID = this.createLobXSQL();
+                    }
+                }
+                
+                return XJava.getXSQL(this.lobXSQLID).executeUpdateCLob(i_Obj ,v_LobValue.toString());
+            }
+        }
+        
+        return i_DataCount;
+    }
+	
+	
+	
+	/**
 	 * 占位符SQL的Insert语句与Update语句的执行。 -- 无填充值的
 	 * 
 	 * @return                   返回语句影响的记录数。
@@ -2541,6 +2700,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 * 
 	 * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
 	 * 
+	 * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
+	 * 
 	 * @param i_Values           占位符SQL的填充集合。
 	 * @return                   返回语句影响的记录数。
 	 */
@@ -2552,7 +2713,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 		try
 		{
-		    return this.executeUpdate(this.content.getSQL(i_Values));
+		    int v_Ret = this.executeUpdate(this.content.getSQL(i_Values));
+		    
+		    return executeUpdate_AfterWriteLob(i_Values ,v_Ret);
 		}
 		catch (NullPointerException exce)
 		{
@@ -2580,6 +2743,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 * 
 	 * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
 	 * 
+	 * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
+	 * 
 	 * @param i_Obj              占位符SQL的填充对象。
 	 * @return                   返回语句影响的记录数。
 	 */
@@ -2591,7 +2756,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 		try
 		{
-		    return this.executeUpdate(this.content.getSQL(i_Obj));
+		    int v_Ret = this.executeUpdate(this.content.getSQL(i_Obj));
+		    return executeUpdate_AfterWriteLob(i_Obj ,v_Ret);
 		}
 		catch (NullPointerException exce)
 		{
@@ -4510,6 +4676,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 * 
 	 * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
 	 * 
+	 * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
+	 * 
 	 * @param i_Values           占位符SQL的填充集合。
 	 * @return                   是否执行成功。
 	 */
@@ -4521,7 +4689,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 		try
 		{
-		    return this.execute(this.content.getSQL(i_Values));
+		    boolean v_Ret = this.execute(this.content.getSQL(i_Values));
+		    return this.executeUpdate_AfterWriteLob(i_Values ,v_Ret ? 1 : 0) >= 1;
 		}
 		catch (NullPointerException exce)
 		{
@@ -4549,6 +4718,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 * 
 	 * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
 	 * 
+	 * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
+	 * 
 	 * @param i_Obj              占位符SQL的填充对象。
 	 * @return                   是否执行成功。
 	 */
@@ -4557,10 +4728,11 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	    checkContent();
 		
 		boolean v_IsError = false;
-
+		
 		try
 		{
-		    return this.execute(this.content.getSQL(i_Obj));
+		    boolean v_Ret = this.execute(this.content.getSQL(i_Obj));
+            return this.executeUpdate_AfterWriteLob(i_Obj ,v_Ret ? 1 : 0) >= 1;
 		}
 		catch (NullPointerException exce)
 		{
@@ -6049,6 +6221,50 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         
         return false;
     } 
+    
+
+    
+    /**
+     * 获取：大数据字段类型(如,CLob)的占位符名称。只用于Insert、Update语句
+     */
+    public String getLobName()
+    {
+        return lobName;
+    }
+    
+
+    
+    /**
+     * 设置：大数据字段类型(如,CLob)的占位符名称。只用于Insert、Update语句
+     * 
+     * @param lobName 
+     */
+    public void setLobName(String lobName)
+    {
+        this.lobName = lobName;
+    }
+    
+
+    
+    /**
+     * 获取：写入大数据字段类型(如,CLob)的所在行的查询条件SQL片段(不包含WHERE关键字)。只用于Insert、Update语句。
+     */
+    public String getLobWheres()
+    {
+        return lobWheres;
+    }
+
+
+    
+    /**
+     * 设置：写入大数据字段类型(如,CLob)的所在行的查询条件SQL片段(不包含WHERE关键字)。只用于Insert、Update语句。
+     * 
+     * @param lobWheres 
+     */
+    public void setLobWheres(String lobWheres)
+    {
+        this.lobWheres = lobWheres;
+    }
     
 
 
