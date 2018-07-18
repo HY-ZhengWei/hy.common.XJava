@@ -302,7 +302,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         this.create             = null;
         this.lobName            = null;
         this.lobWheres          = null;
-        this.lobXSQLID          = null;
+        this.lobXSQLID          = "";
         this.callParamInCount   = 0;
         this.callParamOutCount  = 0;
         this.batchCommit        = 0;
