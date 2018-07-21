@@ -40,6 +40,7 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  *              v1.3  2018-01-27  添加：普通方式的，批量数据的更新功能。
  *                                添加：预解析方式，批量数据的更新功能。
  *              v1.4  2018-04-27  添加：returnOne注解属性支持Map、Set集合随机获取一个元素的功能。
+ *              v1.5  2018-07-21  添加：支持分页模板自动封装的查询。建议人：李浩
  */
 public class XSQLProxy implements InvocationHandler ,Serializable
 {
@@ -592,17 +593,29 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      */
     private Object executeXSQL_Query(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
+        // 支持分页模板自动封装的查询  2018-07-21
+        XSQL v_XSQL = i_XSQL;
+        if ( i_Anno.getXsql().paging() )
+        {
+            v_XSQL = XSQL.queryPaging(v_XSQL);
+            
+            if ( v_XSQL == null )
+            {
+                v_XSQL = i_XSQL;
+            }
+        }
+        
         if ( !Help.isNull(i_Anno.getXsql().updateCacheID()) )
         {
-            return executeXSQL_Query_UpdateCache(i_Method ,i_Anno ,i_XSQL ,i_Args);
+            return executeXSQL_Query_UpdateCache(i_Method ,i_Anno ,v_XSQL ,i_Args);
         }
         else if ( !Help.isNull(i_Anno.getXsql().cacheID()) )
         {
-            return executeXSQL_Query_Cache      (i_Method ,i_Anno ,i_XSQL ,i_Args);
+            return executeXSQL_Query_Cache      (i_Method ,i_Anno ,v_XSQL ,i_Args);
         }
         else
         {
-            return executeXSQL_Query_Normal     (i_Method ,i_Anno ,i_XSQL ,i_Args);
+            return executeXSQL_Query_Normal     (i_Method ,i_Anno ,v_XSQL ,i_Args);
         }
     }
     

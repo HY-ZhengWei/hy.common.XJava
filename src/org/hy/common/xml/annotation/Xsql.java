@@ -17,6 +17,7 @@ import java.lang.annotation.Target;
  * @createDate  2017-12-14
  * @version     v1.0
  *              v2.0  2018-01-27  添加：batch()属性，支持预解析方式的批量执行。
+ *              v3.0  2018-07-21  添加：paging()属性，支持分页查询。建议人：李浩
  */
 @Documented
 @Target({ElementType.METHOD})
@@ -144,5 +145,21 @@ public @interface Xsql
      * 上面两种方式，在写SQL模板时，略有不同。
      */
     public boolean batch() default false;
+    
+    
+    
+    /**
+     * 针对Select操作，是否开启分页模式。
+     * 
+     * 当开启分页模式后，将采用 org.hy.common.xml.XSQLPaging 类获取的分页模板SQL进行查询。
+     * 同时，请符合 org.hy.common.xml.XSQLPaging.xml 中的分页要求。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-07-21
+     * @version     v1.0
+     *
+     * @return
+     */
+    public boolean paging() default false;
     
 }
