@@ -151,7 +151,7 @@ public @interface Xsql
     /**
      * 针对Select操作，是否开启分页模式。
      * 
-     * 当开启分页模式后，将采用 org.hy.common.xml.XSQLPaging 类获取的分页模板SQL进行查询。
+     * 当开启分页模式后，将采用 org.hy.common.xml.XSQL.queryPaging() 获取的分页模板SQL进行查询。
      * 同时，请符合 org.hy.common.xml.XSQLPaging.xml 中的分页要求。
      * 
      * @author      ZhengWei(HY)
