@@ -256,7 +256,10 @@ public class AppInterfaceInfo extends Param
         
         try
         {
-            Help.forName(i_RequestClass);
+            if ( !Help.isNull(i_RequestClass) )
+            {
+                Help.forName(i_RequestClass);
+            }
         }
         catch (Exception exce)
         {
@@ -289,7 +292,10 @@ public class AppInterfaceInfo extends Param
         
         try
         {
-            Help.forName(i_ResponseClass);
+            if ( !Help.isNull(i_ResponseClass) )
+            {
+                Help.forName(i_ResponseClass);
+            }
         }
         catch (Exception exce)
         {
