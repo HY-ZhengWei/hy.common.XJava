@@ -228,7 +228,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     private String                         create;
     
-    /** 大数据字段类型(如,CLob)的占位符名称，多个占位符名称间用逗号，分隔。只用于Insert、Update语句 */
+    /** 大数据字段类型(如,CLob)的字段名称，多个字段名称间用逗号，分隔。只用于Insert、Update语句 */
     private String                         lobName;
     
     /** 
@@ -2590,7 +2590,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             String [] v_LobValues = new String[v_LobNames.length];
             for (int i=0; i<v_LobNames.length; i++)
             {
-                Object v_LobValue = MethodReflect.getMapValue(i_Values ,v_LobNames[i]);
+                Object v_LobValue = MethodReflect.getMapValue(i_Values ,v_LobNames[i].trim());
                 if ( v_LobValue != null )
                 {
                     v_LobValues[i] = v_LobValue.toString();
@@ -2648,7 +2648,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             {
                 try
                 {
-                    MethodReflect v_MethodReflect = new MethodReflect(i_Obj ,this.lobName ,true ,MethodReflect.$NormType_Getter);
+                    MethodReflect v_MethodReflect = new MethodReflect(i_Obj ,v_LobNames[i].trim() ,true ,MethodReflect.$NormType_Getter);
                     
                     if ( v_MethodReflect != null )
                     {
@@ -6268,7 +6268,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
     
     /**
-     * 获取：大数据字段类型(如,CLob)的占位符名称，多个占位符名称间用逗号，分隔。只用于Insert、Update语句
+     * 获取：大数据字段类型(如,CLob)的字段名称，多个字段名称间用逗号，分隔。只用于Insert、Update语句
      */
     public String getLobName()
     {
@@ -6278,7 +6278,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
     
     /**
-     * 设置：大数据字段类型(如,CLob)的占位符名称，多个占位符名称间用逗号，分隔。只用于Insert、Update语句
+     * 设置：大数据字段类型(如,CLob)的字段名称，多个字段名称间用逗号，分隔。只用于Insert、Update语句
      * 
      * @param lobName 
      */
