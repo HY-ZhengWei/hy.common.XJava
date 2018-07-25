@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -119,6 +120,7 @@ import org.hy.common.xml.event.BLobEvent;
  *              v13.1 2018-07-18  添加：实现普通Insert、Update语句就能写入Clob字段的能力。
  *                                       将两次对数据库的操作，封装在一个普通SQL中，再通过程序自动化拆分两个具体的数据库操作。
  *                                       大大简化开发的工作量。
+ *              v13.2 2018-07-25  添加：支持多个长文本信息CLob的写入。
  */
 /*
  * 游标类型的说明
@@ -145,6 +147,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     /** execute()方法中执行多条SQL语句的分割符 */
     public  static final String            $Executes_Split = ";/";
+    
+    /** 大数据字段类型(如,CLob)的占位符名称，多个占位符名称间用逗号，分隔 */
+    public  static final String            $LobName_Split  = ",";
     
     /** SQL执行日志。默认只保留1000条执行过的SQL语句 */
     public  static final Busway<XSQLLog>   $SQLBusway      = new Busway<XSQLLog>(1000);
@@ -223,7 +228,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     private String                         create;
     
-    /** 大数据字段类型(如,CLob)的占位符名称。只用于Insert、Update语句 */
+    /** 大数据字段类型(如,CLob)的占位符名称，多个占位符名称间用逗号，分隔。只用于Insert、Update语句 */
     private String                         lobName;
     
     /** 
@@ -2566,6 +2571,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @author      ZhengWei(HY)
      * @createDate  2018-07-18
      * @version     v1.0
+     *              v2.0  2018-07-25  添加：支持多个大数据字段（如，CLob）的写入。
      *
      * @param i_Values     占位符SQL的填充集合。
      * @param i_DataCount  插入或更新语句影响的记录数
@@ -2580,9 +2586,22 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         
         if ( !Help.isNull(this.lobName) && !Help.isNull(this.lobWheres) )
         {
-            Object v_LobValue = MethodReflect.getMapValue(i_Values ,this.lobName);
+            String [] v_LobNames  = this.lobName.split($LobName_Split);
+            String [] v_LobValues = new String[v_LobNames.length];
+            for (int i=0; i<v_LobNames.length; i++)
+            {
+                Object v_LobValue = MethodReflect.getMapValue(i_Values ,v_LobNames[i]);
+                if ( v_LobValue != null )
+                {
+                    v_LobValues[i] = v_LobValue.toString();
+                }
+                else
+                {
+                    v_LobValues[i] = "";
+                }
+            }
             
-            if ( v_LobValue != null )
+            if ( !Help.isNull(v_LobValues) )
             {
                 synchronized ( this.lobXSQLID )
                 {
@@ -2592,7 +2611,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                     }
                 }
                 
-                return XJava.getXSQL(this.lobXSQLID).executeUpdateCLob(i_Values ,v_LobValue.toString());
+                return XJava.getXSQL(this.lobXSQLID).executeUpdateCLob(i_Values ,v_LobValues);
             }
         }
         
@@ -2623,24 +2642,36 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         
         if ( !Help.isNull(this.lobName) && !Help.isNull(this.lobWheres) )
         {
-            Object v_LobValue = null;
-            try
+            String [] v_LobNames  = this.lobName.split($LobName_Split);
+            String [] v_LobValues = new String[v_LobNames.length];
+            for (int i=0; i<v_LobNames.length; i++)
             {
-                MethodReflect v_MethodReflect = new MethodReflect(i_Obj ,this.lobName ,true ,MethodReflect.$NormType_Getter);
-                
-                if ( v_MethodReflect != null )
+                try
                 {
-                    v_LobValue = v_MethodReflect.invoke();
+                    MethodReflect v_MethodReflect = new MethodReflect(i_Obj ,this.lobName ,true ,MethodReflect.$NormType_Getter);
+                    
+                    if ( v_MethodReflect != null )
+                    {
+                        Object v_LobValue = v_MethodReflect.invoke();
+                        if ( v_LobValue != null )
+                        {
+                            v_LobValues[i] = v_LobValue.toString();
+                        }
+                        else
+                        {
+                            v_LobValues[i] = "";
+                        }
+                    }
+                }
+                catch (Exception exce)
+                {
+                    // 有些:xx占位符可能找不到对应Java的Getter方法，所以忽略
+                    // Nothing.
+                    return i_DataCount;
                 }
             }
-            catch (Exception exce)
-            {
-                // 有些:xx占位符可能找不到对应Java的Getter方法，所以忽略
-                // Nothing.
-                return i_DataCount;
-            }
             
-            if ( v_LobValue != null )
+            if ( !Help.isNull(v_LobValues) )
             {
                 synchronized ( this.lobXSQLID )
                 {
@@ -2650,7 +2681,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                     }
                 }
                 
-                return XJava.getXSQL(this.lobXSQLID).executeUpdateCLob(i_Obj ,v_LobValue.toString());
+                return XJava.getXSQL(this.lobXSQLID).executeUpdateCLob(i_Obj ,v_LobValues);
             }
         }
         
@@ -3956,14 +3987,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 1. CLob类型必须在SELECT语句的第一个输出字段的位置
      * 2. 对于Oracle数据库，必须有 FOR UPDATE 关键字
      * 
-     * @param i_ClobText         文本
+     * @author      ZhengWei(HY)
+     * @createDate  2018-07-01
+     * @version     v1.0
+     *              v2.0  2018-07-25  支持多个长文本信息的写入
+     * 
+     * @param i_ClobTexts        多个长文本信息
      * @return                   返回语句影响的记录数。正常情况下，只操作首条数据记录，即返回 1。
      */
-    public int executeUpdateCLob(String i_ClobText)
+    public int executeUpdateCLob(String ... i_ClobTexts)
     {
         checkContent();
         
-        return this.executeUpdateCLob(this.content.getSQL() ,i_ClobText);
+        return this.executeUpdateCLobSQL(this.content.getSQL() ,i_ClobTexts);
     }
     
     
@@ -3978,15 +4014,20 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 2. CLob类型必须在SELECT语句的第一个输出字段的位置
      * 3. 对于Oracle数据库，必须有 FOR UPDATE 关键字
      * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-07-01
+     * @version     v1.0
+     *              v2.0  2018-07-25  支持多个长文本信息的写入
+     * 
      * @param i_Values           占位符SQL的填充集合。
-     * @param i_ClobText         文本
+     * @param i_ClobTexts        多个长文本信息
      * @return                   返回语句影响的记录数。正常情况下，只操作首条数据记录，即返回 1。
      */
-    public int executeUpdateCLob(Map<String ,?> i_Values ,String i_ClobText)
+    public int executeUpdateCLob(Map<String ,?> i_Values ,String ... i_ClobTexts)
     {
         checkContent();
         
-        return this.executeUpdateCLob(this.content.getSQL(i_Values) ,i_ClobText);
+        return this.executeUpdateCLobSQL(this.content.getSQL(i_Values) ,i_ClobTexts);
     }
     
     
@@ -4001,15 +4042,20 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 2. CLob类型必须在SELECT语句的第一个输出字段的位置
      * 3. 对于Oracle数据库，必须有 FOR UPDATE 关键字
      * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-07-01
+     * @version     v1.0
+     *              v2.0  2018-07-25  支持多个长文本信息的写入
+     * 
      * @param i_Obj              占位符SQL的填充对象。
-     * @param i_ClobText         文本
+     * @param i_ClobTexts        多个长文本信息
      * @return                   返回语句影响的记录数。正常情况下，只操作首条数据记录，即返回 1。
      */
-    public int executeUpdateCLob(Object i_Obj ,String i_ClobText)
+    public int executeUpdateCLob(Object i_Obj ,String ... i_ClobTexts)
     {
         checkContent();
         
-        return this.executeUpdateCLob(this.content.getSQL(i_Obj) ,i_ClobText);
+        return this.executeUpdateCLobSQL(this.content.getSQL(i_Obj) ,i_ClobTexts);
     }
     
     
@@ -4050,16 +4096,17 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @author      ZhengWei(HY)
      * @createDate  2018-07-01
      * @version     v1.0
+     *              v2.0  2018-07-25  支持多个长文本信息的写入
      * 
      * @param i_SQL              带有Clob字段的查询SQL语句 
      *                           1. CLob类型必须在SELECT语句的第一个输出字段的位置
      *                           2. 对于Oracle数据库，必须有 FOR UPDATE 关键字
      *                           3. 只操作首条数据记录
-     * @param i_ClobText         文本
+     * @param i_ClobTexts        多个长文本信息
      * @return                   返回语句影响的记录数。正常情况下，只操作首条数据记录，即返回 1。
      */
     @SuppressWarnings("deprecation")
-    public int executeUpdateCLob(String i_SQL ,String i_ClobText)
+    public int executeUpdateCLobSQL(String i_SQL ,String ... i_ClobTexts)
     {
         DataSourceGroup     v_DSG            = null;
         Connection          v_Conn           = null;
@@ -4068,7 +4115,6 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         boolean             v_Old_AutoCommit = false; // 保存原始状态，使用完后，再恢复原状
         int                 v_ExecResult     = -1;    // 执行结果。0:没有执行  1:需要Commit  -1:需要RollBack
         Writer              v_Output         = null;
-        BufferedInputStream v_Input          = null;
         long                v_BeginTime      = this.request().getTime();
         
         try
@@ -4084,9 +4130,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            if ( i_ClobText == null )
+            if ( Help.isNull(i_ClobTexts) )
             {
-                throw new NullPointerException("ClobText is null of XSQL.");
+                throw new NullPointerException("ClobTexts is null of XSQL.");
             }
             
             
@@ -4099,11 +4145,37 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             
             if ( v_ResultSet.next() )
             {
-                // 获取数据流
-                CLOB v_CLob = (CLOB)v_ResultSet.getClob(1);
-                v_Output = v_CLob.getCharacterOutputStream();
-                
-                v_Output.write(i_ClobText);
+                int v_ColCount  = v_ResultSet.getMetaData().getColumnCount();
+                int v_CLobIndex = 0;
+                for (int v_ColIndex=1; v_ColIndex<=v_ColCount; v_ColIndex++)
+                {
+                    int v_ColType = v_ResultSet.getMetaData().getColumnType(v_ColIndex);
+                    if ( Types.CLOB  == v_ColType 
+                      || Types.NCLOB == v_ColType )
+                    {
+                        // 获取数据流
+                        CLOB v_CLob = (CLOB)v_ResultSet.getClob(v_ColCount);
+                        v_Output = v_CLob.getCharacterOutputStream();
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                    
+                    v_Output.write(Help.NVL(i_ClobTexts[v_CLobIndex++]));
+                    
+                    try
+                    {
+                        v_Output.flush();
+                        v_Output.close();
+                    }
+                    catch (Exception exce)
+                    {
+                        exce.printStackTrace();
+                    }
+                    
+                    v_Output = null;
+                }
                 
                 Date v_EndTime = Date.getNowTime();
                 this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime);
@@ -4121,35 +4193,6 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         }
         finally
         {
-            if ( v_Input != null )
-            {
-                try
-                {
-                    v_Input.close();
-                }
-                catch (Exception exce)
-                {
-                    exce.printStackTrace();
-                }
-                
-                v_Input = null;
-            }
-            
-            if ( v_Output != null )
-            {
-                try
-                {
-                    v_Output.flush();
-                    v_Output.close();
-                }
-                catch (Exception exce)
-                {
-                    exce.printStackTrace();
-                }
-                
-                v_Output = null;
-            }
-            
             if ( v_Conn != null )
             {
                 try
@@ -6225,7 +6268,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
     
     /**
-     * 获取：大数据字段类型(如,CLob)的占位符名称。只用于Insert、Update语句
+     * 获取：大数据字段类型(如,CLob)的占位符名称，多个占位符名称间用逗号，分隔。只用于Insert、Update语句
      */
     public String getLobName()
     {
@@ -6235,7 +6278,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
     
     /**
-     * 设置：大数据字段类型(如,CLob)的占位符名称。只用于Insert、Update语句
+     * 设置：大数据字段类型(如,CLob)的占位符名称，多个占位符名称间用逗号，分隔。只用于Insert、Update语句
      * 
      * @param lobName 
      */

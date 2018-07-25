@@ -1724,6 +1724,7 @@ public final class XSQLGroup
                 v_Interval = ThreadPool.getIntervalTime() * 3;
             }
             
+            long v_WaitCount = 0;
             while ( !i_TaskGroup.isTasksFinish() ) 
             {
                 // 一直等待并且的执行结果
@@ -1735,7 +1736,9 @@ public final class XSQLGroup
                 {
                     // Nothing.
                 }
+                System.out.println("-- " + Date.getNowTime().getFull() + " WaitCount = " + (++v_WaitCount));
             }
+            System.out.println("-- " + Date.getNowTime().getFull() + " Wait Finish.");
             
             // 获取执行结果
             XSQLGroupTask v_Task = (XSQLGroupTask)i_TaskGroup.getTask(0);
@@ -1805,6 +1808,7 @@ public final class XSQLGroup
                         v_Interval = ThreadPool.getIntervalTime() * 3;
                     }
                     
+                    long v_WaitCount = 0;
                     while ( !v_TaskGroup.isTasksFinish() ) 
                     {
                         // 一直等待并且的执行结果
@@ -1816,7 +1820,9 @@ public final class XSQLGroup
                         {
                             // Nothing.
                         }
+                        System.out.println("-- " + Date.getNowTime().getFull() + " WaitCount = " + (++v_WaitCount));
                     }
+                    System.out.println("-- " + Date.getNowTime().getFull() + " Wait Finish.");
                     
                     // 获取执行结果
                     XSQLGroupTask v_Task = (XSQLGroupTask)v_TaskGroup.getTask(0);
