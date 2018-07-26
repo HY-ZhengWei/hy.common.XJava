@@ -47,11 +47,12 @@ import org.hy.common.xml.XJava;
  * 功能9：查看集群服务列表                   http://IP:Port/WebService/../analyseObject?cluster=Y
  * 
  * 功能10：删除并重建数据库对象          http://IP:Port/WebService/../analyseObject?XSQLCreate=Y
+ * 功能11：查看创建数据库对象列表       http://IP:Port/WebService/../analyseObject?XSQLCreateList=Y
  * 
- * 功能11：本机线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y
- * 功能12：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y&cluster=Y
+ * 功能12：本机线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y
+ * 功能13：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y&cluster=Y
  * 
- * 功能13：本机定时任务运行情况          http://IP:Port/WebService/../analyseObject?Job=Y
+ * 功能14：本机定时任务运行情况          http://IP:Port/WebService/../analyseObject?Job=Y
  * 
  * 功能15：本机线程池运行情况             http://IP:Port/WebService/../analyseObject?DSG=Y
  * 功能16：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?DSG=Y&cluster=Y
@@ -70,6 +71,7 @@ import org.hy.common.xml.XJava;
  *                                添加：集群线程池运行情况 
  *              v5.0  2018-02-28  添加：本机定时任务运行情况。之前合并在 "查看前缀匹配的对象列表" 任务中
  *              v6.0  2018-03-11  添加：Web文件资源管理器（支持集群）
+ *              v7.0  2018-07-26  添加：查看创建数据库对象列表
  *              
  */
 public class AnalyseObjectServlet extends HttpServlet
@@ -145,6 +147,7 @@ public class AnalyseObjectServlet extends HttpServlet
         String v_Cluster    = i_Request.getParameter("cluster");
         String v_SameTime   = i_Request.getParameter("sameTime");
         String v_Create     = i_Request.getParameter("XSQLCreate");
+        String v_CreateList = i_Request.getParameter("XSQLCreateList");
         String v_ThreadPool = i_Request.getParameter("ThreadPool");
         String v_Job        = i_Request.getParameter("Job");
         String v_DSG        = i_Request.getParameter("DSG");
@@ -225,6 +228,10 @@ public class AnalyseObjectServlet extends HttpServlet
             else if ( !Help.isNull(v_ThreadPool) )
             {
                 i_Response.getWriter().println(this.analyse.analyseThreadPool(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
+            }
+            else if ( !Help.isNull(v_CreateList) )
+            {
+                i_Response.getWriter().println(this.analyse.showXSQLCreateList(v_BasePath ,i_Request.getRequestURL().toString()));
             }
             else if ( !Help.isNull(v_Create) )
             {

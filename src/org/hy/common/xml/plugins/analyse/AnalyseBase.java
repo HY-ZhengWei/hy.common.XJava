@@ -72,6 +72,7 @@ import org.hy.common.xml.plugins.analyse.data.DataSourceGroupReport;
  *                                添加：集群数据库连接池组使用情况。之前合并在 "查看前缀匹配的对象列表" 任务中
  *                                添加：重置数据库访问量的概要统计数据 
  *                                添加：重置数据库组合SQL访问量的概要统计数据
+ *              v12.0 2018-07-26  添加：查看创建数据库对象列表
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -356,6 +357,9 @@ public class AnalyseBase extends Analyse
             v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset' style='color:#AA66CC'>重置统计</a>";
         }
         
+        v_Objs.clear();
+        v_Objs = null;
+        
         return StringHelp.replaceAll(this.getTemplateShowTotal()
                                     ,new String[]{":NameTitle"             ,":Title"                    ,":HttpBasePath" ,":Content"}
                                     ,new String[]{"组合SQL访问标识" + v_Goto ,"数据库组合SQL访问量的概要统计" ,i_BasePath      ,v_Buffer.toString()});
@@ -519,6 +523,12 @@ public class AnalyseBase extends Analyse
             v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal' style='color:#AA66CC'>重置统计</a>";
         }
         
+        v_XSQLIDs.clear();
+        v_XSQLIDs = null;
+        
+        v_XSQLs.clear();
+        v_XSQLs = null;
+        
         return StringHelp.replaceAll(this.getTemplateShowTotal()
                                     ,new String[]{":NameTitle"          ,":Title"              ,":HttpBasePath" ,":Content"}
                                     ,new String[]{"SQL访问标识" + v_Goto ,"数据库访问量的概要统计" ,i_BasePath      ,v_Buffer.toString()});
@@ -552,6 +562,9 @@ public class AnalyseBase extends Analyse
                 v_Total.getTotalTimeLen().put(v_Item.getKey() ,v_XSQLGroup.getSuccessTimeLen());
             }
         }
+        
+        v_Objs.clear();
+        v_Objs = null;
         
         return v_Total;
     }
@@ -593,6 +606,9 @@ public class AnalyseBase extends Analyse
             }
         }
         
+        v_Objs.clear();
+        v_Objs = null;
+        
         return v_Total;
     }
     
@@ -609,7 +625,7 @@ public class AnalyseBase extends Analyse
      */
     public void analyseDBGroup_Reset()
     {
-        Map<String ,Object> v_Objs  = XJava.getObjects(XSQLGroup.class);
+        Map<String ,Object> v_Objs = XJava.getObjects(XSQLGroup.class);
         
         for (Map.Entry<String, Object> v_Item : v_Objs.entrySet())
         {
@@ -620,6 +636,9 @@ public class AnalyseBase extends Analyse
                 v_XSQLGroup.reset();
             }
         }
+        
+        v_Objs.clear();
+        v_Objs = null;
     }
     
     
@@ -635,7 +654,7 @@ public class AnalyseBase extends Analyse
      */
     public void analyseDB_RestTotal()
     {
-        Map<String ,Object> v_Objs  = XJava.getObjects(XSQL.class);
+        Map<String ,Object> v_Objs = XJava.getObjects(XSQL.class);
         
         for (Map.Entry<String, Object> v_Item : v_Objs.entrySet())
         {
@@ -646,6 +665,9 @@ public class AnalyseBase extends Analyse
                 v_XSQL.reset();
             }
         }
+        
+        v_Objs.clear();
+        v_Objs = null;
     }
     
     
@@ -795,6 +817,83 @@ public class AnalyseBase extends Analyse
     
     
     /**
+     * 功能1. 显示XSQL配置并创建的数据库对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-07-26
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?XSQLCreateList=Y
+     * @return
+     */
+    public String showXSQLCreateList(String i_BasePath ,String i_ObjectValuePath)
+    {
+        Map<String ,Object> v_XSQLMap = XJava.getObjects(XSQL.class);
+        Map<String ,XSQL>   v_XSQLs   = new HashMap<String ,XSQL>();
+        StringBuilder       v_Buffer  = new StringBuilder();
+        int                 v_Index   = 0;
+        String              v_Content = this.getTemplateShowObjectsContent();
+        
+        for (Map.Entry<String, Object> v_Item : v_XSQLMap.entrySet())
+        {
+            if ( v_Item.getValue() == null )
+            {
+                continue;
+            }
+            
+            XSQL v_XSQL = (XSQL)v_Item.getValue();
+            if ( Help.isNull(v_XSQL.getCreateObjectName()) || v_XSQL.getDataSourceGroup() == null )
+            {
+                continue;
+            }
+            
+            v_XSQLs.put(Help.NVL(v_XSQL.getDataSourceGroup().getXJavaID()) + "." + v_XSQL.getCreateObjectName() ,v_XSQL);
+        }
+        
+        v_XSQLs = Help.toSort(v_XSQLs);
+        
+        for (Map.Entry<String, XSQL> v_Item : v_XSQLs.entrySet())
+        {
+            String v_URL     = "";
+            String v_Command = "";
+            XSQL   v_XSQL    = v_Item.getValue();
+            
+            if ( !Help.isNull(v_XSQL.getXJavaID()) )
+            {
+                v_URL     = "analyseObject?xid=" + v_XSQL.getXJavaID();
+                v_Command = "查看详情";
+            }
+            
+            v_Buffer.append(StringHelp.replaceAll(v_Content 
+                                                 ,new String[]{":No" 
+                                                              ,":Name" 
+                                                              ,":Info"
+                                                              ,":OperateURL" 
+                                                              ,":OperateTitle"} 
+                                                 ,new String[]{String.valueOf(++v_Index)
+                                                              ,"<font color='gray'>" + v_XSQL.getDataSourceGroup().getXJavaID() + ".</font><b>" + v_XSQL.getCreateObjectName() + "</b>"
+                                                              ,Help.NVL(v_XSQL.getComment())
+                                                              ,v_URL
+                                                              ,v_Command
+                                                              })
+                           );
+        }
+        
+        v_XSQLMap.clear();
+        v_XSQLMap = null;
+        
+        v_XSQLs.clear();
+        v_XSQLs = null;
+        
+        return StringHelp.replaceAll(this.getTemplateShowObjects()
+                                    ,new String[]{":Title"     ,":Column01Title" ,":Column02Title" ,":HttpBasePath" ,":Content"}
+                                    ,new String[]{"创建对象列表" ,"数据库.对象名称"  ,"说明"            ,i_BasePath      ,v_Buffer.toString()});
+    }
+    
+    
+    
+    /**
      * 删除并重新创建数据库对象
      * 
      * @author      ZhengWei(HY)
@@ -802,7 +901,7 @@ public class AnalyseBase extends Analyse
      * @version     v1.0
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
-     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?XSQLCreate=Y
      * @param  i_Cluster         是否为集群
      * @return
      */
@@ -920,6 +1019,9 @@ public class AnalyseBase extends Analyse
                                     ,v_TotalCount == 0 ? "未找配置" : v_TotalCount == v_CreateCount ? "全部成功" : "有异常"
                        }));
 
+        v_XSQLMap.clear();
+        v_XSQLMap = null;
+        
         return StringHelp.replaceAll(this.getTemplateShowResult()
                                     ,new String[]{":Title"          ,":HttpBasePath" ,":Content"}
                                     ,new String[]{"重建数据库对象列表" ,i_BasePath      ,v_Buffer.toString()});
@@ -1315,6 +1417,9 @@ public class AnalyseBase extends Analyse
             
             String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseObject?cluster=Y' style='color:#AA66CC'>查看集群服务</a>";
             
+            v_XFileNames.clear();
+            v_XFileNames = null;
+            
             return StringHelp.replaceAll(this.getTemplateShowXFiles()
                                         ,new String[]{":Title"          ,":Column01Title"        ,":HttpBasePath" ,":Content"}
                                         ,new String[]{"XJava配置文件列表" ,"XJava配置文件" + v_Goto ,i_BasePath      ,v_Buffer.toString()});
@@ -1514,6 +1619,12 @@ public class AnalyseBase extends Analyse
         
         String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseObject' style='color:#AA66CC'>查看XJava配置</a>";
         
+        v_RKey.clear();
+        v_RKey = null;
+        
+        v_Clusters.clear();
+        v_Clusters = null;
+        
         return StringHelp.replaceAll(this.getTemplateShowCluster()
                                     ,new String[]{":Title"     ,":Column01Title"   ,":HttpBasePath" ,":Content"}
                                     ,new String[]{"集群服务列表" ,"集群服务" + v_Goto ,i_BasePath      ,v_Buffer.toString()});
@@ -1646,6 +1757,9 @@ public class AnalyseBase extends Analyse
         
         v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;") + Date.getNowTime().getFull();
         
+        v_Total.getReports().clear();
+        v_Total.setReports(null);
+        
         return StringHelp.replaceAll(this.getTemplateShowThreadPool()
                                     ,new String[]{":GotoTitle" ,":Title"       ,":HttpBasePath" ,":Content"}
                                     ,new String[]{v_Goto       ,"线程池运行情况" ,i_BasePath      ,v_Buffer.toString()});
@@ -1750,6 +1864,9 @@ public class AnalyseBase extends Analyse
         */
         
         String v_GotoTitle = StringHelp.lpad("" ,4 ,"&nbsp;") + Date.getNowTime().getFull();
+        
+        v_Total.getReports().clear();
+        v_Total.setReports(null);
         
         return StringHelp.replaceAll(this.getTemplateShowJob()
                                     ,new String[]{":GotoTitle" ,":Title"         ,":HttpBasePath" ,":Content"}
@@ -1900,6 +2017,9 @@ public class AnalyseBase extends Analyse
         {
             v_GotoTitle += "<a href='analyseObject?DSG=Y&cluster=Y' style='color:#AA66CC'>查看集群</a>";
         }
+        
+        v_Total.getReports().clear();
+        v_Total.setReports(null);
         
         return StringHelp.replaceAll(this.getTemplateShowDSG()
                                     ,new String[]{":GotoTitle" ,":Title"              ,":HttpBasePath" ,":Content"}
