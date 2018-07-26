@@ -473,7 +473,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         }
         
         // 及时释放资源
-        if ( MethodReflect.isExtendImplement(v_Params ,Map.class) )
+        if ( i_Args.length > 1 && MethodReflect.isExtendImplement(v_Params ,Map.class) )
         {
             ((Map<? ,?>)v_Params).clear();
         }
@@ -805,7 +805,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             }
             
             // 及时释放资源
-            if ( MethodReflect.isExtendImplement(v_Params ,Map.class) )
+            if ( i_Args.length > 1 && MethodReflect.isExtendImplement(v_Params ,Map.class) )
             {
                 ((Map<? ,?>)v_Params).clear();
             }
@@ -962,7 +962,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             }
             
             // 及时释放资源
-            if ( MethodReflect.isExtendImplement(v_Params ,Map.class) )
+            if ( i_Args.length > 1 && MethodReflect.isExtendImplement(v_Params ,Map.class) )
             {
                 ((Map<? ,?>)v_Params).clear();
             }
@@ -1029,7 +1029,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             v_Ret = i_XSQL.execute(v_Params);
             
             // 及时释放资源
-            if ( MethodReflect.isExtendImplement(v_Params ,Map.class) )
+            if ( i_Args.length > 1 && MethodReflect.isExtendImplement(v_Params ,Map.class) )
             {
                 ((Map<? ,?>)v_Params).clear();
             }
@@ -1091,7 +1091,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             v_Ret = i_XSQL.call(v_Params);
             
             // 及时释放资源
-            if ( MethodReflect.isExtendImplement(v_Params ,Map.class) )
+            if ( i_Args.length > 1 && MethodReflect.isExtendImplement(v_Params ,Map.class) )
             {
                 ((Map<? ,?>)v_Params).clear();
             }
