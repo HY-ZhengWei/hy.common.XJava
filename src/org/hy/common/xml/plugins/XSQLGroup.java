@@ -1800,6 +1800,8 @@ public final class XSQLGroup
                             }
                         }
                     }
+                    
+                    v_Task.clear();
                 }
             }
             finally
@@ -1881,6 +1883,8 @@ public final class XSQLGroup
                                     }
                                 }
                             }
+                            
+                            v_Task.clear();
                         }
                     }
                     finally
@@ -2962,6 +2966,16 @@ public final class XSQLGroup
         public XSQLGroupResult getXsqlGroupResult()
         {
             return xsqlGroupResult;
+        }
+        
+        
+        public void clear()
+        {
+            this.params.clear();
+            this.params          = null;
+            this.xsqlGroup       = null;
+            this.xsqlGroupResult = null;
+            this.dsgConns        = null;
         }
         
     }
