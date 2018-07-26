@@ -204,7 +204,14 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_Item.getValue()) )
             {
-                v_URL     = i_ObjectValuePath + v_Item.getValue().trim();
+                if ( Help.NVL(v_Item.getValue()).trim().toLowerCase().startsWith("javascript:") )
+                {
+                    v_URL = v_Item.getValue().trim();
+                }
+                else
+                {
+                    v_URL = i_ObjectValuePath + v_Item.getValue().trim();
+                }
                 v_Command = "查看详情";
             }
             
@@ -224,8 +231,8 @@ public class AnalyseBase extends Analyse
         }
         
         return StringHelp.replaceAll(this.getTemplateShowObjects()
-                                    ,new String[]{":Title"  ,":Column01Title" ,":Column02Title"  ,":HttpBasePath" ,":Content"}
-                                    ,new String[]{"分析中心" ,"功能"            ,"说明"            ,i_BasePath      ,v_Buffer.toString()});
+                                    ,new String[]{":Title"  ,":Column01Title" ,":Column02Title"  ,":HttpBasePath" ,":HttpValuePath"  ,":Content"}
+                                    ,new String[]{"分析中心" ,"功能"            ,"说明"            ,i_BasePath      ,i_ObjectValuePath ,v_Buffer.toString()});
     }
     
     

@@ -84,8 +84,8 @@
 	        
 	        <item>
 	            <name>重建数据库对象</name>
-				<comment><![CDATA[ <font color='red'>危险！</font>对象存在时，会先删除后创建 ]]></comment>
-				<value><![CDATA[ /analyseObject?XSQLCreate=Y ]]></value>
+				<comment><![CDATA[ <font color='red'>危险！</font>对象存在时，会先删除后再创建 ]]></comment>
+				<value><![CDATA[ javascript:isCreate() ]]></value>
 	        </item>
 	        
 	        

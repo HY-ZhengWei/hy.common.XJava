@@ -35,9 +35,18 @@ html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
 
 a{ color:#669900; text-decoration:none; outline:none;}
 a:hover{color:#99CC00;text-decoration:none;}
+
+body {
+	font-family: "微软雅黑";
+	font-size: 12px;
+}
+
 </style>
 
 <script type="text/javascript" src=":HttpBasePath/jquery/jquery.min.js"></script>
+<script type="text/javascript" src=":HttpBasePath/jquery/jquery-ui.min.js"></script>
+
+<link rel="stylesheet" href=":HttpBasePath/jquery/jquery-ui.min.css" />
 
 </head>
 <body> 
@@ -71,6 +80,60 @@ a:hover{color:#99CC00;text-decoration:none;}
 	            <div class="userInfoModify_Operate_Other"></div>
      	    </div> 
    		</div>
-	   
+
+<div id="Dialog-Default" style="display:none">
+  <p>
+  	<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+  	<span id="Dialog-Default-Msg" style="float:left; margin:0 7px 20px 0;"></span>
+  </p>
+</div>
+
+
+
+<script language="javascript" type="text/javascript">
+
+var v_Height_Msg = 180;
+
+
+function isCreate()
+{
+	var v_Prompt = "<font color='red'>危险！</font>对象存在时，会先删除后再创建，您确定吗?";
+	
+	f_OpenDialog("Dialog-Default" 
+			    ,"确认重新创建数据库对象吗？" 
+			    ,v_Prompt
+			    ,v_Height_Msg
+			    ,{
+		        	"重新创建": function()
+		        	{
+		        		$(this).dialog("close");
+		        		window.location.href = ":HttpValuePath/analyseObject?XSQLCreate=Y";
+		          	},
+		          	"取　　消": function() 
+		          	{
+		            	$(this).dialog("close");
+		          	}
+        		 });
+}
+
+
+
+function f_OpenDialog(i_DiaglogID ,i_Title ,i_Msg ,i_Height ,i_Buttons)
+{
+	$("#" + i_DiaglogID).attr("title" ,i_Title);
+	$("#" + i_DiaglogID + "-Msg").html(i_Msg);
+	$("#" + i_DiaglogID).dialog({
+	      resizable: false,
+	      height: i_Height,
+	      width: 500,
+	      modal: true,
+	      buttons: i_Buttons
+	});
+	
+	return $("#" + i_DiaglogID);
+}
+
+</script>
+
 </body>
 </html>
