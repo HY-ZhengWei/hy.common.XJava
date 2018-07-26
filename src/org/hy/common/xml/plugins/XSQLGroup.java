@@ -149,6 +149,7 @@ import org.hy.common.xml.XSQLBigData;
  *              v22.1 2018-06-28  1.修正：在XSQL组执行异常时，未清空所有创建的多任务组中的任务信息。 
  *              v23.0 2018-06-30  1.添加：异常时是否继续执行的功能errorContinue。并能与retryCount异常时重试功能配合使用。
  *                                2.添加：能从任一层次的循环中，获取之前任一层次的循环信息。
+ *              v23.1 2018-07-26  1.优化：及时释放资源，自动的GC太慢了。
  */
 public final class XSQLGroup
 {
@@ -1170,6 +1171,15 @@ public final class XSQLGroup
                                 
                                 v_QueryReturnPart.putRows(v_QRItemMap);  // 只有执行成功后才put返回查询结果集
                                 v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
+                                
+                                v_Params.clear();
+                                v_Params = null;
+                            }
+                            
+                            if ( v_RowPrevious != null )
+                            {
+                                v_RowPrevious.clear();
+                                v_RowPrevious = null;
                             }
                         }
                         else
@@ -1205,6 +1215,15 @@ public final class XSQLGroup
                                 }
                                 
                                 v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
+                                
+                                v_Params.clear();
+                                v_Params = null;
+                            }
+                            
+                            if ( v_RowPrevious != null )
+                            {
+                                v_RowPrevious.clear();
+                                v_RowPrevious = null;
                             }
                         }
                     }
@@ -1255,6 +1274,15 @@ public final class XSQLGroup
                                     
                                     v_QueryReturnPart.putRows(v_QRItemMap);  // 只有执行成功后才put返回查询结果集
                                     v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
+                                    
+                                    v_Params.clear();
+                                    v_Params = null;
+                                }
+                                
+                                if ( v_RowPrevious != null )
+                                {
+                                    v_RowPrevious.clear();
+                                    v_RowPrevious = null;
                                 }
                             }
                             else
@@ -1290,6 +1318,15 @@ public final class XSQLGroup
                                     }
                                     
                                     v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
+                                    
+                                    v_Params.clear();
+                                    v_Params = null;
+                                }
+                                
+                                if ( v_RowPrevious != null )
+                                {
+                                    v_RowPrevious.clear();
+                                    v_RowPrevious = null;
                                 }
                             }
                         }
@@ -1302,6 +1339,9 @@ public final class XSQLGroup
                             return v_Ret;
                         }
                     }
+                    
+                    v_QueryRet.clear();
+                    v_QueryRet = null;
                     
                     // 如果是多线程并有等待标识时，一直等待并且的执行结果  (原来的位置)
                     v_Ret = waitThreads(v_Node ,io_Params ,v_Ret);
@@ -1724,7 +1764,7 @@ public final class XSQLGroup
                 v_Interval = ThreadPool.getIntervalTime() * 3;
             }
             
-            long v_WaitCount = 0;
+            // long v_WaitCount = 0;
             while ( !i_TaskGroup.isTasksFinish() ) 
             {
                 // 一直等待并且的执行结果
@@ -1736,9 +1776,9 @@ public final class XSQLGroup
                 {
                     // Nothing.
                 }
-                System.out.println("-- " + Date.getNowTime().getFull() + " WaitCount = " + (++v_WaitCount));
+                // System.out.println("-- " + Date.getNowTime().getFull() + " WaitCount = " + (++v_WaitCount));
             }
-            System.out.println("-- " + Date.getNowTime().getFull() + " Wait Finish.");
+            // System.out.println("-- " + Date.getNowTime().getFull() + " Wait Finish.");
             
             // 获取执行结果
             XSQLGroupTask v_Task = (XSQLGroupTask)i_TaskGroup.getTask(0);
@@ -1764,17 +1804,14 @@ public final class XSQLGroup
             }
             finally
             {
-                if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                // 清空的多任务组中的任务信息  ZhengWei(HY) Add 2018-06-28 
+                try
                 {
-                    // 清空的多任务组中的任务信息  ZhengWei(HY) Add 2018-06-28 
-                    try
-                    {
-                        i_TaskGroup.clear();
-                    }
-                    catch (Exception exce)
-                    {
-                        exce.printStackTrace();
-                    }
+                    i_TaskGroup.clear();
+                }
+                catch (Exception exce)
+                {
+                    exce.printStackTrace();
                 }
             }
         }
@@ -1808,7 +1845,7 @@ public final class XSQLGroup
                         v_Interval = ThreadPool.getIntervalTime() * 3;
                     }
                     
-                    long v_WaitCount = 0;
+                    // long v_WaitCount = 0;
                     while ( !v_TaskGroup.isTasksFinish() ) 
                     {
                         // 一直等待并且的执行结果
@@ -1820,9 +1857,9 @@ public final class XSQLGroup
                         {
                             // Nothing.
                         }
-                        System.out.println("-- " + Date.getNowTime().getFull() + " WaitCount = " + (++v_WaitCount));
+                        // System.out.println("-- " + Date.getNowTime().getFull() + " WaitCount = " + (++v_WaitCount));
                     }
-                    System.out.println("-- " + Date.getNowTime().getFull() + " Wait Finish.");
+                    // System.out.println("-- " + Date.getNowTime().getFull() + " Wait Finish.");
                     
                     // 获取执行结果
                     XSQLGroupTask v_Task = (XSQLGroupTask)v_TaskGroup.getTask(0);
@@ -1848,17 +1885,15 @@ public final class XSQLGroup
                     }
                     finally
                     {
-                        if ( !v_Task.getXsqlGroupResult().isSuccess() )
+                        // 清空的多任务组中的任务信息  ZhengWei(HY) Add 2018-06-28 
+                        try
                         {
-                            // 清空的多任务组中的任务信息  ZhengWei(HY) Add 2018-06-28 
-                            try
-                            {
-                                v_TaskGroup.clear();
-                            }
-                            catch (Exception exce)
-                            {
-                                exce.printStackTrace();
-                            }
+                            v_TaskGroup.clear();
+                            v_TaskGroup = null;
+                        }
+                        catch (Exception exce)
+                        {
+                            exce.printStackTrace();
                         }
                         
                         // 任务组执行完成后，删除。
