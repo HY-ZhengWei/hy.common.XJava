@@ -35,6 +35,18 @@ public class JU_Fel
 {
     
     @Test
+    public void test_IndexOf()
+    {
+        FelEngine           v_Fel            = new FelEngineImpl();
+        FelContext          v_FelContext     = v_Fel.getContext();
+        
+        v_FelContext.set("A" ,"ABCDEFG");
+        System.out.println(v_Fel.eval("A.indexOf(\"BCD\") >= 0"));
+    }
+    
+    
+    
+    @Test
     public void test_Fel_Pool()
     {
         this.test_Fel_QueuePool();

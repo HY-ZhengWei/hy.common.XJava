@@ -74,6 +74,7 @@ import com.greenpineyu.fel.context.MapContext;
  *              v13.4 2018-05-03  1.添加：线程等待功能，在原先事后等待的基础上，新添加事前等待。建议人：马龙。
  *              v14.0 2018-06-30  1.添加：异常时是否继续执行的功能errorContinue。
  *              v14.1 2018-07-05  1.优化：Fel表达式计算的性能。
+ *              v14.2 2018-07-27  1.添加：Fel表达式引擎的阻断符或是限定符。防止有歧义解释。
  */
 public class XSQLNode
 {
@@ -147,6 +148,22 @@ public class XSQLNode
      *   配合属性为：this.collectionID
      */
     public static final String  $Type_CollectionToExecuteUpdate  = "CollectionToExecuteUpdate";
+    
+    
+    
+    /**
+     * 表达式引擎的阻断符或是限定符。
+     * 阻断符最终将被替换为""空字符。
+     * 
+     * 用于阻断.点符号。
+     * 
+     * 如，表达式  :Name.indexOf("B") >= 0 ，:Name.indexOf 也可能被解释为面向对象的属性值获取方法。
+     *     而.indexOf("B")是Fel处理的，无须再加工。为了防止歧义，所以要阻断或限定一下，变成下面的样子。
+     *     {:Name}.indexOf("B") >= 0
+     */
+    public static final String []  $Fel_BlockingUp = {"{" ,"}"};
+    
+    
     
     /** 表达式引擎 */
     private static final FelEngine $FelEngine = new FelEngineImpl();
@@ -624,6 +641,8 @@ public class XSQLNode
             {
                 this.conditionFel = StringHelp.replaceAll(this.conditionFel ,":" + v_Key ,StringHelp.replaceAll(v_Key ,"." ,"_"));
             }
+            
+            this.conditionFel = StringHelp.replaceAll(this.conditionFel ,$Fel_BlockingUp ,new String[]{""});
         }
     }
     
