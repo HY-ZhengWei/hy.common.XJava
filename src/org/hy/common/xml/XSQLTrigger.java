@@ -1,11 +1,13 @@
 package org.hy.common.xml;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.hy.common.Execute;
 import org.hy.common.Help;
+import org.hy.common.MethodReflect;
 import org.hy.common.db.DataSourceGroup;
 
 
@@ -113,7 +115,14 @@ public class XSQLTrigger
         {
             for (XSQL v_XSQL : this.xsqls)
             {
-                (new Execute(v_XSQL ,"execute" ,i_Values)).start();
+                if ( MethodReflect.isExtendImplement(i_Values ,Map.class) )
+                {
+                    (new Execute(v_XSQL ,"execute" ,new HashMap<Object ,Object>((Map<? ,?>)i_Values))).start();
+                }
+                else
+                {
+                    (new Execute(v_XSQL ,"execute" ,i_Values)).start();
+                }
             }
         }
     }
