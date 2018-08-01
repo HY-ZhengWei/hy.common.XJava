@@ -893,13 +893,19 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      */
     private void cacheData(XSQLAnnotation i_Anno ,Object v_CacheData ,XSQLGroupResult i_XSQLGroupResult)
     {
+        // Object v_OldCacheData = null;
+        
         if ( !Help.isNull(i_Anno.getXsql().updateCacheID()) )
         {
+            // v_OldCacheData = XJava.getObject(i_Anno.getXsql().updateCacheID());
+            
             XJava.putObject(i_Anno.getXsql().updateCacheID() ,v_CacheData);
             succeedLog(i_Anno ,v_CacheData);
         }
         else if ( !Help.isNull(i_Anno.getXsql().cacheID()) )
         {
+            // v_OldCacheData = XJava.getObject(i_Anno.getXsql().cacheID());
+            
             XJava.putObject(i_Anno.getXsql().cacheID()       ,v_CacheData);
             succeedLog(i_Anno ,v_CacheData);
         }
@@ -907,6 +913,27 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             succeedLog(i_Anno ,i_XSQLGroupResult == null ? v_CacheData : i_XSQLGroupResult);
         }
+        
+        // 及时释放资源，自动的GC太慢了。
+        /*
+        if ( v_OldCacheData != null )
+        {
+            if ( MethodReflect.isExtendImplement(v_OldCacheData ,List.class) )
+            {
+                ((List<?>)v_OldCacheData).clear();
+            }
+            else if ( MethodReflect.isExtendImplement(v_OldCacheData ,Map.class) )
+            {
+                ((Map<? ,?>)v_OldCacheData).clear();
+            }
+            else if ( MethodReflect.isExtendImplement(v_OldCacheData ,Set.class) )
+            {
+                ((Set<?>)v_OldCacheData).clear();
+            }
+            
+            v_OldCacheData = null;
+        }
+        */
     }
     
     
