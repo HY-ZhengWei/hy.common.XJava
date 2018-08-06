@@ -336,6 +336,14 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	    this.successCount   = 0;
 	    this.successTimeLen = 0D;
 	    this.executeTime    = null;
+	    
+	    if ( this.isTriggers() )
+	    {
+	        for (XSQL v_Trigger : this.trigger.getXsqls())
+	        {
+	            v_Trigger.reset();
+	        }
+	    }
 	}
 	
 	
