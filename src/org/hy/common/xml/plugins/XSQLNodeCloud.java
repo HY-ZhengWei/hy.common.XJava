@@ -1,5 +1,6 @@
 package org.hy.common.xml.plugins;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.hy.common.Date;
@@ -110,8 +111,12 @@ public class XSQLNodeCloud
         Help.print(io_Params);
         System.out.println();
         
-        Execute v_Execute = new Execute(client ,"sendCommand" ,new Object[]{i_XSQLNode.getXjavaID().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{io_Params}});
-        v_Execute.addListener(new XSQLNodeCloudExecuteListener(i_XSQLNode ,this ,i_Control ,io_Params ,io_Returns ,i_ExecuteCount));
+        // 在控制循环的SQL节点中，当向下循环时会清理上一循环的参数。所以要在此复制一份。 ZhengWei(HY) Add 2018-08-08
+        // 这与上次 "2018-07-26 优化：及时释放资源，自动的GC太慢了" 有关。
+        Map<String ,Object> v_Params = new HashMap<String ,Object>(io_Params);
+        
+        Execute v_Execute = new Execute(client ,"sendCommand" ,new Object[]{i_XSQLNode.getXjavaID().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{v_Params}});
+        v_Execute.addListener(new XSQLNodeCloudExecuteListener(i_XSQLNode ,this ,i_Control ,v_Params ,io_Returns ,i_ExecuteCount));
         v_Execute.start();
     }
     
