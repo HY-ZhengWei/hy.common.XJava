@@ -42,6 +42,7 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  *              v1.4  2018-04-27  添加：returnOne注解属性支持Map、Set集合随机获取一个元素的功能。
  *              v1.5  2018-07-21  添加：支持分页模板自动封装的查询。建议人：李浩
  *              v1.6  2018-07-26  优化：及时释放资源，自动的GC太慢了。
+ *              v1.7  2018-08-08  添加：@Xsql.execute()属性，支持多种类不同的SQL在同一XSQL中执行。
  */
 public class XSQLProxy implements InvocationHandler ,Serializable
 {
@@ -619,7 +620,11 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      */
     private Object execute(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
-        if ( i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_SELECT )
+        if (  i_Anno.getXsql().execute() )
+        {
+            return executeXSQL_Execute(i_Method ,i_Anno ,i_XSQL ,i_Args);
+        }
+        else if ( i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_SELECT )
         {
             return executeXSQL_Query(i_Method ,i_Anno ,i_XSQL ,i_Args);
         }

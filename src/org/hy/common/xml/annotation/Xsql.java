@@ -18,6 +18,7 @@ import java.lang.annotation.Target;
  * @version     v1.0
  *              v2.0  2018-01-27  添加：batch()属性，支持预解析方式的批量执行。
  *              v3.0  2018-07-21  添加：paging()属性，支持分页查询。建议人：李浩
+ *              v4.0  2018-08-08  添加：execute()属性，支持多种类不同的SQL在同一XSQL中执行。
  */
 @Documented
 @Target({ElementType.METHOD})
@@ -145,6 +146,19 @@ public @interface Xsql
      * 上面两种方式，在写SQL模板时，略有不同。
      */
     public boolean batch() default false;
+    
+    
+    
+    /**
+     * 针对DDL、DML等各类操作，当为真时，将按 execute() 方法执行。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-08-08
+     * @version     v1.0
+     *
+     * @return
+     */
+    public boolean execute() default false;
     
     
     
