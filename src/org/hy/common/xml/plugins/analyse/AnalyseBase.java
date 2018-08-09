@@ -825,10 +825,12 @@ public class AnalyseBase extends Analyse
     
     /**
      * 功能1. 显示XSQL配置并创建的数据库对象
+     * 功能2. 创建指定对象
      * 
      * @author      ZhengWei(HY)
      * @createDate  2018-07-26
      * @version     v1.0
+     *              v2.0  2018-08-09  添加："创建对象"快捷链接按钮。
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?XSQLCreateList=Y
@@ -840,7 +842,7 @@ public class AnalyseBase extends Analyse
         Map<String ,XSQL>   v_XSQLs   = new HashMap<String ,XSQL>();
         StringBuilder       v_Buffer  = new StringBuilder();
         int                 v_Index   = 0;
-        String              v_Content = this.getTemplateShowObjectsContent();
+        String              v_Content = this.getTemplateShowObjectsContent2URL();
         
         for (Map.Entry<String, Object> v_Item : v_XSQLMap.entrySet())
         {
@@ -862,27 +864,35 @@ public class AnalyseBase extends Analyse
         
         for (Map.Entry<String, XSQL> v_Item : v_XSQLs.entrySet())
         {
-            String v_URL     = "";
-            String v_Command = "";
-            XSQL   v_XSQL    = v_Item.getValue();
+            String v_URL01     = "";
+            String v_Command01 = "";
+            String v_URL02     = "";
+            String v_Command02 = "";
+            XSQL   v_XSQL      = v_Item.getValue();
             
             if ( !Help.isNull(v_XSQL.getXJavaID()) )
             {
-                v_URL     = "analyseObject?xid=" + v_XSQL.getXJavaID();
-                v_Command = "查看详情";
+                v_URL01     = "analyseObject?xid=" + v_XSQL.getXJavaID() + "&call=createObject";
+                v_Command01 = "创建对象";
+                v_URL02     = "analyseObject?xid=" + v_XSQL.getXJavaID();
+                v_Command02 = "详情";
             }
             
             v_Buffer.append(StringHelp.replaceAll(v_Content 
                                                  ,new String[]{":No" 
                                                               ,":Name" 
                                                               ,":Info"
-                                                              ,":OperateURL" 
-                                                              ,":OperateTitle"} 
+                                                              ,":OperateURL01" 
+                                                              ,":OperateTitle01"
+                                                              ,":OperateURL02" 
+                                                              ,":OperateTitle02"} 
                                                  ,new String[]{String.valueOf(++v_Index)
                                                               ,"<font color='gray'>" + v_XSQL.getDataSourceGroup().getXJavaID() + ".</font><b>" + v_XSQL.getCreateObjectName() + "</b>"
                                                               ,Help.NVL(v_XSQL.getComment())
-                                                              ,v_URL
-                                                              ,v_Command
+                                                              ,v_URL01
+                                                              ,v_Command01
+                                                              ,v_URL02
+                                                              ,v_Command02
                                                               })
                            );
         }
@@ -2096,6 +2106,13 @@ public class AnalyseBase extends Analyse
     private String getTemplateShowObjectsContent()
     {
         return this.getTemplateContent("template.showObjectsContent.html");
+    }
+    
+    
+    
+    private String getTemplateShowObjectsContent2URL()
+    {
+        return this.getTemplateContent("template.showObjectsContent2URL.html");
     }
     
     
