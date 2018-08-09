@@ -1340,8 +1340,11 @@ public final class XSQLGroup
                         }
                     }
                     
-                    v_QueryRet.clear();
-                    v_QueryRet = null;
+                    if ( v_Node.isClear() || !XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
+                    {
+                        v_QueryRet.clear();
+                        v_QueryRet = null;
+                    }
                     
                     // 如果是多线程并有等待标识时，一直等待并且的执行结果  (原来的位置)
                     v_Ret = waitThreads(v_Node ,io_Params ,v_Ret);
