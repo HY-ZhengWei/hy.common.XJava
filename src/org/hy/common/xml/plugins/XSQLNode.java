@@ -8,6 +8,7 @@ import org.hy.common.CycleNextList;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.StringHelp;
+import org.hy.common.XJavaID;
 import org.hy.common.net.ClientSocket;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
@@ -77,7 +78,7 @@ import com.greenpineyu.fel.context.MapContext;
  *              v14.2 2018-07-27  1.添加：Fel表达式引擎的阻断符或是限定符。防止有歧义解释。
  *              v15.0 2018-08-09  1.添加：clear属性。控制是否及时释放this.collectionID指定集合资源，释放内存。
  */
-public class XSQLNode
+public class XSQLNode implements XJavaID
 {
     /** 
      * 节点类型：查询。
@@ -170,6 +171,9 @@ public class XSQLNode
     private static final FelEngine $FelEngine = new FelEngineImpl();
     
     
+    
+    /** XJava池中对象的ID标识 */
+    private String                         nodeXJavaID;
     
     /** 节点类型。默认为：执行类型（包含DML、DDL、DCL、TCL） */
     private String                       type;
@@ -2055,6 +2059,30 @@ public class XSQLNode
     public void setDebug(boolean debug)
     {
         this.debug = debug;
+    }
+    
+    
+    
+    /**
+     * 设置XJava池中对象的ID标识。此方法不用用户调用设置值，是自动的。
+     * 
+     * @param i_XJavaID
+     */
+    public void setXJavaID(String i_XJavaID)
+    {
+        this.nodeXJavaID = i_XJavaID;
+    }
+    
+    
+    
+    /**
+     * 获取XJava池中对象的ID标识。
+     * 
+     * @return
+     */
+    public String getXJavaID()
+    {
+        return this.nodeXJavaID;
     }
     
 }

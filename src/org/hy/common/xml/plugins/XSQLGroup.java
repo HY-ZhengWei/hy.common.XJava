@@ -1176,11 +1176,12 @@ public final class XSQLGroup
                                 v_Params = null;
                             }
                             
-                            if ( v_RowPrevious != null )
-                            {
-                                v_RowPrevious.clear();
-                                v_RowPrevious = null;
-                            }
+                            // 不能释放，因为当集合为常量类型的高速缓存时，释放会删除最后一个元素
+//                            if ( v_RowPrevious != null )
+//                            {
+//                                v_RowPrevious.clear();
+//                                v_RowPrevious = null;
+//                            }
                         }
                         else
                         {
@@ -1220,11 +1221,12 @@ public final class XSQLGroup
                                 v_Params = null;
                             }
                             
-                            if ( v_RowPrevious != null )
-                            {
-                                v_RowPrevious.clear();
-                                v_RowPrevious = null;
-                            }
+                            // 不能释放，因为当集合为常量类型的高速缓存时，释放会删除最后一个元素
+//                            if ( v_RowPrevious != null )
+//                            {
+//                                v_RowPrevious.clear();
+//                                v_RowPrevious = null;
+//                            }
                         }
                     }
                     // 行级对象是：Java Bean。需要转成Map<String ,Object>
@@ -1273,6 +1275,12 @@ public final class XSQLGroup
                                     }
                                     
                                     v_QueryReturnPart.putRows(v_QRItemMap);  // 只有执行成功后才put返回查询结果集
+                                    
+                                    if ( v_RowPrevious != null )
+                                    {
+                                        v_RowPrevious.clear();
+                                        v_RowPrevious = null;
+                                    }
                                     v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
                                     
                                     v_Params.clear();
@@ -1317,6 +1325,11 @@ public final class XSQLGroup
                                         }
                                     }
                                     
+                                    if ( v_RowPrevious != null )
+                                    {
+                                        v_RowPrevious.clear();
+                                        v_RowPrevious = null;
+                                    }
                                     v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
                                     
                                     v_Params.clear();
@@ -2375,14 +2388,33 @@ public final class XSQLGroup
         
         if ( XSQLNode.$Type_ExecuteJava.equals(i_Node.getType()) )
         {
+            if ( !Help.isNull(i_Node.getXJavaID()) )
+            {
+                v_Buffer.append(i_Node.getXJavaID()).append("：");
+            }
             v_Buffer.append(i_Node.getXjavaID()).append(".").append(i_Node.getMethodName()).append("(Map ,Map).");
         }
         else if ( XSQLNode.$Type_CollectionToQuery.equals(i_Node.getType()) )
         {
+            if ( !Help.isNull(i_Node.getXJavaID()) )
+            {
+                v_Buffer.append(i_Node.getXJavaID()).append("：");
+            }
             v_Buffer.append("CollectionToQuery = ").append(Help.NVL(i_Node.getCollectionID() ,"整个入参对象"));
         }
         else
         {
+            if ( !Help.isNull(i_Node.getSql().getXJavaID()) )
+            {
+                v_Buffer.append(i_Node.getSql().getXJavaID()).append("：");
+            }
+            else 
+            {
+                if ( !Help.isNull(i_Node.getXJavaID()) )
+                {
+                    v_Buffer.append(i_Node.getXJavaID()).append("：");
+                }
+            }
             v_Buffer.append(this.getSQL(i_Node ,i_Params)).append(" ... ... ");
         }
         
@@ -2425,7 +2457,7 @@ public final class XSQLGroup
      */
     private void logExecuteBefore(XSQLNode i_Node ,Map<String ,Object> i_Params ,int i_NodeIndex)
     {
-        if ( this.isLog )
+        if ( this.isLog || i_Node.isDebug() )
         {
             System.out.println(logMake(i_Node ,i_Params ,i_NodeIndex));
         }
@@ -2446,7 +2478,7 @@ public final class XSQLGroup
      */
     private void logExecuteAfter(XSQLNode i_Node ,Map<String ,Object> i_Params ,int i_NodeIndex)
     {
-        if ( this.isLog )
+        if ( this.isLog || i_Node.isDebug() )
         {
             if ( XSQLNode.$Type_ExecuteUpdate            .equals(i_Node.getType())
               || XSQLNode.$Type_CollectionToExecuteUpdate.equals(i_Node.getType()) )
