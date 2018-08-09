@@ -75,6 +75,7 @@ import com.greenpineyu.fel.context.MapContext;
  *              v14.0 2018-06-30  1.添加：异常时是否继续执行的功能errorContinue。
  *              v14.1 2018-07-05  1.优化：Fel表达式计算的性能。
  *              v14.2 2018-07-27  1.添加：Fel表达式引擎的阻断符或是限定符。防止有歧义解释。
+ *              v15.0 2018-08-09  1.添加：clear属性。控制是否及时释放this.collectionID指定集合资源，释放内存。
  */
 public class XSQLNode
 {
@@ -452,6 +453,15 @@ public class XSQLNode
     private String                       collectionID;
     
     /**
+     * 是否即时释放集合资源。
+     * 
+     * 当clear = true时，将即时释放this.collectionID指定集合资源，释放内存。
+     * 
+     * 默认值是：false
+     */
+    private boolean                      clear;
+    
+    /**
      * 是否为多线程并发执行。默认值：false。
      * 
      * 只对 $Type_Query、$Type_CollectionToQuery 两个类型有效。
@@ -552,6 +562,7 @@ public class XSQLNode
         this.xjavaIntance       = null;
         this.xjavaMethod        = null;
         this.collectionID       = null;
+        this.clear              = false;
         this.thread             = false;
         this.threadWait         = null;
         this.threadWaitInterval = 0;
@@ -1752,6 +1763,36 @@ public class XSQLNode
     
     
     
+    /**
+     * 获取：是否即时释放集合资源。
+     * 
+     * 当clear = true时，将即时释放this.collectionID指定集合资源，释放内存。
+     * 
+     * 默认值是：false
+     */
+    public boolean isClear()
+    {
+        return clear;
+    }
+
+
+    
+    /**
+     * 设置：是否即时释放集合资源。
+     * 
+     * 当clear = true时，将即时释放this.collectionID指定集合资源，释放内存。
+     * 
+     * 默认值是：false
+     * 
+     * @param clear 
+     */
+    public void setClear(boolean clear)
+    {
+        this.clear = clear;
+    }
+    
+
+
     /**
      * 是否为多线程并发执行。默认值：false。
      * 
