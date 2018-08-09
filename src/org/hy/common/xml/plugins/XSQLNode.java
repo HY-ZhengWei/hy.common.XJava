@@ -449,6 +449,8 @@ public class XSQLNode
      * 当为空时，表示将整个 XSQLGroup.execute() 方法的入参当为查询结果来用（前提是：入参类型必须为：List、Set、Map(会通过Hetp.toList()转为List)）。
      * 
      * 支持xxx.yyy.www(或getXxx.getYyy.getWww)全路径的解释
+     * 
+     * 建议：能使用this.clear=true时，最好使用上。
      */
     private String                       collectionID;
     
