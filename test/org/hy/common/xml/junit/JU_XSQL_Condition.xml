@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="sqls"            class="java.util.ArrayList" />
+	<import name="sql"             class="org.hy.common.xml.XSQL" />
+
+
+
+	<sqls>
+
+		<sql id="XSQL_User_Condition"> 
+		
+			<content>
+				<![CDATA[
+				SELECT  A.userName
+				       ,A.pwd
+				  FROM  User  A
+				 WHERE  A.userName = ':userName'
+				   AND  A.pwd      = ':password'
+				]]>
+			</content>
+			
+			<!-- 当用户名称为admin时，自动翻译为administrator用户名称登陆 -->
+			<condition>
+				<name>userName</name>
+				<if>:userName == 'admin'</if>
+				<true>administrator</true>
+				<false>:userName</false>   <!-- 也可以写成 this -->
+			</condition>
+			
+			<!-- 密码验证 -->
+			<condition>
+				<name>password</name>
+				<if><![CDATA[{:password}.length() >= 6 && {:password}.length() <= 16]]></if>
+				<false>密码长度验证未通过</false>
+			</condition>
+			
+		</sql>
+		
+	</sqls>
+	
+</config>

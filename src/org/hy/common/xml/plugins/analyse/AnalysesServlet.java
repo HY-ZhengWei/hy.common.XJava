@@ -23,7 +23,7 @@ import org.hy.common.xml.XJava;
     </servlet>
     <servlet-mapping>
         <servlet-name>AnalysesServlet</servlet-name>
-        <url-pattern>/analyses</url-pattern>
+        <url-pattern>/analyses/*</url-pattern>
     </servlet-mapping>
  *
  *  提议做此页面的人为：邹德福
