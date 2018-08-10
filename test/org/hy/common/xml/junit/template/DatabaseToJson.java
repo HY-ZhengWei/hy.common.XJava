@@ -150,12 +150,15 @@ public class DatabaseToJson extends AppInitConfig
         if ( v_JsonFolder.isDirectory() )
         {
             File [] v_ChildFiles = v_JsonFolder.listFiles();
-            for (File v_JsonFile : v_ChildFiles)
+            if ( v_ChildFiles != null )
             {
-                String v_JsonName = v_JsonFile.getName();
-                if ( v_JsonName.toLowerCase().endsWith(".json") )
+                for (File v_JsonFile : v_ChildFiles)
                 {
-                    jsonToJava(v_JsonFile.toString() ,i_JavaFolder + Help.getSysPathSeparator() + v_JsonName.substring(0 ,v_JsonName.length()-5) + ".java");
+                    String v_JsonName = v_JsonFile.getName();
+                    if ( v_JsonName.toLowerCase().endsWith(".json") )
+                    {
+                        jsonToJava(v_JsonFile.toString() ,i_JavaFolder + Help.getSysPathSeparator() + v_JsonName.substring(0 ,v_JsonName.length()-5) + ".java");
+                    }
                 }
             }
         }

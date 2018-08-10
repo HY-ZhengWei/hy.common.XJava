@@ -433,13 +433,16 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         $SQLBusway     .put(new XSQLLog(i_SQL ,i_Exce));
         $SQLBuswayError.put(new XSQLLog(i_SQL ,i_Exce ,i_XSQL == null ? "" : i_XSQL.getObjectID()));
         
+        String v_XJavaID = "";
+        
         if ( i_XSQL != null && i_XSQL.getDataSourceGroup() != null )
         {
             i_XSQL.getDataSourceGroup().setException(true);
+            v_XJavaID = Help.NVL(i_XSQL.getXJavaID());
         }
         
         System.err.println("-- Error time：  " + Date.getNowTime().getFull() 
-                       + "\n-- Error XSQL ID：  " + Help.NVL(i_XSQL.getXJavaID()) 
+                       + "\n-- Error XSQL ID：  " + v_XJavaID
                        + "\n-- Error SQL：  " + i_SQL);
     }
     
@@ -2611,19 +2614,32 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             
             if ( !Help.isNull(v_LobValues) )
             {
-                synchronized ( this.lobXSQLID )
-                {
-                    if ( Help.isNull(this.lobXSQLID) )
-                    {
-                        this.lobXSQLID = this.createLobXSQL();
-                    }
-                }
-                
-                return XJava.getXSQL(this.lobXSQLID).executeUpdateCLob(i_Values ,v_LobValues);
+                return XJava.getXSQL(getLobXSQLID()).executeUpdateCLob(i_Values ,v_LobValues);
             }
         }
         
         return i_DataCount;
+    }
+    
+    
+    
+    /**
+     * 获取或创建处理Lob类型的XSQL的标记XJavaID
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-08-10
+     * @version     v1.0
+     *
+     * @return
+     */
+    private synchronized String getLobXSQLID()
+    {
+        if ( Help.isNull(this.lobXSQLID) )
+        {
+            this.lobXSQLID = this.createLobXSQL();
+        }
+        
+        return this.lobXSQLID;
     }
     
     
@@ -2681,15 +2697,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             
             if ( !Help.isNull(v_LobValues) )
             {
-                synchronized ( this.lobXSQLID )
-                {
-                    if ( Help.isNull(this.lobXSQLID) )
-                    {
-                        this.lobXSQLID = this.createLobXSQL();
-                    }
-                }
-                
-                return XJava.getXSQL(this.lobXSQLID).executeUpdateCLob(i_Obj ,v_LobValues);
+                return XJava.getXSQL(getLobXSQLID()).executeUpdateCLob(i_Obj ,v_LobValues);
             }
         }
         

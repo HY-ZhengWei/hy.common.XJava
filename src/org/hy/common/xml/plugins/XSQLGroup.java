@@ -1815,9 +1815,9 @@ public final class XSQLGroup
                                 return v_Task.getXsqlGroupResult();
                             }
                         }
+                        
+                        v_Task.clear();
                     }
-                    
-                    v_Task.clear();
                 }
             }
             finally
@@ -1898,9 +1898,9 @@ public final class XSQLGroup
                                         return v_Task.getXsqlGroupResult();
                                     }
                                 }
+                                
+                                v_Task.clear();
                             }
-                            
-                            v_Task.clear();
                         }
                     }
                     finally

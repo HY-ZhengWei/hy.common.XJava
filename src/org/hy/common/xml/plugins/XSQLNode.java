@@ -1574,26 +1574,12 @@ public class XSQLNode implements XJavaID
      * @throws InvocationTargetException
      * @throws NoSuchMethodException
      */
-    public synchronized boolean executeJava(XSQLGroupControl i_Control ,Map<String ,Object> io_Params ,Map<String ,Object> io_Returns ,int i_ExecuteCount) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException
+    public boolean executeJava(XSQLGroupControl i_Control ,Map<String ,Object> io_Params ,Map<String ,Object> io_Returns ,int i_ExecuteCount) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException
     {
         // 本地计算
         if ( Help.isNull(this.cloudServersList) )
         {
-            // 已经解释成功的，不在二次解释
-            if ( this.xjavaMethod != null )
-            {
-                Object v_Object = XJava.getObject(this.xjavaID.trim());
-                
-                if ( this.xjavaIntance != v_Object )
-                {
-                    this.parserMethod();
-                }
-            }
-            else
-            {
-                this.parserMethod();
-            }
-            
+            this.executeJava_ParserMethod();
             Object v_Ret = this.xjavaMethod.invoke(this.xjavaIntance ,i_Control ,io_Params ,io_Returns);
             return (Boolean)v_Ret;
         }
@@ -1628,6 +1614,26 @@ public class XSQLNode implements XJavaID
                 v_Cloud.executeCloud(this ,i_Control ,io_Params ,io_Returns ,i_ExecuteCount);
                 return true;
             }
+        }
+    }
+    
+    
+    
+    private synchronized void executeJava_ParserMethod() throws NoSuchMethodException
+    {
+        // 已经解释成功的，不在二次解释
+        if ( this.xjavaMethod != null )
+        {
+            Object v_Object = XJava.getObject(this.xjavaID.trim());
+            
+            if ( this.xjavaIntance != v_Object )
+            {
+                this.parserMethod();
+            }
+        }
+        else
+        {
+            this.parserMethod();
         }
     }
     

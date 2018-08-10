@@ -44,7 +44,7 @@ public final class XSQLMethodParam_Fill
 	 */
 	public static XSQLMethodParam getInstance(int i_ParamType)
 	{
-		if ( i_ParamType == $FILL_ROW || i_ParamType == $FILL_ROW_NO )
+		if ( i_ParamType == $FILL_ROW )
 		{
 			return $FILL_PARAM_ROW;
 		}
@@ -69,7 +69,7 @@ public final class XSQLMethodParam_Fill
 	 */
 	public static XSQLMethodParam getInstance(int i_ParamType ,Method i_ObjGetter)
 	{
-		if ( i_ParamType == $FILL_ROW || i_ParamType == $FILL_ROW_NO )
+		if ( i_ParamType == $FILL_ROW )
 		{
 			return $FILL_PARAM_ROW;
 		}
