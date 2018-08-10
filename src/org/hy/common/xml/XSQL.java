@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hy.common.app.Param;
+import org.hy.common.db.DBCondition;
 import org.hy.common.db.DBSQL;
 import org.hy.common.db.DataSourceGroup;
 import org.hy.common.xml.event.BLobListener;
@@ -121,6 +122,9 @@ import org.hy.common.xml.event.BLobEvent;
  *                                       将两次对数据库的操作，封装在一个普通SQL中，再通过程序自动化拆分两个具体的数据库操作。
  *                                       大大简化开发的工作量。
  *              v13.2 2018-07-25  添加：支持多个长文本信息CLob的写入。
+ *              v14.0 2018-08-10  添加：实现占位符X有条件的取值。占位符在满足条件时取值A，否则取值B。
+ *                                     取值A、B，可以是占位符X、NULL值，另一个占位符Y或常量字符。
+ *                                     类似于Mybatis IF条件功能。建议人：马龙
  */
 /*
  * 游标类型的说明
@@ -5869,6 +5873,25 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	{
 		this.content.setSqlText(i_SQLText);
 		this.isAllowExecutesSplit(i_SQLText);
+	}
+	
+	
+	
+	/**
+	 * 占位符X有条件的取值。占位符在满足条件时取值A，否则取值B。
+	 * 取值A、B，可以是占位符X、NULL值，另一个占位符Y或常量字符。
+	 * 
+	 * 类似于Mybatis IF条件功能
+	 * 
+	 * @author      ZhengWei(HY)
+	 * @createDate  2018-08-10
+	 * @version     v1.0
+	 *
+	 * @param i_DBCondition
+	 */
+	public void setCondition(DBCondition i_DBCondition)
+	{
+	    this.content.addCondition(i_DBCondition);
 	}
 	
 	

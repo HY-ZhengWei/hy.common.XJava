@@ -6,17 +6,12 @@ import java.util.Map;
 
 import org.hy.common.CycleNextList;
 import org.hy.common.Help;
-import org.hy.common.MethodReflect;
 import org.hy.common.StringHelp;
 import org.hy.common.XJavaID;
+import org.hy.common.db.DBCondition;
 import org.hy.common.net.ClientSocket;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
-
-import com.greenpineyu.fel.FelEngine;
-import com.greenpineyu.fel.FelEngineImpl;
-import com.greenpineyu.fel.context.FelContext;
-import com.greenpineyu.fel.context.MapContext;
 
 
 
@@ -77,6 +72,7 @@ import com.greenpineyu.fel.context.MapContext;
  *              v14.1 2018-07-05  1.优化：Fel表达式计算的性能。
  *              v14.2 2018-07-27  1.添加：Fel表达式引擎的阻断符或是限定符。防止有歧义解释。
  *              v15.0 2018-08-09  1.添加：clear属性。控制是否及时释放this.collectionID指定集合资源，释放内存。
+ *              v15.1 2018-08-10  1.剥离：将节点是否允许执行的条件，剥离到org.hy.common.db.DBCondition类中共用。
  */
 public class XSQLNode implements XJavaID
 {
@@ -153,27 +149,8 @@ public class XSQLNode implements XJavaID
     
     
     
-    /**
-     * 表达式引擎的阻断符或是限定符。
-     * 阻断符最终将被替换为""空字符。
-     * 
-     * 用于阻断.点符号。
-     * 
-     * 如，表达式  :Name.indexOf("B") >= 0 ，:Name.indexOf 也可能被解释为面向对象的属性值获取方法。
-     *     而.indexOf("B")是Fel处理的，无须再加工。为了防止歧义，所以要阻断或限定一下，变成下面的样子。
-     *     {:Name}.indexOf("B") >= 0
-     */
-    public static final String []  $Fel_BlockingUp = {"{" ,"}"};
-    
-    
-    
-    /** 表达式引擎 */
-    private static final FelEngine $FelEngine = new FelEngineImpl();
-    
-    
-    
     /** XJava池中对象的ID标识 */
-    private String                         nodeXJavaID;
+    private String                       nodeXJavaID;
     
     /** 节点类型。默认为：执行类型（包含DML、DDL、DCL、TCL） */
     private String                       type;
@@ -181,32 +158,8 @@ public class XSQLNode implements XJavaID
     /** 操作SQL对象 */
     private XSQL                         sql;
     
-    /** 
-     * 执行前的前提条件，只有当满足这个条件后，XSQL才会被执行
-     * 
-     * 形式为带占位符的Fel条件，
-     *    如：:c01=='1' && :c02=='2' 
-     *    如：:c01==NULL || :c01==''  判定是否为NULL对象或空字符串
-     * 
-     * 为空时，表示任何情况下都允许执行
-     */
-    private String                       condition;
-    
-    /** 
-     * 解释出来的Fel条件。与this.condition的区别是：它是没有占位符
-     * 
-     *    如：c01=='1' && c02=='2' 
-     *    如：c01==NULL || c01==''  判定是否为NULL对象或空字符串
-     */
-    private String                       conditionFel;
-    
-    /**
-     * 占位符信息的集合
-     * 
-     * Map.key    为占位符。前缀为:符号
-     * Map.Value  为占位符原文本信息
-     */
-    private Map<String ,Object>          placeholders;
+    /** 允许执行本节点的执行条件 */
+    private DBCondition                  condition;
     
     /**
      * 当SELECT查询节点未查询出结果时，是否允许其后的XSQL节点执行。默认为：false，即不执行其后的节点。
@@ -540,6 +493,7 @@ public class XSQLNode implements XJavaID
     
     public XSQLNode()
     {
+        this.condition          = null;
         this.noDataContinue     = false;
         this.noPassContinue     = true;
         this.beforeCommit       = false;
@@ -631,7 +585,11 @@ public class XSQLNode implements XJavaID
      */
     public String getCondition()
     {
-        return condition;
+        if ( this.condition == null )
+        {
+            return null;
+        }
+        return this.condition.getCondition();
     }
 
 
@@ -646,21 +604,11 @@ public class XSQLNode implements XJavaID
      */
     public void setCondition(String i_Condition)
     {
-        this.condition    = i_Condition;
-        this.conditionFel = i_Condition;
-        this.placeholders = null;
-        
-        if ( !Help.isNull(this.condition) )
+        if ( this.condition == null )
         {
-            this.placeholders = StringHelp.parsePlaceholders(this.condition);
-            
-            for (String v_Key : this.placeholders.keySet())
-            {
-                this.conditionFel = StringHelp.replaceAll(this.conditionFel ,":" + v_Key ,StringHelp.replaceAll(v_Key ,"." ,"_"));
-            }
-            
-            this.conditionFel = StringHelp.replaceAll(this.conditionFel ,$Fel_BlockingUp ,new String[]{""});
+            this.condition = new DBCondition();
         }
+        this.condition.setCondition(i_Condition);
     }
     
     
@@ -1715,32 +1663,11 @@ public class XSQLNode implements XJavaID
      */
     public boolean isPass(Map<String ,?> i_ConditionValues)
     {
-        if ( Help.isNull(this.condition) 
-          || Help.isNull(this.conditionFel)
-          || Help.isNull(this.placeholders) )
+        if ( this.condition == null )
         {
             return true;
         }
-        
-        try
-        {
-            FelContext v_FelContext = new MapContext();
-            
-            for (String v_Key : this.placeholders.keySet())
-            {
-                Object v_Value = MethodReflect.getMapValue(i_ConditionValues ,v_Key);
-                
-                v_Key = StringHelp.replaceAll(v_Key ,"." ,"_"); // "点" 原本就是Fel关键字，所以要替换 ZhengWei(HY) Add 2017-05-23
-                
-                v_FelContext.set(v_Key ,v_Value);
-            }
-            
-            return (Boolean) $FelEngine.eval(this.conditionFel ,v_FelContext);
-        }
-        catch (Exception exce)
-        {
-            throw new RuntimeException("Fel[" + this.condition + "] is error." + exce.getMessage());
-        }
+        return this.condition.isPass(i_ConditionValues);
     }
     
     
