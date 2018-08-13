@@ -46,7 +46,7 @@ public class JU_XSQL_Condition
     {
         String              v_SQL    = null;
         Map<String ,Object> v_Params = new HashMap<String ,Object>();
-        v_Params.put("orgName"  ,"我的部门");
+        v_Params.put("orgName"  ,"根目录");
         v_Params.put("uSeRnAmE" ,"admin");
         
         v_Params.put("pAsSwOrD" ,"123");
@@ -60,6 +60,11 @@ public class JU_XSQL_Condition
         v_Params.put("pAsSwOrD" ,"12345678901234567");
         v_SQL = XJava.getXSQL("XSQL_User_Condition").getContent().getSQL(v_Params);
         System.out.println("密码为12345678901234567时的运行SQL：" + v_SQL);
+        
+        v_Params.put("pAsSwOrD" ,"12345678");
+        v_Params.put("orgName"  ,"我的部门");
+        v_SQL = XJava.getXSQL("XSQL_User_Condition").getContent().getSQL(v_Params);
+        System.out.println("密码为12345678时的运行SQL：" + v_SQL);
     }
     
 }
