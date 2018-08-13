@@ -18,6 +18,7 @@
 				  FROM  User  A
 				 WHERE  A.userName = ':userName'
 				   AND  A.pwd      = ':password'
+			  <[   AND  A.orgName  = ':orgName'    ]>
 				]]>
 			</content>
 			
@@ -34,6 +35,14 @@
 				<name>password</name>
 				<if><![CDATA[{:password}.length() >= 6 && {:password}.length() <= 16]]></if>
 				<false>密码长度验证未通过</false>
+			</condition>
+			
+			<!-- 部门名称是目录时，不参与Where条件过滤 -->
+			<condition>
+				<name>orgName</name>
+				<if><![CDATA[:orgName == '根目录']]></if>
+				<true>NULL</true>
+				<false>THIS</false>
 			</condition>
 			
 		</sql>

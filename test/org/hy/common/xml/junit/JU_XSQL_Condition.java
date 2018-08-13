@@ -46,6 +46,7 @@ public class JU_XSQL_Condition
     {
         String              v_SQL    = null;
         Map<String ,Object> v_Params = new HashMap<String ,Object>();
+        v_Params.put("orgName"  ,"我的部门");
         v_Params.put("uSeRnAmE" ,"admin");
         
         v_Params.put("pAsSwOrD" ,"123");
