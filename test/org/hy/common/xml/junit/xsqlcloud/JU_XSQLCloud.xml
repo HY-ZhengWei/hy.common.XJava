@@ -22,7 +22,7 @@
 				    127.0.0.1:2021
 				   ,127.0.0.1:3021
 				</cloudServers>
-				<xjavaID>JU_XSQLCloud</xjavaID>
+				<xid>JU_XSQLCloud</xid>
 				<methodName>JU_XSQLCloud_CloudXSQLNode</methodName>
 				<cloudWaitInterval>30000</cloudWaitInterval>
 			</sqlNode>
@@ -31,7 +31,7 @@
 			
 			<sqlNode>
 				<type ref="this.$Type_ExecuteJava" />
-				<xjavaID>JU_XSQLCloud</xjavaID>
+				<xid>JU_XSQLCloud</xid>
 				<methodName>JU_XSQLCloud_Finish_XSQLNode</methodName>
 				<lastOnce>true</lastOnce>
 			</sqlNode>
