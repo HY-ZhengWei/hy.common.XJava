@@ -129,7 +129,7 @@ public class XSQLNode implements XJavaID
      *    2. this.returnID
      *    3. this.returnAppend
      *    4. this.queryReturnID
-     *    5. this.xjavaID
+     *    5. this.xid
      *    6. this.sqlGroup
      *    7. this.sql
      */
@@ -318,7 +318,7 @@ public class XSQLNode implements XJavaID
     /**
      * 云计算服务器的列表。用英文逗号,分隔（可以有空格、回车符、制表符）。如下形式：IP1:Port1 ,IP2:Port2 ,IP3:Port3。
      * 
-     * 与 $Type_ExecuteJava、xjavaID、methodName配合使用。
+     * 与 $Type_ExecuteJava、xid、methodName配合使用。
      * 
      * 云计算服务器的列表，可以包含自己。
      * 
@@ -380,16 +380,16 @@ public class XSQLNode implements XJavaID
     
     /** 
      * XJava对象标识
-     *    构建XSQLNode对象实例时，xjavaID标记的对象实例，可以是不存在的（或尚未构建的）。
+     *    构建XSQLNode对象实例时，xid标记的对象实例，可以是不存在的（或尚未构建的）。
      *    只要在执行时存在就OK了 
      */
-    private String                       xjavaID;
+    private String                       xid;
     
     /** 
      * XJava对象执行的方法名
      *      方法的定义形式为：详见org.hy.common.xml.plugins.XSQLGroupExecuteJava
      *      
-     * 默认名称为：executes。方便云计算时，执行云端的XSQL组，只须用户配置xjavaID即可。
+     * 默认名称为：executes。方便云计算时，执行云端的XSQL组，只须用户配置xid即可。
      */
     private String                       methodName;
     
@@ -517,7 +517,7 @@ public class XSQLNode implements XJavaID
         this.cloudWait          = null;
         this.cloudWaitInterval  = 5 * 1000;
         this.cloudExecInterval  = 66;
-        this.xjavaID            = null;
+        this.xid                = null;
         this.methodName         = "executes";
         this.xjavaIntance       = null;
         this.xjavaMethod        = null;
@@ -1012,7 +1012,7 @@ public class XSQLNode implements XJavaID
     /**
      * 云计算服务器的列表。用英文逗号,分隔（可以有空格、回车符、制表符）。如下形式：IP1:Port1 ,IP2:Port2 ,IP3:Port3。
      * 
-     * 与 $Type_ExecuteJava、xjavaID、methodName配合使用。
+     * 与 $Type_ExecuteJava、xid、methodName配合使用。
      * 
      * 云计算服务器的列表，可以包含自己。
      * 
@@ -1045,7 +1045,7 @@ public class XSQLNode implements XJavaID
     /**
      * 云计算服务器的列表。用英文逗号,分隔（可以有空格、回车符、制表符）。如下形式：IP1:Port1 ,IP2:Port2 ,IP3:Port3。
      * 
-     * 与 $Type_ExecuteJava、xjavaID、methodName配合使用。
+     * 与 $Type_ExecuteJava、xid、methodName配合使用。
      * 
      * 云计算服务器的列表，可以包含自己。
      * 
@@ -1419,26 +1419,26 @@ public class XSQLNode implements XJavaID
 
     /**
      * 获取：XJava对象标识
-     *      构建XSQLNode对象实例时，xjavaID标记的对象实例，可以是不存在的（或尚未构建的）。
+     *      构建XSQLNode对象实例时，xid标记的对象实例，可以是不存在的（或尚未构建的）。
      *      只要在执行时存在就OK了
      */
-    public String getXjavaID()
+    public String getXid()
     {
-        return xjavaID;
+        return xid;
     }
 
 
     
     /**
      * 设置：XJava对象标识。
-     *      构建XSQLNode对象实例时，xjavaID标记的对象实例，可以是不存在的（或尚未构建的）。
+     *      构建XSQLNode对象实例时，xid标记的对象实例，可以是不存在的（或尚未构建的）。
      *      只要在执行时存在就OK了
      * 
-     * @param xjavaID 
+     * @param xid 
      */
-    public void setXjavaID(String xjavaID)
+    public void setXid(String xid)
     {
-        this.xjavaID      = xjavaID;
+        this.xid          = xid;
         this.xjavaIntance = null;
         this.xjavaMethod  = null;
     }
@@ -1449,7 +1449,7 @@ public class XSQLNode implements XJavaID
      * 获取：XJava对象执行的方法名
      *      方法的定义形式为：详见org.hy.common.xml.plugins.XSQLGroupExecuteJava
      *      
-     * 默认名称为：executes。方便云计算时，执行云端的XSQL组，只须用户配置xjavaID即可。
+     * 默认名称为：executes。方便云计算时，执行云端的XSQL组，只须用户配置xid即可。
      */
     public String getMethodName()
     {
@@ -1462,7 +1462,7 @@ public class XSQLNode implements XJavaID
      * 设置：XJava对象执行的方法名
      *      方法的定义形式为：详见org.hy.common.xml.plugins.XSQLGroupExecuteJava
      *        
-     * 默认名称为：executes。方便云计算时，执行云端的XSQL组，只须用户配置xjavaID即可。
+     * 默认名称为：executes。方便云计算时，执行云端的XSQL组，只须用户配置xid即可。
      *        
      * @param methodName 
      */
@@ -1534,9 +1534,9 @@ public class XSQLNode implements XJavaID
         // 云计算 ZhengWei(HY) Add 2018-01-30
         else
         {
-            if ( Help.isNull(this.xjavaID) )
+            if ( Help.isNull(this.xid) )
             {
-                throw new NullPointerException("XSQLNode.getXjavaID() is null.");
+                throw new NullPointerException("XSQLNode.getXid() is null.");
             }
             else if ( Help.isNull(this.methodName) )
             {
@@ -1572,7 +1572,7 @@ public class XSQLNode implements XJavaID
         // 已经解释成功的，不在二次解释
         if ( this.xjavaMethod != null )
         {
-            Object v_Object = XJava.getObject(this.xjavaID.trim());
+            Object v_Object = XJava.getObject(this.xid.trim());
             
             if ( this.xjavaIntance != v_Object )
             {
@@ -1598,9 +1598,9 @@ public class XSQLNode implements XJavaID
      */
     private void parserMethod() throws NoSuchMethodException
     {
-        if ( Help.isNull(this.xjavaID) )
+        if ( Help.isNull(this.xid) )
         {
-            throw new NullPointerException("XSQLNode.getXjavaID() is null.");
+            throw new NullPointerException("XSQLNode.getXid() is null.");
         }
         
         if ( Help.isNull(this.methodName) )
@@ -1608,11 +1608,11 @@ public class XSQLNode implements XJavaID
             throw new NullPointerException("XSQLNode.getMethodName() is null."); 
         }
         
-        this.xjavaIntance = XJava.getObject(this.xjavaID.trim());
+        this.xjavaIntance = XJava.getObject(this.xid.trim());
         this.xjavaMethod  = null;
         if ( this.xjavaIntance == null )
         {
-            throw new NullPointerException("XSQLNode.getXjavaID() = " + this.xjavaID + " XJava.getObject(...) is null.");
+            throw new NullPointerException("XSQLNode.getXid() = " + this.xid + " XJava.getObject(...) is null.");
         }
         
         Method [] v_Methods = this.xjavaIntance.getClass().getMethods();
@@ -1645,7 +1645,7 @@ public class XSQLNode implements XJavaID
         
         if ( this.xjavaMethod == null )
         {
-            throw new NoSuchMethodException("XSQLNode.getXjavaID() = " + this.xjavaID + " not find method[public boolean " + this.methodName + "(Map<String ,Object> i_Params ,Map<String ,Object> io_Returns){ ... }].");
+            throw new NoSuchMethodException("XSQLNode.getXid() = " + this.xid + " not find method[public boolean " + this.methodName + "(Map<String ,Object> i_Params ,Map<String ,Object> io_Returns){ ... }].");
         }
     }
 

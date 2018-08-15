@@ -2392,7 +2392,7 @@ public final class XSQLGroup
             {
                 v_Buffer.append(i_Node.getXJavaID()).append("：");
             }
-            v_Buffer.append(i_Node.getXjavaID()).append(".").append(i_Node.getMethodName()).append("(Map ,Map).");
+            v_Buffer.append(i_Node.getXid()).append(".").append(i_Node.getMethodName()).append("(Map ,Map).");
         }
         else if ( XSQLNode.$Type_CollectionToQuery.equals(i_Node.getType()) )
         {

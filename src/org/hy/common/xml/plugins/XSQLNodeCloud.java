@@ -115,7 +115,7 @@ public class XSQLNodeCloud
         // 这与上次 "2018-07-26 优化：及时释放资源，自动的GC太慢了" 有关。
         Map<String ,Object> v_Params = new HashMap<String ,Object>(io_Params);
         
-        Execute v_Execute = new Execute(client ,"sendCommand" ,new Object[]{i_XSQLNode.getXjavaID().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{v_Params}});
+        Execute v_Execute = new Execute(client ,"sendCommand" ,new Object[]{i_XSQLNode.getXid().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{v_Params}});
         v_Execute.addListener(new XSQLNodeCloudExecuteListener(i_XSQLNode ,this ,i_Control ,v_Params ,io_Returns ,i_ExecuteCount));
         v_Execute.start();
     }
