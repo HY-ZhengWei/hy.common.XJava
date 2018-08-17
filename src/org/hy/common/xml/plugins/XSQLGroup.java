@@ -2961,26 +2961,35 @@ public final class XSQLGroup
         @Override
         public void execute()
         {
-            this.xsqlGroupResult = this.xsqlGroup.executeGroup(this.superNodeIndex 
-                                                              ,this.params 
-                                                              ,this.xsqlGroupResult 
-                                                              ,this.dsgConns);
-            if ( !this.xsqlGroupResult.isSuccess() )
+            try
             {
-                // 多任务并发执行时，只要有一个任务异常，其它还在队列中等待执行的任务将就全部退出等待，将不再执行。
-                this.getTaskGroup().stopTasksNoExecute();
-            }
-            else
-            {
-                XSQLNode v_Node = this.xsqlGroup.xsqlNodes.get(this.superNodeIndex);
-                
-                if ( v_Node.isPerAfterCommit() )
+                this.xsqlGroupResult = this.xsqlGroup.executeGroup(this.superNodeIndex 
+                                                                  ,this.params 
+                                                                  ,this.xsqlGroupResult 
+                                                                  ,this.dsgConns);
+                if ( !this.xsqlGroupResult.isSuccess() )
                 {
-                    this.xsqlGroup.commits(this.dsgConns ,this.xsqlGroupResult.getExecSumCount());
+                    // 多任务并发执行时，只要有一个任务异常，其它还在队列中等待执行的任务将就全部退出等待，将不再执行。
+                    this.getTaskGroup().stopTasksNoExecute();
+                }
+                else
+                {
+                    XSQLNode v_Node = this.xsqlGroup.xsqlNodes.get(this.superNodeIndex);
+                    
+                    if ( v_Node.isPerAfterCommit() )
+                    {
+                        this.xsqlGroup.commits(this.dsgConns ,this.xsqlGroupResult.getExecSumCount());
+                    }
                 }
             }
-            
-            this.finishTask();
+            catch (Exception exce)
+            {
+                exce.printStackTrace();
+            }
+            finally
+            {
+                this.finishTask();
+            }
         }
         
 
