@@ -1110,7 +1110,7 @@ public class AnalyseBase extends Analyse
                 if ( v_Object.getClass() == Job.class )
                 {
                     Job v_Job = (Job)v_Object;
-                    v_OperateURL1   = i_ObjectValuePath + "?xid=" + v_Job.getXjavaID() + "&call=" + v_Job.getMethodName();
+                    v_OperateURL1   = i_ObjectValuePath + "?xid=" + v_Job.getXid() + "&call=" + v_Job.getMethodName();
                     v_OperateTitle1 = "执行任务";
                     v_OperateURL2   = v_OperateURL1 + "&cluster=Y";
                     v_OperateTitle2 = "集群顺次执行任务";

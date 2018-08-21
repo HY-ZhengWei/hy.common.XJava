@@ -1875,7 +1875,7 @@ public final class XSQLGroup
                         {
                             // Nothing.
                         }
-                        // System.out.println("-- " + Date.getNowTime().getFull() + " WaitCount = " + (++v_WaitCount));
+                        // System.out.println("-- " + Date.getNowTime().getFull() + " WaitCount=" + (++v_WaitCount) + "  TaskSize=" + v_TaskGroup.size() + "  TaskFinishSize=" + v_TaskGroup.getFinishSize());
                     }
                     // System.out.println("-- " + Date.getNowTime().getFull() + " Wait Finish.");
                     
