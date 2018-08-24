@@ -29,16 +29,16 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     private String             hostName;
     
     /** 线程的总个数 */
-    private int                threadCount;
+    private long               threadCount;
     
     /** 空闲的线程数 */
-    private int                idleThreadCount;
+    private long               idleThreadCount;
     
     /** 活动的线程数 */
-    private int                activeThreadCount;
+    private long               activeThreadCount;
     
     /** 队排中等待的任务数 */
-    private int                waitTaskCount;
+    private long               waitTaskCount;
     
     /** 线程池监控信息 */
     private List<ThreadReport> reports;
@@ -90,7 +90,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     /**
      * 获取：线程的总个数
      */
-    public int getThreadCount()
+    public long getThreadCount()
     {
         return threadCount;
     }
@@ -100,7 +100,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     /**
      * 获取：空闲的线程数
      */
-    public int getIdleThreadCount()
+    public long getIdleThreadCount()
     {
         return idleThreadCount;
     }
@@ -110,7 +110,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     /**
      * 获取：活动的线程数
      */
-    public int getActiveThreadCount()
+    public long getActiveThreadCount()
     {
         return activeThreadCount;
     }
@@ -132,7 +132,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
      * 
      * @param threadCount 
      */
-    public void setThreadCount(int threadCount)
+    public void setThreadCount(long threadCount)
     {
         this.threadCount = threadCount;
     }
@@ -144,7 +144,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
      * 
      * @param idleThreadCount 
      */
-    public void setIdleThreadCount(int idleThreadCount)
+    public void setIdleThreadCount(long idleThreadCount)
     {
         this.idleThreadCount = idleThreadCount;
     }
@@ -156,7 +156,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
      * 
      * @param activeThreadCount 
      */
-    public void setActiveThreadCount(int activeThreadCount)
+    public void setActiveThreadCount(long activeThreadCount)
     {
         this.activeThreadCount = activeThreadCount;
     }
@@ -178,7 +178,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     /**
      * 获取：队排中等待的任务数
      */
-    public int getWaitTaskCount()
+    public long getWaitTaskCount()
     {
         return waitTaskCount;
     }
@@ -190,7 +190,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
      * 
      * @param waitTaskCount 
      */
-    public void setWaitTaskCount(int waitTaskCount)
+    public void setWaitTaskCount(long waitTaskCount)
     {
         this.waitTaskCount = waitTaskCount;
     }

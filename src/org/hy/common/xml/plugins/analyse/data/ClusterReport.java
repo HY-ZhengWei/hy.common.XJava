@@ -48,10 +48,10 @@ public class ClusterReport extends SerializableDef
     private long   freeMemory;
     
     /** 线程总数 */
-    private int    threadCount;
+    private long   threadCount;
     
     /** 队列等待的任务数 */
-    private int    queueCount;
+    private long   queueCount;
     
     /** 服务器情况（正常、异常） */
     private String serverStatus;
@@ -231,7 +231,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 获取：线程总数
      */
-    public int getThreadCount()
+    public long getThreadCount()
     {
         return threadCount;
     }
@@ -243,7 +243,7 @@ public class ClusterReport extends SerializableDef
      * 
      * @param threadCount 
      */
-    public void setThreadCount(int threadCount)
+    public void setThreadCount(long threadCount)
     {
         this.threadCount = threadCount;
     }
@@ -253,7 +253,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 获取：队列等待的任务数
      */
-    public int getQueueCount()
+    public long getQueueCount()
     {
         return queueCount;
     }
@@ -265,7 +265,7 @@ public class ClusterReport extends SerializableDef
      * 
      * @param queueCount 
      */
-    public void setQueueCount(int queueCount)
+    public void setQueueCount(long queueCount)
     {
         this.queueCount = queueCount;
     }
