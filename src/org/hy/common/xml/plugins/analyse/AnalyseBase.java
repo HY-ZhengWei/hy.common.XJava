@@ -675,6 +675,9 @@ public class AnalyseBase extends Analyse
         
         v_Objs.clear();
         v_Objs = null;
+        
+        XSQL.$SQLBusway     .clear();
+        XSQL.$SQLBuswayError.clear();
     }
     
     
