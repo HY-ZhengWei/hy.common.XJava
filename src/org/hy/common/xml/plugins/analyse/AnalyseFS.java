@@ -753,6 +753,7 @@ public class AnalyseFS extends Analyse
             else
             {
                 // 克隆的原文件，不再二次克隆
+                return FileHelp.$Upload_Finish;
             }
         }
         catch (Exception exce)

@@ -173,7 +173,7 @@ function cloneFileAction(i_FileName ,i_HIP)
 					}
 					else if ( i_Ret.retCode == "1" )
 					{
-						f_ShowMsg("消息" ,"未能成功克隆！" ,v_Height_Msg);
+						f_ShowMsg("消息" ,"未能成功克隆！异常服务：" + i_Ret.retHIP ,v_Height_Msg);
 					}
 					else if ( i_Ret.retCode == "2" )
 					{
