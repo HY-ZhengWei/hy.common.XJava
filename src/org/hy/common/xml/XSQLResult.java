@@ -752,7 +752,7 @@ public final class XSQLResult
 			
 			if ( !v_FillEvent )
 			{
-			    throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  " + exce.getMessage());
+			    throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  ColName=" + this.dbMetaData.getColumnName(v_ColNo) + "  " + exce.getMessage());
 			}
 			else
 			{
@@ -1415,7 +1415,7 @@ public final class XSQLResult
             
             if ( !v_FillEvent )
             {
-                throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  " + exce.getMessage());
+                throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  ColName=" + this.dbMetaData.getColumnName(v_ColNo) + "  " + exce.getMessage());
             }
             else
             {
@@ -1682,7 +1682,7 @@ public final class XSQLResult
 			
 			if ( this.cfill_ValidIndex_BiggerMemory != null && this.cfill_ValidIndex_BiggerMemory.length > 0 )
 			{
-				throw new RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  " + exce.getMessage());
+				throw new RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  ColName=" + this.dbMetaData.getColumnName(v_ColNo) + "  " + exce.getMessage());
 			}
 			else
 			{
@@ -1781,7 +1781,7 @@ public final class XSQLResult
 		{
 			this.getDatasRowSize = v_RowNo + 1;
 			
-			throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  " + exce.getMessage());
+			throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  ColName=" + this.dbMetaData.getColumnName(v_ColNo) + "  " + exce.getMessage());
 		}
 		
 		return v_Row;
