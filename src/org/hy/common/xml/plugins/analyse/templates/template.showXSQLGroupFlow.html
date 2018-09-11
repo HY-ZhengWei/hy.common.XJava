@@ -39,7 +39,7 @@
 	    fill: red;
 	}
 	
-	.NodeFlagC {
+	.NodeFlagR {
 	    font-size: 12px;
 	    font-weight: bold;
 	    fill: yellow;
@@ -48,7 +48,19 @@
 	.NodeFlagJ {
 	    font-size: 12px;
 	    font-weight: bold;
-	    fill: #F47920;
+	    fill: #9933CC;
+	}
+	
+	.NodeFlagT {
+	    font-size: 12px;
+	    font-weight: bold;
+	    fill: steelblue;
+	}
+	
+	.NodeFlagC {
+	    font-size: 12px;
+	    font-weight: bold;
+	    fill: red;
 	}
 	
 	.NodeLineRef {
@@ -303,6 +315,13 @@
 				.style("top"  ,(d3.event.pageY - 30) + "px")
 				.style("opacity" ,100);    
 			})
+			.on("mousemove" ,function() 
+			{         
+				v_Tooltip.html(makeTooltipText(i_Json))  
+				.style("left" ,(d3.event.pageX + (v_LevelSpacing/4)) + "px")     
+				.style("top"  ,(d3.event.pageY - 30) + "px")
+				.style("opacity" ,100);
+			})
 			.on("mouseout" ,function() 
 			{
 				v_Tooltip.style("opacity" ,0);   
@@ -329,7 +348,7 @@
 				}
 				else if ( i_Json.nodeType == "CollectionToQuery" )
 				{
-					v_FlagValue = "C";
+					v_FlagValue = "R";
 				}
 				else if ( i_Json.nodeType == "ExecuteJava" )
 				{
@@ -354,6 +373,77 @@
 			.attr("dy" ,v_CircleSize * -1 - 3)
 			.attr("text-anchor" ,"middle")
 			.text(i_Json.name);
+			
+			drawNodeThread(i_Json ,v_G);
+			drawNodeCloud (i_Json ,v_G);
+		}
+		
+		
+		
+		/**
+		 * 绘制节点的多线程标记
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-11
+		 * @version     v1.0
+		 *
+		 * @param i_Json  树结构的Json数据
+		 */
+		function drawNodeThread(i_Json ,i_G)
+		{
+			if ( i_Json.threadType != null && i_Json.threadType != '' )
+			{
+				var v_Circle = i_G.append("circle")
+				.attr("class" ,"NodeCircle")
+				.attr("cx" ,v_CircleSize * 2 + 3)
+				.attr("r" ,v_CircleSize);
+				
+				var v_FlagValue = "T";
+				
+				var v_Flag = i_G.append("text")
+				.attr("class" ,"NodeFlag" + v_FlagValue)
+				.attr("x" ,v_CircleSize * 2 + 3)
+				.attr("dy" ,v_CircleSize / 2 + 1)
+				.attr("text-anchor" ,"middle")
+				.text(v_FlagValue);
+			}
+		}
+		
+		
+		
+		/**
+		 * 绘制节点的云计算标记
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-11
+		 * @version     v1.0
+		 *
+		 * @param i_Json  树结构的Json数据
+		 */
+		function drawNodeCloud(i_Json ,i_G)
+		{
+			var v_Offset = 0;
+			if ( i_Json.threadType != null && i_Json.threadType != '' )
+			{
+				v_Offset = v_CircleSize * 2 + 3;
+			}
+			
+			if ( i_Json.cloudServers != null && i_Json.cloudServers != '' )
+			{
+				var v_Circle = i_G.append("circle")
+				.attr("class" ,"NodeCircle")
+				.attr("cx" ,v_CircleSize * 2 + 3 + v_Offset)
+				.attr("r" ,v_CircleSize);
+				
+				var v_FlagValue = "C";
+				
+				var v_Flag = i_G.append("text")
+				.attr("class" ,"NodeFlag" + v_FlagValue)
+				.attr("x" ,v_CircleSize * 2 + 3 + v_Offset)
+				.attr("dy" ,v_CircleSize / 2 + 1)
+				.attr("text-anchor" ,"middle")
+				.text(v_FlagValue);
+			}
 		}
 		
 		
@@ -377,12 +467,12 @@
 				if ( i_Json.px == i_Json.x && i_Json.py != i_Json.y )
 				{
 					/* 画的是垂直线，所以y轴偏移，跳过节点高度 */
-					v_OfferY = v_CircleSize * -2;
+					v_OfferY = v_CircleSize * -2 + 2;
 				}
 				else if ( i_Json.px != i_Json.x && i_Json.py == i_Json.y )
 				{
 					/* 画的是水平线，所以x轴偏移，路过节点宽度 */
-					v_OfferX = v_CircleSize * -2;
+					v_OfferX = v_CircleSize * -2 + 2;
 				}
 				else
 				{
@@ -390,7 +480,8 @@
 					v_OfferY = v_CircleSize * -0.75;
 				}
 				
-				var v_Line = v_SVG.append("line")
+				/* 画流程走势线 */
+				var v_LineFlow = v_SVG.append("line")
 				.attr("class" ,"NodeLineFlow")
 				.attr("marker-end" ,"url(#arrow)")
 				.attr("x1" ,i_Json.px)
@@ -398,18 +489,23 @@
 				.attr("x2" ,i_Json.x + v_OfferX)
 				.attr("y2" ,i_Json.y + v_OfferY);
 				
+				if ( i_Json.condition != null && i_Json.condition != '' )
+				{
+					v_LineFlow.attr("stroke-dasharray" ,"5,2");
+				}
 				
-				/* 方案2：画常规树目录的折线连接 */
-				var v_Line = v_SVG.append("path")
+				
+				/* 方案2：画常规树目录的折线连接（父子关系线） */
+				var v_LineRef = v_SVG.append("path")
 				.attr("class" ,"NodeLineRef")
 				.attr("stroke-dasharray" ,"2,5")
 				.attr("d" ,"M" + i_Json.sx + "," + i_Json.sy 
 						+ " V" + i_Json.y
 						+ " H" + (i_Json.x - v_CircleSize));
 				
-				/* 方案1：画直线连接 */
+				/* 方案1：画直线连接（父子关系线） */
 				/*
-				var v_Line = v_SVG.append("line")
+				var v_LineRef = v_SVG.append("line")
 				.attr("class" ,"NodeLineRef")
 				.attr("stroke-dasharray" ,"2,5")
 				.attr("x1" ,i_Json.sx)
@@ -439,6 +535,8 @@
 			v_SVG.selectAll(".NodeFlagS").remove();
 			v_SVG.selectAll(".NodeFlagU").remove();
 			v_SVG.selectAll(".NodeFlagJ").remove();
+			v_SVG.selectAll(".NodeFlagR").remove();
+			v_SVG.selectAll(".NodeFlagT").remove();
 			v_SVG.selectAll(".NodeFlagC").remove();
 			v_SVG.selectAll(".NodeLineRef").remove();
 			v_SVG.selectAll(".NodeLineFlow").remove();
@@ -469,6 +567,30 @@
 			v_Text += "<td><font color='gray'>节点XID：</font></td>";
 			v_Text += "<td>" + i_Json.xid + "</td>";
 			v_Text += "</tr>";
+			
+			if ( i_Json.condition != null && i_Json.condition != '' )
+			{
+				v_Text += "<tr>";
+				v_Text += "<td><font color='gray'>执行条件：</font></td>";
+				v_Text += "<td>" + i_Json.condition + "</td>";
+				v_Text += "</tr>";
+			}
+			
+			if ( i_Json.cloudServers != null && i_Json.cloudServers != '' )
+			{
+				v_Text += "<tr>";
+				v_Text += "<td><font color='gray'>云计算：</font></td>";
+				v_Text += "<td>" + i_Json.cloudServers + "台计算服务</td>";
+				v_Text += "</tr>";
+			}
+			
+			if ( i_Json.threadType != null && i_Json.threadType != '' )
+			{
+				v_Text += "<tr>";
+				v_Text += "<td><font color='gray'>并发类型：</font></td>";
+				v_Text += "<td>" + i_Json.threadType + "</td>";
+				v_Text += "</tr>";
+			}
 			
 			v_Text += "<tr>";
 			v_Text += "<td><font color='gray'>执行类型：</font></td>";

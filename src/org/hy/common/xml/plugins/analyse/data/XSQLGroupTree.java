@@ -32,6 +32,12 @@ public class XSQLGroupTree implements Serializable
     /** XSQLNode节点执行 */
     private String              condition;
     
+    /** XSQLNode节点多线程执行的类型 */
+    private String              threadType;
+    
+    /** XSQLNode节点云计算的服务器数量 */
+    private String              cloudServers;
+    
     /** 节点名称，对应XSQLNode中的注释XSQLNode.comment。可为空 */
     private String              name;
     
@@ -218,6 +224,50 @@ public class XSQLGroupTree implements Serializable
     public void setCondition(String condition)
     {
         this.condition = condition;
+    }
+
+
+    
+    /**
+     * 获取：XSQLNode节点多线程执行的类型
+     */
+    public String getThreadType()
+    {
+        return threadType;
+    }
+
+
+    
+    /**
+     * 设置：XSQLNode节点多线程执行的类型
+     * 
+     * @param threadType 
+     */
+    public void setThreadType(String threadType)
+    {
+        this.threadType = threadType;
+    }
+
+
+    
+    /**
+     * 获取：XSQLNode节点云计算的服务器数量
+     */
+    public String getCloudServers()
+    {
+        return cloudServers;
+    }
+    
+
+    
+    /**
+     * 设置：XSQLNode节点云计算的服务器数量
+     * 
+     * @param cloudServers 
+     */
+    public void setCloudServers(String cloudServers)
+    {
+        this.cloudServers = cloudServers;
     }
     
 }

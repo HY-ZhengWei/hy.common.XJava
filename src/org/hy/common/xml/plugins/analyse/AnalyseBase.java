@@ -75,6 +75,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLGroupTree;
  *                                添加：重置数据库访问量的概要统计数据 
  *                                添加：重置数据库组合SQL访问量的概要统计数据
  *              v12.0 2018-07-26  添加：查看创建数据库对象列表
+ *              v13.0 2018-09-10  添加：显示XSQLGroup树目录流程图
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -253,8 +254,10 @@ public class AnalyseBase extends Analyse
     {
         XSQLGroupTree v_Tree = new XSQLGroupTree();
         
-        v_Tree.setXid( Help.NVL(i_XSQLGroup.getXJavaID()));
-        v_Tree.setName(Help.NVL(i_XSQLGroup.getComment()));
+        v_Tree.setXid(    Help.NVL(i_XSQLGroup.getXJavaID()));
+        v_Tree.setName(   Help.NVL(i_XSQLGroup.getComment() ,Help.NVL(i_XSQLGroup.getXJavaID())));
+        v_Tree.setComment(Help.NVL(i_XSQLGroup.getComment()));
+        v_Tree.setThreadType(i_XSQLGroup.isThread() ? "组级多线程" : "");
         v_Tree.setChildren(new ArrayList<XSQLGroupTree>());
         
         if ( Help.isNull(i_XSQLGroup.getXsqlNodes()) )
@@ -266,9 +269,16 @@ public class AnalyseBase extends Analyse
         {
             XSQLGroupTree v_TreeNode = new XSQLGroupTree();
             
-            v_TreeNode.setXid(    Help.NVL(v_XSQLNode.getXJavaID()));
-            v_TreeNode.setName(   Help.NVL(v_XSQLNode.getComment() ,Help.NVL(v_XSQLNode.getXJavaID())));
-            v_TreeNode.setComment(Help.NVL(v_XSQLNode.getComment()));
+            v_TreeNode.setXid(      Help.NVL(v_XSQLNode.getXJavaID()));
+            v_TreeNode.setName(     Help.NVL(v_XSQLNode.getComment() ,Help.NVL(v_XSQLNode.getXJavaID())));
+            v_TreeNode.setComment(  Help.NVL(v_XSQLNode.getComment()));
+            v_TreeNode.setCondition(Help.NVL(v_XSQLNode.getCondition()));
+            v_TreeNode.setThreadType(v_XSQLNode.isThread() ? "节点级多线程" : "");
+            
+            if ( !Help.isNull(v_XSQLNode.getCloudServersList()) )
+            {
+                v_TreeNode.setCloudServers("" + v_XSQLNode.getCloudServersList().size());
+            }
             
             XSQLGroup v_Children = v_XSQLNode.getSqlGroup();
             if ( v_Children == null )
@@ -293,6 +303,8 @@ public class AnalyseBase extends Analyse
             }
             else
             {
+                v_TreeNode.setNodeType("XSQL组");
+                v_TreeNode.setThreadType(v_Children.isThread() ? "组级多线程" : "");
                 v_TreeNode.setExecuteXID(v_Children.getXJavaID());
                 v_TreeNode.setChildren(makeXSQLGroupTree(v_Children).getChildren());
             }

@@ -58,6 +58,8 @@ import org.hy.common.xml.XJava;
  * 功能16：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?DSG=Y&cluster=Y
  * 
  * 功能17：Web文件资源管理器             http://IP:Port/WebService/../analyseObject?FS=Y
+ * 
+ * 功能18：查看XSQL组流程图               http://IP:Port/WebService/../analyseObject?XSGFlow=Y&xid=xxx
  *
  * @author      ZhengWei(HY)
  * @createDate  2015-12-16
@@ -72,6 +74,7 @@ import org.hy.common.xml.XJava;
  *              v5.0  2018-02-28  添加：本机定时任务运行情况。之前合并在 "查看前缀匹配的对象列表" 任务中
  *              v6.0  2018-03-11  添加：Web文件资源管理器（支持集群）
  *              v7.0  2018-07-26  添加：查看创建数据库对象列表
+ *              v8.0  2018-09-10  添加：查看XSQL组流程图
  *              
  */
 public class AnalyseObjectServlet extends HttpServlet
