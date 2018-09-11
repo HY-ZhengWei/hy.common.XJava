@@ -324,7 +324,20 @@ public class AnalyseBase extends Analyse
                 v_TreeNode.setNodeType("XSQL组");
                 v_TreeNode.setThreadType(v_Children.isThread() ? "组级多线程" : "");
                 v_TreeNode.setExecuteXID(v_Children.getXJavaID());
-                v_TreeNode.setChildren(makeXSQLGroupTree(v_Children).getChildren());
+                
+                XSQLGroupTree v_ChildrenTree = makeXSQLGroupTree(v_Children);
+                v_TreeNode.setChildren(v_ChildrenTree.getChildren());
+                
+                if ( Help.isNull(v_TreeNode.getName()) )
+                {
+                    // 对于直接执行XSQL组的节点，一般都没有注释及XID的，所以取节点执行XSQL组的信息
+                    v_TreeNode.setName(Help.NVL(v_ChildrenTree.getName()));
+                }
+                if ( Help.isNull(v_TreeNode.getComment()) )
+                {
+                    // 对于直接执行XSQL组的节点，一般都没有注释及XID的，所以取节点执行XSQL组的信息
+                    v_TreeNode.setComment(Help.NVL(v_ChildrenTree.getComment()));
+                }
             }
             
             if ( Help.isNull(v_TreeNode.getChildren()) )

@@ -35,7 +35,7 @@
 	        
 	        <item>
 	            <name>数据库组合SQL访问量（支持集群）</name>
-				<comment></comment>
+				<comment>可查看业务流程图</comment>
 				<value><![CDATA[ /analyseDB?type=Group ]]></value>
 	        </item>
 	        

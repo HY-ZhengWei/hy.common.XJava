@@ -2,7 +2,11 @@
 <head>
 	<title>:Title</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<script src=":HttpBasePath/d3/d3.min.js" charset="utf-8"></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/d3/d3.min.js"></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery.min.js" ></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery-ui.min.js"></script>
+
+	<link rel="stylesheet" href=":HttpBasePath/jquery/jquery-ui.min.css" />
 	
 	<style type="text/css">
 	body { 
@@ -95,16 +99,25 @@
 	
 	#legend {
 		width: 160px; 
-		height: 240px; 
+		height: 270px; 
 		border: 1px solid #888; 
 		border-radius: 5px;
 		position: fixed;
 		right: 20;
 		top: 30%;
 	}
+	
+	#menuDiv {
+	    position: fixed;
+	    width: 120px;
+	}
+	
+	.MenuItem {
+		font-size: 14px;
+	}
 	</style>
 </head>
-<body>
+<body oncontextmenu="return false">
 	
 	<svg id="mainSVG" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
 	
@@ -130,6 +143,12 @@
 		</svg>
 	</div>
 	
+	<div id="menuDiv">
+		<ul id="menu">
+		  <li><div id="executeIDDetail" class="MenuItem">查看执行对象</div></li>
+		</ul>
+	</div>
+	
 	
 	<script type="text/javascript">
 		var v_CircleSize   = 8;       /* 节点上圆的大小 */
@@ -137,10 +156,49 @@
 		var v_Height       = 1000;    /* 画布高度 */
 		var v_LevelSpacing = 200;     /* 不同层级间的间隔 */
 		var v_NodeSpacing  = 50;      /* 同一父节点的多个子节点间的间隔 */
-		var v_JsonDatas    = null;
+		var v_JsonDatas    = null;    /* 整个Json数据 */
+		var v_MenuJson     = null;    /* 右键菜单选中的Json数据 */
 		var v_SVG          = d3.select("body").select("#mainSVG");
 		var v_LegendSVG    = d3.select("body").select("#legendSVG");
-
+		
+		
+		
+		d3.select("body").on("click" ,function()
+		{
+			v_Menu.style("opacity" ,0);
+		});
+		
+		
+		
+		/**
+		 * 点击右键菜单中的：查看执行对象
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-11
+		 * @version     v1.0
+		 */
+		d3.select("#executeIDDetail").on("click" ,function()
+		{
+			v_Menu.style("opacity" ,0);
+			
+			if ( v_MenuJson != null )
+			{
+				if ( v_MenuJson.executeXID != null && v_MenuJson.executeXID != "" )
+				{
+					var v_XID = v_MenuJson.executeXID;
+					if ( v_MenuJson.nodeType == "ExecuteJava" )
+					{
+						v_XID = v_XID.split(".")[0];
+					}
+					window.open("analyseObject?xid=" + v_XID ,"_blank");
+				}
+				else if ( v_MenuJson.xid != null && v_MenuJson.xid != "" )
+				{
+					window.open("analyseObject?xid=" + v_MenuJson.xid ,"_blank");
+				}
+			}
+		});
+		
 		
 		
 		/**
@@ -320,6 +378,8 @@
 			.attr("transform" ,"translate(" + i_Json.x + "," + i_Json.y + ")")
 			.on("click" ,function()
 			{
+				v_Menu.style("opacity" ,0);
+				
 				if ( i_Json.children != null && i_Json.children.length >= 1 )
 				{
 					i_Json.children.forEach(function(d)
@@ -329,6 +389,14 @@
 					
 					drawTree(v_JsonDatas);
 				}
+			})
+			.on("contextmenu" ,function()
+			{
+				v_MenuJson = i_Json;
+				v_Menu
+				.style("left" ,(d3.event.pageX - 135) + "px")     
+				.style("top"  ,(d3.event.pageY - 28)  + "px")
+				.style("opacity" ,100);
 			})
 			.on("mouseover" ,function() 
 			{         
@@ -346,7 +414,7 @@
 			})
 			.on("mouseout" ,function() 
 			{
-				v_Tooltip.style("opacity" ,0);   
+				v_Tooltip.style("opacity" ,0);
 			});
 			
 			var v_Circle = v_G.append("circle")
@@ -549,7 +617,8 @@
 		 */
 		function drawLegends()
 		{
-			var v_Nodes = [{"flag":"S" ,"comment":"查询数据库"} 
+			var v_Nodes = [{"flag":" " ,"comment":"组、节点。有右击菜单"}
+			              ,{"flag":"S" ,"comment":"查询数据库"} 
 			              ,{"flag":"U" ,"comment":"更新数据库"} 
 			              ,{"flag":"J" ,"comment":"执行Java方法"} 
 			              ,{"flag":"C" ,"comment":"云计算"} 
@@ -796,6 +865,10 @@
 		.style("position" ,"absolute")
 		.style("z-index"  ,"99999");
 		
+		var v_Menu = d3.select("#menuDiv")
+		.style("position" ,"absolute")
+		.style("z-index"  ,"99999");
+		
 		
 		v_JsonDatas = :JsonTree;
 		drawTree(v_JsonDatas);
@@ -815,6 +888,12 @@
         });
 
 		v_SVG.call(v_Zoom);
+		
+		
+		$(function() 
+		{
+			$("#menu").menu();
+		});
 	</script>
 
 </body>
