@@ -42,7 +42,7 @@
 	.NodeFlagR {
 	    font-size: 12px;
 	    font-weight: bold;
-	    fill: yellow;
+	    fill: green;
 	}
 	
 	.NodeFlagJ {
@@ -63,6 +63,11 @@
 	    fill: red;
 	}
 	
+	.LegendComment {
+	    font-size: 12px;
+	    fill: gray;
+	}
+	
 	.NodeLineRef {
 	    fill: none;
 	    stroke: #888;
@@ -76,6 +81,7 @@
 	}
 	
 	#tooltip {
+		background: white;
 	    display: inline-block;
 	    position: relative;
 	    padding: 0px 15px;
@@ -86,11 +92,21 @@
 	#tooltip table tr td {
 		font-size: 12px;
 	}
+	
+	#legend {
+		width: 160px; 
+		height: 240px; 
+		border: 1px solid #888; 
+		border-radius: 5px;
+		position: fixed;
+		right: 20;
+		top: 30%;
+	}
 	</style>
 </head>
 <body>
 	
-	<svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
+	<svg id="mainSVG" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
 	
 		<defs>
 			<marker id="arrow" 
@@ -106,7 +122,13 @@
 		</defs>
 	
 	</svg>
-	<div id="tooltip" style="background:white;"></div>
+	
+	<div id="tooltip"></div>
+	
+	<div id="legend">
+		<svg id="legendSVG" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
+		</svg>
+	</div>
 	
 	
 	<script type="text/javascript">
@@ -116,8 +138,8 @@
 		var v_LevelSpacing = 200;     /* 不同层级间的间隔 */
 		var v_NodeSpacing  = 50;      /* 同一父节点的多个子节点间的间隔 */
 		var v_JsonDatas    = null;
-	
-		var v_SVG  = d3.select("body").select("svg");
+		var v_SVG          = d3.select("body").select("#mainSVG");
+		var v_LegendSVG    = d3.select("body").select("#legendSVG");
 
 		
 		
@@ -519,6 +541,141 @@
 		
 		
 		/**
+		 * 绘制图例
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-11
+		 * @version     v1.0
+		 */
+		function drawLegends()
+		{
+			var v_Nodes = [{"flag":"S" ,"comment":"查询数据库"} 
+			              ,{"flag":"U" ,"comment":"更新数据库"} 
+			              ,{"flag":"J" ,"comment":"执行Java方法"} 
+			              ,{"flag":"C" ,"comment":"云计算"} 
+			              ,{"flag":"T" ,"comment":"并行计算"} 
+			              ,{"flag":"R" ,"comment":"缓存集合遍历"}];
+			
+			var v_Lines = [{"className":"NodeLineRef"  ,"dasharray":"2,5" ,"markerEnd":""            ,"comment":"组、节点的关系线"}
+			              ,{"className":"NodeLineFlow" ,"dasharray":""    ,"markerEnd":"url(#arrow)" ,"comment":"业务走势线"}
+			              ,{"className":"NodeLineFlow" ,"dasharray":"5,2" ,"markerEnd":"url(#arrow)" ,"comment":"业务走势线（有条件）"}];
+			
+			v_LegendSVG.selectAll(".LegendNode")
+			.data(v_Nodes)
+			.enter()
+			.append("g")
+			.attr("class" ,"LegendNode")
+			.attr("transform" ,function(d ,i)
+			{
+				return "translate(" + 20 + "," + ((v_CircleSize * 2) * i + (10 * (i + 1)) + 10) + ")";
+			})
+			.each(function(d ,i)
+			{
+				drawLegendNode(d3.select(this) ,d.comment ,d.flag);
+			});
+			
+			v_LegendSVG.selectAll(".LegendLine")
+			.data(v_Lines)
+			.enter()
+			.append("g")
+			.attr("class" ,"LegendLine")
+			.attr("transform" ,function(d ,i)
+			{
+				return "translate(" + 5 + "," + ((v_CircleSize * 2) * v_Nodes.length + (10 * (v_Nodes.length + 1)) + 10 + i * v_CircleSize * 2 + i * 5) + ")";
+			})
+			.each(function(d ,i)
+			{
+				drawLegendLine(d3.select(this) ,d);
+			});
+		}
+		
+		
+		
+		/**
+		 * 绘制图例中的线
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-11
+		 * @version     v1.0
+		 *
+		 * @param i_G     G元素
+		 * @param i_Data  数据
+		 */
+		function drawLegendLine(i_G ,i_Data)
+		{
+			var v_Line = i_G.append("path")
+			.attr("class" ,i_Data.className)
+			.attr("d" ,"M0,5 H20");
+			
+			if ( i_Data.dasharray != "" )
+			{
+				v_Line.attr("stroke-dasharray" ,i_Data.dasharray);
+			}
+			
+			if ( i_Data.markerEnd != "" )
+			{
+				v_Line.attr("marker-end" ,i_Data.markerEnd);
+			}
+			
+			var v_Comment = i_G.append("text")
+			.attr("class" ,"LegendComment")
+			.attr("dx" ,30)
+			.attr("dy" ,10)
+			.text(i_Data.comment);
+		}
+		
+		
+		
+		/**
+		 * 绘制图例中的节点
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-11
+		 * @version     v1.0
+		 *
+		 * @param i_G          G元素
+		 * @param i_Comment    说明文字
+		 * @param i_FlagValue  圆内文字
+		 */
+		function drawLegendNode(i_G ,i_Comment ,i_FlagValue)
+		{
+			drawNodeCircleFlag(i_G ,i_FlagValue);
+			
+			var v_Comment = i_G.append("text")
+			.attr("class" ,"LegendComment")
+			.attr("dx" ,v_CircleSize * 2)
+			.attr("dy" ,5)
+			.text(i_Comment);
+		}
+		
+		
+		
+		/**
+		 * 绘制节点圆及圆内文字
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-11
+		 * @version     v1.0
+		 *
+		 * @param i_G          G元素
+		 * @param i_FlagValue  圆内文字
+		 */
+		function drawNodeCircleFlag(i_G ,i_FlagValue)
+		{
+			var v_Circle = i_G.append("circle")
+			.attr("class" ,"NodeCircle")
+			.attr("r" ,v_CircleSize);
+			
+			var v_Flag = i_G.append("text")
+			.attr("class" ,"NodeFlag" + i_FlagValue)
+			.attr("dy" ,v_CircleSize / 2 + 1)
+			.attr("text-anchor" ,"middle")
+			.text(i_FlagValue);
+		}
+		
+		
+		
+		/**
 		 * 绘制树结构（对外主调方法）
 		 *
 		 * @author      ZhengWei(HY)
@@ -541,9 +698,14 @@
 			v_SVG.selectAll(".NodeLineRef").remove();
 			v_SVG.selectAll(".NodeLineFlow").remove();
 			
+			v_SVG.selectAll(".LegendNode").remove();
+			v_SVG.selectAll(".LegendLine").remove();
+			v_SVG.selectAll(".LegendComment").remove();
+			
 			calcTreeForEach(i_Json ,1 ,1 ,1 ,1 ,null ,null);
 			drawTreeForEachByLine(i_Json);
 			drawTreeForEachByNode(i_Json);
+			drawLegends();
 		}
 		
 		
@@ -636,7 +798,6 @@
 		v_SVG
 		.attr("width"  ,v_Width)
 		.attr("height" ,v_Height);
-		
 		
 		var v_Zoom = d3.zoom()
         .scaleExtent([1 ,1])

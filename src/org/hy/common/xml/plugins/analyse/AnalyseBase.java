@@ -364,7 +364,7 @@ public class AnalyseBase extends Analyse
         
         return StringHelp.replaceAll(this.getTemplateShowXSQLGroupFlow()
                                     ,new String[]{":Title"       ,":HttpBasePath" ,":HttpValuePath"  ,":JsonTree"}
-                                    ,new String[]{"XSQL组的流程图" ,i_BasePath      ,i_ObjectValuePath ,v_JsonTree});
+                                    ,new String[]{"XSQL组的业务流程图" ,i_BasePath      ,i_ObjectValuePath ,v_JsonTree});
     }
     
     
