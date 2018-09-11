@@ -32,12 +32,14 @@ import org.hy.common.xml.XSQLLog;
 import org.hy.common.xml.annotation.Xjava;
 import org.hy.common.xml.plugins.AppInitConfig;
 import org.hy.common.xml.plugins.XSQLGroup;
+import org.hy.common.xml.plugins.XSQLNode;
 import org.hy.common.xml.plugins.analyse.data.AnalyseDBTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseDSGTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseJobTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseThreadPoolTotal;
 import org.hy.common.xml.plugins.analyse.data.ClusterReport;
 import org.hy.common.xml.plugins.analyse.data.DataSourceGroupReport;
+import org.hy.common.xml.plugins.analyse.data.XSQLGroupTree;
 
 
 
@@ -238,6 +240,124 @@ public class AnalyseBase extends Analyse
     
     
     /**
+     * 生成XSQLGroup组的树结构
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-09-10
+     * @version     v1.0
+     *
+     * @param i_XSQLGroup
+     * @return
+     */
+    private XSQLGroupTree makeXSQLGroupTree(XSQLGroup i_XSQLGroup)
+    {
+        XSQLGroupTree v_Tree = new XSQLGroupTree();
+        
+        v_Tree.setXid( Help.NVL(i_XSQLGroup.getXJavaID()));
+        v_Tree.setName(Help.NVL(i_XSQLGroup.getComment()));
+        v_Tree.setChildren(new ArrayList<XSQLGroupTree>());
+        
+        if ( Help.isNull(i_XSQLGroup.getXsqlNodes()) )
+        {
+            return v_Tree;
+        }
+        
+        for (XSQLNode v_XSQLNode : i_XSQLGroup.getXsqlNodes())
+        {
+            XSQLGroupTree v_TreeNode = new XSQLGroupTree();
+            
+            v_TreeNode.setXid(    Help.NVL(v_XSQLNode.getXJavaID()));
+            v_TreeNode.setName(   Help.NVL(v_XSQLNode.getComment() ,Help.NVL(v_XSQLNode.getXJavaID())));
+            v_TreeNode.setComment(Help.NVL(v_XSQLNode.getComment()));
+            
+            XSQLGroup v_Children = v_XSQLNode.getSqlGroup();
+            if ( v_Children == null )
+            {
+                if ( XSQLNode.$Type_ExecuteJava.equals(v_XSQLNode.getType()) )
+                {
+                    v_TreeNode.setExecuteXID(v_XSQLNode.getXid() + "." + v_XSQLNode.getMethodName());
+                }
+                else if ( XSQLNode.$Type_CollectionToQuery        .equals(v_XSQLNode.getType()) 
+                       || XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_XSQLNode.getType()) )
+                {
+                    v_TreeNode.setExecuteXID(Help.NVL(v_XSQLNode.getCollectionID()));
+                }
+                else
+                {
+                    v_TreeNode.setExecuteXID(Help.NVL(v_XSQLNode.getSql().getXJavaID()));
+                    v_TreeNode.setReturnID(  Help.NVL(v_XSQLNode.getReturnID() ,Help.NVL(v_XSQLNode.getQueryReturnID())));
+                }
+                
+                v_TreeNode.setNodeType(v_XSQLNode.getType());
+                v_TreeNode.setName(Help.NVL(v_TreeNode.getName() ,v_TreeNode.getExecuteXID()));
+            }
+            else
+            {
+                v_TreeNode.setExecuteXID(v_Children.getXJavaID());
+                v_TreeNode.setChildren(makeXSQLGroupTree(v_Children).getChildren());
+            }
+            
+            if ( Help.isNull(v_TreeNode.getChildren()) )
+            {
+                v_TreeNode.setChildren(null);
+            }
+            
+            v_Tree.getChildren().add(v_TreeNode);
+        }
+        
+        return v_Tree;
+    }
+    
+    
+    
+    /**
+     * 显示XSQLGroup树目录流程图
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-09-10
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject
+     * @param i_XID              XJava对象ID
+     * @return
+     */
+    public String showXSQLGroupFlow(String i_BasePath ,String i_ObjectValuePath ,String i_XID)
+    {
+        Object v_XObject = XJava.getObject(i_XID);
+        if ( v_XObject == null )
+        {
+            return "Object(" + i_XID + ") is not exists.";
+        }
+        else if ( !(v_XObject instanceof XSQLGroup) )
+        {
+            return "Object(" + i_XID + ") is not XSQLGroup Class type.";
+        }
+        
+        XSQLGroup     v_XSQLGroup     = (XSQLGroup)v_XObject;
+        XSQLGroupTree v_XSQLGroupTree = this.makeXSQLGroupTree(v_XSQLGroup);
+        XJSON         v_XJson         = new XJSON();
+        String        v_JsonTree      = null;
+        
+        try
+        {
+            v_XJson.setReturnNVL(true);
+            v_JsonTree = v_XJson.toJson(v_XSQLGroupTree).toJSONString();
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+            return exce.getMessage();
+        }
+        
+        return StringHelp.replaceAll(this.getTemplateShowXSQLGroupFlow()
+                                    ,new String[]{":Title"       ,":HttpBasePath" ,":HttpValuePath"  ,":JsonTree"}
+                                    ,new String[]{"XSQL组的流程图" ,i_BasePath      ,i_ObjectValuePath ,v_JsonTree});
+    }
+    
+    
+    
+    /**
      * 获取数据库组合SQL访问量的概要统计数据（支持集群）
      * 
      * @author      ZhengWei(HY)
@@ -314,7 +434,7 @@ public class AnalyseBase extends Analyse
                 v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue(v_Item.getKey()).longValue());
                 
                 v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
-                                         .replaceAll(":Name"         ,v_Item.getKey())
+                                         .replaceAll(":Name"         ,"<a href='analyseObject?XSGFlow=Y&xid=" + v_Item.getKey() + "' class='Flow'>" + v_Item.getKey() + "</a>")
                                          .replaceAll(":RequestCount" ,String.valueOf(v_RequestCount))
                                          .replaceAll(":SuccessCount" ,String.valueOf(v_SuccessCount))
                                          .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount))
@@ -2200,6 +2320,13 @@ public class AnalyseBase extends Analyse
     private String getTemplateShowDSGContent()
     {
         return this.getTemplateContent("template.showDSGContent.html");
+    }
+    
+    
+    
+    private String getTemplateShowXSQLGroupFlow()
+    {
+        return this.getTemplateContent("template.showXSQLGroupFlow.html");
     }
     
 }

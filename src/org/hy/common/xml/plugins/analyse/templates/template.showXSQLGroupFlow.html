@@ -1,0 +1,530 @@
+<html>
+<head>
+	<title>:Title</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script src=":HttpBasePath/d3/d3.min.js" charset="utf-8"></script>
+	
+	<style type="text/css">
+	body { 
+		background-color: #FAFAFA; 
+		margin: 20px;
+	}
+	
+	.NodeCircle {
+	    fill: #fff;
+	    stroke: steelblue;
+	    stroke-width: 3px;
+	}
+	
+	.NodeTitle {
+	    font: 11px sans-serif;
+	    fill: #000;
+	}
+	
+	.NodeFlag {
+	    font-size: 18px;
+	    font-weight: bold;
+	    fill: steelblue;
+	}
+	
+	.NodeFlagS {
+	    font-size: 12px;
+	    font-weight: bold;
+	    fill: steelblue;
+	}
+	
+	.NodeFlagU {
+	    font-size: 12px;
+	    font-weight: bold;
+	    fill: red;
+	}
+	
+	.NodeFlagC {
+	    font-size: 12px;
+	    font-weight: bold;
+	    fill: yellow;
+	}
+	
+	.NodeFlagJ {
+	    font-size: 12px;
+	    font-weight: bold;
+	    fill: #F47920;
+	}
+	
+	.NodeLineRef {
+	    fill: none;
+	    stroke: #888;
+	    stroke-width: 2px;
+	}
+	
+	.NodeLineFlow {
+	    fill: none;
+	    stroke: green;
+	    stroke-width: 2px;
+	}
+	
+	#tooltip {
+	    display: inline-block;
+	    position: relative;
+	    padding: 0px 15px;
+	    border-radius: 5px;
+	    border: 1px solid #DDD;
+	}
+	
+	#tooltip table tr td {
+		font-size: 12px;
+	}
+	</style>
+</head>
+<body>
+	
+	<svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
+	
+		<defs>
+			<marker id="arrow" 
+			                markerUnits="strokerWidth"
+			                markerWidth="16"
+			                markerHeight="16"
+			                viewBox="0 0 12 12"
+			                refX="6"
+			                refY="6"
+			                orient="auto">
+				<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill:green;" />
+			</marker>
+		</defs>
+	
+	</svg>
+	<div id="tooltip" style="background:white;"></div>
+	
+	
+	<script type="text/javascript">
+		var v_CircleSize   = 8;       /* 节点上圆的大小 */
+		var v_Width        = 1024;    /* 画布宽度 */
+		var v_Height       = 1000;    /* 画布高度 */
+		var v_LevelSpacing = 200;     /* 不同层级间的间隔 */
+		var v_NodeSpacing  = 50;      /* 同一父节点的多个子节点间的间隔 */
+		var v_JsonDatas    = null;
+	
+		var v_SVG  = d3.select("body").select("svg");
+
+		
+		
+		/**
+		 * 返回结果是数组类型，元素0是：共有多少个叶子节点，元素1是：最深的层级是多少。
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-09
+		 * @version     v1.0
+		 * 
+		 * @param i_Json  树结构的Json数据
+		 * @param i_Level 递归遍历树结构的层级。下标从1开始
+		 */
+		function getLeafNodeCount(i_Json ,i_Level)
+		{
+			if ( i_Json.children == null || i_Json.children.length <= 0 )
+			{
+				return [1 ,i_Level];
+			}
+			
+			var v_Ret = [0 ,i_Level];
+			i_Json.children.forEach(function(d)
+			{
+				if ( d.hidden == null || !d.hidden )
+				{
+					var v_ChildrenRet = getLeafNodeCount(d ,i_Level + 1);
+					
+					v_Ret[0] = v_Ret[0] + v_ChildrenRet[0];
+					v_Ret[1] = d3.max([v_Ret[1] ,v_ChildrenRet[1]]);
+				}
+			});
+			
+			return v_Ret;
+		}
+		
+		
+		
+		/**
+		 * 递归计算树结构
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-09
+		 * @version     v1.0
+		 *
+		 * @param i_Json          树结构的Json数据
+		 * @param i_Level         递归遍历树结构的层级。下标从1开始
+		 * @param i_Index         同一父节点的多个子节点的排列序号，下标从1开始
+		 * @param i_Size          同一父节点的多个子节点的数量
+		 * @param i_TreeLeafIndex 整个树结构叶子节点的序号，下标从1开始
+		 * @param i_SuperJson     父节点的Json数据
+		 * @param i_PreviousJson  同一父节点的上一个子节点的Json数据 
+		 */
+		function calcTreeForEach(i_Json ,i_Level ,i_Index ,i_Size ,i_TreeLeafIndex ,i_SuperJson ,i_PreviousJson)
+		{
+			if ( i_SuperJson == null )
+			{
+				i_Json.id = "NID-" + i_Index;
+				i_Json.x  = v_NodeSpacing;
+				i_Json.y  = v_NodeSpacing;
+			}
+			else
+			{
+				i_Json.id = i_SuperJson.id + "-" + i_Index;
+				i_Json.sx = i_SuperJson.x;
+				i_Json.sy = i_SuperJson.y;
+				i_Json.x  = i_SuperJson.x + v_LevelSpacing;
+				i_Json.y  = i_TreeLeafIndex * v_NodeSpacing;
+			}
+			
+			if ( i_Json.children == null || i_Json.children.length <= 0 )
+			{
+				return [i_Json ,i_TreeLeafIndex + 1];
+			}
+			
+			var v_Index         = 1;
+			var v_PreviousJson  = i_Json;
+			var v_TreeLeafIndex = i_TreeLeafIndex;
+			var v_ShowCount     = 0;
+			i_Json.children.forEach(function(d)
+			{
+				if ( d.hidden == null || !d.hidden )
+				{
+					v_ShowCount++;
+					d.px = v_PreviousJson.x;
+					d.py = v_PreviousJson.y;
+					var v_CalcRet = calcTreeForEach(d ,i_Level + 1 ,v_Index++ ,i_Json.children.length ,v_TreeLeafIndex ,i_Json ,v_PreviousJson);
+					v_PreviousJson  = v_CalcRet[0];
+					v_TreeLeafIndex = v_CalcRet[1];
+				}
+			});
+			
+			i_Json.showCount = v_ShowCount;
+			
+			if ( v_ShowCount <= 0 )
+			{
+				/* 没有一个子节点，或所有子节点被隐藏了 */
+				return [v_PreviousJson ,v_TreeLeafIndex + 1];
+			}
+			else
+			{
+				return [v_PreviousJson ,v_TreeLeafIndex];
+			}
+		}
+		
+		
+		
+		/**
+		 * 递归绘制树结构中的节点
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-09
+		 * @version     v1.0
+		 *
+		 * @param i_Json  树结构的Json数据
+		 */
+		function drawTreeForEachByNode(i_Json)
+		{
+			drawNode(i_Json);
+			
+			if ( i_Json.children == null || i_Json.children.length <= 0 )
+			{
+				return;
+			}
+			
+			i_Json.children.forEach(function(d)
+			{
+				if ( d.hidden == null || !d.hidden )
+				{
+					drawTreeForEachByNode(d);
+				}
+			});
+		}
+		
+		
+		
+		/**
+		 * 递归绘制树结构中的连接线
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-09
+		 * @version     v1.0
+		 *
+		 * @param i_Json  树结构的Json数据
+		 */
+		function drawTreeForEachByLine(i_Json)
+		{
+			drawLine(i_Json);
+			
+			if ( i_Json.children == null || i_Json.children.length <= 0 )
+			{
+				return;
+			}
+			
+			i_Json.children.forEach(function(d)
+			{
+				if ( d.hidden == null || !d.hidden )
+				{
+					drawTreeForEachByLine(d);
+				}
+			});
+		}
+		
+		
+		
+		/**
+		 * 绘制节点
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-09
+		 * @version     v1.0
+		 *
+		 * @param i_Json  树结构的Json数据
+		 */
+		function drawNode(i_Json)
+		{
+			var v_G = v_SVG.append("g")
+			.attr("id" ,i_Json.id)
+			.attr("transform" ,"translate(" + i_Json.x + "," + i_Json.y + ")")
+			.on("click" ,function()
+			{
+				if ( i_Json.children != null && i_Json.children.length >= 1 )
+				{
+					i_Json.children.forEach(function(d)
+					{
+						d.hidden = i_Json.showCount >= 1;
+					});
+					
+					drawTree(v_JsonDatas);
+				}
+			})
+			.on("mouseover" ,function() 
+			{         
+				v_Tooltip.html(makeTooltipText(i_Json))  
+				.style("left" ,(d3.event.pageX + (v_LevelSpacing/4)) + "px")     
+				.style("top"  ,(d3.event.pageY - 30) + "px")
+				.style("opacity" ,100);    
+			})
+			.on("mouseout" ,function() 
+			{
+				v_Tooltip.style("opacity" ,0);   
+			});
+			
+			var v_Circle = v_G.append("circle")
+			.attr("class" ,"NodeCircle")
+			.attr("r" ,v_CircleSize);
+			
+			if ( i_Json.children != null && i_Json.children.length >= 1 )
+			{
+				var v_Flag = v_G.append("text")
+				.attr("class" ,"NodeFlag")
+				.attr("dy" ,v_CircleSize / 2 + 1.5)
+				.attr("text-anchor" ,"middle")
+				.text(i_Json.showCount >= 1 ? "-" : "+");
+			}
+			else
+			{
+				var v_FlagValue = "";
+				if ( i_Json.nodeType == "Query" )
+				{
+					v_FlagValue = "S";
+				}
+				else if ( i_Json.nodeType == "CollectionToQuery" )
+				{
+					v_FlagValue = "C";
+				}
+				else if ( i_Json.nodeType == "ExecuteJava" )
+				{
+					v_FlagValue = "J";
+				}
+				else if ( i_Json.nodeType == "DMLExecute"
+					   || i_Json.nodeType == "Execute"
+					   || i_Json.nodeType == "CollectionToExecuteUpdate")
+				{
+					v_FlagValue = "U";
+				}
+				
+				var v_Flag = v_G.append("text")
+				.attr("class" ,"NodeFlag" + v_FlagValue)
+				.attr("dy" ,v_CircleSize / 2 + 1)
+				.attr("text-anchor" ,"middle")
+				.text(v_FlagValue);
+			}
+			
+			var v_Title = v_G.append("text")
+			.attr("class" ,"NodeTitle")
+			.attr("dy" ,v_CircleSize * -1 - 3)
+			.attr("text-anchor" ,"middle")
+			.text(i_Json.name);
+		}
+		
+		
+		
+		/**
+		 * 绘制连线
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-09
+		 * @version     v1.0
+		 *
+		 * @param i_Json  树结构的Json数据
+		 */
+		function drawLine(i_Json)
+		{
+			if ( i_Json.sx != null )
+			{
+				var v_OfferX = 0;
+				var v_OfferY = 0;
+				
+				if ( i_Json.px == i_Json.x && i_Json.py != i_Json.y )
+				{
+					/* 画的是垂直线，所以y轴偏移，跳过节点高度 */
+					v_OfferY = v_CircleSize * -2;
+				}
+				else if ( i_Json.px != i_Json.x && i_Json.py == i_Json.y )
+				{
+					/* 画的是水平线，所以x轴偏移，路过节点宽度 */
+					v_OfferX = v_CircleSize * -2;
+				}
+				else
+				{
+					v_OfferX = v_CircleSize * 1.5;
+					v_OfferY = v_CircleSize * -0.75;
+				}
+				
+				var v_Line = v_SVG.append("line")
+				.attr("class" ,"NodeLineFlow")
+				.attr("marker-end" ,"url(#arrow)")
+				.attr("x1" ,i_Json.px)
+				.attr("y1" ,i_Json.py)
+				.attr("x2" ,i_Json.x + v_OfferX)
+				.attr("y2" ,i_Json.y + v_OfferY);
+				
+				
+				/* 方案2：画常规树目录的折线连接 */
+				var v_Line = v_SVG.append("path")
+				.attr("class" ,"NodeLineRef")
+				.attr("stroke-dasharray" ,"2,5")
+				.attr("d" ,"M" + i_Json.sx + "," + i_Json.sy 
+						+ " V" + i_Json.y
+						+ " H" + (i_Json.x - v_CircleSize));
+				
+				/* 方案1：画直线连接 */
+				/*
+				var v_Line = v_SVG.append("line")
+				.attr("class" ,"NodeLineRef")
+				.attr("stroke-dasharray" ,"2,5")
+				.attr("x1" ,i_Json.sx)
+				.attr("y1" ,i_Json.sy)
+				.attr("x2" ,i_Json.x)
+				.attr("y2" ,i_Json.y);
+				*/
+			}
+		}
+		
+		
+		
+		/**
+		 * 绘制树结构（对外主调方法）
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-09
+		 * @version     v1.0
+		 *
+		 * @param i_Json  树结构的Json数据
+		 */
+		function drawTree(i_Json)
+		{
+			v_SVG.selectAll(".NodeCircle").remove();
+			v_SVG.selectAll(".NodeTitle").remove();
+			v_SVG.selectAll(".NodeFlag").remove();
+			v_SVG.selectAll(".NodeFlagS").remove();
+			v_SVG.selectAll(".NodeFlagU").remove();
+			v_SVG.selectAll(".NodeFlagJ").remove();
+			v_SVG.selectAll(".NodeFlagC").remove();
+			v_SVG.selectAll(".NodeLineRef").remove();
+			v_SVG.selectAll(".NodeLineFlow").remove();
+			
+			calcTreeForEach(i_Json ,1 ,1 ,1 ,1 ,null ,null);
+			drawTreeForEachByLine(i_Json);
+			drawTreeForEachByNode(i_Json);
+		}
+		
+		
+		
+		/**
+		 * 生成节点提示内容
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-09
+		 * @version     v1.0
+		 *
+		 * @param i_Json  树结构的Json数据
+		 */
+		function makeTooltipText(i_Json)
+		{
+			var v_Text = "";
+			
+			v_Text += "<table>";
+			
+			v_Text += "<tr>";
+			v_Text += "<td><font color='gray'>节点XID：</font></td>";
+			v_Text += "<td>" + i_Json.xid + "</td>";
+			v_Text += "</tr>";
+			
+			v_Text += "<tr>";
+			v_Text += "<td><font color='gray'>执行类型：</font></td>";
+			v_Text += "<td>" + i_Json.nodeType + "</td>";
+			v_Text += "</tr>";
+			
+			v_Text += "<tr>";
+			v_Text += "<td><font color='gray'>执行对象：</font></td>";
+			v_Text += "<td>" + i_Json.executeXID + "</td>";
+			v_Text += "</tr>";
+			
+			if ( i_Json.returnID != null && i_Json.returnID != '' )
+			{
+				v_Text += "<tr>";
+				v_Text += "<td><font color='gray'>执行返回：</font></td>";
+				v_Text += "<td>" + i_Json.returnID + "</td>";
+				v_Text += "</tr>";
+			}
+			
+			v_Text += "<tr>";
+			v_Text += "<td><font color='gray'>注释说明：</font></td>";
+			v_Text += "<td>" + i_Json.comment + "</td>";
+			v_Text += "</tr>";
+			
+			v_Text += "</table>";
+			
+			return v_Text
+		}
+		
+		
+		
+		var v_Tooltip = d3.select("#tooltip")
+		.style("position" ,"absolute")
+		.style("z-index"  ,"99999");
+		
+		
+		v_JsonDatas = :JsonTree;
+		drawTree(v_JsonDatas);
+		
+		var v_LeafNodeCount = getLeafNodeCount(v_JsonDatas ,1);
+		v_Width  = (v_LeafNodeCount[1] + 2) * v_LevelSpacing;
+		v_Height = (v_LeafNodeCount[0] + 2) * v_NodeSpacing;
+		v_SVG
+		.attr("width"  ,v_Width)
+		.attr("height" ,v_Height);
+		
+		
+		var v_Zoom = d3.zoom()
+        .scaleExtent([1 ,1])
+        .on("zoom" ,function()
+        {
+			d3.select(this).attr("transform" ,d3.event.transform);   
+        });
+
+		v_SVG.call(v_Zoom);
+	</script>
+
+</body>
+</html>

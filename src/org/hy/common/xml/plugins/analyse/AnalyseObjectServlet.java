@@ -152,6 +152,7 @@ public class AnalyseObjectServlet extends HttpServlet
         String v_Job        = i_Request.getParameter("Job");
         String v_DSG        = i_Request.getParameter("DSG");
         String v_FS         = i_Request.getParameter("FS");
+        String v_XSGFlow    = i_Request.getParameter("XSGFlow");
         
         if ( Help.isNull(v_XID) )
         {
@@ -250,6 +251,10 @@ public class AnalyseObjectServlet extends HttpServlet
         {
             v_XID = StringHelp.replaceAll(v_XID ,"*" ,"");
             i_Response.getWriter().println(this.analyse.analyseObjects(v_BasePath ,i_Request.getRequestURL().toString() ,v_XID));
+        }
+        else if ( !Help.isNull(v_XSGFlow) && "Y".equalsIgnoreCase(v_XSGFlow) )
+        {
+            i_Response.getWriter().println(this.analyse.showXSQLGroupFlow(v_BasePath ,i_Request.getRequestURL().toString() ,v_XID));
         }
         else
         {

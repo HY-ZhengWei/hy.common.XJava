@@ -16,6 +16,7 @@ import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.PartitionMap;
 import org.hy.common.TablePartition;
+import org.hy.common.XJavaID;
 import org.hy.common.db.DataSourceGroup;
 import org.hy.common.thread.Task;
 import org.hy.common.thread.TaskGroup;
@@ -150,8 +151,9 @@ import org.hy.common.xml.XSQLBigData;
  *              v23.0 2018-06-30  1.添加：异常时是否继续执行的功能errorContinue。并能与retryCount异常时重试功能配合使用。
  *                                2.添加：能从任一层次的循环中，获取之前任一层次的循环信息。
  *              v23.1 2018-07-26  1.优化：及时释放资源，自动的GC太慢了。
+ *              v23.2 2018-09-10  1.添加：XJavaID接口，实现从XML配置文件中自动获取XID。
  */
-public final class XSQLGroup
+public final class XSQLGroup implements XJavaID
 {
     
     /** 执行SQL(Insert、Update、Delete)影响行数的变量名前缀 */
@@ -183,6 +185,9 @@ public final class XSQLGroup
     private static       int         $SerialNo          = 0;
     
     
+    
+    /** 获取XJava池中对象的ID标识 */
+    private String                   xJavaID;
     
     /** 父级SQL组对象。当用值时，表示本级为子的嵌套SQL组对象 */
     private XSQLGroup                superGroup;
@@ -2835,6 +2840,30 @@ public final class XSQLGroup
         {
             assert v_Node.isDebug() : "Use assert debug.";
         }
+    }
+    
+    
+    
+    /**
+     * 设置XJava池中对象的ID标识。此方法不用用户调用设置值，是自动的。
+     * 
+     * @param i_XJavaID
+     */
+    public void setXJavaID(String i_XJavaID)
+    {
+        this.xJavaID = i_XJavaID;
+    }
+    
+    
+    
+    /**
+     * 获取XJava池中对象的ID标识。
+     * 
+     * @return
+     */
+    public String getXJavaID()
+    {
+        return this.xJavaID;
     }
     
     

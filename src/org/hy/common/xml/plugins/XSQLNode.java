@@ -105,7 +105,7 @@ public class XSQLNode implements XJavaID
      *  
      *   即执行Java代码，主要用于对查询结果集的二次加工处理等操作。
      *   相关针对性属性有：
-     *     1. xjavaID
+     *     1. xid
      *     2. methodName
      *     3. cloudServers      云计算
      *     4. cloudServersList  云计算
