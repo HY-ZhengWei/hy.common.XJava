@@ -759,6 +759,14 @@
 			v_Text += "<td>" + i_Json.nodeType + "</td>";
 			v_Text += "</tr>";
 			
+			if ( i_Json.dbgName != null && i_Json.dbgName != '' )
+			{
+				v_Text += "<tr>";
+				v_Text += "<td><font color='gray'>数据库名：</font></td>";
+				v_Text += "<td>" + i_Json.dbgName + "</td>";
+				v_Text += "</tr>";
+			}
+			
 			v_Text += "<tr>";
 			v_Text += "<td><font color='gray'>执行对象：</font></td>";
 			v_Text += "<td>" + i_Json.executeXID + "</td>";

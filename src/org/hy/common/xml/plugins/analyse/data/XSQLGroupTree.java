@@ -26,6 +26,9 @@ public class XSQLGroupTree implements Serializable
     /** XSQLNode节点执行的对象ID。有可能是XSQL的XID，也可能是Java类的XID及方法名称 */
     private String              executeXID;
     
+    /** XSQLNode节点执行的数据组连接池组的名称 */
+    private String              dbgName;
+    
     /** XSQLNode节点执行返回的对象ID */
     private String              returnID;
     
@@ -268,6 +271,28 @@ public class XSQLGroupTree implements Serializable
     public void setCloudServers(String cloudServers)
     {
         this.cloudServers = cloudServers;
+    }
+
+
+    
+    /**
+     * 获取：XSQLNode节点执行的数据组连接池组的名称
+     */
+    public String getDbgName()
+    {
+        return dbgName;
+    }
+    
+
+
+    /**
+     * 设置：XSQLNode节点执行的数据组连接池组的名称
+     * 
+     * @param dbgName 
+     */
+    public void setDbgName(String dbgName)
+    {
+        this.dbgName = dbgName;
     }
     
 }

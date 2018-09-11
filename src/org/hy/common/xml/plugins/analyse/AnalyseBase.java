@@ -287,14 +287,32 @@ public class AnalyseBase extends Analyse
                 {
                     v_TreeNode.setExecuteXID(v_XSQLNode.getXid() + "." + v_XSQLNode.getMethodName());
                 }
-                else if ( XSQLNode.$Type_CollectionToQuery        .equals(v_XSQLNode.getType()) 
-                       || XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_XSQLNode.getType()) )
+                else if ( XSQLNode.$Type_CollectionToQuery.equals(v_XSQLNode.getType()) )
                 {
                     v_TreeNode.setExecuteXID(Help.NVL(v_XSQLNode.getCollectionID()));
                 }
+                else if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_XSQLNode.getType()) )
+                {
+                    v_TreeNode.setExecuteXID(Help.NVL(v_XSQLNode.getCollectionID()));
+                    if ( v_XSQLNode.getSql() != null )
+                    {
+                        v_TreeNode.setExecuteXID(Help.NVL(v_XSQLNode.getSql().getXJavaID()));
+                        if ( v_XSQLNode.getSql().getDataSourceGroup() != null )
+                        {
+                            v_TreeNode.setDbgName(Help.NVL(v_XSQLNode.getSql().getDataSourceGroup().getXJavaID()));
+                        }
+                    }
+                }
                 else
                 {
-                    v_TreeNode.setExecuteXID(Help.NVL(v_XSQLNode.getSql().getXJavaID()));
+                    if ( v_XSQLNode.getSql() != null )
+                    {
+                        v_TreeNode.setExecuteXID(Help.NVL(v_XSQLNode.getSql().getXJavaID()));
+                        if ( v_XSQLNode.getSql().getDataSourceGroup() != null )
+                        {
+                            v_TreeNode.setDbgName(Help.NVL(v_XSQLNode.getSql().getDataSourceGroup().getXJavaID()));
+                        }
+                    }
                     v_TreeNode.setReturnID(  Help.NVL(v_XSQLNode.getReturnID() ,Help.NVL(v_XSQLNode.getQueryReturnID())));
                 }
                 
