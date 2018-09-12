@@ -109,7 +109,10 @@
 	
 	#menuDiv {
 	    position: fixed;
-	    width: 120px;
+	}
+	
+	.ui-menu { 
+		width: 120px; 
 	}
 	
 	.MenuItem {
@@ -147,6 +150,14 @@
 		<ul id="menu">
 			<li id="nodeXIDDetail-LI"   ><div id="nodeXIDDetail"    class="MenuItem">查看本节点</div></li>
 			<li id="executeXIDDetail-LI"><div id="executeXIDDetail" class="MenuItem">查看执行对象</div></li>
+			<li>
+				<div class="MenuItem">显示层级</div>
+				<ul>
+					<li><div id="showLevelAll"   class="MenuItem">展开全部</div></li>
+					<li><div id="showLevelTwo"   class="MenuItem">只显示二级</div></li>
+					<li><div id="showLevelThree" class="MenuItem">只显示三级</div></li>
+				</ul>
+			</li>
 		</ul>
 	</div>
 	
@@ -167,6 +178,72 @@
 		d3.select("body").on("click" ,function()
 		{
 			v_Menu.style("opacity" ,0);
+		});
+		
+		
+		
+		/*
+		d3.select("body").on("contextmenu" ,function()
+		{
+			d3.select("#nodeXIDDetail-LI")   .classed("ui-state-disabled" ,true);
+			d3.select("#executeXIDDetail-LI").classed("ui-state-disabled" ,true);
+			
+			v_Menu
+			.style("left" ,(d3.event.pageX - 135) + "px")     
+			.style("top"  ,(d3.event.pageY - 28)  + "px")
+			.style("opacity" ,100);
+		});
+		*/
+		
+		
+		
+		/**
+		 * 点击右键菜单中的：展开全部
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-12
+		 * @version     v1.0
+		 */
+		d3.select("#showLevelAll").on("click" ,function()
+		{
+			v_Menu.style("opacity" ,0);
+			
+			showLevel(v_JsonDatas ,1 ,999);
+			drawTree(v_JsonDatas);
+		});
+		
+		
+		
+		/**
+		 * 点击右键菜单中的：只显示二级
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-12
+		 * @version     v1.0
+		 */
+		d3.select("#showLevelTwo").on("click" ,function()
+		{
+			v_Menu.style("opacity" ,0);
+			
+			showLevel(v_JsonDatas ,1 ,2);
+			drawTree(v_JsonDatas);
+		});
+		
+		
+		
+		/**
+		 * 点击右键菜单中的：只显示三级
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-12
+		 * @version     v1.0
+		 */
+		d3.select("#showLevelThree").on("click" ,function()
+		{
+			v_Menu.style("opacity" ,0);
+			
+			showLevel(v_JsonDatas ,1 ,3);
+			drawTree(v_JsonDatas);
 		});
 		
 		
@@ -227,6 +304,42 @@
 		
 		
 		/**
+		 * 控制树目录显示的层级
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-12
+		 * @version     v1.0
+		 * 
+		 * @param i_Json       树结构的Json数据
+		 * @param i_Level      递归遍历树结构的层级。下标从1开始
+		 * @param i_ShowLevel  显示层级
+		 */
+		function showLevel(i_Json ,i_Level ,i_ShowLevel)
+		{
+			if ( i_Level <= i_ShowLevel  )
+			{
+				i_Json.hidden = false;
+			}
+			else
+			{
+				i_Json.hidden = true;
+				return;
+			}
+			
+			if ( i_Json.children == null || i_Json.children.length <= 0 )
+			{
+				return;
+			}
+			
+			i_Json.children.forEach(function(d)
+			{
+				showLevel(d ,i_Level + 1 , i_ShowLevel);
+			});
+		}
+		
+		
+		
+		/**
 		 * 返回结果是数组类型，元素0是：共有多少个叶子节点，元素1是：最深的层级是多少。
 		 *
 		 * @author      ZhengWei(HY)
@@ -279,17 +392,19 @@
 		{
 			if ( i_SuperJson == null )
 			{
-				i_Json.id = "NID-" + i_Index;
-				i_Json.x  = v_NodeSpacing;
-				i_Json.y  = v_NodeSpacing;
+				i_Json.id    = "NID-" + i_Index;
+				i_Json.x     = v_NodeSpacing;
+				i_Json.y     = v_NodeSpacing;
+				i_Json.level = i_Level;
 			}
 			else
 			{
-				i_Json.id = i_SuperJson.id + "-" + i_Index;
-				i_Json.sx = i_SuperJson.x;
-				i_Json.sy = i_SuperJson.y;
-				i_Json.x  = i_SuperJson.x + v_LevelSpacing;
-				i_Json.y  = i_TreeLeafIndex * v_NodeSpacing;
+				i_Json.id    = i_SuperJson.id + "-" + i_Index;
+				i_Json.sx    = i_SuperJson.x;
+				i_Json.sy    = i_SuperJson.y;
+				i_Json.x     = i_SuperJson.x + v_LevelSpacing;
+				i_Json.y     = i_TreeLeafIndex * v_NodeSpacing;
+				i_Json.level = i_Level;
 			}
 			
 			if ( i_Json.children == null || i_Json.children.length <= 0 )
