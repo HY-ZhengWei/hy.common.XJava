@@ -145,7 +145,8 @@
 	
 	<div id="menuDiv">
 		<ul id="menu">
-		  <li><div id="executeIDDetail" class="MenuItem">查看执行对象</div></li>
+			<li id="nodeXIDDetail-LI"   ><div id="nodeXIDDetail"    class="MenuItem">查看本节点</div></li>
+			<li id="executeXIDDetail-LI"><div id="executeXIDDetail" class="MenuItem">查看执行对象</div></li>
 		</ul>
 	</div>
 	
@@ -171,30 +172,54 @@
 		
 		
 		/**
-		 * 点击右键菜单中的：查看执行对象
+		 * 点击右键菜单中的：查看本节点
 		 *
 		 * @author      ZhengWei(HY)
-		 * @createDate  2018-09-11
+		 * @createDate  2018-09-12
 		 * @version     v1.0
 		 */
-		d3.select("#executeIDDetail").on("click" ,function()
+		d3.select("#nodeXIDDetail").on("click" ,function()
 		{
 			v_Menu.style("opacity" ,0);
 			
-			if ( v_MenuJson != null )
+			if ( !d3.select("#nodeXIDDetail-LI").classed("ui-state-disabled") )
 			{
-				if ( v_MenuJson.executeXID != null && v_MenuJson.executeXID != "" )
+				if ( v_MenuJson != null )
 				{
-					var v_XID = v_MenuJson.executeXID;
-					if ( v_MenuJson.nodeType == "ExecuteJava" )
+					if ( v_MenuJson.xid != null && v_MenuJson.xid != "" )
 					{
-						v_XID = v_XID.split(".")[0];
+						window.open("analyseObject?xid=" + v_MenuJson.xid ,"_blank");
 					}
-					window.open("analyseObject?xid=" + v_XID ,"_blank");
 				}
-				else if ( v_MenuJson.xid != null && v_MenuJson.xid != "" )
+			}
+		});
+		
+		
+		
+		/**
+		 * 点击右键菜单中的：查看执行对象
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-12
+		 * @version     v1.0
+		 */
+		d3.select("#executeXIDDetail").on("click" ,function()
+		{
+			v_Menu.style("opacity" ,0);
+			
+			if ( !d3.select("#executeXIDDetail-LI").classed("ui-state-disabled") )
+			{
+				if ( v_MenuJson != null )
 				{
-					window.open("analyseObject?xid=" + v_MenuJson.xid ,"_blank");
+					if ( v_MenuJson.executeXID != null && v_MenuJson.executeXID != "" )
+					{
+						var v_XID = v_MenuJson.executeXID;
+						if ( v_MenuJson.nodeType == "ExecuteJava" )
+						{
+							v_XID = v_XID.split(".")[0];
+						}
+						window.open("analyseObject?xid=" + v_XID ,"_blank");
+					}
 				}
 			}
 		});
@@ -392,6 +417,24 @@
 			})
 			.on("contextmenu" ,function()
 			{
+				if ( i_Json.xid != null && i_Json.xid != "" )
+				{
+					d3.select("#nodeXIDDetail-LI").classed("ui-state-disabled" ,false);
+				}
+				else
+				{
+					d3.select("#nodeXIDDetail-LI").classed("ui-state-disabled" ,true);
+				}
+				
+				if ( i_Json.executeXID != null && i_Json.executeXID != "" )
+				{
+					d3.select("#executeXIDDetail-LI").classed("ui-state-disabled" ,false);
+				}
+				else
+				{
+					d3.select("#executeXIDDetail-LI").classed("ui-state-disabled" ,true);
+				}
+				
 				v_MenuJson = i_Json;
 				v_Menu
 				.style("left" ,(d3.event.pageX - 135) + "px")     
