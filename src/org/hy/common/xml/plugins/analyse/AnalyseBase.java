@@ -1600,9 +1600,6 @@ public class AnalyseBase extends Analyse
             
             String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseObject?cluster=Y' style='color:#AA66CC'>查看集群服务</a>";
             
-            v_XFileNames.clear();
-            v_XFileNames = null;
-            
             return StringHelp.replaceAll(this.getTemplateShowXFiles()
                                         ,new String[]{":Title"          ,":Column01Title"        ,":HttpBasePath" ,":Content"}
                                         ,new String[]{"XJava配置文件列表" ,"XJava配置文件" + v_Goto ,i_BasePath      ,v_Buffer.toString()});
