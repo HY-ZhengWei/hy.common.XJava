@@ -170,6 +170,7 @@
 		var v_Height       = 1000;    /* 画布高度 */
 		var v_LevelSpacing = 200;     /* 不同层级间的间隔 */
 		var v_NodeSpacing  = 50;      /* 同一父节点的多个子节点间的间隔 */
+		var v_ContextMenu  = false;   /* 是否触发了节点上的右击事件 */
 		var v_JsonDatas    = null;    /* 整个Json数据 */
 		var v_MenuJson     = null;    /* 右键菜单选中的Json数据 */
 		var v_SVGTrue      = d3.select("body").select("#mainSVG");
@@ -195,18 +196,28 @@
 		
 		
 		
-		/*
+		/**
+		 * SVG上右击，圆圈节点的右击时应当阻止事件冒泡。
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-09-13
+		 * @version     v1.0
+		 */
 		d3.select("body").on("contextmenu" ,function()
 		{
-			d3.select("#nodeXIDDetail-LI")   .classed("ui-state-disabled" ,true);
-			d3.select("#executeXIDDetail-LI").classed("ui-state-disabled" ,true);
+			if ( !v_ContextMenu )
+			{
+				d3.select("#nodeXIDDetail-LI")   .classed("ui-state-disabled" ,true);
+				d3.select("#executeXIDDetail-LI").classed("ui-state-disabled" ,true);
+				
+				v_Menu
+				.style("left" ,(d3.event.pageX - 135) + "px")     
+				.style("top"  ,(d3.event.pageY - 28)  + "px")
+				.style("opacity" ,100);
+			}
 			
-			v_Menu
-			.style("left" ,(d3.event.pageX - 135) + "px")     
-			.style("top"  ,(d3.event.pageY - 28)  + "px")
-			.style("opacity" ,100);
+			v_ContextMenu = false;
 		});
-		*/
 		
 		
 		
@@ -602,6 +613,8 @@
 				.style("left" ,(d3.event.pageX - 135) + "px")     
 				.style("top"  ,(d3.event.pageY - 28)  + "px")
 				.style("opacity" ,100);
+				
+				v_ContextMenu = true;
 			})
 			.on("mouseenter" ,function() 
 			{
@@ -1075,7 +1088,7 @@
 		var v_LeafNodeCount = getLeafNodeCount(v_JsonDatas ,1);
 		v_Width  = (v_LeafNodeCount[1] + 2) * v_LevelSpacing;
 		v_Height = (v_LeafNodeCount[0] + 2) * v_NodeSpacing;
-		v_SVG
+		v_SVGTrue
 		.attr("width"  ,v_Width)
 		.attr("height" ,v_Height);
 		
