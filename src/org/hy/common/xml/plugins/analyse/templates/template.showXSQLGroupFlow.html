@@ -603,23 +603,26 @@
 				.style("top"  ,(d3.event.pageY - 28)  + "px")
 				.style("opacity" ,100);
 			})
-			.on("mouseover" ,function() 
-			{         
+			.on("mouseenter" ,function() 
+			{
 				v_Tooltip.html(makeTooltipText(i_Json))  
 				.style("left" ,(d3.event.pageX + (v_LevelSpacing/4)) + "px")     
 				.style("top"  ,(d3.event.pageY - 30) + "px")
 				.style("opacity" ,100);    
 			})
 			.on("mousemove" ,function() 
-			{         
-				v_Tooltip.html(makeTooltipText(i_Json))  
+			{
+				v_Tooltip
 				.style("left" ,(d3.event.pageX + (v_LevelSpacing/4)) + "px")     
 				.style("top"  ,(d3.event.pageY - 30) + "px")
 				.style("opacity" ,100);
 			})
-			.on("mouseout" ,function() 
+			.on("mouseleave" ,function() 
 			{
-				v_Tooltip.style("opacity" ,0);
+				v_Tooltip.html("")
+				.style("left" ,"-1000px")     
+				.style("top"  ,"-1000px")
+				.style("opacity" ,0);
 			});
 			
 			var v_Circle = v_G.append("circle")
@@ -1080,7 +1083,7 @@
         .scaleExtent([0.1 ,5])
         .on("zoom" ,function()
         {
-			d3.select(this).select("g").attr("transform" ,d3.event.transform);   
+			d3.select(this).select("g").attr("transform" ,d3.event.transform);
         });
 
 		v_SVGTrue.call(v_Zoom);
