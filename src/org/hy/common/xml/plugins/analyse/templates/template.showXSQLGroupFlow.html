@@ -107,6 +107,15 @@
 		top: 30%;
 	}
 	
+	#createdBy {
+		width: 120px; 
+		height: 15px; 
+		position: fixed;
+		right: 10;
+		bottom: 10;
+		font-size: 11px;
+	}
+	
 	#menuDiv {
 	    position: fixed;
 	}
@@ -117,6 +126,17 @@
 	
 	.MenuItem {
 		font-size: 14px;
+	}
+	
+	a { 
+		color: #669900; 
+		text-decoration: none; 
+		outline: none;
+	}
+	
+	a:hover {
+		color: #99CC00;
+		text-decoration: none;
 	}
 	</style>
 </head>
@@ -144,6 +164,10 @@
 	<div id="legend">
 		<svg id="legendSVG" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
 		</svg>
+	</div>
+	
+	<div id="createdBy">
+		<a href="https://github.com/HY-ZhengWei/XJava" target="_brank">Source code by <b>XSQL</b></a>
 	</div>
 	
 	<div id="menuDiv">
@@ -186,6 +210,13 @@
 		.style("position" ,"absolute")
 		.style("z-index"  ,"99999")
 		.style("opacity" ,0);
+		
+		var v_NodeZoom = d3.zoom()
+		.scaleExtent([0.5 ,2])
+		.on("zoom" ,function()
+	    {
+			d3.select(this).attr("transform" ,d3.select(this).attr("transform") + " scale(" + d3.event.transform.k + ")"); 
+		});
 		
 		
 		
@@ -621,7 +652,9 @@
 				v_Tooltip.html(makeTooltipText(i_Json))  
 				.style("left" ,(d3.event.pageX + (v_LevelSpacing/4)) + "px")     
 				.style("top"  ,(d3.event.pageY - 30) + "px")
-				.style("opacity" ,100);    
+				.style("opacity" ,100); 
+				
+				v_NodeZoom.scaleTo(d3.select(this) ,1.25);
 			})
 			.on("mousemove" ,function() 
 			{
@@ -636,6 +669,8 @@
 				.style("left" ,"-1000px")     
 				.style("top"  ,"-1000px")
 				.style("opacity" ,0);
+				
+				v_NodeZoom.scaleTo(d3.select(this) ,0.8);
 			});
 			
 			var v_Circle = v_G.append("circle")
@@ -1096,7 +1131,7 @@
         .scaleExtent([0.1 ,5])
         .on("zoom" ,function()
         {
-			d3.select(this).select("g").attr("transform" ,d3.event.transform);
+			d3.select(this).select("g").attr("transform", "translate(" + d3.event.transform.x + "," + d3.event.transform.y + ") scale(" + d3.event.transform.k + ")");
         });
 
 		v_SVGTrue.call(v_Zoom);
