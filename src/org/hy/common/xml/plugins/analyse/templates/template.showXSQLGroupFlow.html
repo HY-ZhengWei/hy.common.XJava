@@ -116,6 +116,17 @@
 		font-size: 11px;
 	}
 	
+	#createdBy a { 
+		color: #4F4F4F; 
+		text-decoration: none; 
+		outline: none;
+	}
+	
+	#createdBy a:hover {
+		color: #1E90FF;
+		text-decoration: none;
+	}
+	
 	#menuDiv {
 	    position: fixed;
 	}
@@ -126,17 +137,6 @@
 	
 	.MenuItem {
 		font-size: 14px;
-	}
-	
-	a { 
-		color: #669900; 
-		text-decoration: none; 
-		outline: none;
-	}
-	
-	a:hover {
-		color: #99CC00;
-		text-decoration: none;
 	}
 	</style>
 </head>
@@ -177,11 +177,11 @@
 			<li>
 				<div class="MenuItem">显示层级</div>
 				<ul>
-					<li><div id="showLevelAll"   class="MenuItem">展开全部</div></li>
-					<li><div id="showLevelTwo"   class="MenuItem">只显示二级</div></li>
-					<li><div id="showLevelThree" class="MenuItem">只显示三级</div></li>
-					<li><div id="showLevelFour"  class="MenuItem">只显示四级</div></li>
-					<li><div id="showLevelFive"  class="MenuItem">只显示五级</div></li>
+					<li                   ><div id="showLevelAll"   class="MenuItem">展开全部</div></li>
+					<li id="showLevel2-LI"><div id="showLevelTwo"   class="MenuItem">只显示二级</div></li>
+					<li id="showLevel3-LI"><div id="showLevelThree" class="MenuItem">只显示三级</div></li>
+					<li id="showLevel4-LI"><div id="showLevelFour"  class="MenuItem">只显示四级</div></li>
+					<li id="showLevel5-LI"><div id="showLevelFive"  class="MenuItem">只显示五级</div></li>
 				</ul>
 			</li>
 		</ul>
@@ -217,6 +217,15 @@
 	    {
 			d3.select(this).attr("transform" ,d3.select(this).attr("transform") + " scale(" + d3.event.transform.k + ")"); 
 		});
+		
+		var v_Zoom = d3.zoom()
+        .scaleExtent([0.1 ,5])
+        .on("zoom" ,function()
+        {
+			d3.select(this).select("g").attr("transform", "translate(" + d3.event.transform.x + "," + d3.event.transform.y + ") scale(" + d3.event.transform.k + ")");
+        });
+
+		v_SVGTrue.call(v_Zoom);
 		
 		
 		
@@ -1127,14 +1136,12 @@
 		.attr("width"  ,v_Width)
 		.attr("height" ,v_Height);
 		
-		var v_Zoom = d3.zoom()
-        .scaleExtent([0.1 ,5])
-        .on("zoom" ,function()
-        {
-			d3.select(this).select("g").attr("transform", "translate(" + d3.event.transform.x + "," + d3.event.transform.y + ") scale(" + d3.event.transform.k + ")");
-        });
-
-		v_SVGTrue.call(v_Zoom);
+		/* 控制右击菜单中"显示层级"的可用性 */
+		for (var v_Index=v_LeafNodeCount[1] + 1; v_Index<=5; v_Index++)
+		{
+			d3.select("#showLevel" + v_Index + "-LI").classed("ui-state-disabled" ,true);
+		}
+		
 		
 		
 		$(function() 
