@@ -244,13 +244,41 @@ public class AnalyseBase extends Analyse
      * 生成XSQLGroup组的树结构
      * 
      * @author      ZhengWei(HY)
-     * @createDate  2018-09-10
+     * @createDate  2018-09-14
      * @version     v1.0
      *
      * @param i_XSQLGroup
      * @return
      */
     private XSQLGroupTree makeXSQLGroupTree(XSQLGroup i_XSQLGroup)
+    {
+        Map<XSQLGroup ,XSQLGroupTree> v_RecursionMap = new HashMap<XSQLGroup ,XSQLGroupTree>();
+        
+        try
+        {
+            return makeXSQLGroupTree(i_XSQLGroup ,v_RecursionMap);
+        }
+        finally
+        {
+            v_RecursionMap.clear();
+            v_RecursionMap = null;
+        }
+    }
+    
+    
+    
+    /**
+     * 生成XSQLGroup组的树结构
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-09-10
+     * @version     v1.0
+     *
+     * @param i_XSQLGroup
+     * @param io_RecursionMap  递归引用的信息
+     * @return
+     */
+    private XSQLGroupTree makeXSQLGroupTree(XSQLGroup i_XSQLGroup ,Map<XSQLGroup ,XSQLGroupTree> io_RecursionMap)
     {
         XSQLGroupTree v_Tree = new XSQLGroupTree();
         
@@ -259,6 +287,8 @@ public class AnalyseBase extends Analyse
         v_Tree.setComment(Help.NVL(i_XSQLGroup.getComment()));
         v_Tree.setThreadType(i_XSQLGroup.isThread() ? "组级多线程" : "");
         v_Tree.setChildren(new ArrayList<XSQLGroupTree>());
+        
+        io_RecursionMap.put(i_XSQLGroup ,v_Tree);
         
         if ( Help.isNull(i_XSQLGroup.getXsqlNodes()) )
         {
@@ -274,6 +304,22 @@ public class AnalyseBase extends Analyse
             v_TreeNode.setComment(  Help.NVL(v_XSQLNode.getComment()));
             v_TreeNode.setCondition(Help.NVL(v_XSQLNode.getCondition()));
             v_TreeNode.setThreadType(v_XSQLNode.isThread() ? "节点级多线程" : "");
+            
+            if ( v_XSQLNode.getThreadWait() != null )
+            {
+                if ( v_XSQLNode.getThreadWait() == v_XSQLNode )
+                {
+                    v_TreeNode.setThreadWait("本循环自身等待");
+                }
+                else
+                {
+                    v_TreeNode.setThreadWait(Help.NVL(v_XSQLNode.getThreadWait().getComment() ,Help.NVL(v_XSQLNode.getThreadWait().getXJavaID())));
+                }
+            }
+            else if ( v_XSQLNode.isThread() )
+            {
+                v_TreeNode.setThreadWait("不等待，或在其它节点处等待");
+            }
             
             if ( !Help.isNull(v_XSQLNode.getCloudServersList()) )
             {
@@ -318,6 +364,24 @@ public class AnalyseBase extends Analyse
                 
                 v_TreeNode.setNodeType(v_XSQLNode.getType());
                 v_TreeNode.setName(Help.NVL(v_TreeNode.getName() ,v_TreeNode.getExecuteXID()));
+            }
+            // 递归引用的情况
+            else if ( io_RecursionMap.containsKey(v_Children) )
+            {
+                XSQLGroupTree v_Recursion = io_RecursionMap.get(v_Children);
+                v_TreeNode.setNodeType("XSQL组：循环递归");
+                v_TreeNode.setExecuteXID(v_Recursion.getXid());
+                
+                if ( Help.isNull(v_TreeNode.getName()) )
+                {
+                    // 对于直接执行XSQL组的节点，一般都没有注释及XID的，所以取节点执行XSQL组的信息
+                    v_TreeNode.setName(Help.NVL(v_Recursion.getName()));
+                }
+                if ( Help.isNull(v_TreeNode.getComment()) )
+                {
+                    // 对于直接执行XSQL组的节点，一般都没有注释及XID的，所以取节点执行XSQL组的信息
+                    v_TreeNode.setComment(Help.NVL(v_Recursion.getComment()));
+                }
             }
             else
             {
@@ -394,8 +458,8 @@ public class AnalyseBase extends Analyse
         }
         
         return StringHelp.replaceAll(this.getTemplateShowXSQLGroupFlow()
-                                    ,new String[]{":Title"       ,":HttpBasePath" ,":HttpValuePath"  ,":JsonTree"}
-                                    ,new String[]{"XSQL组的业务流程图" ,i_BasePath      ,i_ObjectValuePath ,v_JsonTree});
+                                    ,new String[]{":Title"           ,":HttpBasePath" ,":HttpValuePath"  ,":XID" ,":JsonTree"}
+                                    ,new String[]{"XSQL组的业务流程图" ,i_BasePath      ,i_ObjectValuePath ,i_XID ,v_JsonTree});
     }
     
     

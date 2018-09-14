@@ -38,6 +38,9 @@ public class XSQLGroupTree implements Serializable
     /** XSQLNode节点多线程执行的类型 */
     private String              threadType;
     
+    /** XSQLNode节点多线程等待的节点 */
+    private String              threadWait;
+    
     /** XSQLNode节点云计算的服务器数量 */
     private String              cloudServers;
     
@@ -293,6 +296,28 @@ public class XSQLGroupTree implements Serializable
     public void setDbgName(String dbgName)
     {
         this.dbgName = dbgName;
+    }
+
+
+    
+    /**
+     * 获取：XSQLNode节点多线程等待的节点
+     */
+    public String getThreadWait()
+    {
+        return threadWait;
+    }
+    
+
+    
+    /**
+     * 设置：XSQLNode节点多线程等待的节点
+     * 
+     * @param threadWait 
+     */
+    public void setThreadWait(String threadWait)
+    {
+        this.threadWait = threadWait;
     }
     
 }
