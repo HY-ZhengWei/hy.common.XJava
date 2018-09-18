@@ -288,6 +288,11 @@ public class AnalyseBase extends Analyse
         v_Tree.setThreadType(i_XSQLGroup.isThread() ? "组级多线程" : "");
         v_Tree.setChildren(new ArrayList<XSQLGroupTree>());
         
+        if ( i_XSQLGroup.getCloudWait() != null )
+        {
+            v_Tree.setCloudWait(Help.NVL(i_XSQLGroup.getCloudWait().getComment() ,Help.NVL(i_XSQLGroup.getCloudWait().getXJavaID())));
+        }
+        
         io_RecursionMap.put(i_XSQLGroup ,v_Tree);
         
         if ( Help.isNull(i_XSQLGroup.getXsqlNodes()) )
@@ -324,6 +329,21 @@ public class AnalyseBase extends Analyse
             if ( !Help.isNull(v_XSQLNode.getCloudServersList()) )
             {
                 v_TreeNode.setCloudServers("" + v_XSQLNode.getCloudServersList().size());
+            }
+            if ( v_XSQLNode.getCloudWait() != null )
+            {
+                if ( v_XSQLNode.getCloudWait() == v_XSQLNode )
+                {
+                    v_TreeNode.setCloudWait("本循环自身等待");
+                }
+                else
+                {
+                    v_TreeNode.setCloudWait(Help.NVL(v_XSQLNode.getCloudWait().getComment() ,Help.NVL(v_XSQLNode.getCloudWait().getXJavaID())));
+                }
+            }
+            else if ( !Help.isNull(v_XSQLNode.getCloudServersList()) )
+            {
+                v_TreeNode.setCloudWait("不等待，或在其它节点处等待");
             }
             
             XSQLGroup v_Children = v_XSQLNode.getSqlGroup();

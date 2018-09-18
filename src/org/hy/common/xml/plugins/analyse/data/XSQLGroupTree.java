@@ -41,6 +41,9 @@ public class XSQLGroupTree implements Serializable
     /** XSQLNode节点多线程等待的节点 */
     private String              threadWait;
     
+    /** XSQLNode节点云等待的节点 */
+    private String              cloudWait;
+    
     /** XSQLNode节点云计算的服务器数量 */
     private String              cloudServers;
     
@@ -318,6 +321,28 @@ public class XSQLGroupTree implements Serializable
     public void setThreadWait(String threadWait)
     {
         this.threadWait = threadWait;
+    }
+
+
+    
+    /**
+     * 获取：XSQLNode节点云等待的节点
+     */
+    public String getCloudWait()
+    {
+        return cloudWait;
+    }
+    
+
+
+    /**
+     * 设置：XSQLNode节点云等待的节点
+     * 
+     * @param cloudWait 
+     */
+    public void setCloudWait(String cloudWait)
+    {
+        this.cloudWait = cloudWait;
     }
     
 }

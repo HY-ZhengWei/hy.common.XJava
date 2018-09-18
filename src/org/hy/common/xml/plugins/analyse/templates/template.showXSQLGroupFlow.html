@@ -849,7 +849,31 @@
 				v_Offset += v_CircleSize * 2 + 3;
 			}
 			
-			if ( i_Json.threadWait != null && i_Json.threadWait != '' )
+			var v_IsDraw = false;
+			
+			if ( i_Json.cloudWait != null && i_Json.cloudWait != '' )
+			{
+				if ( i_Json.cloudWait != '本循环自身等待' && i_Json.cloudWait != '不等待，或在其它节点处等待' )
+				{
+					var v_Circle = i_G.append("circle")
+					.attr("class" ,"NodeCircle")
+					.attr("cx" ,v_CircleSize * 2 + 3 + v_Offset)
+					.attr("r" ,v_CircleSize);
+					
+					var v_FlagValue = "W";
+					
+					var v_Flag = i_G.append("text")
+					.attr("class" ,"NodeFlag" + v_FlagValue)
+					.attr("x" ,v_CircleSize * 2 + 3 + v_Offset)
+					.attr("dy" ,v_CircleSize / 2 + 1)
+					.attr("text-anchor" ,"middle")
+					.text(v_FlagValue);
+					
+					v_IsDraw = true;
+				}
+			}
+			
+			if ( !v_IsDraw && i_Json.threadWait != null && i_Json.threadWait != '' )
 			{
 				if ( i_Json.threadWait != '本循环自身等待' && i_Json.threadWait != '不等待，或在其它节点处等待' )
 				{
@@ -1148,6 +1172,14 @@
 				v_Text += "<tr>";
 				v_Text += "<td><font color='gray'>云计算：</font></td>";
 				v_Text += "<td>" + i_Json.cloudServers + "台计算服务</td>";
+				v_Text += "</tr>";
+			}
+			
+			if ( i_Json.cloudWait != null && i_Json.cloudWait != '' )
+			{
+				v_Text += "<tr>";
+				v_Text += "<td><font color='gray'>云等待：</font></td>";
+				v_Text += "<td>" + i_Json.cloudWait + "</td>";
 				v_Text += "</tr>";
 			}
 			
