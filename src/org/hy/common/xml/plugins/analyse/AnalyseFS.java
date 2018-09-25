@@ -669,7 +669,7 @@ public class AnalyseFS extends Analyse
                         }
                         else
                         {
-                            return v_UnZipRet;
+                            return StringHelp.replaceAll(v_UnZipRet ,"'" ,"\"");
                         }
                     }
                     else
@@ -1109,6 +1109,14 @@ public class AnalyseFS extends Analyse
                             v_ExecRet++;
                         }
                     }
+                }
+                else
+                {
+                    if ( !Help.isNull(v_HIP) )
+                    {
+                        v_HIP += ",";
+                    }
+                    v_HIP += v_Item.getKey().getHostName();
                 }
             }
         }
@@ -1607,37 +1615,61 @@ public class AnalyseFS extends Analyse
             this.dataPacket.setDataNo(this.dataPacket.getDataNo() + 1);
             this.dataPacket.setDataByte(i_Event.getDataByte());
             
-            int                                      v_ExecRet       = 0;
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(this.servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"cloneFileUpload" ,new Object[]{this.savePath ,this.dataPacket});
+            int    v_ExecRet  = 0;
+            String v_HostName = "";
             
-            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            try
             {
-                CommunicationResponse v_ResponseData = v_Item.getValue();
+                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(this.servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"cloneFileUpload" ,new Object[]{this.savePath ,this.dataPacket});
                 
-                if ( v_ResponseData.getResult() == 0 )
+                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
-                    if ( v_ResponseData.getData() != null )
+                    v_HostName = v_Item.getKey().getHostName();
+                    CommunicationResponse v_ResponseData = v_Item.getValue();
+                    
+                    if ( v_ResponseData.getResult() == 0 )
                     {
-                        int v_UploadValue = (Integer)v_ResponseData.getData();
-                        
-                        if ( v_UploadValue == FileHelp.$Upload_Finish )
+                        if ( v_ResponseData.getData() != null )
                         {
-                            v_ExecRet++;
-                        }
-                        else if ( v_UploadValue == FileHelp.$Upload_GoOn )
-                        {
-                            v_ExecRet++;
-                        }
-                        else 
-                        {
-                            if ( !Help.isNull(hip) )
+                            int v_UploadValue = (Integer)v_ResponseData.getData();
+                            
+                            if ( v_UploadValue == FileHelp.$Upload_Finish )
                             {
-                                hip += ",";
+                                v_ExecRet++;
                             }
-                            hip += v_Item.getKey().getHostName();
+                            else if ( v_UploadValue == FileHelp.$Upload_GoOn )
+                            {
+                                v_ExecRet++;
+                            }
+                            else 
+                            {
+                                if ( !Help.isNull(hip) )
+                                {
+                                    hip += ",";
+                                }
+                                hip += v_HostName;
+                            }
                         }
                     }
+                    else
+                    {
+                        if ( !Help.isNull(hip) )
+                        {
+                            hip += ",";
+                        }
+                        hip += v_HostName;
+                    }
                 }
+            }
+            catch (Exception exce)
+            {
+                if ( !Help.isNull(hip) )
+                {
+                    hip += ",";
+                }
+                hip += v_HostName + ":" + exce.getMessage();
+                
+                exce.printStackTrace();
             }
             
             return v_ExecRet == this.servers.size();
