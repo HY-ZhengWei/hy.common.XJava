@@ -134,7 +134,7 @@ body {
 
 
 var v_Height_Msg = 180;
-var v_Height_HIP = 400;
+var v_Height_HIP = 450;
 
 
 function executeAction(i_FileName ,i_HIP ,i_LocalIPPort ,i_Action ,i_FunCallBack)
@@ -181,7 +181,6 @@ function cloneFileAction(i_FileName ,i_HIP)
 					}
 			     });
 }
-
 
 
 
@@ -366,6 +365,32 @@ function calcFileSize(i_File)
 					{
 						$("#HFSize_" + v_FileNo).html("");
 						f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
+					}
+			     });
+}
+
+
+
+function calcFileSizeCluster(i_File)
+{
+	var v_FileNo   = i_File.split(":")[0];
+	var v_FileName = i_File.split(":")[1];
+	var v_HIP      = $("#HIP_" + v_FileNo).val();
+	
+	var v_Loading = f_ShowLoading("消息" ,"正在计算中，请耐心等待。" ,v_Height_Msg);
+	executeAction(v_FileName 
+			     ,v_HIP
+			     ,""
+			     ,"CALC-SIZE-C"
+			     ,function (i_Ret)
+			     {
+					if ( i_Ret.retCode == "0" )
+					{
+						f_ShowMsg("消息" ,"各服务器上的文件大小：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
+					}
+					else if ( i_Ret.retCode == "1" )
+					{
+						f_ShowMsg("消息" ,"以下服务器未能成功计算文件大小！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
 					}
 			     });
 }

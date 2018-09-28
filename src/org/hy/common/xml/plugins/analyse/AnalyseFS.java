@@ -36,6 +36,7 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
  *                                添加：XJava配置xml文件热加载功能。
  *              v3.0  2018-04-12  添加：文件内容查看，及与其它服务器对比的功能。
  *              v4.0  2018-04-16  添加：定向下载功能。
+ *              v5.0  2018-09-28  添加：集群计算文件或目录的大小。
  */
 @Xjava
 public class AnalyseFS extends Analyse
@@ -217,7 +218,7 @@ public class AnalyseFS extends Analyse
             }
             else
             {
-                v_RKey.put(":FileSize" ,StringHelp.getComputeUnit(v_FReport.getFileSize()));
+                v_RKey.put(":FileSize" ,"<a href='#' onclick='calcFileSizeCluster(\"" + v_FileNoName + "\")'>" + StringHelp.getComputeUnit(v_FReport.getFileSize()) + "</a>");
                 
                 v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='cloneFile(\"").append(v_FileNoName).append("\")'>集群克隆</a>");
                 
@@ -867,6 +868,14 @@ public class AnalyseFS extends Analyse
                         }
                     }
                 }
+                else
+                {
+                    if ( !Help.isNull(v_HIP) )
+                    {
+                        v_HIP += ",";
+                    }
+                    v_HIP += v_Item.getKey().getHostName();
+                }
             }
         }
         
@@ -998,6 +1007,14 @@ public class AnalyseFS extends Analyse
                             v_ExecRet++;
                         }
                     }
+                }
+                else
+                {
+                    if ( !Help.isNull(v_HIP) )
+                    {
+                        v_HIP += ",";
+                    }
+                    v_HIP += v_Item.getKey().getHostName();
                 }
             }
         }
@@ -1226,6 +1243,14 @@ public class AnalyseFS extends Analyse
                         }
                     }
                 }
+                else
+                {
+                    if ( !Help.isNull(v_HIP) )
+                    {
+                        v_HIP += ",";
+                    }
+                    v_HIP += v_Item.getKey().getHostName();
+                }
             }
         }
         
@@ -1242,7 +1267,7 @@ public class AnalyseFS extends Analyse
     
     
     /**
-     * 计算目录的大小
+     * 计算目录或文件的大小
      * 
      * @author      ZhengWei(HY)
      * @createDate  2018-03-14
@@ -1262,12 +1287,19 @@ public class AnalyseFS extends Analyse
         {
             try
             {
+                long v_Size = 0;
+                
                 if ( v_File.isDirectory() )
                 {
                     FileHelp v_FileHelp = new FileHelp();
-                    long     v_Size     = v_FileHelp.calcSize(v_File);
-                    return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size) + "'}" ,"'" ,"\"");
+                    v_Size = v_FileHelp.calcSize(v_File);
                 }
+                else 
+                {
+                    v_Size = v_File.length();
+                }
+                
+                return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size) + "'}" ,"'" ,"\"");
             }
             catch (Exception exce)
             {
@@ -1278,6 +1310,100 @@ public class AnalyseFS extends Analyse
         }
         
         return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
+    }
+    
+    
+    
+    /**
+     * 集群计算目录或文件的大小
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-09-28
+     * @version     v1.0
+     *
+     * @param i_FilePath
+     * @param i_FileName
+     * @param i_HIP       详细说明参见方法：removeHIP()
+     * @return            返回值：0.成功
+     *                           1.异常，同时返回失效服务器的IP。
+     */
+    public String calcFileSizeCluster(String i_FilePath ,String i_FileName ,String i_HIP)
+    {
+        String              v_HIP     = "";
+        int                 v_ExecRet = 0;
+        List<ClientSocket>  v_Servers = Cluster.getClusters();
+        Map<String ,String> v_Sizes   = new HashMap<String ,String>();  
+        
+        removeHIP(v_Servers ,i_HIP ,false);
+        
+        if ( !Help.isNull(v_Servers) )
+        {
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"calcFileSize" ,new Object[]{i_FilePath ,i_FileName});
+            
+            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            {
+                CommunicationResponse v_ResponseData = v_Item.getValue();
+                
+                if ( v_ResponseData.getResult() == 0 )
+                {
+                    if ( v_ResponseData.getData() != null )
+                    {
+                        String v_RetValue = v_ResponseData.getData().toString();
+                        v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                        
+                        if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                        {
+                            v_ExecRet++;
+                            String v_FileSize = StringHelp.getString(v_RetValue ,"'fileSize':'" ,"'");
+                            v_Sizes.put(v_Item.getKey().getHostName() ,v_FileSize);
+                        }
+                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'" ,"'retCode':'2'") )
+                        {
+                            v_Sizes.put(v_Item.getKey().getHostName() ,"异常");
+                            
+                            if ( !Help.isNull(v_HIP) )
+                            {
+                                v_HIP += ",";
+                            }
+                            v_HIP += v_Item.getKey().getHostName();
+                        }
+                    }
+                }
+                else
+                {
+                    v_Sizes.put(v_Item.getKey().getHostName() ,"异常");
+                    
+                    if ( !Help.isNull(v_HIP) )
+                    {
+                        v_HIP += ",";
+                    }
+                    v_HIP += v_Item.getKey().getHostName();
+                }
+            }
+        }
+        
+        if ( v_ExecRet >= 1 )
+        {
+            v_Sizes = Help.toSort(v_Sizes);
+            StringBuilder v_Buffer = new StringBuilder();
+            
+            v_Buffer.append("'datas':'<table>");
+            for (Map.Entry<String ,String> v_Item : v_Sizes.entrySet())
+            {
+                v_Buffer.append("<tr><td>")
+                        .append(v_Item.getKey())
+                        .append("</td><td>")
+                        .append(v_Item.getValue())
+                        .append("</td></tr>");
+            }
+            v_Buffer.append("</table>'");
+            
+            return StringHelp.replaceAll("{'retCode':'0'," + v_Buffer.toString() + "}" ,"'" ,"\"");
+        }
+        else
+        {
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+        }
     }
     
     

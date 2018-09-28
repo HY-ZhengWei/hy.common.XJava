@@ -78,6 +78,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLGroupTree;
  *                                添加：重置数据库组合SQL访问量的概要统计数据
  *              v12.0 2018-07-26  添加：查看创建数据库对象列表
  *              v13.0 2018-09-10  添加：显示XSQLGroup树目录流程图
+ *              v14.0 2018-09-27  添加：查看XSQL及XSQL组实现标题排序功能。
  */
 @Xjava
 public class AnalyseBase extends Analyse

@@ -211,6 +211,10 @@ public class AnalyseObjectServlet extends HttpServlet
                     {
                         i_Response.getWriter().println(this.analyseFS.calcFileSize(v_FPath ,v_FN));
                     }
+                    else if ( "CALC-SIZE-C".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.calcFileSizeCluster(v_FPath ,v_FN ,v_HIP));
+                    }
                     else if ( "DIFF".equalsIgnoreCase(v_Action) )
                     {
                         i_Response.getWriter().println(this.analyseFS.diffFile(v_BasePath ,v_FPath ,v_FN ,v_HIP));
