@@ -1299,7 +1299,8 @@ public class AnalyseFS extends Analyse
                     v_Size = v_File.length();
                 }
                 
-                return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size) + "'}" ,"'" ,"\"");
+                return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size) 
+                                           + "','lastTime':'" + new Date(v_File.lastModified()).getFull() + "'}" ,"'" ,"\"");
             }
             catch (Exception exce)
             {
@@ -1355,7 +1356,8 @@ public class AnalyseFS extends Analyse
                         {
                             v_ExecRet++;
                             String v_FileSize = StringHelp.getString(v_RetValue ,"'fileSize':'" ,"'");
-                            v_Sizes.put(v_Item.getKey().getHostName() ,v_FileSize);
+                            String v_LastTime = StringHelp.getString(v_RetValue ,"'lastTime':'" ,"'");
+                            v_Sizes.put(v_Item.getKey().getHostName() ,v_FileSize + "," + v_LastTime);
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'" ,"'retCode':'2'") )
                         {
@@ -1390,10 +1392,13 @@ public class AnalyseFS extends Analyse
             v_Buffer.append("'datas':'<table>");
             for (Map.Entry<String ,String> v_Item : v_Sizes.entrySet())
             {
+                String [] v_Values = (v_Item.getValue() + ", ").split(",");
                 v_Buffer.append("<tr><td>")
                         .append(v_Item.getKey())
-                        .append("</td><td>")
-                        .append(v_Item.getValue())
+                        .append("</td><td>&nbsp;&nbsp;&nbsp;&nbsp;")
+                        .append(v_Values[0])
+                        .append("</td><td>&nbsp;&nbsp;&nbsp;&nbsp;")
+                        .append(v_Values[1])
                         .append("</td></tr>");
             }
             v_Buffer.append("</table>'");
