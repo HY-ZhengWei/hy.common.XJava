@@ -95,21 +95,134 @@ a:hover{color:red;text-decoration:none;}
 
 </head>
 <body onload="inputstyle();"> 
+	
+	   <input type="hidden" id="cluster" name="cluster" value=":cluster" />
+	   <input type="hidden" id="S"       name="S"       value=":Sort" />
+	   <input type="hidden" id="IsGroup" name="IsGroup" value=":IsGroup" />
 		
 	   <div class="userInfoModify_logininfobody" >
 	   	  <div class="userInfoModify_logininfo" /> 
 	      <div class="userInfoModify_clearTag">
 	            <div class="userInfoModify_labeTag">编号</div>
-	            <div class="userInfoModify_inputTag">:NameTitle</div>
-	            <div class="userInfoModify_RequestCount_Title">请求量</div>
-				<div class="userInfoModify_SuccessCount_Title">成功量</div>
-	            <div class="userInfoModify_FailCount_Title">未成功量</div>
-	            <div class="userInfoModify_ExecuteTime_Title">操作时间</div>
-	            <div class="userInfoModify_SumTime_Title">总时长</div>
-	            <div class="userInfoModify_AvgTime_Title">平均用时(毫秒)</div>
+	            <div class="userInfoModify_inputTag"><a id="Title_NameTitle" href="#" style='color:#AA66CC'>:NameTitle</a>:GotoTitle</div>
+	            <div class="userInfoModify_RequestCount_Title"><a id="Title_RequestCount" href="#" style='color:#AA66CC'>请求量</a></div>
+				<div class="userInfoModify_SuccessCount_Title"><a id="Title_SuccessCount" href="#" style='color:#AA66CC'>成功量</a></div>
+	            <div class="userInfoModify_FailCount_Title"><a id="Title_FailCount" href="#" style='color:#AA66CC'>未成功量</a></div>
+	            <div class="userInfoModify_ExecuteTime_Title"><a id="Title_ExecuteTime" href="#" style='color:#AA66CC'>操作时间</a></div>
+	            <div class="userInfoModify_SumTime_Title"><a id="Title_SumTime" href="#" style='color:#AA66CC'>总时长</a></div>
+	            <div class="userInfoModify_AvgTime_Title"><a id="Title_AvgTime" href="#" style='color:#AA66CC'>平均用时(毫秒)</a></div>
 	      </div> 
 		 
 	   </div> 
+	   
+<script language="javascript" type="text/javascript">
+
+function f_Goto()
+{
+	var v_GroupFlag = "";
+	if ( $("#IsGroup").val() == "Y" )
+	{
+		v_GroupFlag = "&type=Group";
+	}
+	
+	if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+	{
+		window.location.href = "analyseDB?cluster=Y&S=" + $("#S").val() + v_GroupFlag;
+	}
+	else
+	{
+		window.location.href = "analyseDB?S=" + $("#S").val() + v_GroupFlag;
+	}
+}
+
+
+
+$("#Title_NameTitle").click(function()
+{
+	$("#S").val("");
+	f_Goto();
+});
+
+
+
+$("#Title_RequestCount").click(function()
+{
+	$("#S").val("1");
+	f_Goto();
+});
+
+
+
+$("#Title_SuccessCount").click(function()
+{
+	$("#S").val("2");
+	f_Goto();
+});
+
+
+
+$("#Title_FailCount").click(function()
+{
+	$("#S").val("3");
+	f_Goto();
+});
+
+
+
+$("#Title_ExecuteTime").click(function()
+{
+	$("#S").val("4");
+	f_Goto();
+});
+
+
+
+$("#Title_SumTime").click(function()
+{
+	$("#S").val("5");
+	f_Goto();
+});
+
+
+
+$("#Title_AvgTime").click(function()
+{
+	$("#S").val("6");
+	f_Goto();
+});
+
+
+
+if ( $("#S").val() == "1" )
+{
+	$("#Title_RequestCount").html("↓" + $("#Title_RequestCount").html());
+}
+else if ( $("#S").val() == "2" )
+{
+	$("#Title_SuccessCount").html("↓" + $("#Title_SuccessCount").html());
+}
+else if ( $("#S").val() == "3" )
+{
+	$("#Title_FailCount").html("↓" + $("#Title_FailCount").html());
+}
+else if ( $("#S").val() == "4" )
+{
+	$("#Title_ExecuteTime").html("↓" + $("#Title_ExecuteTime").html());
+}
+else if ( $("#S").val() == "5" )
+{
+	$("#Title_SumTime").html("↓" + $("#Title_SumTime").html());
+}
+else if ( $("#S").val() == "6" )
+{
+	$("#Title_AvgTime").html("↓" + $("#Title_AvgTime").html());
+}
+else
+{
+	$("#Title_NameTitle").html("↓" + $("#Title_NameTitle").html());
+}
+
+</script>
 	   
    		<div id="info_fill" class="userInfoModify_logininfo1"> 
    		
@@ -137,6 +250,6 @@ a:hover{color:red;text-decoration:none;}
 				<div class="userInfoModify_AvgTime_Other"></div>
      	    </div> 
    		</div>
-	   		
+
 </body>
 </html>

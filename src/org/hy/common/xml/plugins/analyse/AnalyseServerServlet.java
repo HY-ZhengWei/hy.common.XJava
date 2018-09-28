@@ -68,6 +68,7 @@ public class AnalyseServerServlet extends HttpServlet
         String v_Type    = i_Request.getParameter("type");
         String v_XSQLXID = i_Request.getParameter("xsqlxid");
         String v_Cluster = i_Request.getParameter("cluster");
+        String v_Sort    = Help.NVL(i_Request.getParameter("S"));
         
         if ( !Help.isNull(v_XSQLXID) )
         {
@@ -75,11 +76,11 @@ public class AnalyseServerServlet extends HttpServlet
         }
         else if ( "GROUP".equalsIgnoreCase(v_Type) )
         {
-            i_Response.getWriter().println(this.analyse.analyseDBGroup (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
+            i_Response.getWriter().println(this.analyse.analyseDBGroup (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_Sort));
         }
         else
         {
-            i_Response.getWriter().println(this.analyse.analyseDB      (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
+            i_Response.getWriter().println(this.analyse.analyseDB      (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_Sort));
         }
     }
     

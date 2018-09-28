@@ -10,8 +10,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.hy.common.Busway;
+import org.hy.common.Counter;
 import org.hy.common.Date;
 import org.hy.common.Help;
+import org.hy.common.Max;
 import org.hy.common.MethodReflect;
 import org.hy.common.Queue;
 import org.hy.common.Return;
@@ -494,11 +496,11 @@ public class AnalyseBase extends Analyse
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
      * @param  i_Cluster         是否为集群
+     * @param  i_SortType        排序类型
      * @return
      */
-    public String analyseDBGroup(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster)
+    public String analyseDBGroup(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType)
     {
-        Map<String ,Object> v_Objs         = XJava.getObjects(XSQLGroup.class);
         StringBuilder       v_Buffer       = new StringBuilder();
         int                 v_Index        = 0;
         String              v_Content      = this.getTemplateShowTotalContent();
@@ -545,33 +547,77 @@ public class AnalyseBase extends Analyse
             }
         }
         
-        v_Objs    = Help.toSort(v_Objs);
-        v_NowTime = new Date().getMinutes(-2).getTime();
         
-        for (Map.Entry<String, Object> v_Item : v_Objs.entrySet())
+        Set<String>     v_XSQLIDs    = v_Total.getRequestCount().keySet();
+        Counter<String> v_FailCounts = new Counter<String>();
+        Max<String>     v_AvgTimes   = new Max<String>();
+        for (String v_XSQLID : v_XSQLIDs)
         {
-            if ( v_Item.getValue() != null )
-            {
-                // XSQLGroup v_GXSQL = (XSQLGroup)v_Item.getValue();
+            v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
+            v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
+            v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
+            
+            v_FailCounts.put(v_XSQLID ,v_RequestCount - v_SuccessCount);
+            v_AvgTimes  .put(v_XSQLID ,Help.division(v_TotalTimeLen ,v_SuccessCount));
+        }
+        
+        
+        if ( "1".equalsIgnoreCase(i_SortType) )
+        {
+            // 按请求量排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getRequestCount()).keySet();
+        }
+        else if ( "2".equalsIgnoreCase(i_SortType) )
+        {
+            // 按成功量排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getSuccessCount()).keySet();
+        }
+        else if ( "3".equalsIgnoreCase(i_SortType) )
+        {
+            // 按未成功量排序
+            v_XSQLIDs = Help.toReverseByMap(v_FailCounts).keySet();
+        }
+        else if ( "4".equalsIgnoreCase(i_SortType) )
+        {
+            // 按操作时间排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getMaxExecTime()).keySet();
+        }
+        else if ( "5".equalsIgnoreCase(i_SortType) )
+        {
+            // 按总时长排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getTotalTimeLen()).keySet();
+        }
+        else if ( "6".equalsIgnoreCase(i_SortType) )
+        {
+            // 按平均用时(毫秒)排序
+            v_XSQLIDs = Help.toReverseByMap(v_AvgTimes).keySet();
+        }
+        else
+        {
+            v_XSQLIDs = Help.toSort(v_Total.getRequestCount()).keySet();
+        }
+        
+        
+        v_NowTime = new Date().getMinutes(-2).getTime();
+        for (String v_XSQLID : v_XSQLIDs)
+        {
+            v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
+            v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
+            v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
+            v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
+            v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue(v_XSQLID).longValue());
+            
+            v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
+                                     .replaceAll(":Name"         ,"<a href='analyseObject?XSGFlow=Y&xid=" + v_XSQLID + "' class='Flow'>" + v_XSQLID + "</a>")
+                                     .replaceAll(":RequestCount" ,String.valueOf(v_RequestCount))
+                                     .replaceAll(":SuccessCount" ,String.valueOf(v_SuccessCount))
+                                     .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount))
+                                     .replaceAll(":ParamURL"     ,"#")
+                                     .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : (v_MaxExecTime.getTime() >= v_NowTime ? v_MaxExecTime.getFull() : "<span style='color:gray;'>" + v_MaxExecTime.getFull() + "</span>"))
+                                     .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
+                                     .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
+                           );
                 
-                v_RequestCount = v_Total.getRequestCount().getSumValue(v_Item.getKey());
-                v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_Item.getKey());
-                v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_Item.getKey());
-                v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
-                v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue(v_Item.getKey()).longValue());
-                
-                v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
-                                         .replaceAll(":Name"         ,"<a href='analyseObject?XSGFlow=Y&xid=" + v_Item.getKey() + "' class='Flow'>" + v_Item.getKey() + "</a>")
-                                         .replaceAll(":RequestCount" ,String.valueOf(v_RequestCount))
-                                         .replaceAll(":SuccessCount" ,String.valueOf(v_SuccessCount))
-                                         .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount))
-                                         .replaceAll(":ParamURL"     ,"#")
-                                         .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : (v_MaxExecTime.getTime() >= v_NowTime ? v_MaxExecTime.getFull() : "<span style='color:gray;'>" + v_MaxExecTime.getFull() + "</span>"))
-                                         .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
-                                         .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
-                               );
-                
-            }
         }
         
         v_RequestCount = v_Total.getRequestCount().getSumValue();
@@ -611,12 +657,18 @@ public class AnalyseBase extends Analyse
             v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset' style='color:#AA66CC'>重置统计</a>";
         }
         
-        v_Objs.clear();
-        v_Objs = null;
+        v_FailCounts.clear();
+        v_FailCounts = null;
+        
+        v_AvgTimes.clear();
+        v_AvgTimes = null;
+        
+        v_XSQLIDs.clear();
+        v_XSQLIDs = null;
         
         return StringHelp.replaceAll(this.getTemplateShowTotal()
-                                    ,new String[]{":NameTitle"             ,":Title"                    ,":HttpBasePath" ,":Content"}
-                                    ,new String[]{"组合SQL访问标识" + v_Goto ,"数据库组合SQL访问量的概要统计" ,i_BasePath      ,v_Buffer.toString()});
+                                    ,new String[]{":NameTitle"    ,":GotoTitle" ,":Title"                    ,":HttpBasePath" ,":cluster"             ,":Sort"    ,":IsGroup" ,":Content"}
+                                    ,new String[]{"组合SQL访问标识" ,v_Goto       ,"数据库组合SQL访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"Y"        ,v_Buffer.toString()});
     }
     
     
@@ -631,9 +683,10 @@ public class AnalyseBase extends Analyse
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
      * @param  i_Cluster         是否为集群
+     * @param  i_SortType        排序类型
      * @return
      */
-    public String analyseDB(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster)
+    public String analyseDB(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType)
     {
         Map<String ,Object> v_XSQLs           = XJava.getObjects(XSQL.class);
         StringBuilder       v_Buffer          = new StringBuilder();
@@ -688,9 +741,58 @@ public class AnalyseBase extends Analyse
             }
         }
         
-        Set<String> v_XSQLIDs = Help.toSort(v_Total.getRequestCount()).keySet();
-        v_NowTime = new Date().getMinutes(-2).getTime();
         
+        Set<String>     v_XSQLIDs    = v_Total.getRequestCount().keySet();
+        Counter<String> v_FailCounts = new Counter<String>();
+        Max<String>     v_AvgTimes   = new Max<String>();
+        for (String v_XSQLID : v_XSQLIDs)
+        {
+            v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
+            v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
+            v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
+            
+            v_FailCounts.put(v_XSQLID ,v_RequestCount - v_SuccessCount);
+            v_AvgTimes  .put(v_XSQLID ,Help.division(v_TotalTimeLen ,v_SuccessCount));
+        }
+        
+        
+        if ( "1".equalsIgnoreCase(i_SortType) )
+        {
+            // 按请求量排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getRequestCount()).keySet();
+        }
+        else if ( "2".equalsIgnoreCase(i_SortType) )
+        {
+            // 按成功量排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getSuccessCount()).keySet();
+        }
+        else if ( "3".equalsIgnoreCase(i_SortType) )
+        {
+            // 按未成功量排序
+            v_XSQLIDs = Help.toReverseByMap(v_FailCounts).keySet();
+        }
+        else if ( "4".equalsIgnoreCase(i_SortType) )
+        {
+            // 按操作时间排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getMaxExecTime()).keySet();
+        }
+        else if ( "5".equalsIgnoreCase(i_SortType) )
+        {
+            // 按总时长排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getTotalTimeLen()).keySet();
+        }
+        else if ( "6".equalsIgnoreCase(i_SortType) )
+        {
+            // 按平均用时(毫秒)排序
+            v_XSQLIDs = Help.toReverseByMap(v_AvgTimes).keySet();
+        }
+        else
+        {
+            v_XSQLIDs = Help.toSort(v_Total.getRequestCount()).keySet();
+        }
+        
+        
+        v_NowTime = new Date().getMinutes(-2).getTime();
         for (String v_XSQLID : v_XSQLIDs)
         {
             v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
@@ -777,6 +879,12 @@ public class AnalyseBase extends Analyse
             v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal' style='color:#AA66CC'>重置统计</a>";
         }
         
+        v_FailCounts.clear();
+        v_FailCounts = null;
+        
+        v_AvgTimes.clear();
+        v_AvgTimes = null;
+        
         v_XSQLIDs.clear();
         v_XSQLIDs = null;
         
@@ -784,8 +892,8 @@ public class AnalyseBase extends Analyse
         v_XSQLs = null;
         
         return StringHelp.replaceAll(this.getTemplateShowTotal()
-                                    ,new String[]{":NameTitle"          ,":Title"              ,":HttpBasePath" ,":Content"}
-                                    ,new String[]{"SQL访问标识" + v_Goto ,"数据库访问量的概要统计" ,i_BasePath      ,v_Buffer.toString()});
+                                    ,new String[]{":NameTitle" ,":GotoTitle" ,":Title"              ,":HttpBasePath" ,":cluster"            ,":Sort"     ,":IsGroup" ,":Content"}
+                                    ,new String[]{"SQL访问标识" ,v_Goto       ,"数据库访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"N"         ,v_Buffer.toString()});
     }
     
     
