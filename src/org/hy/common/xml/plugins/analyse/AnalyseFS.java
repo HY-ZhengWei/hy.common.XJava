@@ -37,6 +37,7 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
  *              v3.0  2018-04-12  添加：文件内容查看，及与其它服务器对比的功能。
  *              v4.0  2018-04-16  添加：定向下载功能。
  *              v5.0  2018-09-28  添加：集群计算文件或目录的大小。
+ *              v6.0  2018-10-08  添加：集群或本机执行命令文件的功能。
  */
 @Xjava
 public class AnalyseFS extends Analyse
