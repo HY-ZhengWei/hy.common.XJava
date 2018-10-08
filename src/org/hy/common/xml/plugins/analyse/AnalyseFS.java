@@ -874,15 +874,19 @@ public class AnalyseFS extends Analyse
         {
             try
             {
-                String v_FileType = i_FileName.toLowerCase();
+                String       v_FileType = i_FileName.toLowerCase();
+                List<String> v_Ret      = null;
                 if ( StringHelp.isContains(v_FileType ,".sh") )
                 {
-                    Help.executeCommand("UTF-8" ,false ,v_File.toString());
+                    v_Ret = Help.executeCommand("UTF-8" ,false ,v_File.toString());
                 }
                 else if ( StringHelp.isContains(v_FileType ,".bat") )
                 {
-                    Help.executeCommand("GBK"   ,false ,v_File.toString());
+                    v_Ret = Help.executeCommand("GBK"   ,false ,v_File.toString());
                 }
+                
+                System.out.println("-- " + Date.getNowTime().getFullMilli() + " 执行[" + v_File.toString() + "]命令文件的结果");
+                Help.print(v_Ret);
                 
                 return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
             }
