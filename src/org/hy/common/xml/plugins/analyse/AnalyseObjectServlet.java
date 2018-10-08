@@ -219,6 +219,14 @@ public class AnalyseObjectServlet extends HttpServlet
                     {
                         i_Response.getWriter().println(this.analyseFS.diffFile(v_BasePath ,v_FPath ,v_FN ,v_HIP));
                     }
+                    else if ( "EXECUTE-COMMAND".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.executeCommand(v_FPath ,v_FN));
+                    }
+                    else if ( "EXECUTE-COMMAND-C".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.executeCommandCluster(v_FPath ,v_FN ,v_HIP));
+                    }
                 }
                 else
                 {

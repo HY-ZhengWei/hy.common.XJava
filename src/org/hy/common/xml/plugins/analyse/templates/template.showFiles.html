@@ -173,7 +173,7 @@ function cloneFileAction(i_FileName ,i_HIP)
 					}
 					else if ( i_Ret.retCode == "1" )
 					{
-						f_ShowMsg("消息" ,"未能成功克隆！异常服务：" + i_Ret.retHIP ,v_Height_Msg);
+						f_ShowMsg("消息" ,"未能成功克隆！异常服务：" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
 					}
 					else if ( i_Ret.retCode == "2" )
 					{
@@ -250,7 +250,7 @@ function cloneFile(i_File)
 				    ,v_HIP_Prompt
 				    ,v_Height
 				    ,{
-			        	"全部克隆": function() 
+			        	"集群克隆": function() 
 			        	{
 			        		$(this).dialog("close");
 			        		cloneFileAction(v_FileName ,"");
@@ -294,7 +294,7 @@ function cloneFile(i_File)
 				   + "<br><br>:SelectLocalIP"
 				    ,v_Height_Msg + 80
 				    ,{
-			        	"全部克隆": function() 
+			        	"集群克隆": function() 
 			        	{
 			        		$(this).dialog("close");
 			        		cloneFileAction(v_FileName ,"");
@@ -335,6 +335,127 @@ function cloneFile(i_File)
 			            	$(this).dialog("close");
 			          	}
 	        		 });
+	}
+}
+
+
+
+function executeCommandAction(i_FileName ,i_HIP ,i_IsCluster)
+{
+	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
+	var v_Action  = i_IsCluster ? "EXECUTE-COMMAND-C" : "EXECUTE-COMMAND";
+	executeAction(i_FileName 
+			     ,i_HIP
+			     ,""
+			     ,v_Action
+			     ,function (i_Ret)
+			     {
+					v_Loading.dialog("close");
+					if ( i_Ret.retCode == "0" )
+					{
+						f_Goto();
+					}
+					else if ( i_Ret.retCode == "1" )
+					{
+						f_ShowMsg("消息" ,"远程未能成功执行！异常服务：" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
+					}
+					else if ( i_Ret.retCode == "2" )
+					{
+						f_ShowMsg("消息" ,"本机未能成功执行！文件不存在或者不是文件。" ,v_Height_Msg);
+					}
+			     });
+}
+
+
+
+function executeCommand(i_File)
+{
+	var v_FileNo     = i_File.split(":")[0];
+	var v_FileName   = i_File.split(":")[1];
+	var v_Height     = 0;
+	var v_HIP        = $("#HIP_" + v_FileNo).val();
+	var v_HIP_Prompt = v_HIP;
+	
+	if ( v_HIP_Prompt == "" )
+	{
+		v_Height     = v_Height_Msg + 80;
+		v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，是否远程执行？"
+                        + "<br><br>:SelectHIP"
+                        + "<br><br>:SelectLocalIP";
+	}
+	else
+	{
+		v_Height     = v_Height_HIP;
+		v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，是否远程执行？" 
+		             + "<br><br>:SelectHIP"
+		             + "<br><br>:SelectLocalIP<br><br>"
+		             + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>");
+	}
+	
+	if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+	{
+		f_OpenDialog("Dialog-Default" 
+				    ,"确认远程执行？" 
+				    ,v_HIP_Prompt
+				    ,v_Height
+				    ,{
+			        	"集群执行": function() 
+			        	{
+			        		$(this).dialog("close");
+			        		executeCommandAction(v_FileName ,"" ,true);
+			          	},
+			          	"定向执行": function() 
+			        	{
+			          		if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
+			          		{
+				        		$(this).dialog("close");
+				        		executeCommandAction(v_FileName ,"!" + $("#SelectHIP").val() ,true);
+			        		}
+			          		else
+		          			{
+		          				alert("请选择定向操作的服务器");
+		          			}
+			          	},
+			          	"取　　消": function() 
+			          	{
+			            	$(this).dialog("close");
+			          	}
+	        		 });
+	}
+	else
+	{
+		f_OpenDialog("Dialog-Default" 
+			    ,"确认远程执行？" 
+			    ,v_HIP_Prompt
+			    ,v_Height
+			    ,{
+		        	"集群执行": function() 
+		        	{
+		        		$(this).dialog("close");
+		        		executeCommandAction(v_FileName ,"" ,true);
+		          	},
+		          	"定向执行": function() 
+		        	{
+		          		if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
+		          		{
+			        		$(this).dialog("close");
+			        		executeCommandAction(v_FileName ,"!" + $("#SelectHIP").val() ,true);
+		        		}
+		          		else
+	          			{
+	          				alert("请选择定向操作的服务器");
+	          			}
+		          	},
+		          	"本机执行": function() 
+		        	{
+		        		$(this).dialog("close");
+		        		executeCommandAction(v_FileName ,"" ,false);
+		          	},
+		          	"取　　消": function() 
+		          	{
+		            	$(this).dialog("close");
+		          	}
+        		 });
 	}
 }
 

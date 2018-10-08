@@ -137,7 +137,7 @@ public class AnalyseFS extends Analyse
         
         
         // 生成 .. 的跳转上一级目录
-        Map<String ,String> v_RKey  = new HashMap<String ,String>();
+        Map<String ,String> v_RKey = new HashMap<String ,String>();
         if ( !i_Cluster )
         {
             File v_File = new File(toTruePath(v_FPath));
@@ -246,6 +246,12 @@ public class AnalyseFS extends Analyse
                     {
                         v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='reload(\"").append(v_XmlFile).append("\")'>热加载</a>");
                     }
+                }
+                
+                // 执行操作系统命令
+                if ( StringHelp.isContains(v_FType ,".sh" ,".bat") )
+                {
+                    v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='executeCommand(\"").append(v_FileNoName).append("\")'>执行</a>");
                 }
                 
                 if ( StringHelp.isContains(v_FType ,$DiffTypes) )
@@ -763,6 +769,131 @@ public class AnalyseFS extends Analyse
         }
         
         return FileHelp.$Upload_Error;
+    }
+    
+    
+    
+    /**
+     * 集群执行命令文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-10-08
+     * @version     v1.0
+     *
+     * @param i_FilePath  路径
+     * @param i_FileName  名称
+     * @param i_HIP       详细说明参见方法：removeHIP()
+     * @return            返回值：0.成功
+     *                           1.异常
+     *                           2.文件不存在
+     */
+    public String executeCommandCluster(String i_FilePath ,String i_FileName ,String i_HIP)
+    {
+        String             v_HIP     = "";
+        int                v_ExecRet = 0;
+        List<ClientSocket> v_Servers = Cluster.getClusters();
+        
+        removeHIP(v_Servers ,i_HIP ,false);
+        
+        if ( !Help.isNull(v_Servers) )
+        {
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"executeCommand" ,new Object[]{i_FilePath ,i_FileName});
+            
+            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            {
+                CommunicationResponse v_ResponseData = v_Item.getValue();
+                
+                if ( v_ResponseData.getResult() == 0 )
+                {
+                    if ( v_ResponseData.getData() != null )
+                    {
+                        String v_RetValue = v_ResponseData.getData().toString();
+                        v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                        
+                        if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                        {
+                            v_ExecRet++;
+                        }
+                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
+                        {
+                            if ( !Help.isNull(v_HIP) )
+                            {
+                                v_HIP += ",";
+                            }
+                            v_HIP += v_Item.getKey().getHostName();
+                        }
+                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
+                        {
+                            // 文件不存在也按成功算
+                            v_ExecRet++;
+                        }
+                    }
+                }
+                else
+                {
+                    if ( !Help.isNull(v_HIP) )
+                    {
+                        v_HIP += ",";
+                    }
+                    v_HIP += v_Item.getKey().getHostName();
+                }
+            }
+        }
+        
+        if ( v_ExecRet == v_Servers.size() )
+        {
+            return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+        }
+        else
+        {
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+        }
+    }
+    
+    
+    
+    /**
+     * 执行命令文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-10-08
+     * @version     v1.0
+     *
+     * @param i_FilePath  路径
+     * @param i_FileName  名称
+     * @return            返回值：0.成功
+     *                           1.异常
+     *                           2.文件不存在
+     */
+    public String executeCommand(String i_FilePath ,String i_FileName)
+    {
+        File v_File = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
+        
+        if ( v_File.exists() && v_File.isFile() )
+        {
+            try
+            {
+                String v_FileType = i_FileName.toLowerCase();
+                if ( StringHelp.isContains(v_FileType ,".sh") )
+                {
+                    Help.executeCommand("UTF-8" ,false ,v_File.toString());
+                }
+                else if ( StringHelp.isContains(v_FileType ,".bat") )
+                {
+                    Help.executeCommand("GBK"   ,false ,v_File.toString());
+                }
+                
+                return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
+            }
+            catch (Exception exce)
+            {
+                exce.printStackTrace();
+            }
+            
+            return StringHelp.replaceAll("{'retCode':'1'}" ,"'" ,"\"");
+        }
+        
+        return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
     }
     
     
