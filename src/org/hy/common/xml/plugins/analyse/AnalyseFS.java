@@ -882,11 +882,11 @@ public class AnalyseFS extends Analyse
                 }
                 else if ( StringHelp.isContains(v_FileType ,".bat") )
                 {
-                    String v_Device = i_FileName.substring(0 ,2);
+                    String v_Device = v_File.toString().substring(0 ,2);
                     v_Ret = Help.executeCommand("GBK"   ,false ,"cmd.exe /c " 
                                                                + v_Device + " && " 
-                                                               + " cd " + v_File.getParent() + " && "
-                                                               + v_File.toString());
+                                                               + " cd " + v_File.getParent() + " && \""
+                                                               + v_File.toString() + "\"");
                 }
                 
                 System.out.println("-- " + Date.getNowTime().getFullMilli() + " 执行[" + v_File.toString() + "]命令文件的结果");
