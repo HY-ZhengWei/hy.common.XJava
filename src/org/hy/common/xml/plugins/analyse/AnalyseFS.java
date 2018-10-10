@@ -878,12 +878,12 @@ public class AnalyseFS extends Analyse
                 List<String> v_Ret      = null;
                 if ( StringHelp.isContains(v_FileType ,".sh") )
                 {
-                    v_Ret = Help.executeCommand("UTF-8" ,false ,false ,v_File.toString());
+                    v_Ret = Help.executeCommand("UTF-8" ,false ,true ,v_File.toString());
                 }
                 else if ( StringHelp.isContains(v_FileType ,".bat") )
                 {
                     String v_Device = v_File.toString().substring(0 ,2);
-                    v_Ret = Help.executeCommand("GBK"   ,false ,false ,"cmd.exe /c " 
+                    v_Ret = Help.executeCommand("GBK"   ,false ,true ,"cmd.exe /c " 
                                                                       + v_Device + " && " 
                                                                       + " cd " + v_File.getParent() + " && \""
                                                                       + v_File.toString() + "\"");
