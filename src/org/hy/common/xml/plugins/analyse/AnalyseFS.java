@@ -878,18 +878,18 @@ public class AnalyseFS extends Analyse
                 List<String> v_Ret      = null;
                 if ( StringHelp.isContains(v_FileType ,".sh") )
                 {
-                    v_Ret = Help.executeCommand("UTF-8" ,false ,v_File.toString());
+                    v_Ret = Help.executeCommand("UTF-8" ,false ,false ,v_File.toString());
                 }
                 else if ( StringHelp.isContains(v_FileType ,".bat") )
                 {
                     String v_Device = v_File.toString().substring(0 ,2);
-                    v_Ret = Help.executeCommand("GBK"   ,false ,"cmd.exe /c " 
-                                                               + v_Device + " && " 
-                                                               + " cd " + v_File.getParent() + " && \""
-                                                               + v_File.toString() + "\"");
+                    v_Ret = Help.executeCommand("GBK"   ,false ,false ,"cmd.exe /c " 
+                                                                      + v_Device + " && " 
+                                                                      + " cd " + v_File.getParent() + " && \""
+                                                                      + v_File.toString() + "\"");
                 }
                 
-                System.out.println("-- " + Date.getNowTime().getFullMilli() + " 执行[" + v_File.toString() + "]命令文件的结果");
+                System.out.println("-- " + Date.getNowTime().getFullMilli() + " 执行[" + v_File.toString() + "]命令文件");
                 Help.print(v_Ret);
                 
                 return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
