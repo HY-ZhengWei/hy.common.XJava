@@ -878,7 +878,7 @@ public class AnalyseFS extends Analyse
                 List<String> v_Ret      = null;
                 if ( StringHelp.isContains(v_FileType ,".sh") )
                 {
-                    v_Ret = Help.executeCommand("UTF-8" ,false ,false ,"/bin/sh -c cd v_File.getParent() && " + v_File.toString());
+                    v_Ret = Help.executeCommand("UTF-8" ,false ,false ,"/bin/sh -c cd " + v_File.getParent() + " && " + v_File.toString());
                 }
                 else if ( StringHelp.isContains(v_FileType ,".bat") )
                 {
