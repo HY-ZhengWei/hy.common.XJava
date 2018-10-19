@@ -115,7 +115,7 @@
 		border: 1px solid #888; 
 		border-radius: 5px;
 		position: fixed;
-		right: 20;
+		right: 20px;
 		top: 25%;
 	}
 	
@@ -166,8 +166,8 @@
 		<defs>
 			<marker id="arrow" 
 			                markerUnits="strokerWidth"
-			                markerWidth="16"
-			                markerHeight="16"
+			                markerWidth="10"
+			                markerHeight="10"
 			                viewBox="0 0 12 12"
 			                refX="6"
 			                refY="6"
@@ -220,15 +220,13 @@
 		var v_SVG          = v_SVGTrue.append("g"); /* 为防止拖动时抖动而添加G元素 */
 		var v_LegendSVG    = d3.select("body").select("#legendSVG");
 		
-		var v_Tooltip = d3.select("#tooltip")
-		.style("position" ,"absolute")
-		.style("z-index"  ,"99999")
-		.style("opacity" ,0);
+		$("#tooltip").css("position" ,"absolute");
+		$("#tooltip").css("z-index"  ,"99999");
+		$("#tooltip").css("opacity" ,0);
 		
-		var v_Menu = d3.select("#menuDiv")
-		.style("position" ,"absolute")
-		.style("z-index"  ,"99999")
-		.style("opacity" ,0);
+		$("#menuDiv").css("position" ,"absolute");
+		$("#menuDiv").css("z-index"  ,"99999");
+		$("#menuDiv").css("opacity" ,0);
 		
 		var v_NodeZoom = d3.zoom()
 		.scaleExtent([0.5 ,2])
@@ -250,7 +248,7 @@
 		
 		d3.select("body").on("click" ,function()
 		{
-			v_Menu.style("opacity" ,0);
+			$("#menuDiv").css("opacity" ,0);
 		});
 		
 		
@@ -269,10 +267,9 @@
 				d3.select("#nodeXIDDetail-LI")   .classed("ui-state-disabled" ,true);
 				d3.select("#executeXIDDetail-LI").classed("ui-state-disabled" ,true);
 				
-				v_Menu
-				.style("left" ,(d3.event.pageX - 135) + "px")     
-				.style("top"  ,(d3.event.pageY - 28)  + "px")
-				.style("opacity" ,100);
+				$("#menuDiv").css("left" ,(d3.event.pageX - 135) + "px");
+				$("#menuDiv").css("top"  ,(d3.event.pageY - 28)  + "px");
+				$("#menuDiv").css("opacity" ,100);
 			}
 			
 			v_ContextMenu = false;
@@ -289,7 +286,7 @@
 		 */
 		d3.select("#showLevelAll").on("click" ,function()
 		{
-			v_Menu.style("opacity" ,0);
+			$("#menuDiv").css("opacity" ,0);
 			
 			showLevel(v_JsonDatas ,1 ,999);
 			drawTree(v_JsonDatas);
@@ -306,7 +303,7 @@
 		 */
 		d3.select("#showLevelTwo").on("click" ,function()
 		{
-			v_Menu.style("opacity" ,0);
+			$("#menuDiv").css("opacity" ,0);
 			
 			showLevel(v_JsonDatas ,1 ,2);
 			drawTree(v_JsonDatas);
@@ -323,7 +320,7 @@
 		 */
 		d3.select("#showLevelThree").on("click" ,function()
 		{
-			v_Menu.style("opacity" ,0);
+			$("#menuDiv").css("opacity" ,0);
 			
 			showLevel(v_JsonDatas ,1 ,3);
 			drawTree(v_JsonDatas);
@@ -340,7 +337,7 @@
 		 */
 		d3.select("#showLevelFour").on("click" ,function()
 		{
-			v_Menu.style("opacity" ,0);
+			$("#menuDiv").css("opacity" ,0);
 			
 			showLevel(v_JsonDatas ,1 ,4);
 			drawTree(v_JsonDatas);
@@ -357,7 +354,7 @@
 		 */
 		d3.select("#showLevelFive").on("click" ,function()
 		{
-			v_Menu.style("opacity" ,0);
+			$("#menuDiv").css("opacity" ,0);
 			
 			showLevel(v_JsonDatas ,1 ,5);
 			drawTree(v_JsonDatas);
@@ -374,7 +371,7 @@
 		 */
 		d3.select("#nodeXIDDetail").on("click" ,function()
 		{
-			v_Menu.style("opacity" ,0);
+			$("#menuDiv").css("opacity" ,0);
 			
 			if ( !d3.select("#nodeXIDDetail-LI").classed("ui-state-disabled") )
 			{
@@ -399,7 +396,7 @@
 		 */
 		d3.select("#executeXIDDetail").on("click" ,function()
 		{
-			v_Menu.style("opacity" ,0);
+			$("#menuDiv").css("opacity" ,0);
 			
 			if ( !d3.select("#executeXIDDetail-LI").classed("ui-state-disabled") )
 			{
@@ -635,7 +632,7 @@
 			.attr("transform" ,"translate(" + i_Json.x + "," + i_Json.y + ")")
 			.on("click" ,function()
 			{
-				v_Menu.style("opacity" ,0);
+				$("#menuDiv").css("opacity" ,0);
 				
 				if ( i_Json.children != null && i_Json.children.length >= 1 )
 				{
@@ -668,35 +665,33 @@
 				}
 				
 				v_MenuJson = i_Json;
-				v_Menu
-				.style("left" ,(d3.event.pageX - 135) + "px")     
-				.style("top"  ,(d3.event.pageY - 28)  + "px")
-				.style("opacity" ,100);
+				$("#menuDiv").css("left" ,(d3.event.pageX - 135) + "px");  
+				$("#menuDiv").css("top"  ,(d3.event.pageY - 28)  + "px");
+				$("#menuDiv").css("opacity" ,100);
 				
 				v_ContextMenu = true;
 			})
 			.on("mouseenter" ,function() 
 			{
-				v_Tooltip.html(makeTooltipText(i_Json))  
-				.style("left" ,(d3.event.pageX + (v_LevelSpacing/4)) + "px")     
-				.style("top"  ,(d3.event.pageY - 30) + "px")
-				.style("opacity" ,100); 
+				$("#tooltip").html(makeTooltipText(i_Json));
+				$("#tooltip").css("left" ,(d3.event.pageX + (v_LevelSpacing/4)) + "px");
+				$("#tooltip").css("top"  ,(d3.event.pageY - 30) + "px");
+				$("#tooltip").css("opacity" ,100); 
 				
 				v_NodeZoom.scaleTo(d3.select(this) ,1.25);
 			})
 			.on("mousemove" ,function() 
 			{
-				v_Tooltip
-				.style("left" ,(d3.event.pageX + (v_LevelSpacing/4)) + "px")     
-				.style("top"  ,(d3.event.pageY - 30) + "px")
-				.style("opacity" ,100);
+				$("#tooltip").css("left" ,(d3.event.pageX + (v_LevelSpacing/4)) + "px");    
+				$("#tooltip").css("top"  ,(d3.event.pageY - 30) + "px");
+				$("#tooltip").css("opacity" ,100);
 			})
 			.on("mouseleave" ,function() 
 			{
-				v_Tooltip.html("")
-				.style("left" ,"-1000px")     
-				.style("top"  ,"-1000px")
-				.style("opacity" ,0);
+				$("#tooltip").html("");
+				$("#tooltip").css("left" ,"-1000px");     
+				$("#tooltip").css("top"  ,"-1000px");
+				$("#tooltip").css("opacity" ,0);
 				
 				v_NodeZoom.scaleTo(d3.select(this) ,0.8);
 			});
