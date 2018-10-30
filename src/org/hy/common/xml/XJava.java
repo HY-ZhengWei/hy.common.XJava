@@ -1401,41 +1401,49 @@ public final class XJava
                 v_ClassInfo = v_ClassInfos.get(i);
                 v_AnnoID    = v_ClassInfo.getClassObj().getAnnotation(Xjava.class);
                 
-                if ( XType.XML == v_AnnoID.value() )
+                try
                 {
-                    v_XTypeAnno = new XTypeAnno(v_AnnoID.value() ,v_ClassInfo);
-                    
-                    v_XTypeAnno.init();
-                }
-                else if ( XType.XD == v_AnnoID.value() )
-                {
-                    v_XTypeAnno = new XTypeAnno(v_AnnoID.value() ,v_ClassInfo);
-                    
-                    v_XTypeAnno.init();
-                }
-                // 2017-12-15 XSQL、XSQLGroup的注解。用于 xml配置 + Java接口类(无须实现类)的组合实现持久层的功能。
-                else if ( XType.XSQL == v_AnnoID.value() )
-                {
-                    String v_ID = null;
-                    
-                    // 命名注解
-                    if ( !Help.isNull(v_AnnoID.id()) )
+                    if ( XType.XML == v_AnnoID.value() )
                     {
-                        v_ID = v_AnnoID.id().trim();
+                        v_XTypeAnno = new XTypeAnno(v_AnnoID.value() ,v_ClassInfo);
+                        
+                        v_XTypeAnno.init();
                     }
-                    // 无命名注解
-                    else
+                    else if ( XType.XD == v_AnnoID.value() )
                     {
-                        v_ID = v_ClassInfo.getClassObj().getSimpleName();
+                        v_XTypeAnno = new XTypeAnno(v_AnnoID.value() ,v_ClassInfo);
+                        
+                        v_XTypeAnno.init();
                     }
-                    
-                    TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(v_ID ,v_ID);
-                    Object                v_Obj      = null;
-                    
-                    v_Obj = XSQLProxy.newProxy(v_ClassInfo.getClassObj());
-                    
-                    v_TreeNode.setInfo(new XJavaObject(v_ID ,v_Obj ,v_AnnoID.isNew()));
-                    $XML_OBJECTS.put(v_TreeNode);
+                    // 2017-12-15 XSQL、XSQLGroup的注解。用于 xml配置 + Java接口类(无须实现类)的组合实现持久层的功能。
+                    else if ( XType.XSQL == v_AnnoID.value() )
+                    {
+                        String v_ID = null;
+                        
+                        // 命名注解
+                        if ( !Help.isNull(v_AnnoID.id()) )
+                        {
+                            v_ID = v_AnnoID.id().trim();
+                        }
+                        // 无命名注解
+                        else
+                        {
+                            v_ID = v_ClassInfo.getClassObj().getSimpleName();
+                        }
+                        
+                        TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(v_ID ,v_ID);
+                        Object                v_Obj      = null;
+                        
+                        v_Obj = XSQLProxy.newProxy(v_ClassInfo.getClassObj());
+                        
+                        v_TreeNode.setInfo(new XJavaObject(v_ID ,v_Obj ,v_AnnoID.isNew()));
+                        $XML_OBJECTS.put(v_TreeNode);
+                    }
+                }
+                catch (Exception exce)
+                {
+                    System.err.println("XType.XML or XType.XD or XType.XSQL [" + v_ClassInfo.getClassObj().getName() + "] is error ,maybe file or object is not find.");
+                    exce.printStackTrace();
                 }
             }
         }
