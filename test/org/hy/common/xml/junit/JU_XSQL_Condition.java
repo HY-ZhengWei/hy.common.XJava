@@ -50,6 +50,13 @@ public class JU_XSQL_Condition
     
     
     
+    /**
+     * 入参类型是Map时，在处理NULL与入参类型是Object，是不同的。
+     *   1. Map填充为""空的字符串。
+     *   2. Object填充为 "NULL" ，可以支持空值针的写入。
+     *   
+     *   但上方两种均可以通过配置<condition><name>占位符名称<name></condition>，向数据库写入空值针。
+     */
     @Test
     public void test_001()
     {
@@ -79,6 +86,13 @@ public class JU_XSQL_Condition
     
     
     
+    /**
+     * 入参类型是Map时，在处理NULL与入参类型是Object，是不同的。
+     *   1. Map填充为""空的字符串。
+     *   2. Object填充为 "NULL" ，可以支持空值针的写入。
+     *   
+     *   但上方两种均可以通过配置<condition><name>占位符名称<name></condition>，向数据库写入空值针。
+     */
     @Test
     public void test_002() throws Exception
     {
