@@ -3,6 +3,7 @@ package org.hy.common.xml.junit;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hy.common.Date;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.Xjava;
@@ -28,6 +29,14 @@ public class JU_XSQL_Condition
     
     private static boolean $isInit = false;
     
+    private String userName;
+    
+    private String password;
+    
+    private String orgName;
+    
+    private Date   createTime;
+    
     
     
     public JU_XSQL_Condition() throws Exception
@@ -46,8 +55,9 @@ public class JU_XSQL_Condition
     {
         String              v_SQL    = null;
         Map<String ,Object> v_Params = new HashMap<String ,Object>();
-        v_Params.put("orgName"  ,"根目录");
-        v_Params.put("uSeRnAmE" ,"admin");
+        v_Params.put("orgName"    ,"根目录");
+        v_Params.put("uSeRnAmE"   ,"admin");
+        v_Params.put("createTime" ,(Date)null);
         
         v_Params.put("pAsSwOrD" ,"123");
         v_SQL = XJava.getXSQL("XSQL_User_Condition").getContent().getSQL(v_Params);
@@ -65,6 +75,84 @@ public class JU_XSQL_Condition
         v_Params.put("orgName"  ,"我的部门");
         v_SQL = XJava.getXSQL("XSQL_User_Condition").getContent().getSQL(v_Params);
         System.out.println("密码为12345678时的运行SQL：" + v_SQL);
+    }
+    
+    
+    
+    @Test
+    public void test_002() throws Exception
+    {
+        String            v_SQL    = null;
+        JU_XSQL_Condition v_Params = new JU_XSQL_Condition();
+        v_Params.setOrgName("根目录");
+        v_Params.setUserName("admin");
+        v_Params.setCreateTime(null);
+        
+        v_Params.setPassword("123");
+        v_SQL = XJava.getXSQL("XSQL_User_Condition").getContent().getSQL(v_Params);
+        System.out.println("密码为1234时的运行SQL：" + v_SQL);
+        
+        v_Params.setPassword("12345678");
+        v_SQL = XJava.getXSQL("XSQL_User_Condition").getContent().getSQL(v_Params);
+        System.out.println("密码为12345678时的运行SQL：" + v_SQL);
+        
+        v_Params.setPassword("12345678901234567");
+        v_SQL = XJava.getXSQL("XSQL_User_Condition").getContent().getSQL(v_Params);
+        System.out.println("密码为12345678901234567时的运行SQL：" + v_SQL);
+        
+        v_Params.setPassword("12345678");
+        v_Params.setOrgName("我的部门");
+        v_SQL = XJava.getXSQL("XSQL_User_Condition").getContent().getSQL(v_Params);
+        System.out.println("密码为12345678时的运行SQL：" + v_SQL);
+    }
+
+
+    
+    public String getUserName()
+    {
+        return userName;
+    }
+
+    
+    public void setUserName(String userName)
+    {
+        this.userName = userName;
+    }
+
+    
+    public String getPassword()
+    {
+        return password;
+    }
+
+
+    public void setPassword(String password)
+    {
+        this.password = password;
+    }
+
+    
+    public String getOrgName()
+    {
+        return orgName;
+    }
+
+
+    public void setOrgName(String orgName)
+    {
+        this.orgName = orgName;
+    }
+
+    
+    public Date getCreateTime()
+    {
+        return createTime;
+    }
+
+
+    public void setCreateTime(Date createTime)
+    {
+        this.createTime = createTime;
     }
     
 }

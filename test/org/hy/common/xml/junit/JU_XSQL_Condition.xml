@@ -15,6 +15,7 @@
 				<![CDATA[
 				SELECT  A.userName
 				       ,A.pwd
+				       ,':createTime'  AS createTime
 				  FROM  User  A
 				 WHERE  A.userName = ':userName'
 				   AND  A.pwd      = ':password'
