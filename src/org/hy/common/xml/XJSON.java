@@ -156,6 +156,26 @@ public final class XJSON
     
     
     /**
+     * Json字符串数组字符串解释成Java的List<T>集合实例对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-11-02
+     * @version     v1.0
+     * 
+     * @param i_JsonArray    Json字符串数组。即左右两端是[]方括号。
+     * @param i_ObjectClass  Json字符串数组的元素对应的Java类型
+     * @return
+     * @throws Exception
+     */
+    @SuppressWarnings("unchecked")
+    public <T> List<T> toJavaList(String i_JsonArray ,Class<? extends T> i_ObjectClass) throws Exception
+    {
+        return (List<T>)toJava("{\"XJSONDatas\":" + i_JsonArray + "}" ,"XJSONDatas" ,i_ObjectClass);
+    }
+    
+    
+    
+    /**
      * 将JSONObject解释成纯Map的Java实例对象
      * 或
      * 将JSONObject解释成预设的Java实例对象
