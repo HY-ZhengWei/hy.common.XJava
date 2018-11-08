@@ -4,7 +4,7 @@
 
   <groupId>org</groupId>
   <artifactId>hy.common.xjava</artifactId>
-  <version>3.9.24</version>
+  <version>3.9.25</version>
   <packaging>jar</packaging>
 
   <name>hy.common.xjava</name>
@@ -78,6 +78,22 @@
 	    <groupId>org.apache.struts.xwork</groupId>
 	    <artifactId>xwork-core</artifactId>
 	    <version>2.3.34</version>
+	</dependency>
+	-->
+	
+	<!-- Spring -->
+    <!-- 
+    <dependency>
+	    <groupId>org.springframework</groupId>
+	    <artifactId>spring-web</artifactId>
+	</dependency>
+	-->
+	
+	<!-- Spring Boot -->
+    <!-- 
+    <dependency>
+	    <groupId>org.springframework.boot</groupId>
+	    <artifactId>spring-boot-starter-web</artifactId>
 	</dependency>
 	-->
 	

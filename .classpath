@@ -22,5 +22,10 @@
 	<classpathentry kind="lib" path="lib/antlr-runtime-3.4.jar"/>
 	<classpathentry kind="lib" path="lib/fel-0.8.jar" sourcepath="lib/fel-0.8-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jtds-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/spring-context-5.0.7.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/spring-boot-2.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/spring-beans-5.0.7.RELEASE.jar" sourcepath="/Volumes/HY_HD_06/Develop_HD/apache-maven-localRepository/org/springframework/spring-beans/5.0.7.RELEASE/spring-beans-5.0.7.RELEASE-sources.jar"/>
+	<classpathentry kind="lib" path="lib/spring-core-5.0.7.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/spring-web-5.0.7.RELEASE.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -18,10 +18,11 @@ import com.opensymphony.xwork2.ObjectFactory;
  * 小小嵌入，带来巨大生机。
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0  
  * @createDate  2013-08-07
+ * @version     v1.0  
+ *              v1.1  2018-11-08  修改：从 XJavaObjectFactory 改名为 XJavaStrutsObjectFactory。
  */
-public class XJavaObjectFactory extends ObjectFactory 
+public class XJavaStrutsObjectFactory extends ObjectFactory 
 {
 
 	private static final long serialVersionUID = -5876147447358220646L;
