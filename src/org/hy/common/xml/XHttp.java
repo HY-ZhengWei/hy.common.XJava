@@ -1465,7 +1465,7 @@ public final class XHttp
     /** 
      * 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义。与 isToUnicode 互斥
      */
-    public void setIsEncode(boolean isEncode)
+    public void setEncode(boolean isEncode)
     {
         this.isEncode = isEncode;
         
@@ -1474,8 +1474,8 @@ public final class XHttp
             this.isToUnicode = false;
         }
     }
-    
-    
+
+
     
     /** 
      * 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义。与 isToUnicode 互斥
