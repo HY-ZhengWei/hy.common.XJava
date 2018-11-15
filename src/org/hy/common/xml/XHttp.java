@@ -94,10 +94,10 @@ public final class XHttp
     /** 请求字符集名称(默认:UTF-8) */
     private String                     charset;
     
-    /** 是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义 */
+    /** 是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义。与 isEncode 互斥 */
     private boolean                    isToUnicode;
     
-    /** 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义 */
+    /** 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义。与 isToUnicode 互斥 */
     private boolean                    isEncode;
     
     /** 
@@ -1428,7 +1428,7 @@ public final class XHttp
     
     
     /**
-     * 是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义
+     * 是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义。与 isEncode 互斥
      */
     public boolean isToUnicode()
     {
@@ -1438,7 +1438,7 @@ public final class XHttp
     
     
     /**
-     * 是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义
+     * 是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义。与 isEncode 互斥
      */
     public boolean getToUnicode()
     {
@@ -1448,27 +1448,37 @@ public final class XHttp
     
     
     /**
-     * 是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义
+     * 是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义。与 isEncode 互斥
      */
     public void setToUnicode(boolean isToUnicode)
     {
         this.isToUnicode = isToUnicode;
+        
+        if ( this.isToUnicode )
+        {
+            this.isEncode = false;
+        }
     }
 
     
     
     /** 
-     * 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义 
+     * 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义。与 isToUnicode 互斥
      */
     public void setIsEncode(boolean isEncode)
     {
         this.isEncode = isEncode;
+        
+        if ( this.isEncode )
+        {
+            this.isToUnicode = false;
+        }
     }
     
     
     
     /** 
-     * 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义 
+     * 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义。与 isToUnicode 互斥
      */
     public boolean isEncode()
     {
