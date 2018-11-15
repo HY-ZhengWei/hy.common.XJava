@@ -48,6 +48,7 @@ import org.hy.common.StringHelp;
  *           V3.0  2017-02-21  修改1：将属性responseInfo(响应信息)删除，不再通过属性的方式保存响应信息。
  *                                   而是通过请求方法request(...)返回值直接返回响应信息。
  *                                   这样最大好处是：不用再每次请求时创建一个XHttp的实例。
+ *           V3.1  2018-11-15  添加1：新类型的转义方法 isEncode。
  */
 public final class XHttp 
 {  
@@ -93,8 +94,11 @@ public final class XHttp
     /** 请求字符集名称(默认:UTF-8) */
     private String                     charset;
     
-    /** 是否对请求参数转义(默认:true) */
+    /** 是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义 */
     private boolean                    isToUnicode;
+    
+    /** 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义 */
+    private boolean                    isEncode;
     
     /** 
      * 是否自动填充问号(?) 。默认:true
@@ -125,6 +129,7 @@ public final class XHttp
         this.contentType               = "text/html";
         this.charset                   = "UTF-8";
         this.isToUnicode               = true;
+        this.isEncode                  = false;
         this.haveQuestionMark          = true;
         this.proxy                     = null;
         this.cookie                    = new XHttpCookie();
@@ -224,6 +229,10 @@ public final class XHttp
                 if ( this.isToUnicode )
                 {
                     v_ParamsUrl = StringHelp.escape_toUnicode(v_ParamsUrl ,$NotInString);
+                }
+                else if ( this.isEncode )
+                {
+                    v_ParamsUrl = StringHelp.encode(v_ParamsUrl ,this.getCharset() ,$NotInString);
                 }
                 
                 String v_URLParamStr = this.getUrl();
@@ -387,6 +396,10 @@ public final class XHttp
                 if ( this.isToUnicode )
                 {
                     v_ParamsUrl = StringHelp.escape_toUnicode(v_ParamsUrl ,$NotInString);
+                }
+                else if ( this.isEncode )
+                {
+                    v_ParamsUrl = StringHelp.encode(v_ParamsUrl ,this.getCharset() ,$NotInString);
                 }
                 
                 String v_URLParamStr = this.getUrl();
@@ -557,6 +570,10 @@ public final class XHttp
                 {
                     v_ParamsUrl = StringHelp.escape_toUnicode(v_ParamsUrl ,$NotInString);
                 }
+                else if ( this.isEncode )
+                {
+                    v_ParamsUrl = StringHelp.encode(v_ParamsUrl ,this.getCharset() ,$NotInString);
+                }
                 
                 String v_URLParamStr = this.getUrl();
                 if ( this.haveQuestionMark && v_URLParamStr.indexOf("?") < 0 )
@@ -663,9 +680,8 @@ public final class XHttp
      */
     public static String requestGet(String i_FullURL)
     {
-        return requestGet(i_FullURL ,null);
+        return requestGet(i_FullURL ,null ,false ,false);
     }
-    
     
     
     
@@ -674,12 +690,51 @@ public final class XHttp
      * 
      * 使用Get方式发起请求
      * 
-     * @param   i_URL    完整的请求URL。如http://IP:Port/xxx.do?p1=v1&p2=v2
-     * @param   i_Proxy  代理
+     * @param   i_URL          完整的请求URL。如http://IP:Port/xxx.do?p1=v1&p2=v2
+     * @param   i_Proxy        代理
      * @return  返回是否请求结果的字符串
      *          当异常时，返回异常信息
      */
     public static String requestGet(String i_FullURL ,Proxy i_Proxy)
+    {
+        return requestGet(i_FullURL ,i_Proxy ,false ,false);
+    }
+    
+    
+    
+    /**
+     * 发起Http请求 -- 外界自定义URL
+     * 
+     * 使用Get方式发起请求
+     * 
+     * @param   i_URL          完整的请求URL。如http://IP:Port/xxx.do?p1=v1&p2=v2
+     * @param   i_IsEncode     是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义
+     * @param   i_IsToUnicode  是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义
+     * @return  返回是否请求结果的字符串
+     *          当异常时，返回异常信息
+     */
+    public static String requestGet(String i_FullURL ,boolean i_IsEncode ,boolean i_IsToUnicode)
+    {
+        return requestGet(i_FullURL ,null ,i_IsEncode ,i_IsToUnicode);
+    }
+    
+    
+    
+    /**
+     * 发起Http请求 -- 外界自定义URL
+     * 
+     * 使用Get方式发起请求
+     * 
+     * v2.0  2018-11-15  添加：两种转义功能
+     * 
+     * @param   i_URL          完整的请求URL。如http://IP:Port/xxx.do?p1=v1&p2=v2
+     * @param   i_Proxy        代理
+     * @param   i_IsEncode     是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义
+     * @param   i_IsToUnicode  是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义
+     * @return  返回是否请求结果的字符串
+     *          当异常时，返回异常信息
+     */
+    public static String requestGet(String i_FullURL ,Proxy i_Proxy ,boolean i_IsEncode ,boolean i_IsToUnicode)
     {
         if ( Help.isNull(i_FullURL) )
         {
@@ -693,7 +748,28 @@ public final class XHttp
         
         try
         {
-            v_URL = new URL(i_FullURL);
+            String [] v_Params = i_FullURL.split("?");
+            if ( v_Params.length >= 2 )
+            {
+                String v_ParamStr = i_FullURL.substring(i_FullURL.indexOf("?"));
+                if ( i_IsToUnicode )
+                {
+                    v_URL = new URL(v_Params[0] + StringHelp.escape_toUnicode(v_ParamStr ,$NotInString));
+                }
+                else if ( i_IsEncode )
+                {
+                    v_URL = new URL(v_Params[0] + StringHelp.encode(v_ParamStr ,"UTF-8" ,$NotInString));
+                }
+                else
+                {
+                    v_URL = new URL(i_FullURL);
+                }
+            }
+            else
+            {
+                v_URL = new URL(i_FullURL);
+            }
+            
             if ( i_Proxy != null )
             {
                 v_URLConn = (HttpURLConnection)v_URL.openConnection(i_Proxy);
@@ -1026,6 +1102,11 @@ public final class XHttp
     
     
     
+    /**
+     * HTTP主机IP地址(此属性也可以是域名，如www.sina.com)
+     * 
+     * @return
+     */
     public String getIp()
     {
         return ip;
@@ -1033,6 +1114,11 @@ public final class XHttp
 
 
     
+    /**
+     * HTTP主机IP地址(此属性也可以是域名，如www.sina.com)
+     * 
+     * @param ip
+     */
     public void setIp(String ip)
     {
         this.ip = ip;
@@ -1040,6 +1126,11 @@ public final class XHttp
 
 
     
+    /**
+     * HTTP主机端口(默认为0，表示可以不明确说明访问端口)
+     * 
+     * @return
+     */
     public int getPort()
     {
         return port;
@@ -1047,6 +1138,11 @@ public final class XHttp
 
 
     
+    /**
+     * HTTP主机端口(默认为0，表示可以不明确说明访问端口)
+     * 
+     * @param i_Port
+     */
     public void setPort(int i_Port)
     {
         if ( 1 <= i_Port && i_Port <= 65535 )
@@ -1061,6 +1157,11 @@ public final class XHttp
 
     
     
+    /**
+     * 请求类型。1:get方式(默认值)  2:post方式
+     * 
+     * @return
+     */
     public int getRequestType()
     {
         return requestType;
@@ -1068,6 +1169,11 @@ public final class XHttp
 
 
     
+    /**
+     * 请求类型。1:get方式(默认值)  2:post方式
+     * 
+     * @param i_RequestType
+     */
     public void setRequestType(int i_RequestType)
     {
         if ( $Request_Type_Get != i_RequestType && $Request_Type_Post != i_RequestType )
@@ -1242,6 +1348,11 @@ public final class XHttp
 
 
 
+    /**
+     * 请求字符集名称(默认:UTF-8)
+     * 
+     * @return
+     */
     public String getCharset()
     {
         return charset;
@@ -1249,6 +1360,11 @@ public final class XHttp
 
 
     
+    /**
+     * 请求字符集名称(默认:UTF-8)
+     * 
+     * @param charset
+     */
     public void setCharset(String charset)
     {
         this.charset = charset;
@@ -1256,6 +1372,11 @@ public final class XHttp
 
 
     
+    /**
+     * 请求内容类型(默认:text/html)
+     * 
+     * @return
+     */
     public String getContentType()
     {
         return contentType;
@@ -1263,6 +1384,11 @@ public final class XHttp
 
 
     
+    /**
+     * 请求内容类型(默认:text/html)
+     * 
+     * @param contentType
+     */
     public void setContentType(String contentType)
     {
         this.contentType = contentType;
@@ -1270,6 +1396,11 @@ public final class XHttp
     
     
     
+    /**
+     * 请求协议类型(http、https)
+     * 
+     * @return
+     */
     public String getProtocol()
     {
         if ( Help.isNull(this.protocol) )
@@ -1284,6 +1415,11 @@ public final class XHttp
     
     
     
+    /**
+     * 请求协议类型(http、https)
+     * 
+     * @param i_Protocol
+     */
     public void setProtocol(String i_Protocol)
     {
         this.protocol = Help.NVL(i_Protocol).trim();
@@ -1291,6 +1427,9 @@ public final class XHttp
     
     
     
+    /**
+     * 是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义
+     */
     public boolean isToUnicode()
     {
         return isToUnicode;
@@ -1298,16 +1437,42 @@ public final class XHttp
     
     
     
+    /**
+     * 是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义
+     */
     public boolean getToUnicode()
     {
         return this.isToUnicode;
     }
-
     
     
+    
+    /**
+     * 是否对请求参数转义(默认:true)。采用 JavaScript escape() 方式转义
+     */
     public void setToUnicode(boolean isToUnicode)
     {
         this.isToUnicode = isToUnicode;
+    }
+
+    
+    
+    /** 
+     * 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义 
+     */
+    public void setIsEncode(boolean isEncode)
+    {
+        this.isEncode = isEncode;
+    }
+    
+    
+    
+    /** 
+     * 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义 
+     */
+    public boolean isEncode()
+    {
+        return isEncode;
     }
     
     
@@ -1335,7 +1500,12 @@ public final class XHttp
     }
 
 
-
+    
+    /**
+     * 代理
+     * 
+     * @return
+     */
     public Proxy getProxy()
     {
         return proxy;
@@ -1343,6 +1513,11 @@ public final class XHttp
 
 
     
+    /**
+     * 代理
+     * 
+     * @param i_Proxy
+     */
     public void setProxy(Proxy i_Proxy)
     {
         this.proxy = i_Proxy;
@@ -1350,6 +1525,11 @@ public final class XHttp
     
     
     
+    /**
+     * 代理服务器的IP
+     * 
+     * @return
+     */
     public String getProxyHost()
     {
         return proxyHost;
@@ -1357,6 +1537,11 @@ public final class XHttp
 
 
     
+    /**
+     * 代理服务器的IP
+     * 
+     * @param proxyHost
+     */
     public void setProxyHost(String proxyHost)
     {
         this.proxyHost = proxyHost;
@@ -1369,6 +1554,11 @@ public final class XHttp
 
 
     
+    /**
+     * 代理服务器的端口
+     * 
+     * @return
+     */
     public int getProxyPort()
     {
         return proxyPort;
@@ -1376,6 +1566,11 @@ public final class XHttp
 
 
     
+    /**
+     * 代理服务器的端口
+     * 
+     * @param proxyPort
+     */
     public void setProxyPort(int proxyPort)
     {
         this.proxyPort = proxyPort;
