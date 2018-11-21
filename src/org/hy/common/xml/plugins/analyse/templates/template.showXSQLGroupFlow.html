@@ -630,6 +630,7 @@
 			var v_G = v_SVG.append("g")
 			.attr("id" ,i_Json.id)
 			.attr("transform" ,"translate(" + i_Json.x + "," + i_Json.y + ")")
+			.style("cursor" ,"pointer")
 			.on("click" ,function()
 			{
 				$("#menuDiv").css("opacity" ,0);
@@ -706,7 +707,8 @@
 				.attr("class" ,"NodeFlag")
 				.attr("dy" ,v_CircleSize / 2 + 1.5)
 				.attr("text-anchor" ,"middle")
-				.text(i_Json.showCount >= 1 ? "-" : "+");
+				.text(i_Json.showCount >= 1 ? "-" : "+")
+				.style("cursor" ,"pointer");
 			}
 			else
 			{
