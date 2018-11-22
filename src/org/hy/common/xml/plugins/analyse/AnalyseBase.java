@@ -1606,6 +1606,7 @@ public class AnalyseBase extends Analyse
             }
             catch (Exception exce)
             {
+                exce.printStackTrace();
                 return v_RetInfo.paramStr(exce.toString());
             }
         }
