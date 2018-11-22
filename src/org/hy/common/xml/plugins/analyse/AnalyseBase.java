@@ -1427,7 +1427,7 @@ public class AnalyseBase extends Analyse
     {
         if ( Help.isNull(i_XJavaObjectID) )
         {
-            return "";
+            return "{}";
         }
         
         try
@@ -1435,7 +1435,7 @@ public class AnalyseBase extends Analyse
             Object v_Object = XJava.getObject(i_XJavaObjectID);
             if ( v_Object == null )
             {
-                return "";
+                return "{}";
             }
             
             String v_Content       = "";
@@ -1515,7 +1515,8 @@ public class AnalyseBase extends Analyse
         }
         catch (Exception exce)
         {
-            return exce.toString();
+            exce.printStackTrace();
+            return "{\"error\":\"" + StringHelp.replaceAll(exce.toString() ,"\"" ,"'") + "\"}";
         }
     }
     
