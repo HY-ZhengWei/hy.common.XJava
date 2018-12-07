@@ -1963,7 +1963,7 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":FreeMemory"   ,StringHelp.getComputeUnit(v_CReport.getFreeMemory()));
             v_RKey.put(":ThreadCount"  ,v_CReport.getThreadCount() + "");
             v_RKey.put(":QueueCount"   ,v_CReport.getQueueCount()  + "");
-            v_RKey.put(":StartTime"    ,v_CReport.getStartTime());
+            v_RKey.put(":StartTime"    ,(new Date(v_CReport.getStartTime())).getYMDHM());
             v_RKey.put(":ServerStatus" ,v_CReport.getServerStatus());
             
             v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
@@ -1992,8 +1992,6 @@ public class AnalyseBase extends Analyse
         
         v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
         
-        String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseObject' style='color:#AA66CC'>查看XJava配置</a>";
-        
         v_RKey.clear();
         v_RKey = null;
         
@@ -2001,8 +1999,8 @@ public class AnalyseBase extends Analyse
         v_Clusters = null;
         
         return StringHelp.replaceAll(this.getTemplateShowCluster()
-                                    ,new String[]{":Title"     ,":Column01Title"   ,":HttpBasePath" ,":Content"}
-                                    ,new String[]{"集群服务列表" ,"集群服务" + v_Goto ,i_BasePath      ,v_Buffer.toString()});
+                                    ,new String[]{":Title"     ,":Column01Title" ,":HttpBasePath" ,":Content"}
+                                    ,new String[]{"集群服务列表" ,"集群服务"        ,i_BasePath      ,v_Buffer.toString()});
     }
     
     

@@ -12,11 +12,11 @@ import java.util.Map;
 import org.hy.common.Date;
 import org.hy.common.GenericsReturn;
 import org.hy.common.Help;
-import org.hy.common.MethodComparator;
 import org.hy.common.MethodInfo;
 import org.hy.common.MethodReflect;
 import org.hy.common.Serializable;
 import org.hy.common.StringHelp;
+import org.hy.common.comparate.MethodComparator;
 
 
 
