@@ -24,6 +24,10 @@ import org.springframework.core.MethodParameter;
 
 
 /**
+ * XJava与Spring Boot融合。
+ *   下面描述了4个步骤，但最终用户在使用时，也只须要实现第4步，即可。
+ *   即，只须Spring Boot启动时，引用一下XJavaSpringAnnotationConfigServletWebServerApplicationContext就成了。
+ * 
  * XJava对接Spring Boot的第1步（共4步），使Spring可以通过 @Autowired 或 @Resource 注解注入XJava对象池中的对象。
  * 
  * 第2步见：XJavaFactoryBeanDefinition。主要实现 @Resource 注解的注入时对象的构造。
