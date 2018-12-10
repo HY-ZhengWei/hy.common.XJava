@@ -2,6 +2,7 @@ package org.hy.common.xml.plugins;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
@@ -10,6 +11,7 @@ import org.hy.common.Help;
 import org.hy.common.xml.XJava;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.TypeConverter;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.MethodParameter;
+import org.springframework.lang.Nullable;
 
 
 
@@ -95,6 +98,13 @@ import org.springframework.core.MethodParameter;
  *           
  *           @Resource(name="XSQL_Query")        // 通过XJava.getObject("XSQL_Query")注入
  *           public void setXSQL(XSQL i_XSQL);
+ *           
+ *           
+ * 注意两点：
+ *    1. XJava的对象池在在Spring的对象池初始前构造。即XJava优先于Spring。
+ *    2. Spring 5.x 的版本与 Spring 3.x 的版本中 doResolveDependency() 方法的入参个数不同，
+ *       而Spring并没有做兼容性处理，所以在两个不版本下，要重新引用不同版本的SpringBean.jar包到工程，
+ *       并且重新编译XJava.jar。
  * 
  * @author      ZhengWei(HY)
  * @createDate  2018-11-08
@@ -105,6 +115,74 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
     
     /** 用于性能的提高 */
     private Map<String ,BeanDefinition> beanDefinitionCache = new Hashtable<String ,BeanDefinition>();
+    
+    /** 适用于多个Spring版本的doResolveDependency()方法 */
+    private Method                      doResolveDependency = null;
+    
+    /** 配对的Spring版本 */
+    private String                      version             = "";
+    
+    
+    
+    public XJavaSpringObjectFactotry()
+    {
+        super();
+        this.findDoResolveDependency();
+    }
+    
+    
+    
+    public XJavaSpringObjectFactotry(@Nullable BeanFactory parentBeanFactory) 
+    {
+        super(parentBeanFactory);
+        this.findDoResolveDependency();
+    }
+    
+    
+    
+    /**
+     * 查找具体运行时环境下的Spring版本对应的doResolveDependency()方法。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-10
+     * @version     v1.0
+     *
+     */
+    private void findDoResolveDependency()
+    {
+        try
+        {
+            Class<?> v_Class = DefaultListableBeanFactory.class;
+            
+            try
+            {
+                this.doResolveDependency = v_Class.getDeclaredMethod("doResolveDependency" 
+                                                                    ,DependencyDescriptor.class 
+                                                                    ,String.class 
+                                                                    ,Set.class 
+                                                                    ,TypeConverter.class);
+                this.version = "5.x";
+            }
+            catch (Exception exce)
+            {
+                this.doResolveDependency = v_Class.getDeclaredMethod("doResolveDependency" 
+                                                                    ,DependencyDescriptor.class 
+                                                                    ,Class.class
+                                                                    ,String.class 
+                                                                    ,Set.class 
+                                                                    ,TypeConverter.class);
+
+                this.version = "3.x";
+            }
+            
+            doResolveDependency.setAccessible(true);
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+            throw new NoSuchMethodError("DefaultListableBeanFactory.doResolveDependency is unknown Spring version.");
+        }
+    }
     
     
     
@@ -170,13 +248,77 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
 
 
 
-    @Override
-    public Object doResolveDependency(DependencyDescriptor i_Descriptor ,String i_BeanName ,Set<String> i_AutowiredBeanNames ,TypeConverter i_TypeConverter) throws BeansException
+    /**
+     * 适用于Spring 5.x版本的
+     *
+     * @author      ZhengWei(HY)
+     * @createDate  2018-11-09
+     * @version     v1.0
+     *
+     * @param i_Descriptor
+     * @param i_BeanName
+     * @param i_AutowiredBeanNames
+     * @param i_TypeConverter
+     * @return
+     * @throws BeansException
+     *
+     * @see org.springframework.beans.factory.support.DefaultListableBeanFactory#doResolveDependency(org.springframework.beans.factory.config.DependencyDescriptor, java.lang.String, java.util.Set, org.springframework.beans.TypeConverter)
+     */
+    public Object doResolveDependency(DependencyDescriptor i_Descriptor 
+                                     ,String               i_BeanName 
+                                     ,Set<String>          i_AutowiredBeanNames 
+                                     ,TypeConverter        i_TypeConverter) throws BeansException
     {
         Object v_Ret = null;
         try
         {
+            // System.err.println("请重新引Spring对应版本的Bean包，并重新编译XJava，好支持高于Spring 3.x版本的Spring版本。");
             v_Ret = super.doResolveDependency(i_Descriptor ,i_BeanName ,i_AutowiredBeanNames ,i_TypeConverter);
+        }
+        catch (BeansException exce)
+        {
+            v_Ret = objectFactotryByXJava(i_Descriptor);
+            
+            if ( v_Ret == null )
+            {
+                exce.printStackTrace();
+                throw exce;
+            }
+        }
+        
+        return v_Ret; 
+    }
+    
+    
+    
+    /**
+     * 适用于Spring 3.x版本的
+     *
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-10
+     * @version     v1.0
+     *
+     * @param i_Descriptor
+     * @param i_Type
+     * @param i_BeanName
+     * @param i_AutowiredBeanNames
+     * @param i_TypeConverter
+     * @return
+     * @throws BeansException
+     *
+     * @see org.springframework.beans.factory.support.DefaultListableBeanFactory#doResolveDependency(org.springframework.beans.factory.config.DependencyDescriptor, java.lang.String, java.util.Set, org.springframework.beans.TypeConverter)
+     */
+    protected Object doResolveDependency(DependencyDescriptor i_Descriptor 
+                                        ,Class<?>             i_Type 
+                                        ,String               i_BeanName 
+                                        ,Set<String>          i_AutowiredBeanNames
+                                        ,TypeConverter        i_TypeConverter) throws BeansException  
+    {
+        Object v_Ret = null;
+        try
+        {
+            System.err.println("请重新引Spring对应版本的Bean包，并重新编译XJava，好支持低于Spring 5.x版本的Spring版本。");
+            // v_Ret = super.doResolveDependency(i_Descriptor ,i_Type ,i_BeanName ,i_AutowiredBeanNames ,i_TypeConverter);
         }
         catch (BeansException exce)
         {
@@ -259,6 +401,16 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
         }
         
         return v_Ret;
+    }
+
+
+    
+    /**
+     * 获取：配对的Spring版本
+     */
+    public String getVersion()
+    {
+        return version;
     }
     
 }

@@ -1,7 +1,8 @@
 package org.hy.common.xml.plugins;
 
-import org.hy.common.file.FileHelp;
-import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.web.context.support.XmlWebApplicationContext;
+
 
 
 
@@ -27,31 +28,21 @@ import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebSe
  * 自定义 ApplicationContext 主要实现：构建改造后的Spring对象工厂DefaultListableBeanFactory
  * 
  * @author      ZhengWei(HY)
- * @createDate  2018-11-08
+ * @createDate  2018-12-09
  * @version     v1.0  
  */
-public class XJavaSpringAnnotationConfigServletWebServerApplicationContext extends AnnotationConfigServletWebServerApplicationContext
+public class XJavaSpringMVCAnnotationConfigServletWebServerApplicationContext extends XmlWebApplicationContext
 {
     
-    /**
-     * Create a new {@link AnnotationConfigServletWebServerApplicationContext} that needs
-     * to be populated through {@link #register} calls and then manually
-     * {@linkplain #refresh refreshed}.
-     */
-    public XJavaSpringAnnotationConfigServletWebServerApplicationContext() 
+    public XJavaSpringMVCAnnotationConfigServletWebServerApplicationContext() 
     {
-        super(new XJavaSpringObjectFactotry());
-        
-        try
-        {
-            FileHelp v_FileHelp = new FileHelp();
-            String v_SpringMVC_XJava = v_FileHelp.getContent(this.getClass().getResourceAsStream("SpringBoot-XJava.txt") ,"UTF-8" ,true);
-            System.out.println(v_SpringMVC_XJava);
-        }
-        catch (Exception exce)
-        {
-            // Nothing.
-        }
+        super();
+    }
+    
+    
+    protected DefaultListableBeanFactory createBeanFactory() 
+    {
+        return new XJavaSpringObjectFactotry(getInternalParentBeanFactory());
     }
     
 }
