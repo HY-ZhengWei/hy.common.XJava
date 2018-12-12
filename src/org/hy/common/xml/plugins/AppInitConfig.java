@@ -339,10 +339,10 @@ public class AppInitConfig
         {
             List<Param> v_Params = new ArrayList<Param>();
             Param       v_Param  = new Param();
-            
+
             v_Param.setValue(i_PackageName.trim());
             v_Param.setName(v_Param.getValue());
-            
+
             v_Params.add(v_Param);
             this.init(v_Params);
             return;
@@ -495,7 +495,7 @@ public class AppInitConfig
     
     
     /**
-     * 只支持XD文件名称，如 abc.xd
+     * 2018-12-11 添加：在支持XD文件的基础上，添加对XML文件的支持
      * 
      * @param i_XDName       格式可以为 abc.xd。或者为 abc，内部会自己加上 .xd
      * @param i_PackageName
@@ -508,7 +508,19 @@ public class AppInitConfig
         }
         
         String v_XDName = i_XDName;
-        if ( !v_XDName.trim().toLowerCase().endsWith(".xd") )
+        if ( v_XDName.trim().toLowerCase().endsWith(".xml") )
+        {
+            List<Param> v_Params = new ArrayList<Param>();
+            Param       v_Param  = new Param();
+            
+            v_Param.setValue(v_XDName.trim());
+            v_Param.setName(i_PackageName);
+            
+            v_Params.add(v_Param);
+            this.init(null ,v_Params ,i_PackageName);
+            return;
+        }
+        else if ( !v_XDName.trim().toLowerCase().endsWith(".xd") )
         {
             v_XDName += ".xd";
         }

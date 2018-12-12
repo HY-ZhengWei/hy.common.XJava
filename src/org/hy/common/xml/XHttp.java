@@ -748,7 +748,7 @@ public final class XHttp
         
         try
         {
-            String [] v_Params = i_FullURL.split("?");
+            String [] v_Params = i_FullURL.split("\\?");
             if ( v_Params.length >= 2 )
             {
                 String v_ParamStr = i_FullURL.substring(i_FullURL.indexOf("?"));

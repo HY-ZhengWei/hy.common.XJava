@@ -45,8 +45,8 @@ public class XJavaSpringAnnotationConfigServletWebServerApplicationContext exten
         try
         {
             FileHelp v_FileHelp = new FileHelp();
-            String v_SpringMVC_XJava = v_FileHelp.getContent(this.getClass().getResourceAsStream("SpringBoot-XJava.txt") ,"UTF-8" ,true);
-            System.out.println(v_SpringMVC_XJava);
+            String v_SpringBoot_XJava = v_FileHelp.getContent(this.getClass().getResourceAsStream("SpringBoot-XJava.txt") ,"UTF-8" ,true);
+            System.out.println(v_SpringBoot_XJava);
         }
         catch (Exception exce)
         {
