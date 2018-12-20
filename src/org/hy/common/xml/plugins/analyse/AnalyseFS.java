@@ -319,6 +319,9 @@ public class AnalyseFS extends Analyse
             v_Goto += "<a href='analyseObject?FS=Y&S=" + i_SortType +"&cluster=Y&FP=" + v_FPath + "' style='color:#AA66CC'>查看集群</a>";
         }
         
+        v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;");
+        v_Goto += "<a href='#' onclick='getSystemTimeCluster()' style='color:#AA66CC'>集群时间</a>";
+        
         return StringHelp.replaceAll(this.getTemplateShowFiles()
                                     ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":cluster"             ,":SelectHIP"        ,":SelectLocalIP"        ,":Content"}
                                     ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,(i_Cluster ? "Y" : "") ,makeSelectHIP(null) ,makeSelectLocalIP(null) ,v_Buffer.toString()});
@@ -1531,6 +1534,95 @@ public class AnalyseFS extends Analyse
             
             v_Buffer.append("'datas':'<table>");
             for (Map.Entry<String ,String> v_Item : v_Sizes.entrySet())
+            {
+                String [] v_Values = (v_Item.getValue() + ", ").split(",");
+                v_Buffer.append("<tr><td>")
+                        .append(v_Item.getKey())
+                        .append("</td><td>&nbsp;&nbsp;&nbsp;&nbsp;")
+                        .append(v_Values[0])
+                        .append("</td><td>&nbsp;&nbsp;&nbsp;&nbsp;")
+                        .append(v_Values[1])
+                        .append("</td></tr>");
+            }
+            v_Buffer.append("</table>'");
+            
+            return StringHelp.replaceAll("{'retCode':'0'," + v_Buffer.toString() + "}" ,"'" ,"\"");
+        }
+        else
+        {
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+        }
+    }
+    
+    
+    
+    /**
+     * 获取操作系统上的当前时间
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-20
+     * @version     v1.0
+     */
+    public String getSystemTime()
+    {
+        return new Date().getFullMilli();
+    }
+    
+    
+    
+    /**
+     * 集群获取操作系统上的当前时间
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-20
+     * @version     v1.0
+     *
+     * @return            返回值：0.成功
+     *                           1.异常，同时返回失效服务器的IP。
+     */
+    public String getSystemTimeCluster()
+    {
+        String              v_HIP     = "";
+        int                 v_ExecRet = 0;
+        List<ClientSocket>  v_Servers = Cluster.getClusters();
+        Map<String ,String> v_Times   = new HashMap<String ,String>();  
+        
+        if ( !Help.isNull(v_Servers) )
+        {
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"getSystemTime" ,new Object[]{});
+            
+            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            {
+                CommunicationResponse v_ResponseData = v_Item.getValue();
+                
+                if ( v_ResponseData.getResult() == 0 )
+                {
+                    if ( v_ResponseData.getData() != null )
+                    {
+                        String v_RetValue = v_ResponseData.getData().toString();
+                        v_Times.put(v_Item.getKey().getHostName() ,v_RetValue);
+                    }
+                }
+                else
+                {
+                    v_Times.put(v_Item.getKey().getHostName() ,"异常");
+                    
+                    if ( !Help.isNull(v_HIP) )
+                    {
+                        v_HIP += ",";
+                    }
+                    v_HIP += v_Item.getKey().getHostName();
+                }
+            }
+        }
+        
+        if ( v_ExecRet >= 1 )
+        {
+            v_Times = Help.toSort(v_Times);
+            StringBuilder v_Buffer = new StringBuilder();
+            
+            v_Buffer.append("'datas':'<table>");
+            for (Map.Entry<String ,String> v_Item : v_Times.entrySet())
             {
                 String [] v_Values = (v_Item.getValue() + ", ").split(",");
                 v_Buffer.append("<tr><td>")

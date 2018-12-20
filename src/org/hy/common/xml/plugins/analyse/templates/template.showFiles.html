@@ -134,7 +134,7 @@ body {
 
 
 var v_Height_Msg = 180;
-var v_Height_HIP = 450;
+var v_Height_HIP = 500;
 
 
 function executeAction(i_FileName ,i_HIP ,i_LocalIPPort ,i_Action ,i_FunCallBack)
@@ -457,6 +457,28 @@ function executeCommand(i_File)
 		          	}
         		 });
 	}
+}
+
+
+
+function getSystemTimeCluster()
+{
+	var v_Loading = f_ShowLoading("消息" ,"正在计算中，请耐心等待。" ,v_Height_Msg);
+	executeAction("-" 
+			     ,"-"
+			     ,"-"
+			     ,"SYSTEM-TIME-C"
+			     ,function (i_Ret)
+			     {
+					if ( i_Ret.retCode == "0" )
+					{
+						f_ShowMsg("消息" ,"各服务器的当前系统时间为：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
+					}
+					else if ( i_Ret.retCode == "1" )
+					{
+						f_ShowMsg("消息" ,"以下服务器未能成功获取当前系统时间！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
+					}
+			     });
 }
 
 

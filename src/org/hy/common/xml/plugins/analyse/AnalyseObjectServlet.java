@@ -227,6 +227,10 @@ public class AnalyseObjectServlet extends HttpServlet
                     {
                         i_Response.getWriter().println(this.analyseFS.executeCommandCluster(v_FPath ,v_FN ,v_HIP));
                     }
+                    else if ( "SYSTEM-TIME-C".equalsIgnoreCase(v_Action) )
+                    {
+                        i_Response.getWriter().println(this.analyseFS.getSystemTimeCluster());
+                    }
                 }
                 else
                 {
