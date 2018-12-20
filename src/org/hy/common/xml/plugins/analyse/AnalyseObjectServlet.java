@@ -259,7 +259,9 @@ public class AnalyseObjectServlet extends HttpServlet
             }
             else if ( Help.isNull(v_XFile) && "Y".equalsIgnoreCase(v_Cluster) )
             {
-                i_Response.getWriter().println(this.analyse.analyseCluster(v_BasePath ,i_Request.getRequestURL().toString()));
+                String v_SysTime = i_Request.getParameter("SysTime");
+                
+                i_Response.getWriter().println(this.analyse.analyseCluster(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_SysTime)));
             }
             else
             {

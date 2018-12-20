@@ -79,6 +79,8 @@ import org.hy.common.xml.plugins.analyse.data.XSQLGroupTree;
  *              v12.0 2018-07-26  添加：查看创建数据库对象列表
  *              v13.0 2018-09-10  添加：显示XSQLGroup树目录流程图
  *              v14.0 2018-09-27  添加：查看XSQL及XSQL组实现标题排序功能。
+ *              v15.0 2018-12-20  添加：可以集群服务列表中，查看操作系统的当前时间
+ *                                优化：尝试计算Linux的真实内存使用率
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -1874,9 +1876,10 @@ public class AnalyseBase extends Analyse
      *
      * @param  i_BasePath       服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ReLoadPath     重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject
+     * @param  i_IsShowSysTime  是否显示服务的当前系统时间
      * @return
      */
-    public String analyseCluster(String i_BasePath ,String i_ReLoadPath)
+    public String analyseCluster(String i_BasePath ,String i_ReLoadPath ,boolean i_IsShowSysTime)
     {
         List<ClientSocket>   v_Servers      = Cluster.getClusters();
         StringBuilder        v_Buffer       = new StringBuilder();
@@ -1939,13 +1942,23 @@ public class AnalyseBase extends Analyse
                 v_OSCPU = "" + v_CReport.getOsCPURate();
             }
             
-            if ( v_CReport.getOsMemoryRate() >= 90 )
+            double v_MemoryRate = 0;
+            if ( v_CReport.getLinuxMemoryRate() >= 0 )
             {
-                v_OSMem = "<font color='red'>" + v_CReport.getOsMemoryRate() + "</font>";
+                // 当能获取到Linux真实内存使用率时，采用此值
+                v_MemoryRate = v_CReport.getLinuxMemoryRate();
             }
             else
             {
-                v_OSMem = "" + v_CReport.getOsMemoryRate();
+                v_MemoryRate = v_CReport.getOsMemoryRate();
+            }
+            if ( v_MemoryRate >= 90 )
+            {
+                v_OSMem = "<font color='red'>" + v_MemoryRate + "</font>";
+            }
+            else
+            {
+                v_OSMem = "" + v_MemoryRate;
             }
             
             if ( 0.05 >= Help.division(v_CReport.getMaxMemory() - v_CReport.getTotalMemory() ,v_CReport.getMaxMemory()) )
@@ -1963,8 +1976,29 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":FreeMemory"   ,StringHelp.getComputeUnit(v_CReport.getFreeMemory()));
             v_RKey.put(":ThreadCount"  ,v_CReport.getThreadCount() + "");
             v_RKey.put(":QueueCount"   ,v_CReport.getQueueCount()  + "");
-            v_RKey.put(":StartTime"    ,(new Date(v_CReport.getStartTime())).getYMDHM());
             v_RKey.put(":ServerStatus" ,v_CReport.getServerStatus());
+            if ( "正常".equals(v_CReport.getServerStatus()) )
+            {
+                if ( i_IsShowSysTime )
+                {
+                    if ( Help.isNull(v_CReport.getSystemTime()) )
+                    {
+                        v_RKey.put(":StartTime" ,"-");
+                    }
+                    else
+                    {
+                        v_RKey.put(":StartTime" ,(new Date(v_CReport.getSystemTime())).getFull());
+                    }
+                }
+                else
+                {
+                    v_RKey.put(":StartTime" ,(new Date(v_CReport.getStartTime())).getYMDHM());
+                }
+            }
+            else
+            {
+                v_RKey.put(":StartTime" ,"-");
+            }
             
             v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
             
@@ -1998,9 +2032,19 @@ public class AnalyseBase extends Analyse
         v_Clusters.clear();
         v_Clusters = null;
         
+        String v_StartTimeTitle = null;
+        if ( i_IsShowSysTime )
+        {
+            v_StartTimeTitle = "<a href='analyseObject?cluster=Y'           style='color:#AA66CC'>系统时间</a>";
+        }
+        else
+        {
+            v_StartTimeTitle = "<a href='analyseObject?cluster=Y&SysTime=Y' style='color:#AA66CC'>启动时间</a>";
+        }
+        
         return StringHelp.replaceAll(this.getTemplateShowCluster()
-                                    ,new String[]{":Title"     ,":Column01Title" ,":HttpBasePath" ,":Content"}
-                                    ,new String[]{"集群服务列表" ,"集群服务"        ,i_BasePath      ,v_Buffer.toString()});
+                                    ,new String[]{":Title"     ,":Column01Title" ,":StartTimeTitle" ,":HttpBasePath" ,":Content"}
+                                    ,new String[]{"集群服务列表" ,"集群服务"        ,v_StartTimeTitle  ,i_BasePath      ,v_Buffer.toString()});
     }
     
     

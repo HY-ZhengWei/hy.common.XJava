@@ -1,9 +1,11 @@
 package org.hy.common.xml.plugins.analyse.data;
 
 import java.lang.management.ManagementFactory;
+import java.util.List;
 
 import org.hy.common.Date;
 import org.hy.common.Help;
+import org.hy.common.StringHelp;
 import org.hy.common.thread.TaskPool;
 import org.hy.common.xml.SerializableDef;
 
@@ -19,6 +21,8 @@ import com.sun.management.OperatingSystemMXBean;
  * @author      ZhengWei(HY)
  * @createDate  2018-03-02
  * @version     v1.0
+ *              v2.0  2018-12-20  添加1：当前系统时间
+ *                                添加2：尝试计算Linux的真实内存使用率
  */
 public class ClusterReport extends SerializableDef
 {
@@ -32,11 +36,17 @@ public class ClusterReport extends SerializableDef
     /** 启动时间 */
     private String startTime;
     
+    /** 操作系统的当前时间 */
+    private String systemTime;
+    
     /** 操作系统CPU使用率 */
     private double osCPURate;
     
     /** 操作系统内存使用率 */
     private double osMemoryRate;
+    
+    /** Linux系统内存使用率(通过Free命令计算的) */
+    private double linuxMemoryRate;
     
     /** JVM最大内存：Java虚拟机（这个进程）能构从操作系统那里挖到的最大的内存。JVM参数为：-Xmx */
     private long   maxMemory;
@@ -60,16 +70,18 @@ public class ClusterReport extends SerializableDef
     
     public ClusterReport()
     {
-        this.hostName     = "";
-        this.osCPURate    = 0;
-        this.osMemoryRate = 0;
-        this.maxMemory    = 0;
-        this.totalMemory  = 0;
-        this.freeMemory   = 0;
-        this.threadCount  = 0;
-        this.queueCount   = 0;
-        this.startTime    = "";
-        this.serverStatus = "";
+        this.hostName        = "";
+        this.osCPURate       = 0;
+        this.osMemoryRate    = 0;
+        this.linuxMemoryRate = -1;
+        this.maxMemory       = 0;
+        this.totalMemory     = 0;
+        this.freeMemory      = 0;
+        this.threadCount     = 0;
+        this.queueCount      = 0;
+        this.startTime       = "";
+        this.systemTime      = new Date().getFullMilli();
+        this.serverStatus    = "";
     }
     
     
@@ -82,16 +94,66 @@ public class ClusterReport extends SerializableDef
         ThreadGroup v_PT  = null;
         for (v_PT = Thread.currentThread().getThreadGroup(); v_PT.getParent() != null; v_PT = v_PT.getParent());
         
-        this.startTime    = i_StartTime.getFull();
-        this.maxMemory    = v_RunTime.maxMemory();
-        this.totalMemory  = v_RunTime.totalMemory();
-        this.freeMemory   = v_RunTime.freeMemory();
-        this.threadCount  = v_PT.activeCount();
-        this.queueCount   = TaskPool.size();
-        this.osCPURate    = Help.round(Help.multiply(v_OS.getSystemCpuLoad() ,100) ,2);
-        this.osMemoryRate = Help.round(Help.multiply(1 - Help.division(v_OS.getFreePhysicalMemorySize() ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
-        this.hostName     = "";
-        this.serverStatus = "";
+        this.startTime       = i_StartTime.getFull();
+        this.systemTime      = new Date().getFullMilli();
+        this.maxMemory       = v_RunTime.maxMemory();
+        this.totalMemory     = v_RunTime.totalMemory();
+        this.freeMemory      = v_RunTime.freeMemory();
+        this.threadCount     = v_PT.activeCount();
+        this.queueCount      = TaskPool.size();
+        this.osCPURate       = Help.round(Help.multiply(v_OS.getSystemCpuLoad() ,100) ,2);
+        this.osMemoryRate    = Help.round(Help.multiply(1 - Help.division(v_OS.getFreePhysicalMemorySize() ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
+        this.linuxMemoryRate = Help.round(Help.multiply(    Help.division(this.calcLinuxMemory()           ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
+        this.hostName        = "";
+        this.serverStatus    = "";
+    }
+    
+    
+    
+    /**
+     * 计算Linux系统实际内存使用大小(通过Free命令计算的)
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-20
+     * @version     v1.0
+     *
+     * @return      单位：Byte
+     */
+    public double calcLinuxMemory()
+    {
+        try
+        {
+            List<String> v_CRet = Help.executeCommand(true , true,"free -k");
+            if ( Help.isNull(v_CRet) || v_CRet.size() < 2)
+            {
+                return -1;
+            }
+            
+            String v_LineInfo = v_CRet.get(1).trim();
+            if ( Help.isNull(v_LineInfo) )
+            {
+                return -1;
+            }
+            
+            while ( v_LineInfo.indexOf("  ") >= 0 )
+            {
+                v_LineInfo = StringHelp.replaceAll(v_LineInfo ,"  " ," ");
+            }
+            
+            String [] v_Memorys = v_LineInfo.split(" ");
+            if ( v_Memorys.length < 7 )
+            {
+                return -1;
+            }
+            
+            return Help.multiply(Help.subtract(v_Memorys[2] ,v_Memorys[5] ,v_Memorys[6]) ,1024);
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+        }
+        
+        return -1;
     }
 
     
@@ -133,7 +195,7 @@ public class ClusterReport extends SerializableDef
      * 
      * @param osMemoryRate 
      */
-    public void setOssMemoryRate(double osMemoryRate)
+    public void setOsMemoryRate(double osMemoryRate)
     {
         this.osMemoryRate = osMemoryRate;
     }
@@ -312,6 +374,50 @@ public class ClusterReport extends SerializableDef
     public void setServerStatus(String serverStatus)
     {
         this.serverStatus = serverStatus;
+    }
+
+
+    
+    /**
+     * 获取：操作系统的当前时间
+     */
+    public String getSystemTime()
+    {
+        return systemTime;
+    }
+
+
+    
+    /**
+     * 设置：操作系统的当前时间
+     * 
+     * @param systemTime 
+     */
+    public void setSystemTime(String systemTime)
+    {
+        this.systemTime = systemTime;
+    }
+
+
+
+    /**
+     * 获取：Linux系统内存使用率(通过Free命令计算的)
+     */
+    public double getLinuxMemoryRate()
+    {
+        return linuxMemoryRate;
+    }
+
+
+    
+    /**
+     * 设置：Linux系统内存使用率(通过Free命令计算的)
+     * 
+     * @param linuxMemoryRate 
+     */
+    public void setLinuxMemoryRate(double linuxMemoryRate)
+    {
+        this.linuxMemoryRate = linuxMemoryRate;
     }
     
 }
