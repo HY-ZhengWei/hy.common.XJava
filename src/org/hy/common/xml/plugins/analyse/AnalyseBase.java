@@ -1928,10 +1928,11 @@ public class AnalyseBase extends Analyse
         
         for (ClusterReport v_CReport : v_Clusters)
         {
-            Map<String ,String> v_RKey  = new HashMap<String ,String>();
-            String              v_OSCPU = "";
-            String              v_OSMem = "";
-            String              v_TM    = StringHelp.getComputeUnit(v_CReport.getTotalMemory());
+            Map<String ,String> v_RKey   = new HashMap<String ,String>();
+            String              v_OSCPU  = "";
+            String              v_OSMem  = "";
+            String              v_OSDisk = "";
+            String              v_TM     = StringHelp.getComputeUnit(v_CReport.getTotalMemory());
             
             if ( v_CReport.getOsCPURate() >= 90 )
             {
@@ -1967,16 +1968,33 @@ public class AnalyseBase extends Analyse
                 v_TM = "<font color='red'>" + v_TM + "</font>";
             }
             
-            v_RKey.put(":No"           ,String.valueOf(++v_Index));
-            v_RKey.put(":ServerName"   ,v_CReport.getHostName());
-            v_RKey.put(":OsCPURate"    ,v_OSCPU);
-            v_RKey.put(":OsMemoryRate" ,v_OSMem);
-            v_RKey.put(":MaxMemory"    ,StringHelp.getComputeUnit(v_CReport.getMaxMemory()));
-            v_RKey.put(":TotalMemory"  ,v_TM);
-            v_RKey.put(":FreeMemory"   ,StringHelp.getComputeUnit(v_CReport.getFreeMemory()));
-            v_RKey.put(":ThreadCount"  ,v_CReport.getThreadCount() + "");
-            v_RKey.put(":QueueCount"   ,v_CReport.getQueueCount()  + "");
-            v_RKey.put(":ServerStatus" ,v_CReport.getServerStatus());
+            if ( v_CReport.getLinuxDiskMaxRate() >= 0 )
+            {
+                if ( v_CReport.getLinuxDiskMaxRate() >= 90 )
+                {
+                    v_OSDisk = "<font color='red'>" + v_CReport.getLinuxDiskMaxRate() + "</font>";
+                }
+                else
+                {
+                    v_OSDisk = "" + v_CReport.getLinuxDiskMaxRate();
+                }
+            }
+            else
+            {
+                v_OSDisk = "-";
+            }
+            
+            v_RKey.put(":No"            ,String.valueOf(++v_Index));
+            v_RKey.put(":ServerName"    ,v_CReport.getHostName());
+            v_RKey.put(":OsCPURate"     ,v_OSCPU);
+            v_RKey.put(":OsMemoryRate"  ,v_OSMem);
+            v_RKey.put(":OsDiskMaxRate" ,v_OSDisk);
+            v_RKey.put(":MaxMemory"     ,StringHelp.getComputeUnit(v_CReport.getMaxMemory()));
+            v_RKey.put(":TotalMemory"   ,v_TM);
+            v_RKey.put(":FreeMemory"    ,StringHelp.getComputeUnit(v_CReport.getFreeMemory()));
+            v_RKey.put(":ThreadCount"   ,v_CReport.getThreadCount() + "");
+            v_RKey.put(":QueueCount"    ,v_CReport.getQueueCount()  + "");
+            v_RKey.put(":ServerStatus"  ,v_CReport.getServerStatus());
             if ( "正常".equals(v_CReport.getServerStatus()) )
             {
                 if ( i_IsShowSysTime )
@@ -2012,17 +2030,18 @@ public class AnalyseBase extends Analyse
         
         Map<String ,String> v_RKey = new HashMap<String ,String>();
         
-        v_RKey.put(":No"           ,String.valueOf(++v_Index));
-        v_RKey.put(":ServerName"   ,"合计");
-        v_RKey.put(":OsCPURate"    ,"-");
-        v_RKey.put(":OsMemoryRate" ,"-");
-        v_RKey.put(":MaxMemory"    ,StringHelp.getComputeUnit(v_Total.getMaxMemory()));
-        v_RKey.put(":TotalMemory"  ,StringHelp.getComputeUnit(v_Total.getTotalMemory()));
-        v_RKey.put(":FreeMemory"   ,StringHelp.getComputeUnit(v_Total.getFreeMemory()));
-        v_RKey.put(":ThreadCount"  ,v_Total.getThreadCount() + "");
-        v_RKey.put(":QueueCount"   ,v_Total.getQueueCount()  + "");
-        v_RKey.put(":StartTime"    ,"-");
-        v_RKey.put(":ServerStatus" ,Help.NVL(v_Total.getServerStatus() ,"正常"));
+        v_RKey.put(":No"            ,String.valueOf(++v_Index));
+        v_RKey.put(":ServerName"    ,"合计");
+        v_RKey.put(":OsCPURate"     ,"-");
+        v_RKey.put(":OsMemoryRate"  ,"-");
+        v_RKey.put(":OsDiskMaxRate" ,"-");
+        v_RKey.put(":MaxMemory"     ,StringHelp.getComputeUnit(v_Total.getMaxMemory()));
+        v_RKey.put(":TotalMemory"   ,StringHelp.getComputeUnit(v_Total.getTotalMemory()));
+        v_RKey.put(":FreeMemory"    ,StringHelp.getComputeUnit(v_Total.getFreeMemory()));
+        v_RKey.put(":ThreadCount"   ,v_Total.getThreadCount() + "");
+        v_RKey.put(":QueueCount"    ,v_Total.getQueueCount()  + "");
+        v_RKey.put(":StartTime"     ,"-");
+        v_RKey.put(":ServerStatus"  ,Help.NVL(v_Total.getServerStatus() ,"正常"));
         
         v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
         

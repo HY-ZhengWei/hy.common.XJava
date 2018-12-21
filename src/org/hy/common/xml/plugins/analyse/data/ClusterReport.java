@@ -1,7 +1,10 @@
 package org.hy.common.xml.plugins.analyse.data;
 
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hy.common.Date;
 import org.hy.common.Help;
@@ -23,6 +26,8 @@ import com.sun.management.OperatingSystemMXBean;
  * @version     v1.0
  *              v2.0  2018-12-20  添加1：当前系统时间
  *                                添加2：尝试计算Linux的真实内存使用率
+ *              v3.0  2018-12-21  添加1：计算Linux磁盘使用率
+ *                                添加2：计算Window磁盘使用率
  */
 public class ClusterReport extends SerializableDef
 {
@@ -48,6 +53,9 @@ public class ClusterReport extends SerializableDef
     /** Linux系统内存使用率(通过Free命令计算的) */
     private double linuxMemoryRate;
     
+    /** Linux系统上最大的磁盘使用率 */
+    private double linuxDiskMaxRate;
+    
     /** JVM最大内存：Java虚拟机（这个进程）能构从操作系统那里挖到的最大的内存。JVM参数为：-Xmx */
     private long   maxMemory;
     
@@ -70,18 +78,19 @@ public class ClusterReport extends SerializableDef
     
     public ClusterReport()
     {
-        this.hostName        = "";
-        this.osCPURate       = 0;
-        this.osMemoryRate    = 0;
-        this.linuxMemoryRate = -1;
-        this.maxMemory       = 0;
-        this.totalMemory     = 0;
-        this.freeMemory      = 0;
-        this.threadCount     = 0;
-        this.queueCount      = 0;
-        this.startTime       = "";
-        this.systemTime      = new Date().getFullMilli();
-        this.serverStatus    = "";
+        this.hostName         = "";
+        this.osCPURate        = 0;
+        this.osMemoryRate     = 0;
+        this.linuxMemoryRate  = -1;
+        this.linuxDiskMaxRate = -1;
+        this.maxMemory        = 0;
+        this.totalMemory      = 0;
+        this.freeMemory       = 0;
+        this.threadCount      = 0;
+        this.queueCount       = 0;
+        this.startTime        = "";
+        this.systemTime       = new Date().getFullMilli();
+        this.serverStatus     = "";
     }
     
     
@@ -94,18 +103,24 @@ public class ClusterReport extends SerializableDef
         ThreadGroup v_PT  = null;
         for (v_PT = Thread.currentThread().getThreadGroup(); v_PT.getParent() != null; v_PT = v_PT.getParent());
         
-        this.startTime       = i_StartTime.getFull();
-        this.systemTime      = new Date().getFullMilli();
-        this.maxMemory       = v_RunTime.maxMemory();
-        this.totalMemory     = v_RunTime.totalMemory();
-        this.freeMemory      = v_RunTime.freeMemory();
-        this.threadCount     = v_PT.activeCount();
-        this.queueCount      = TaskPool.size();
-        this.osCPURate       = Help.round(Help.multiply(v_OS.getSystemCpuLoad() ,100) ,2);
-        this.osMemoryRate    = Help.round(Help.multiply(1 - Help.division(v_OS.getFreePhysicalMemorySize() ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
-        this.linuxMemoryRate = Help.round(Help.multiply(    Help.division(this.calcLinuxMemory()           ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
-        this.hostName        = "";
-        this.serverStatus    = "";
+        this.startTime        = i_StartTime.getFull();
+        this.systemTime       = new Date().getFullMilli();
+        this.maxMemory        = v_RunTime.maxMemory();
+        this.totalMemory      = v_RunTime.totalMemory();
+        this.freeMemory       = v_RunTime.freeMemory();
+        this.threadCount      = v_PT.activeCount();
+        this.queueCount       = TaskPool.size();
+        this.osCPURate        = Help.round(Help.multiply(v_OS.getSystemCpuLoad() ,100) ,2);
+        this.osMemoryRate     = Help.round(Help.multiply(1 - Help.division(v_OS.getFreePhysicalMemorySize() ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
+        this.linuxMemoryRate  = this.calcLinuxMemory();
+        this.linuxDiskMaxRate = Help.round(this.calcDiskMaxRate() ,2);
+        this.hostName         = "";
+        this.serverStatus     = "";
+        
+        if ( this.linuxMemoryRate >= 0 )
+        {
+            this.linuxMemoryRate  = Help.round(Help.multiply(Help.division(this.linuxMemoryRate ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
+        }
     }
     
     
@@ -124,7 +139,7 @@ public class ClusterReport extends SerializableDef
         try
         {
             List<String> v_CRet = Help.executeCommand(true , true,"free -k");
-            if ( Help.isNull(v_CRet) || v_CRet.size() < 2)
+            if ( Help.isNull(v_CRet) || v_CRet.size() < 2 )
             {
                 return -1;
             }
@@ -135,13 +150,14 @@ public class ClusterReport extends SerializableDef
                 return -1;
             }
             
-            while ( v_LineInfo.indexOf("  ") >= 0 )
-            {
-                v_LineInfo = StringHelp.replaceAll(v_LineInfo ,"  " ," ");
-            }
-            
+            v_LineInfo = StringHelp.trimToDistinct(v_LineInfo ," ");
             String [] v_Memorys = v_LineInfo.split(" ");
             if ( v_Memorys.length < 7 )
+            {
+                return -1;
+            }
+            
+            if ( !Help.isNumber(v_Memorys[2]) || !Help.isNumber(v_Memorys[5]) || !Help.isNumber(v_Memorys[6]) )
             {
                 return -1;
             }
@@ -150,10 +166,315 @@ public class ClusterReport extends SerializableDef
         }
         catch (Exception exce)
         {
-            exce.printStackTrace();
+            // Nothing.
         }
         
         return -1;
+    }
+    
+    
+    
+    /**
+     * 计算Linux和Win系统上最大的磁盘使用率
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-21
+     * @version     v1.0
+     *
+     * @return
+     */
+    public double calcDiskMaxRate()
+    {
+        double v_Rate = this.calcLinuxDiskMaxRate();
+        
+        if ( v_Rate < 0 )
+        {
+            v_Rate = this.calcWinDiskMaxRate();
+        }
+        
+        return v_Rate;
+    }
+    
+    
+    
+    /**
+     * 计算Linux系统上最大的磁盘使用率
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-21
+     * @version     v1.0
+     *
+     * @return
+     */
+    public double calcWinDiskMaxRate()
+    {
+        Map<String ,Double> v_Disks = this.calcWinDiskUseRates();
+        
+        if ( Help.isNull(v_Disks) )
+        {
+            return -1;
+        }
+        
+        Help.print(v_Disks);
+        
+        List<Double> v_Rate = Help.toList(v_Disks);
+        return Help.max(-1D ,v_Rate.toArray(new Double[]{}));
+    }
+    
+    
+    
+    /**
+     * 计算Windows系统上每个磁盘的使用率
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-21
+     * @version     v1.0
+     *
+     * @return
+     */
+    public Map<String ,Double> calcWinDiskUseRates()
+    {
+        Map<String ,Double> v_Disks = new HashMap<String ,Double>();
+        
+        try
+        {
+            List<String> v_CRet = Help.executeCommand(true ,true ,"Wmic LogicalDisk Get Caption,DeviceID,FreeSpace,Size");
+            if ( Help.isNull(v_CRet) )
+            {
+                return v_Disks;
+            }
+            
+            for (String v_LineInfo : v_CRet)
+            {
+                if ( !Help.isNull(v_LineInfo) )
+                {
+                    v_LineInfo = StringHelp.trimToDistinct(v_LineInfo.trim() ," ");
+                    String [] v_Infos = v_LineInfo.split(" "); 
+                    
+                    if ( v_Infos.length < 4 || Help.isNull(v_Infos[0]) || Help.isNull(v_Infos[2]) || Help.isNull(v_Infos[3]) )
+                    {
+                        continue;
+                    }
+                    
+                    if ( !Help.isNumber(v_Infos[2]) || !Help.isNumber(v_Infos[3]) )
+                    {
+                        continue;
+                    }
+                    
+                    v_Disks.put(v_Infos[0] ,Help.multiply(Help.division(Help.subtract(v_Infos[3] ,v_Infos[2]) ,v_Infos[3]) ,100));
+                }
+            }
+        }
+        catch (Exception exce)
+        {
+            // Nothing.
+        }
+        
+        return v_Disks;
+    }
+    
+    
+    
+    /**
+     * 计算Linux系统上最大的磁盘使用率
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-21
+     * @version     v1.0
+     *
+     * @return
+     */
+    public double calcLinuxDiskMaxRate()
+    {
+        Map<String ,Double> v_Disks    = this.calcLinuxDiskSizes();
+        Map<String ,Double> v_Rates    = null;
+        List<Double>        v_RateList = null;
+        StringBuilder       v_Buffer   = new StringBuilder();
+        
+        if ( Help.isNull(v_Disks) )
+        {
+            return -1;
+        }
+        
+        v_Buffer.append("\n");
+        
+        try
+        {
+            v_RateList = new ArrayList<Double>();
+            v_Rates    = this.calcLinuxDiskUseRate();
+            if ( Help.isNull(v_Rates) )
+            {
+                return -1;
+            }
+            
+            for (Map.Entry<String ,Double> v_Disk : v_Disks.entrySet())
+            {
+                Double v_UseRate = v_Rates.get(v_Disk.getKey());
+                
+                if ( v_UseRate == null )
+                {
+                    continue;
+                }
+                
+                v_RateList.add(v_UseRate);
+                v_Buffer
+                .append(v_Disk.getKey())
+                .append("\t\t\t")
+                .append(v_Disk.getValue()).append(" GB")
+                .append("\t\t\t")
+                .append(v_UseRate)
+                .append("%\n");
+            }
+            
+            System.out.println(v_Buffer.toString());
+            
+            return Help.max(0D ,v_RateList.toArray(new Double[] {})).doubleValue();
+        }
+        finally
+        {
+            v_Disks.clear();
+            v_Rates.clear();
+            v_RateList.clear();
+            
+            v_Disks    = null;
+            v_Rates    = null;
+            v_RateList = null;
+        }
+    }
+    
+    
+    
+    /**
+     * 计算Linux服务上每个挂载磁盘的大小
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-21
+     * @version     v1.0
+     *
+     * @return      Map.key    磁盘名称
+     *              Map.value  磁盘大小（单位：GB）
+     */
+    public Map<String ,Double> calcLinuxDiskSizes()
+    {
+        Map<String ,Double> v_Disks = new HashMap<String ,Double>();
+        
+        try
+        {
+            List<String> v_CRet = Help.executeCommand(true ,true ,"fdisk -l");
+            if ( Help.isNull(v_CRet) )
+            {
+                return v_Disks;
+            }
+            
+            for (String v_LineInfo : v_CRet)
+            {
+                if ( !Help.isNull(v_LineInfo) )
+                {
+                    if ( v_LineInfo.trim().startsWith("/") )
+                    {
+                        v_LineInfo = StringHelp.replaceAll(v_LineInfo.trim() ,"*" ," ");
+                        v_LineInfo = StringHelp.trimToDistinct(v_LineInfo ," ");
+                        String [] v_Infos = v_LineInfo.split(" "); 
+                        
+                        if ( v_Infos.length < 5 || Help.isNull(v_Infos[0]) || Help.isNull(v_Infos[4]) )
+                        {
+                            continue;
+                        }
+                        
+                        String v_Size = v_Infos[4].toUpperCase();
+                        double v_Pow  = 1;
+                        if ( v_Size.endsWith("TB") || v_Size.endsWith("T") )
+                        {
+                            v_Pow = 1024;
+                        }
+                        else if ( v_Size.endsWith("GB") || v_Size.endsWith("G") )
+                        {
+                            v_Pow = 1;
+                        }
+                        else if ( v_Size.endsWith("MB") || v_Size.endsWith("M") )
+                        {
+                            v_Pow = 1 / 1024;
+                        }
+                        else if ( v_Size.endsWith("KB") || v_Size.endsWith("K") )
+                        {
+                            v_Pow = 1 / 1024 / 1024;
+                        }
+                        
+                        v_Size = StringHelp.replaceAll(v_Size ,new String[]{"TB" ,"T" ,"GB" ,"G" ,"MB" ,"M" ,"KB" ,"K"} ,new String[]{""}).trim();
+                        v_Disks.put(v_Infos[0].toLowerCase() ,Help.multiply(v_Size ,v_Pow));
+                    }
+                }
+            }
+        }
+        catch (Exception exce)
+        {
+            // Nothing.
+        }
+        
+        return v_Disks;
+    }
+    
+    
+    
+    /**
+     * 计算Linux服务上每个磁盘的使用率
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-21
+     * @version     v1.0
+     *
+     * @return      Map.key    磁盘名称
+     *              Map.value  磁盘使用率%
+     */
+    public Map<String ,Double> calcLinuxDiskUseRate()
+    {
+        Map<String ,Double> v_Disks = new HashMap<String ,Double>();
+        
+        try
+        {
+            List<String> v_CRet = Help.executeCommand(true ,true ,"df");
+            if ( Help.isNull(v_CRet) )
+            {
+                return v_Disks;
+            }
+            
+            for (String v_LineInfo : v_CRet)
+            {
+                if ( !Help.isNull(v_LineInfo) )
+                {
+                    if ( v_LineInfo.trim().startsWith("/") )
+                    {
+                        v_LineInfo = StringHelp.trimToDistinct(v_LineInfo.trim() ," ");
+                        String [] v_Infos = v_LineInfo.split(" "); 
+                        
+                        if ( v_Infos.length < 5 || Help.isNull(v_Infos[0]) || Help.isNull(v_Infos[4]) )
+                        {
+                            continue;
+                        }
+                        
+                        String v_Rate = StringHelp.replaceAll(v_Infos[4].trim() ,"%" ,"");
+                        if ( !Help.isNumber(v_Rate) )
+                        {
+                            continue;
+                        }
+                        
+                        Double v_Old = v_Disks.get(v_Infos[0].toLowerCase());
+                        if ( v_Old == null )
+                        {
+                            v_Old = 0D;
+                        }
+                        
+                        v_Disks.put(v_Infos[0].toLowerCase() ,Help.max(Double.parseDouble(v_Rate) ,v_Old));
+                    }
+                }
+            }
+        }
+        catch (Exception exce)
+        {
+            // Nothing.
+        }
+        
+        return v_Disks;
     }
 
     
@@ -418,6 +739,28 @@ public class ClusterReport extends SerializableDef
     public void setLinuxMemoryRate(double linuxMemoryRate)
     {
         this.linuxMemoryRate = linuxMemoryRate;
+    }
+
+
+    
+    /**
+     * 获取：Linux系统上最大的磁盘使用率
+     */
+    public double getLinuxDiskMaxRate()
+    {
+        return linuxDiskMaxRate;
+    }
+
+
+    
+    /**
+     * 设置：Linux系统上最大的磁盘使用率
+     * 
+     * @param linuxDiskMaxRate 
+     */
+    public void setLinuxDiskMaxRate(double linuxDiskMaxRate)
+    {
+        this.linuxDiskMaxRate = linuxDiskMaxRate;
     }
     
 }
