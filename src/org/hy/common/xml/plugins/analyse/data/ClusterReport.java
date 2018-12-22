@@ -150,16 +150,25 @@ public class ClusterReport extends SerializableDef
      */
     public int calcOSType()
     {
-        File v_Disk = new File("C:");
+        try
+        {
+            File v_Disk = new File("C:");
+            
+            if ( v_Disk.exists() )
+            {
+                return 2;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+        catch (Exception exce)
+        {
+            // Nothing.
+        }
         
-        if ( v_Disk.exists() )
-        {
-            return 2;
-        }
-        else
-        {
-            return 1;
-        }
+        return 1;
     }
     
     
