@@ -1,6 +1,8 @@
 package org.hy.common.xml.plugins.analyse;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -757,6 +759,35 @@ public class AnalyseFS extends Analyse
                     if ( v_Old.exists() && v_Old.isFile() )
                     {
                         v_Old.delete();
+                        
+                        // 有删除不掉的情况，如系统正在读取的
+                        if ( v_Old.exists() )
+                        {
+                            FileOutputStream v_SaveOutput = new FileOutputStream(v_Old ,false);
+
+                            try
+                            {
+                                v_SaveOutput.write(new byte[0]);
+                                v_SaveOutput.flush();
+                            }
+                            catch (Exception exce)
+                            {
+                                exce.printStackTrace();
+                            }
+                            finally
+                            {
+                                try
+                                {
+                                    v_SaveOutput.close();
+                                }
+                                catch (Exception exce)
+                                {
+                                    // Nothing.
+                                }
+                                
+                                v_SaveOutput = null;
+                            }
+                        }
                     }
                 }
                 

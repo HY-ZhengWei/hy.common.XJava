@@ -1,5 +1,6 @@
 package org.hy.common.xml.plugins.analyse.data;
 
+import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +35,9 @@ public class ClusterReport extends SerializableDef
 
     private static final long serialVersionUID = 849137073888555779L;
     
+    
+    /** 操作类型（1:Linux，1:Unix，2:Windows） */
+    private int    osType;
     
     /** 主机名称 */
     private String hostName;
@@ -78,6 +82,7 @@ public class ClusterReport extends SerializableDef
     
     public ClusterReport()
     {
+        this.osType           = this.calcOSType();
         this.hostName         = "";
         this.osCPURate        = 0;
         this.osMemoryRate     = 0;
@@ -103,6 +108,7 @@ public class ClusterReport extends SerializableDef
         ThreadGroup v_PT  = null;
         for (v_PT = Thread.currentThread().getThreadGroup(); v_PT.getParent() != null; v_PT = v_PT.getParent());
         
+        this.osType           = this.calcOSType();
         this.startTime        = i_StartTime.getFull();
         this.systemTime       = new Date().getFullMilli();
         this.maxMemory        = v_RunTime.maxMemory();
@@ -112,14 +118,47 @@ public class ClusterReport extends SerializableDef
         this.queueCount       = TaskPool.size();
         this.osCPURate        = Help.round(Help.multiply(v_OS.getSystemCpuLoad() ,100) ,2);
         this.osMemoryRate     = Help.round(Help.multiply(1 - Help.division(v_OS.getFreePhysicalMemorySize() ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
-        this.linuxMemoryRate  = this.calcLinuxMemory();
         this.linuxDiskMaxRate = Help.round(this.calcDiskMaxRate() ,2);
         this.hostName         = "";
         this.serverStatus     = "";
         
+        if ( this.osType == 1 )
+        {
+            this.linuxMemoryRate  = this.calcLinuxMemory();
+        }
+        else
+        {
+            this.linuxMemoryRate  = -1;
+        }
+        
         if ( this.linuxMemoryRate >= 0 )
         {
             this.linuxMemoryRate  = Help.round(Help.multiply(Help.division(this.linuxMemoryRate ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
+        }
+    }
+    
+    
+    
+    /**
+     * 计算操作系统的类型
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-22
+     * @version     v1.0
+     *
+     * @return
+     */
+    public int calcOSType()
+    {
+        File v_Disk = new File("C:");
+        
+        if ( v_Disk.exists() )
+        {
+            return 2;
+        }
+        else
+        {
+            return 1;
         }
     }
     
@@ -138,7 +177,7 @@ public class ClusterReport extends SerializableDef
     {
         try
         {
-            List<String> v_CRet = Help.executeCommand(true , true,"free -k");
+            List<String> v_CRet = Help.executeCommand(false , true,"free -k");
             if ( Help.isNull(v_CRet) || v_CRet.size() < 2 )
             {
                 return -1;
@@ -185,9 +224,13 @@ public class ClusterReport extends SerializableDef
      */
     public double calcDiskMaxRate()
     {
-        double v_Rate = this.calcLinuxDiskMaxRate();
+        double v_Rate = -1;
         
-        if ( v_Rate < 0 )
+        if ( this.osType == 1 )
+        {
+            v_Rate = this.calcLinuxDiskMaxRate();
+        }
+        else
         {
             v_Rate = this.calcWinDiskMaxRate();
         }
@@ -208,7 +251,7 @@ public class ClusterReport extends SerializableDef
      */
     public double calcWinDiskMaxRate()
     {
-        Map<String ,Double> v_Disks = this.calcWinDiskUseRates();
+        Map<String ,Double> v_Disks = this.calcWinDiskUseRatesV2();
         
         if ( Help.isNull(v_Disks) )
         {
@@ -219,6 +262,44 @@ public class ClusterReport extends SerializableDef
         
         List<Double> v_Rate = Help.toList(v_Disks);
         return Help.max(-1D ,v_Rate.toArray(new Double[]{}));
+    }
+    
+    
+    
+    /**
+     * 计算Windows系统上每个磁盘的使用率
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-22
+     * @version     v1.0
+     *
+     * @return
+     */
+    public Map<String ,Double> calcWinDiskUseRatesV2()
+    {
+        Map<String ,Double> v_Disks     = new HashMap<String ,Double>();
+        String              v_DiskNames = "CDEFGHIJKLMNOPQRSTUVWXYZ";
+        
+        for (int i=0; i<v_DiskNames.length(); i++)
+        {
+            String v_DiskName = v_DiskNames.charAt(i) + ":";
+            File   v_Disk     = new File(v_DiskName);
+            
+            if ( v_Disk.exists() )
+            {
+                long v_TotalSpace = v_Disk.getTotalSpace();
+                long v_FreeSpace  = v_Disk.getFreeSpace();
+                long v_UsedSpace  = v_TotalSpace - v_FreeSpace;
+                
+                v_Disks.put(v_DiskName ,Help.multiply(Help.division(v_UsedSpace ,v_TotalSpace) ,100));
+            }
+            else if ( i == 0 ) 
+            {
+                break;
+            }
+        }
+        
+        return v_Disks;
     }
     
     
@@ -238,7 +319,7 @@ public class ClusterReport extends SerializableDef
         
         try
         {
-            List<String> v_CRet = Help.executeCommand(true ,true ,"Wmic LogicalDisk Get Caption,DeviceID,FreeSpace,Size");
+            List<String> v_CRet = Help.executeCommand("GBK" ,false ,true ,5 ,"cmd.exe /c Wmic LogicalDisk Get Caption,DeviceID,FreeSpace,Size");
             if ( Help.isNull(v_CRet) )
             {
                 return v_Disks;
@@ -360,7 +441,7 @@ public class ClusterReport extends SerializableDef
         
         try
         {
-            List<String> v_CRet = Help.executeCommand(true ,true ,"fdisk -l");
+            List<String> v_CRet = Help.executeCommand(false ,true ,"fdisk -l");
             if ( Help.isNull(v_CRet) )
             {
                 return v_Disks;
@@ -432,7 +513,7 @@ public class ClusterReport extends SerializableDef
         
         try
         {
-            List<String> v_CRet = Help.executeCommand(true ,true ,"df");
+            List<String> v_CRet = Help.executeCommand(false ,true ,"df");
             if ( Help.isNull(v_CRet) )
             {
                 return v_Disks;
@@ -761,6 +842,28 @@ public class ClusterReport extends SerializableDef
     public void setLinuxDiskMaxRate(double linuxDiskMaxRate)
     {
         this.linuxDiskMaxRate = linuxDiskMaxRate;
+    }
+
+
+    
+    /**
+     * 获取：操作类型（1:Linux，1:Unix，2:Windows）
+     */
+    public int getOsType()
+    {
+        return osType;
+    }
+
+
+    
+    /**
+     * 设置：操作类型（1:Linux，1:Unix，2:Windows）
+     * 
+     * @param osType 
+     */
+    public void setOsType(int osType)
+    {
+        this.osType = osType;
     }
     
 }
