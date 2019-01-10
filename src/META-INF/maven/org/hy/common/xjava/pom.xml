@@ -4,7 +4,7 @@
 
   <groupId>org</groupId>
   <artifactId>hy.common.xjava</artifactId>
-  <version>3.9.25</version>
+  <version>3.9.26</version>
   <packaging>jar</packaging>
 
   <name>hy.common.xjava</name>
@@ -35,28 +35,28 @@
 	<dependency>
 	    <groupId>org</groupId>
 	    <artifactId>hy.common.db</artifactId>
-	    <version>2.4.2</version>
+	    <version>2.4.3</version>
 	</dependency>
 	
 	<!-- https://github.com/HY-ZhengWei/hy.common.file -->
 	<dependency>
 	    <groupId>org</groupId>
 	    <artifactId>hy.common.file</artifactId>
-	    <version>1.1.5</version>
+	    <version>1.1.6</version>
 	</dependency>
 	
 	<!-- https://github.com/HY-ZhengWei/hy.common.net -->
 	<dependency>
 	    <groupId>org</groupId>
 	    <artifactId>hy.common.net</artifactId>
-	    <version>1.2.15</version>
+	    <version>1.2.16</version>
 	</dependency>
 	
 	<!-- https://github.com/HY-ZhengWei/hy.common.tpool -->
 	<dependency>
 	    <groupId>org</groupId>
 	    <artifactId>hy.common.tpool</artifactId>
-	    <version>1.2.0</version>
+	    <version>1.2.1</version>
 	</dependency>
 	
 	<!-- Reduce 2.2.1 to 1.1.1 for greater compatibility (e.g. ASM) -->
