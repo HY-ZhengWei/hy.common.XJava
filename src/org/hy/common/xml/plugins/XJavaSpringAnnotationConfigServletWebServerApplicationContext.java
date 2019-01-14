@@ -14,13 +14,26 @@ import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebSe
  * 第4步见：@SpringBootApplication 注解的Spring Boot工程启动类，由最终用户编写（最终用户只用实现此即可），如下：
  * 
     @SpringBootApplication
-    public class ProjectStart 
+    public class ProjectStart extends SpringBootServletInitializer
     {
         public static void main(String[] i_Args) 
         {
             SpringApplication v_SpringApp = new SpringApplication(ProjectStart.class);
             v_SpringApp.setApplicationContextClass(XJavaSpringAnnotationConfigServletWebServerApplicationContext.class);
             ConfigurableApplicationContext v_CAC = v_SpringApp.run(i_Args);
+        }
+        
+        // Tomcat方式部署及启动Spring Boot（可选的）
+        // 1. 继承 SpringBootServletInitializer
+        // 2. 重写 run(...) 方法
+        // 3. 配置 web.xml 等。此步为常规方法，网上有很多资料，具体配置内容不在赘述
+        @Overrid
+        protected WebApplicationContext run(SpringApplication i_Application) 
+        {
+            i_Application.addInitializers(new XJavaSpringInitialzer());
+            i_Application.setApplicationContextClass(XJavaSpringAnnotationConfigServletWebServerApplicationContext.class);
+            
+            return (WebApplicationContext) i_Application.run();
         }
     }
  * 
