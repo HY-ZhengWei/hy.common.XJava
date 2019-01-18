@@ -98,7 +98,7 @@ public class AnalyseFS extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"analysePath_Total" ,new Object[]{v_FPath});
+                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"analysePath_Total" ,new Object[]{v_FPath} ,true ,true);
                 
                 for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
@@ -832,7 +832,7 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"executeCommand" ,new Object[]{i_FilePath ,i_FileName});
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"executeCommand" ,new Object[]{i_FilePath ,i_FileName} ,true ,true);
             
             for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
@@ -1011,7 +1011,7 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"delFile" ,new Object[]{i_FilePath ,i_FileName});
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"delFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,true);
             
             for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
@@ -1151,7 +1151,7 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"zipFile" ,new Object[]{i_FilePath ,i_FileName ,Date.getNowTime().getFullMilli_ID()});
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"zipFile" ,new Object[]{i_FilePath ,i_FileName ,Date.getNowTime().getFullMilli_ID()} ,true ,true);
             
             for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
@@ -1269,7 +1269,7 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"unZipFile" ,new Object[]{i_FilePath ,i_FileName});
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"unZipFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,true);
             
             for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
@@ -1385,7 +1385,7 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"mkdir" ,new Object[]{i_FilePath ,i_FileName});
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"mkdir" ,new Object[]{i_FilePath ,i_FileName} ,true ,true);
             
             for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
@@ -1513,7 +1513,7 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"calcFileSize" ,new Object[]{i_FilePath ,i_FileName});
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"calcFileSize" ,new Object[]{i_FilePath ,i_FileName} ,true ,true);
             
             for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
@@ -1620,7 +1620,7 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"getSystemTime" ,new Object[]{});
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"getSystemTime" ,new Object[]{} ,true ,true);
             
             for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
@@ -1728,7 +1728,7 @@ public class AnalyseFS extends Analyse
                 
                 if ( !Help.isNull(v_Servers) )
                 {
-                    Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"reload" ,new Object[]{i_XFile ,false});
+                    Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"reload" ,new Object[]{i_XFile ,false} ,true ,true);
                     StringBuilder                            v_ErrorInfo     = new StringBuilder();
                     
                     for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
@@ -2014,7 +2014,7 @@ public class AnalyseFS extends Analyse
             
             try
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(this.servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"cloneFileUpload" ,new Object[]{this.savePath ,this.dataPacket});
+                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(this.servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"cloneFileUpload" ,new Object[]{this.savePath ,this.dataPacket} ,true ,true);
                 
                 for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
