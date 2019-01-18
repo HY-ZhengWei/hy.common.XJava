@@ -528,7 +528,7 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBGroup_Total" ,true ,true);
+                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBGroup_Total" ,true ,"XSQL组分析");
                 
                 for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
@@ -720,7 +720,7 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDB_Total" ,true ,true);
+                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDB_Total" ,true ,"XSQ分析");
                 
                 for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
@@ -1078,7 +1078,7 @@ public class AnalyseBase extends Analyse
                 
                 if ( !Help.isNull(v_Servers) )
                 {
-                    Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBError_Total" ,new Object[]{i_XSQLXID} ,true ,true);
+                    Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBError_Total" ,new Object[]{i_XSQLXID} ,true ,"XSQL执行日志");
                     
                     for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                     {
@@ -1621,7 +1621,7 @@ public class AnalyseBase extends Analyse
             
             if ( i_SameTime )
             {
-                v_ClusterResponses = ClientSocketCluster.sendCommands(Cluster.getClusters() ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,false ,false} ,true ,true);
+                v_ClusterResponses = ClientSocketCluster.sendCommands(Cluster.getClusters() ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,false ,false} ,true ,"执行XJava对象");
             }
             else
             {
@@ -1890,7 +1890,7 @@ public class AnalyseBase extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseCluster_Info" ,true ,true);
+            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseCluster_Info" ,true ,"监测服务");
             
             for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
@@ -2117,7 +2117,7 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseThreadPool_Total" ,true ,true);
+                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseThreadPool_Total" ,true ,"线程池");
                 
                 for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
@@ -2251,7 +2251,7 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseJob_Total" ,true ,true);
+                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseJob_Total" ,true ,"定时任务");
                 
                 for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
@@ -2368,7 +2368,7 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDataSourceGroup_Total" ,true ,true);
+                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDataSourceGroup_Total" ,true ,"数据库连接池");
                 
                 for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
