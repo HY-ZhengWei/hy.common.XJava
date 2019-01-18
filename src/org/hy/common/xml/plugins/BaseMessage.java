@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.hy.common.xml.XHttp;
 import org.hy.common.xml.XJSON;
+import org.hy.common.xml.XJSONObject;
 import org.hy.common.xml.XJava;
 
 import org.hy.common.Help;
@@ -134,9 +135,9 @@ public abstract class BaseMessage
      */
     protected synchronized MsgInfo getRequestMsg(String i_SID ,int i_SIDV ,Object i_RequestParam) throws Exception
     {
-        this.xjson.parser(this.getRequestMap(i_SID ,i_SIDV ,i_RequestParam));
+        XJSONObject v_XJSONObject = this.xjson.parser(this.getRequestMap(i_SID ,i_SIDV ,i_RequestParam));
         
-        return new MsgInfo(StringHelp.escape_toUnicode(this.xjson.toJSONString()));
+        return new MsgInfo(StringHelp.escape_toUnicode(v_XJSONObject.toJSONString()));
     }
     
     
