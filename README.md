@@ -37,6 +37,7 @@
 * [XJSON Json与Java对象的转换](src/org/hy/common/xml/XJSON.java)
 * [XHttp Http访问](src/org/hy/common/xml/XHttp.java)
 * [XWebService 接口服务](src/org/hy/common/xml/XWebService.java)
+* [特别鸣谢](#特别鸣谢)
 
 
 
@@ -853,6 +854,63 @@ DDL举例说明：
 
 [举例说明](https://github.com/HY-ZhengWei/Stock/blob/master/src/com/hy/stock/config/db/db.StockInfoDay.CalcKDJ.xml)
 
+
+
+
+特别鸣谢
+------
+十分感谢以下朋友支持与建议
+
+  1. [邹德福](https://github.com/dirful)：
+  
+  		发现：XSQL组多线程挂死的问题。
+  		
+  		发现：XSQL时间对象填充的问题。
+  		
+  		建议：分析中心，将所有分析URL集成在一起形成目录纲要。
+  
+  
+  2. [李　浩](https://github.com/343136848)：
+  		
+  		建议：XSQL支持一对多关系的对象填充功能。
+  		
+  		建议：分页模板自动封装的查询。
+  		
+  		建议：@Xsql注解支持分页的功能。
+  		
+  		发现：XJSON解释\n符的异常。
+  		
+  		发现：SQL占位符的填充超长(如长度为8000)时，正则在匹配性能损耗十分严重。
+    
+  
+  3. [杨　东](https://github.com/yangpiena)：
+  
+  		大力推广XSQL、XSQL组，并在项目中取代Hibernate。
+  		
+  
+  4. [向以前](https://github.com/GH-XiangYiQian)：
+  
+  		发现：replace替换$等特殊字符的异常。
+  		
+  		发现：预处理 XSQLNode.$Type_CollectionToExecuteUpdate 异常时，输出的SQL日志不正确的问题。
+  		
+  		发现：预处理执行的同时 batchCommit >= 1时，可能出现未"执行executeBatch"情况。
+  		
+  		建议：XSQL组可以由外界决定是否提交、是否回滚的功能。
+  		
+  		建议：高精转换单位的功能。
+  		
+  		建议：提供一种好理解的数据结构 this.returnQuery，定义返回查询结果集是 "返回结果集"？还是 "查询并返回"。
+  		
+  
+  5. [马　龙](https://github.com/MaLong301)：
+  
+  		建议：类似于Mybatis IF条件。占位符X有条件的取值。占位符在满足条件时取值A，否则取值B。
+
+
+  6. [张　宇](https://github.com/ZYsoftkitty)：
+  
+  		建议：占位符条件组。用于实现Java编程语言中的 if .. else if ... else ... 的多条件复杂判定。
 
 
 

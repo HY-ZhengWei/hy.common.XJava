@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hy.common.app.Param;
-import org.hy.common.db.DBCondition;
+import org.hy.common.db.DBConditions;
 import org.hy.common.db.DBSQL;
 import org.hy.common.db.DataSourceGroup;
 import org.hy.common.xml.event.BLobListener;
@@ -5886,12 +5886,13 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 * @author      ZhengWei(HY)
 	 * @createDate  2018-08-10
 	 * @version     v1.0
+	 *              v2.0  2019-01-20  添加：升级来条件组，用于实现Java编程语言中的 if .. else if ... else ... 的多条件复杂判定
 	 *
-	 * @param i_DBCondition
+	 * @param i_ConditionGroup
 	 */
-	public void setCondition(DBCondition i_DBCondition)
+	public void setCondition(DBConditions i_ConditionGroup)
 	{
-	    this.content.addCondition(i_DBCondition);
+	    this.content.addCondition(i_ConditionGroup);
 	}
 	
 	
