@@ -48,6 +48,30 @@
 			
 		</sql>
 		
+		
+		
+		<sql id="XSQL_User_Condition_Update"> 
+		
+			<content>
+				<![CDATA[
+				UPDATE  User
+				   SET  id         = id
+				<[     ,A.userName = ':userName'  ]>
+				<[     ,price      = :price       ]>
+				 WHERE  id         = :id    
+				]]>
+			</content>
+			
+			<!-- 当用户名称为admin时，自动翻译为administrator用户名称登陆 -->
+			<condition>
+				<name>price</name>
+				<if>:price == 0</if>
+				<true>NULL</true>
+				<false>THIS</false>
+			</condition>
+			
+		</sql>
+		
 	</sqls>
 	
 </config>

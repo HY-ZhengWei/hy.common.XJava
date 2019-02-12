@@ -35,6 +35,8 @@ public class JU_XSQL_Condition
     
     private String orgName;
     
+    private Double price;
+    
     private Date   createTime;
     
     
@@ -119,8 +121,8 @@ public class JU_XSQL_Condition
         v_SQL = XJava.getXSQL("XSQL_User_Condition").getContent().getSQL(v_Params);
         System.out.println("密码为12345678时的运行SQL：" + v_SQL);
     }
-
-
+    
+    
     
     public String getUserName()
     {
@@ -167,6 +169,18 @@ public class JU_XSQL_Condition
     public void setCreateTime(Date createTime)
     {
         this.createTime = createTime;
+    }
+
+    
+    public Double getPrice()
+    {
+        return price;
+    }
+
+
+    public void setPrice(Double price)
+    {
+        this.price = price;
     }
     
 }
