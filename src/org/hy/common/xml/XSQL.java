@@ -468,6 +468,28 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     /**
+     * 获取：可自行定制的XSQL异常处理机制
+     */
+    public XSQLError getError()
+    {
+        return error;
+    }
+
+
+
+    /**
+     * 设置：可自行定制的XSQL异常处理机制
+     * 
+     * @param error 
+     */
+    public void setError(XSQLError error)
+    {
+        this.error = error;
+    }
+
+
+
+    /**
      * 检查数据库占位符SQL的对象是否为null。同时统计异常数据。
      * 
      * 此方法从各个数据库操作方法中提炼而来。
