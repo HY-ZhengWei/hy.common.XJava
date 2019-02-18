@@ -81,6 +81,8 @@ import org.hy.common.xml.event.BLobEvent;
  * 
  * 9. 支持XSQL触发器
  * 
+ * 10.外界有自行定制的XSQL异常处理的机制
+ * 
  * @author      ZhengWei(HY)
  * @createDate  2012-11-12
  * @version     v1.0  
@@ -125,6 +127,8 @@ import org.hy.common.xml.event.BLobEvent;
  *              v14.0 2018-08-10  添加：实现占位符X有条件的取值。占位符在满足条件时取值A，否则取值B。
  *                                     取值A、B，可以是占位符X、NULL值，另一个占位符Y或常量字符。
  *                                     类似于Mybatis IF条件功能。建议人：马龙
+ *              v15.0 2019-02-18  添加：对外界提供一种可自行定制的XSQL异常处理的机制。
+ *                                     有对所有XSQL异常统一处理的能力。
  */
 /*
  * 游标类型的说明
@@ -160,6 +164,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     /** SQL执行异常的日志。默认只保留1000条执行异常的SQL语句 */
     public  static final Busway<XSQLLog>   $SQLBuswayError = new Busway<XSQLLog>(1000);
+    
+    /** XSQL */
+    public  static final String            $XSQLErrors     = "XSQL-Errors";
     
     
     
@@ -296,6 +303,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     /** 注释。可用于日志的输出等帮助性的信息 */
     private String                         comment; 
+    
+    /** 可自行定制的XSQL异常处理机制 */
+    private XSQLError                      error;
 	
 	
 	
@@ -322,6 +332,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         this.successTimeLen     = 0D;
         this.executeTime        = null;
         this.comment            = null;
+        this.error              = (XSQLError)XJava.getObject($XSQLErrors);
 	}
 	
 	
@@ -439,10 +450,14 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         
         String v_XJavaID = "";
         
-        if ( i_XSQL != null && i_XSQL.getDataSourceGroup() != null )
+        if ( i_XSQL != null )
         {
-            i_XSQL.getDataSourceGroup().setException(true);
             v_XJavaID = Help.NVL(i_XSQL.getXJavaID());
+            
+            if ( i_XSQL.getDataSourceGroup() != null )
+            {
+                i_XSQL.getDataSourceGroup().setException(true);
+            }
         }
         
         System.err.println("-- Error time：  " + Date.getNowTime().getFull() 
@@ -718,11 +733,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+		    {
+		        error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+		    }
 		    throw exce;
 		}
 		finally
@@ -755,11 +778,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         finally
@@ -795,11 +826,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
 		finally
@@ -836,11 +875,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         finally
@@ -877,11 +924,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		finally
@@ -918,11 +973,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		finally
@@ -958,11 +1021,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		finally
@@ -999,11 +1070,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         finally
@@ -1040,11 +1119,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		finally
@@ -1081,11 +1168,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		finally
@@ -1235,11 +1330,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         finally
@@ -1281,11 +1384,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         finally
@@ -1327,11 +1438,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         finally
@@ -1554,11 +1673,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         finally
@@ -1600,11 +1727,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         finally
@@ -1645,11 +1780,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         finally
@@ -1691,11 +1834,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         finally
@@ -1733,11 +1884,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         finally
@@ -1775,11 +1934,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         finally
@@ -1937,11 +2104,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		finally
@@ -1977,11 +2152,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		finally
@@ -2017,11 +2200,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		finally
@@ -2056,11 +2247,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		finally
@@ -2096,11 +2295,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		finally
@@ -2136,11 +2343,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		finally
@@ -2376,11 +2591,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         finally
@@ -2419,11 +2642,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         finally
@@ -2458,11 +2689,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         finally
@@ -2728,11 +2967,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
 		    throw exce;
 		}
 		finally
@@ -2771,11 +3018,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		finally
@@ -2813,11 +3068,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		finally
@@ -2899,11 +3162,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         finally
@@ -2939,11 +3210,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         finally
@@ -2979,11 +3258,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         finally
@@ -3067,11 +3354,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this).setValuesList(i_ObjList));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this).setValuesList(i_ObjList));
+            }
             throw exce;
         }
         finally
@@ -3116,11 +3411,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this).setValuesList(i_ObjList));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this).setValuesList(i_ObjList));
+            }
             throw exce;
         }
         finally
@@ -3455,11 +3758,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this).setValuesList(i_ObjList));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this).setValuesList(i_ObjList));
+            }
             throw exce;
         }
         finally
@@ -3508,11 +3819,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this).setValuesList(i_ObjList));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this).setValuesList(i_ObjList));
+            }
             throw exce;
         }
         finally
@@ -4019,7 +4338,26 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     {
         checkContent();
         
-        return this.executeUpdateCLobSQL(this.content.getSQL() ,i_ClobTexts);
+        try
+        {
+            return this.executeUpdateCLobSQL(this.content.getSQL() ,i_ClobTexts);
+        }
+        catch (NullPointerException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
+            throw exce;
+        }
     }
     
     
@@ -4047,7 +4385,26 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     {
         checkContent();
         
-        return this.executeUpdateCLobSQL(this.content.getSQL(i_Values) ,i_ClobTexts);
+        try
+        {
+            return this.executeUpdateCLobSQL(this.content.getSQL(i_Values) ,i_ClobTexts);
+        }
+        catch (NullPointerException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
     }
     
     
@@ -4075,7 +4432,26 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     {
         checkContent();
         
-        return this.executeUpdateCLobSQL(this.content.getSQL(i_Obj) ,i_ClobTexts);
+        try
+        {
+            return this.executeUpdateCLobSQL(this.content.getSQL(i_Obj) ,i_ClobTexts);
+        }
+        catch (NullPointerException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
     }
     
     
@@ -4258,7 +4634,26 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	{
 	    checkContent();
 		
-		return this.executeUpdateBLob(this.content.getSQL() ,i_File);
+	    try
+	    {
+	        return this.executeUpdateBLob(this.content.getSQL() ,i_File);
+	    }
+	    catch (NullPointerException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
+            throw exce;
+        }
 	}
 	
 	
@@ -4281,7 +4676,26 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	{
 	    checkContent();
 		
-		return this.executeUpdateBLob(this.content.getSQL(i_Values) ,i_File);
+	    try
+	    {
+	        return this.executeUpdateBLob(this.content.getSQL(i_Values) ,i_File);
+	    }
+	    catch (NullPointerException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
 	}
 	
 	
@@ -4304,7 +4718,26 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	{
 	    checkContent();
 		
-		return this.executeUpdateBLob(this.content.getSQL(i_Obj) ,i_File);
+	    try
+	    {
+	        return this.executeUpdateBLob(this.content.getSQL(i_Obj) ,i_File);
+	    }
+	    catch (NullPointerException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
 	}
 	
 	
@@ -4514,7 +4947,26 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	{
 	    checkContent();
 		
-		return this.executeGetBLob(this.content.getSQL() ,io_SaveFile);
+	    try
+	    {
+	        return this.executeGetBLob(this.content.getSQL() ,io_SaveFile);
+	    }
+	    catch (NullPointerException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
+            throw exce;
+        }
 	}
 	
 	
@@ -4532,7 +4984,26 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	{
 	    checkContent();
 		
-		return this.executeGetBLob(this.content.getSQL(i_Values) ,io_SaveFile);
+	    try
+	    {
+	        return this.executeGetBLob(this.content.getSQL(i_Values) ,io_SaveFile);
+	    }
+	    catch (NullPointerException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
 	}
 	
 	
@@ -4550,7 +5021,26 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	{
 	    checkContent();
 		
-		return this.executeGetBLob(this.content.getSQL(i_Obj) ,io_SaveFile);
+	    try
+	    {
+	        return this.executeGetBLob(this.content.getSQL(i_Obj) ,io_SaveFile);
+	    }
+	    catch (NullPointerException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
 	}
 	
 	
@@ -4716,11 +5206,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
 		    throw exce;
 		}
 		finally
@@ -4758,11 +5256,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
 		    throw exce;
 		}
 		finally
@@ -4800,11 +5306,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		catch (NullPointerException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		catch (RuntimeException exce)
 		{
 		    v_IsError = true;
+		    if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
 		    throw exce;
 		}
 		finally
@@ -4901,11 +5415,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
             throw exce;
         }
         finally
@@ -4941,11 +5463,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
             throw exce;
         }
         finally
@@ -4981,11 +5511,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (NullPointerException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         catch (RuntimeException exce)
         {
             v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
             throw exce;
         }
         finally
@@ -5372,6 +5910,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         {
             v_IsError = true;
             erroring(v_Buffer.toString() ,exce ,this);
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(v_Buffer.toString() ,exce ,this).setValuesObject(i_ParamObj));
+            }
             throw new RuntimeException(exce.getMessage());
         }
         finally
@@ -5594,6 +6136,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         {
             v_IsError = true;
             erroring(v_Buffer.toString() ,exce ,this);
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(v_Buffer.toString() ,exce ,this).setValuesMap(i_ParamValues));
+            }
             throw new RuntimeException(exce.getMessage());
         }
         finally
