@@ -33,6 +33,7 @@ import org.hy.common.db.DataSourceGroup;
  * @author      ZhengWei(HY)
  * @createDate  2017-01-06
  * @version     v1.0
+ *              v2.0  2019-02-18  添加：可自行定制的XSQL异常处理机制
  */
 public class XSQLTrigger
 {
@@ -55,6 +56,9 @@ public class XSQLTrigger
      */
     private boolean errorMode;
     
+    /** 可自行定制的XSQL异常处理机制。当触发的XSQL未设置异常处理机制（XSQL.getError()==null）时，才生效 */
+    private XSQLError error;
+    
     
     
     public XSQLTrigger()
@@ -62,6 +66,7 @@ public class XSQLTrigger
         this.xsqls     = new ArrayList<XSQL>();
         this.syncMode  = false;
         this.errorMode = true;
+        this.error     = null;
     }
     
     
@@ -249,6 +254,10 @@ public class XSQLTrigger
      */
     public void setCreate(XSQL i_XSQL)
     {
+        if ( i_XSQL.getError() == null )
+        {
+            i_XSQL.setError(this.error);
+        }
         this.xsqls.add(i_XSQL);
     }
     
@@ -410,6 +419,28 @@ public class XSQLTrigger
     public void setErrorMode(boolean errorMode)
     {
         this.errorMode = errorMode;
+    }
+
+
+
+    /**
+     * 获取：可自行定制的XSQL异常处理机制。当触发的XSQL未设置异常处理机制（XSQL.getError()==null）时，才生效
+     */
+    public XSQLError getError()
+    {
+        return error;
+    }
+
+
+    
+    /**
+     * 设置：可自行定制的XSQL异常处理机制。当触发的XSQL未设置异常处理机制（XSQL.getError()==null）时，才生效
+     * 
+     * @param error 
+     */
+    public void setError(XSQLError error)
+    {
+        this.error = error;
     }
     
 }
