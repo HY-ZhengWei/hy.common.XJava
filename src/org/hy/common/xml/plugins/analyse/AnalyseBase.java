@@ -23,7 +23,9 @@ import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
 import org.hy.common.net.data.CommunicationResponse;
 import org.hy.common.thread.Job;
+import org.hy.common.thread.JobDisasterRecoveryReport;
 import org.hy.common.thread.JobReport;
+import org.hy.common.thread.Jobs;
 import org.hy.common.thread.ThreadReport;
 import org.hy.common.xml.XJSON;
 import org.hy.common.xml.XJSONObject;
@@ -81,6 +83,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLGroupTree;
  *              v14.0 2018-09-27  添加：查看XSQL及XSQL组实现标题排序功能。
  *              v15.0 2018-12-20  添加：可以集群服务列表中，查看操作系统的当前时间
  *                                优化：尝试计算Linux的真实内存使用率
+ *              v16.0 2019-02-26  添加：定时灾备多活集群情况
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -2300,6 +2303,18 @@ public class AnalyseBase extends Analyse
         */
         
         String v_GotoTitle = StringHelp.lpad("" ,4 ,"&nbsp;") + Date.getNowTime().getFull();
+        Jobs   v_Jobs      = (Jobs)XJava.getObject(Jobs.class);
+        if ( v_Jobs != null )
+        {
+            if ( v_Jobs.isDisasterRecovery() )
+            {
+                v_GotoTitle += StringHelp.lpad("" ,4 ,"&nbsp;") + "<font color='green'>灾备中的" + (v_Jobs.isMaster() ? "Master" : "Slave") + "</font>";
+            }
+            else
+            {
+                v_GotoTitle += StringHelp.lpad("" ,4 ,"&nbsp;") + "<font color='green'>灾备机制未开启</font>";
+            }
+        }
         
         v_Total.getReports().clear();
         v_Total.setReports(null);
@@ -2323,6 +2338,91 @@ public class AnalyseBase extends Analyse
     public AnalyseJobTotal analyseJob_Total()
     {
         return new AnalyseJobTotal();
+    }
+    
+    
+    
+    /**
+     * 查看定时任务的灾备多活集群服务列表
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-02-26
+     * @version     v1.0
+     *
+     * @param  i_BasePath       服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ReLoadPath     重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject
+     * @return
+     */
+    public String analyseJobDisasterRecoverys(String i_BasePath ,String i_ReLoadPath)
+    {
+        StringBuilder v_Buffer  = new StringBuilder();
+        int           v_Index   = 0;
+        String        v_Content = this.getTemplateShowJobDisasterRecoverysContent();
+        Jobs          v_Jobs    = (Jobs)XJava.getObject(Jobs.class);
+        
+        if ( v_Jobs != null )
+        {
+            if ( Help.isNull(v_Jobs.getDisasterRecoverys()) )
+            {
+                v_Buffer.append(StringHelp.replaceAll(v_Content 
+                                                    ,new String[]{":No" 
+                                                                 ,":JobServer" 
+                                                                 ,":StartTime"
+                                                                 ,":Master" 
+                                                                 ,":Slave"} 
+                                                    ,new String[]{String.valueOf(++v_Index)
+                                                                 ,"正常"
+                                                                + StringHelp.lpad("" ,4 ,"&nbsp;") 
+                                                                + "127.0.0.1"
+                                                                 ,Help.isNull(v_Jobs.getStartTime()) ? "未启动" : v_Jobs.getStartTime().getFull()
+                                                                 ,"Master"
+                                                                 ,"-"
+                                                                 })
+                                );
+            }
+            else
+            {
+                List<JobDisasterRecoveryReport> v_Reports = v_Jobs.disasterRecoveryChecks();
+                for (JobDisasterRecoveryReport v_Report : v_Reports)
+                {
+                    v_Buffer.append(StringHelp.replaceAll(v_Content 
+                                                         ,new String[]{":No" 
+                                                                      ,":JobServer" 
+                                                                      ,":StartTime"
+                                                                      ,":Master" 
+                                                                      ,":Slave"} 
+                                                         ,new String[]{String.valueOf(++v_Index)
+                                                                      ,(v_Report.isOK() ? "<font color='green'>正常</font>" : "<font color='red'>异常</font>") 
+                                                                     + StringHelp.lpad("" ,4 ,"&nbsp;") 
+                                                                     + v_Report.getHostName() + ":" + v_Report.getPort()
+                                                                      ,Help.isNull(v_Report.getStartTime()) ? "未启动" : v_Report.getStartTime().getFull()
+                                                                      ,v_Report.isMaster() ? "<font color='green'><b>Master</b></font>" : "-"
+                                                                      ,v_Report.isMaster() ? "-"                                        : "Slave"
+                                                                      })
+                                   );
+                }
+            }
+        }
+        else
+        {
+            v_Buffer.append(StringHelp.replaceAll(v_Content 
+                                                ,new String[]{":No" 
+                                                             ,":JobServer" 
+                                                             ,":StartTime"
+                                                             ,":Master" 
+                                                             ,":Slave"} 
+                                                ,new String[]{String.valueOf(++v_Index)
+                                                             ,"-"
+                                                             ,"-"
+                                                             ,"-"
+                                                             ,"-"
+                                                             })
+                        );
+        }
+        
+        return StringHelp.replaceAll(this.getTemplateShowJobDisasterRecoverys()
+                                    ,new String[]{":Title"                       ,":HttpBasePath" ,":Content"}
+                                    ,new String[]{"定时任务的灾备多活集群服务列表" ,i_BasePath      ,v_Buffer.toString()});
     }
     
     
@@ -2602,6 +2702,20 @@ public class AnalyseBase extends Analyse
     private String getTemplateShowJobContent()
     {
         return this.getTemplateContent("template.showJobContent.html");
+    }
+    
+    
+    
+    private String getTemplateShowJobDisasterRecoverys()
+    {
+        return this.getTemplateContent("template.showJobDisasterRecoverys.html");
+    }
+    
+    
+    
+    private String getTemplateShowJobDisasterRecoverysContent()
+    {
+        return this.getTemplateContent("template.showJobDisasterRecoverysContent.html");
     }
     
     

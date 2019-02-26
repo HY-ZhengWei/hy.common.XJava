@@ -51,15 +51,16 @@ import org.hy.common.xml.XJava;
  * 
  * 功能12：本机线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y
  * 功能13：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y&cluster=Y
+ *
+ * 功能14：定时灾备多活集群情况          http://IP:Port/WebService/../analyseObject?JobDisasterRecoverys=Y
+ * 功能15：本机定时任务运行情况          http://IP:Port/WebService/../analyseObject?Job=Y
  * 
- * 功能14：本机定时任务运行情况          http://IP:Port/WebService/../analyseObject?Job=Y
+ * 功能16：本机线程池运行情况             http://IP:Port/WebService/../analyseObject?DSG=Y
+ * 功能17：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?DSG=Y&cluster=Y
  * 
- * 功能15：本机线程池运行情况             http://IP:Port/WebService/../analyseObject?DSG=Y
- * 功能16：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?DSG=Y&cluster=Y
+ * 功能18：Web文件资源管理器             http://IP:Port/WebService/../analyseObject?FS=Y
  * 
- * 功能17：Web文件资源管理器             http://IP:Port/WebService/../analyseObject?FS=Y
- * 
- * 功能18：查看XSQL组流程图               http://IP:Port/WebService/../analyseObject?XSGFlow=Y&xid=xxx
+ * 功能19：查看XSQL组流程图               http://IP:Port/WebService/../analyseObject?XSGFlow=Y&xid=xxx
  *
  * @author      ZhengWei(HY)
  * @createDate  2015-12-16
@@ -75,6 +76,7 @@ import org.hy.common.xml.XJava;
  *              v6.0  2018-03-11  添加：Web文件资源管理器（支持集群）
  *              v7.0  2018-07-26  添加：查看创建数据库对象列表
  *              v8.0  2018-09-10  添加：查看XSQL组流程图
+ *              v9.0  2019-02-26  添加：定时灾备多活集群情况
  *              
  */
 public class AnalyseObjectServlet extends HttpServlet
@@ -153,6 +155,7 @@ public class AnalyseObjectServlet extends HttpServlet
         String v_CreateList = i_Request.getParameter("XSQLCreateList");
         String v_ThreadPool = i_Request.getParameter("ThreadPool");
         String v_Job        = i_Request.getParameter("Job");
+        String v_JobDRs     = i_Request.getParameter("JobDisasterRecoverys");
         String v_DSG        = i_Request.getParameter("DSG");
         String v_FS         = i_Request.getParameter("FS");
         String v_XSGFlow    = i_Request.getParameter("XSGFlow");
@@ -244,6 +247,10 @@ public class AnalyseObjectServlet extends HttpServlet
             else if ( !Help.isNull(v_Job) )
             {
                 i_Response.getWriter().println(this.analyse.analyseJob(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
+            }
+            else if ( !Help.isNull(v_JobDRs) )
+            {
+                i_Response.getWriter().println(this.analyse.analyseJobDisasterRecoverys(v_BasePath ,i_Request.getRequestURL().toString()));
             }
             else if ( !Help.isNull(v_ThreadPool) )
             {
