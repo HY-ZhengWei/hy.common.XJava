@@ -104,7 +104,7 @@
 	        
 	        <item>
 	            <name>监控定时任务灾备多活集群服务</name>
-				<comment>须开启灾备机制及集群网络通讯服务</comment>
+				<comment>需开启灾备机制及集群网络通讯服务</comment>
 				<value><![CDATA[ /analyseObject?JobDisasterRecoverys=Y ]]></value>
 	        </item>
 	        
