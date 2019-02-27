@@ -2371,11 +2371,11 @@ public class AnalyseBase extends Analyse
                                                                  ,":Master" 
                                                                  ,":Slave"} 
                                                     ,new String[]{String.valueOf(++v_Index)
-                                                                 ,"正常"
+                                                                 ,"<font color='green'>正常</font>"
                                                                 + StringHelp.lpad("" ,4 ,"&nbsp;") 
                                                                 + "127.0.0.1"
                                                                  ,Help.isNull(v_Jobs.getStartTime()) ? "未启动" : v_Jobs.getStartTime().getFull()
-                                                                 ,"Master"
+                                                                 ,"<font color='green'><b>Master</b></font>"
                                                                  ,"-"
                                                                  })
                                 );
