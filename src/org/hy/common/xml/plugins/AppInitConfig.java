@@ -33,6 +33,7 @@ import org.hy.common.file.FileHelp;
  *                                     防止Tomcat 7.0.82+ 版本以上出现如下异常的问题
  *                                     Invalid character found in the request target. The valid characters are defined in RFC 7230 and RFC 3986
  *              v4.0  2018-06-20  添加：按文件名称排序后的顺序加载XML配置文件。
+ *              v4.1  2019-02-27  修复：加载目录中所有配置文件时，某一配置文件加载异常，继续加载后面的配置文件。
  */
 public class AppInitConfig
 {
@@ -241,23 +242,31 @@ public class AppInitConfig
                         }
                         else
                         {
-                            if ( !Help.isNull(i_XmlRootPath) )
+                            try
                             {
-                                // ZhengWei(HY) Edit 2017-10-27 i_XmlRootPath处原先的传值为：""
-                                XJava.parserXml(v_FileHelp.getContent(v_FFullName                                      ,this.enCode) ,i_XmlRootPath          ,v_XmlName);
+                                if ( !Help.isNull(i_XmlRootPath) )
+                                {
+                                    // ZhengWei(HY) Edit 2017-10-27 i_XmlRootPath处原先的传值为：""
+                                    XJava.parserXml(v_FileHelp.getContent(v_FFullName                                      ,this.enCode) ,i_XmlRootPath          ,v_XmlName);
+                                }
+                                else
+                                {
+                                    XJava.parserXml(v_FileHelp.getContent(this.getClass().getResourceAsStream(v_FFullName) ,this.enCode) ,this.xjavaXmlClassPath ,v_XmlName);
+                                }
+                                
+                                v_OK++;
+                                v_XFileNames.put(v_XmlName ,this);
+                                v_XFileTimes.put(v_XmlName ,new Date());
+                                
+                                if ( this.isLog )
+                                {
+                                    log(v_Param ,LogType.$Loading);
+                                }
                             }
-                            else
+                            catch (Exception exce)
                             {
-                                XJava.parserXml(v_FileHelp.getContent(this.getClass().getResourceAsStream(v_FFullName) ,this.enCode) ,this.xjavaXmlClassPath ,v_XmlName);
-                            }
-                            
-                            v_OK++;
-                            v_XFileNames.put(v_XmlName ,this);
-                            v_XFileTimes.put(v_XmlName ,new Date());
-                            
-                            if ( this.isLog )
-                            {
-                                log(v_Param ,LogType.$Loading);
+                                // 异常时，继续加载后面的配置文件  2019-02-27 Add
+                                log(v_Param ,LogType.$Error);
                             }
                         }
                     }
@@ -267,22 +276,31 @@ public class AppInitConfig
                     for (int i=0; i<i_Params.size(); i++)
                     {
                         v_Param = i_Params.get(i);
-                        if ( !Help.isNull(i_XmlRootPath) )
-                        {
-                            // ZhengWei(HY) Edit 2017-10-27 i_XmlRootPath处原先的传值为：""
-                            XJava.parserXml(v_FileHelp.getXD(i_XmlRootPath + i_XDName ,v_Param.getValue() ,this.enCode)                                                    ,i_XmlRootPath          ,v_Param.getValue());
-                        }
-                        else
-                        {
-                            XJava.parserXml(v_FileHelp.getXD(this.getClass().getResourceAsStream(Help.NVL(this.xmlClassPath) + i_XDName) ,v_Param.getValue() ,this.enCode) ,this.xjavaXmlClassPath ,v_Param.getValue());
-                        }
-                        v_OK++;
-                        v_XFileNames.put(v_Param.getValue() ,this);
-                        v_XFileTimes.put(v_Param.getValue() ,new Date());
                         
-                        if ( this.isLog )
+                        try
                         {
-                            log(v_Param ,LogType.$Loading);
+                            if ( !Help.isNull(i_XmlRootPath) )
+                            {
+                                // ZhengWei(HY) Edit 2017-10-27 i_XmlRootPath处原先的传值为：""
+                                XJava.parserXml(v_FileHelp.getXD(i_XmlRootPath + i_XDName ,v_Param.getValue() ,this.enCode)                                                    ,i_XmlRootPath          ,v_Param.getValue());
+                            }
+                            else
+                            {
+                                XJava.parserXml(v_FileHelp.getXD(this.getClass().getResourceAsStream(Help.NVL(this.xmlClassPath) + i_XDName) ,v_Param.getValue() ,this.enCode) ,this.xjavaXmlClassPath ,v_Param.getValue());
+                            }
+                            v_OK++;
+                            v_XFileNames.put(v_Param.getValue() ,this);
+                            v_XFileTimes.put(v_Param.getValue() ,new Date());
+                            
+                            if ( this.isLog )
+                            {
+                                log(v_Param ,LogType.$Loading);
+                            }
+                        }
+                        catch (Exception exce)
+                        {
+                            // 异常时，继续加载后面的配置文件  2019-02-27 Add
+                            log(v_Param ,LogType.$Error);
                         }
                     }
                 }
