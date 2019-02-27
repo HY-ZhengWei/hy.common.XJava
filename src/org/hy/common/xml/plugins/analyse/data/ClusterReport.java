@@ -29,6 +29,7 @@ import com.sun.management.OperatingSystemMXBean;
  *                                添加2：尝试计算Linux的真实内存使用率
  *              v3.0  2018-12-21  添加1：计算Linux磁盘使用率
  *                                添加2：计算Window磁盘使用率
+ *              v3.1  2019-02-27  修正1：对于SUSE 15系统上实际内存使用大小的修正。
  */
 public class ClusterReport extends SerializableDef
 {
@@ -198,19 +199,23 @@ public class ClusterReport extends SerializableDef
                 return -1;
             }
             
-            v_LineInfo = StringHelp.trimToDistinct(v_LineInfo ," ");
-            String [] v_Memorys = v_LineInfo.split(" ");
-            if ( v_Memorys.length < 7 )
+            v_LineInfo = StringHelp.trimToDistinct(StringHelp.replaceAll(v_LineInfo ,":" ," ") ," ");
+            String []    v_Memorys    = v_LineInfo.split(" ");
+            List<String> v_MemoryList = new ArrayList<String>();
+            for (String v_Memory : v_Memorys)
+            {
+                if ( !Help.isNull(v_Memory) && Help.isNumber(v_Memory) )
+                {
+                    v_MemoryList.add(v_Memory);
+                }
+            }
+            if ( v_MemoryList.size() < 6 )
             {
                 return -1;
             }
             
-            if ( !Help.isNumber(v_Memorys[2]) || !Help.isNumber(v_Memorys[5]) || !Help.isNumber(v_Memorys[6]) )
-            {
-                return -1;
-            }
-            
-            return Help.multiply(Help.subtract(v_Memorys[2] ,v_Memorys[5] ,v_Memorys[6]) ,1024);
+            // 实际使用内存 = 0 - 3 - 4 = Total - Shared - Buff/Cache
+            return Help.multiply(Help.subtract(v_MemoryList.get(0) ,v_MemoryList.get(3) ,v_MemoryList.get(4)) ,1024);
         }
         catch (Exception exce)
         {
