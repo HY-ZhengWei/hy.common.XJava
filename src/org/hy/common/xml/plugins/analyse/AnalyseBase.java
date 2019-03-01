@@ -2368,13 +2368,15 @@ public class AnalyseBase extends Analyse
                                                     ,new String[]{":No" 
                                                                  ,":JobServer" 
                                                                  ,":StartTime"
+                                                                 ,":GetMasterTime"
                                                                  ,":Master" 
                                                                  ,":Slave"} 
                                                     ,new String[]{String.valueOf(++v_Index)
                                                                  ,"<font color='green'>正常</font>"
                                                                 + StringHelp.lpad("" ,4 ,"&nbsp;") 
                                                                 + "127.0.0.1"
-                                                                 ,Help.isNull(v_Jobs.getStartTime()) ? "未启动" : v_Jobs.getStartTime().getFull()
+                                                                 ,Help.isNull(v_Jobs.getStartTime())  ? "未启动" : v_Jobs.getStartTime().getFull()
+                                                                 ,Help.isNull(v_Jobs.getMasterTime()) ? "-"      : v_Jobs.getStartTime().getFull()
                                                                  ,"<font color='green'><b>Master</b></font>"
                                                                  ,"-"
                                                                  })
@@ -2389,13 +2391,15 @@ public class AnalyseBase extends Analyse
                                                          ,new String[]{":No" 
                                                                       ,":JobServer" 
                                                                       ,":StartTime"
+                                                                      ,":GetMasterTime"
                                                                       ,":Master" 
                                                                       ,":Slave"} 
                                                          ,new String[]{String.valueOf(++v_Index)
                                                                       ,(v_Report.isOK() ? "<font color='green'>正常</font>" : "<font color='red'>异常</font>") 
                                                                      + StringHelp.lpad("" ,4 ,"&nbsp;") 
                                                                      + v_Report.getHostName() + ":" + v_Report.getPort()
-                                                                      ,Help.isNull(v_Report.getStartTime()) ? "未启动" : v_Report.getStartTime().getFull()
+                                                                      ,Help.isNull(v_Report.getStartTime())  ? "未启动" : v_Report.getStartTime().getFull()
+                                                                      ,Help.isNull(v_Report.getMasterTime()) ? "-"      : v_Report.getStartTime().getFull()
                                                                       ,v_Report.isMaster() ? "<font color='green'><b>Master</b></font>" : "-"
                                                                       ,v_Report.isMaster() ? "-"                                        : "Slave"
                                                                       })
@@ -2409,9 +2413,11 @@ public class AnalyseBase extends Analyse
                                                 ,new String[]{":No" 
                                                              ,":JobServer" 
                                                              ,":StartTime"
+                                                             ,":GetMasterTime"
                                                              ,":Master" 
                                                              ,":Slave"} 
                                                 ,new String[]{String.valueOf(++v_Index)
+                                                             ,"-"
                                                              ,"-"
                                                              ,"-"
                                                              ,"-"
