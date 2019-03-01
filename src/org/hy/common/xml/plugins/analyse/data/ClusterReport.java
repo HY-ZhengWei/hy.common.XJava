@@ -129,12 +129,12 @@ public class ClusterReport extends SerializableDef
         }
         else
         {
-            this.linuxMemoryRate  = -1;
+            this.linuxMemoryRate = -1;
         }
         
         if ( this.linuxMemoryRate >= 0 )
         {
-            this.linuxMemoryRate  = Help.round(Help.multiply(Help.division(this.linuxMemoryRate ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
+            this.linuxMemoryRate = Help.round(Help.multiply(Help.division(this.linuxMemoryRate ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
         }
     }
     
@@ -214,8 +214,16 @@ public class ClusterReport extends SerializableDef
                 return -1;
             }
             
-            // 实际使用内存 = 0 - 3 - 4 = Total - Shared - Buff/Cache
-            return Help.multiply(Help.subtract(v_MemoryList.get(0) ,v_MemoryList.get(3) ,v_MemoryList.get(4)) ,1024);
+            if ( v_CRet.get(0).toLowerCase().indexOf("buff/cache") >= 0 )
+            {
+                // 实际使用内存 = 1 = Used 。测试系统 Open SUSE 15
+                return Help.multiply(v_MemoryList.get(1) ,1024);
+            }
+            else
+            {
+                // 实际使用内存 = 1 - 3 - 4 - 5 = Used - Shared - Buffers - Cached 。测试系统 SUSE 12
+                return Help.multiply(Help.subtract(v_MemoryList.get(1) ,v_MemoryList.get(3) ,v_MemoryList.get(4) ,v_MemoryList.get(5)) ,1024);
+            }
         }
         catch (Exception exce)
         {
