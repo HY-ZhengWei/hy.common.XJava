@@ -267,6 +267,7 @@ public class AppInitConfig
                             {
                                 // 异常时，继续加载后面的配置文件  2019-02-27 Add
                                 log(v_Param ,LogType.$Error);
+                                exce.printStackTrace();
                             }
                         }
                     }
@@ -301,6 +302,7 @@ public class AppInitConfig
                         {
                             // 异常时，继续加载后面的配置文件  2019-02-27 Add
                             log(v_Param ,LogType.$Error);
+                            exce.printStackTrace();
                         }
                     }
                 }
