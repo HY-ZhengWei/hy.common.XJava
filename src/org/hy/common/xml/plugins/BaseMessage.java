@@ -74,7 +74,14 @@ public abstract class BaseMessage
             {
                 System.out.println("请求报文: " + v_XHttp.getRequestInfo(v_Msg));
                 // System.out.println("响应报文: " + v_XHttp.getResponseInfo());
-                System.out.println("响应报文: " + StringHelp.unescape_toUnicode(v_Response.get() ? v_Response.paramStr : v_Response.exception.getMessage()));
+                if ( v_Response.get() )
+                {
+                    System.out.println("响应报文: " + StringHelp.unescape_toUnicode(v_Response.paramStr));
+                }
+                else
+                {
+                    System.out.println("响应报文: " + StringHelp.unescape_toUnicode(v_Response.exception.getMessage()));
+                }
             }
             
             AppMessage<?> v_AppMsg = AppInterfaces.getAppMessage(StringHelp.unescape_toUnicode(v_Response.paramStr));
