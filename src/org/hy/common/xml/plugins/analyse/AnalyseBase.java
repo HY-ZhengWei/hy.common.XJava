@@ -2541,6 +2541,7 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":No"              ,String.valueOf(++v_Index));
             v_RKey.put(":DSGID"           ,v_Report.getDsgID());
             v_RKey.put(":DBProductType"   ,v_Report.getDbProductType());
+            v_RKey.put(":DBURLs"          ,StringHelp.toString(v_Report.getDbURLs() ,"" ,"<br>"));
             v_RKey.put(":DataSourcesSize" ,v_Report.getDataSourcesSize() + "");
             v_RKey.put(":ConnActiveCount" ,v_Report.getConnActiveCount() + "");
             v_RKey.put(":ConnMaxUseCount" ,v_Report.getConnMaxUseCount() + "");

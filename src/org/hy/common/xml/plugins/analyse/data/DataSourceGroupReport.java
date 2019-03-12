@@ -16,6 +16,7 @@ import org.hy.common.xml.SerializableDef;
  * @author      ZhengWei(HY)
  * @createDate  2018-03-05
  * @version     v1.0
+ *              v2.0  2019-03-12  添加：获取数据库连接信息。
  */
 public class DataSourceGroupReport extends SerializableDef
 {
@@ -27,6 +28,9 @@ public class DataSourceGroupReport extends SerializableDef
     
     /** 数据库产品类型 */
     private String       dbProductType;
+    
+    /** 数据库连接信息 */
+    private List<String> dbURLs;
     
     /** 主备连接池数量 */
     private int          dataSourcesSize;
@@ -52,6 +56,7 @@ public class DataSourceGroupReport extends SerializableDef
     {
         this.dsgID           = "";
         this.dbProductType   = "";
+        this.dbURLs          = new ArrayList<String>();
         this.dataSourcesSize = 0;
         this.connActiveCount = 0;
         this.connMaxUseCount = 0;
@@ -66,6 +71,7 @@ public class DataSourceGroupReport extends SerializableDef
     {
         this.dsgID           = i_DSGID;
         this.dbProductType   = i_DSG.getDbProductType();
+        this.dbURLs          = i_DSG.getUrls();
         this.dataSourcesSize = i_DSG.size();
         this.connActiveCount = i_DSG.getConnActiveCount();
         this.connMaxUseCount = i_DSG.getConnMaxUseCount();
@@ -249,6 +255,28 @@ public class DataSourceGroupReport extends SerializableDef
     public void setDatabases(List<String> databases)
     {
         this.databases = databases;
+    }
+
+
+    
+    /**
+     * 获取：数据库连接信息
+     */
+    public List<String> getDbURLs()
+    {
+        return dbURLs;
+    }
+
+
+    
+    /**
+     * 设置：数据库连接信息
+     * 
+     * @param dbURLs 
+     */
+    public void setDbURLs(List<String> dbURLs)
+    {
+        this.dbURLs = dbURLs;
     }
     
 }
