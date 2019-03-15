@@ -3525,6 +3525,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                         {
                             v_Ret += v_SQLCount;
                         }
+                        else
+                        {
+                            v_Ret++;
+                        }
                         $SQLBusway.put(new XSQLLog(v_SQL));
                     }
                 }
@@ -3547,6 +3551,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                         if ( v_SQLCount >= 1 )
                         {
                             v_Ret += v_SQLCount;
+                        }
+                        else
+                        {
+                            v_Ret++;
                         }
                         $SQLBusway.put(new XSQLLog(v_SQL));
                         v_EC++;
@@ -3969,17 +3977,21 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 
                 int [] v_CountArr = v_PStatement.executeBatch();
                 
+                if ( i_Conn == null )
+                {
+                    v_Conn.commit();  // 它与i_Conn.commit();同作用
+                }
+                
                 for (int v_Count : v_CountArr)
                 {
                     if ( v_Count >= 1 )
                     {
                         v_Ret += v_Count;
                     }
-                }
-                
-                if ( i_Conn == null )
-                {
-                    v_Conn.commit();  // 它与i_Conn.commit();同作用
+                    else
+                    {
+                        v_Ret++;
+                    }
                 }
             }
             else
@@ -4018,15 +4030,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                         if ( v_EC % this.batchCommit == 0 )
                         {
                             int [] v_CountArr = v_PStatement.executeBatch();
+                            v_Conn.commit();
+                            
                             for (int v_Count : v_CountArr)
                             {
                                 if ( v_Count >= 1 )
                                 {
                                     v_Ret += v_Count;
                                 }
+                                else
+                                {
+                                    v_Ret++;
+                                }
                             }
-                            
-                            v_Conn.commit();
                             
                             v_PStatement.clearBatch();
                             v_IsCommit = true;
@@ -4041,15 +4057,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 if ( !v_IsCommit )
                 {
                     int [] v_CountArr = v_PStatement.executeBatch();
+                    v_Conn.commit();
+                    
                     for (int v_Count : v_CountArr)
                     {
                         if ( v_Count >= 1 )
                         {
                             v_Ret += v_Count;
                         }
+                        else
+                        {
+                            v_Ret++;
+                        }
                     }
-                    
-                    v_Conn.commit();
                 }
             }
             
