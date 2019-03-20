@@ -2,6 +2,7 @@ package org.hy.common.xml;
 
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,6 +37,8 @@ import org.hy.common.StringHelp;
  *              v5.1  2017-07-17  修正：在SQL结构改变时(只发生在超级SQL上)，须重新解释字段信息时，未能重新设置 dbMetaData 的问题。
  *              v6.0  2018-01-17  添加：getBigDatas()系列关于大数据操作的方法
  *              v7.0  2018-06-01  添加：XSQLResultFillEvent.start()在整体开始填充之前触发，并且只触发一次。
+ *              v8.0  2019-03-19  优化：删除整体统计信息（如总行数、列数、用时）三个成员属性，
+ *                                      改成通过方法返回值返回。优化后，整个getDatas()方法不用加同步锁，性能大幅提升。
  */
 public final class XSQLResult 
 {
@@ -188,16 +191,6 @@ public final class XSQLResult
 	private boolean             isAgainParse;
 	
 	
-	/** 将数据库结果集转化为Java实例对象的用时时长(单位：毫秒) */
-	private long                getDatasTimes;
-	
-	/** 将数据库结果集转化为Java实例对象的行数(已读取的行数) */
-	private long                getDatasRowSize;
-	
-	/** 将数据库结果集转化为Java实例对象的列数(有效列数) */
-	private int                 getDatasColSize;
-	
-	
 	
 	public XSQLResult()
 	{
@@ -214,20 +207,6 @@ public final class XSQLResult
 		this.dbMetaData                    = new DBTableMetaData(this.cstyle);
 		this.relationKeys                  = null;
 		this.isAgainParse                  = true;
-		
-		this.initTotalInfo();
-	}
-	
-	
-	
-	/**
-	 * 初始化统计信息
-	 */
-	public void initTotalInfo()
-	{
-		this.getDatasTimes   = -1;
-		this.getDatasRowSize = 0;
-		this.getDatasColSize = 0;
 	}
 	
 	
@@ -238,7 +217,7 @@ public final class XSQLResult
 	 * @param i_ResultSet
 	 * @return
 	 */
-	public synchronized Object getDatas(ResultSet i_ResultSet)
+	public XSQLData getDatas(ResultSet i_ResultSet)
 	{
 		return this.getDatas(i_ResultSet ,0 ,null ,null  ,0 ,0);
 	}
@@ -253,7 +232,7 @@ public final class XSQLResult
      * @param i_PagePerSize      每页显示多少条数据
      * @return
      */
-    public synchronized Object getDatas(ResultSet i_ResultSet ,int i_StartRow ,int i_PagePerSize)
+    public XSQLData getDatas(ResultSet i_ResultSet ,int i_StartRow ,int i_PagePerSize)
     {
         return this.getDatas(i_ResultSet ,0 ,null ,null ,i_StartRow ,i_PagePerSize);
     }
@@ -267,7 +246,7 @@ public final class XSQLResult
 	 * @param i_FilterColNames   过滤输出字段。只对结果集输出字段在这个集合 i_FilterColNames 中的字段才进行填充动作，即输出列可选择。
 	 * @return
 	 */
-	public synchronized Object getDatas(ResultSet i_ResultSet ,List<String> i_FilterColNames)
+	public XSQLData getDatas(ResultSet i_ResultSet ,List<String> i_FilterColNames)
 	{
 		return this.getDatas(i_ResultSet ,1 ,i_FilterColNames ,null  ,0 ,0);
 	}
@@ -283,7 +262,7 @@ public final class XSQLResult
 	 * @param i_FilterColNoArr   过滤输出字段的位置。字段位置下标从零开始。只对结果集输出字段在这个数组 i_FilterColNoArr 中的字段才进行填充动作，即输出列可选择。
 	 * @return
 	 */
-	public synchronized Object getDatas(ResultSet i_ResultSet ,int [] i_FilterColNoArr)
+	public XSQLData getDatas(ResultSet i_ResultSet ,int [] i_FilterColNoArr)
 	{
 		return this.getDatas(i_ResultSet ,2 ,null ,i_FilterColNoArr ,0 ,0);
 	}
@@ -301,7 +280,7 @@ public final class XSQLResult
 	 * @param i_XSQLBigData
 	 * @return
 	 */
-    public synchronized Object getBigDatas(ResultSet i_ResultSet ,XSQLBigData i_XSQLBigData)
+    public XSQLData getBigDatas(ResultSet i_ResultSet ,XSQLBigData i_XSQLBigData)
     {
         return this.getBigDatas(i_ResultSet ,0 ,null ,null  ,0 ,0 ,i_XSQLBigData);
     }
@@ -313,7 +292,7 @@ public final class XSQLResult
 	 * 
 	 * @param i_Bigger           超级大结果集的存储器处理类
 	 */
-	public synchronized void getDatas(XSQLBigger i_Bigger)
+	public void getDatas(XSQLBigger i_Bigger)
 	{
 		this.getDatas(i_Bigger ,0 ,null ,null);
 	}
@@ -326,7 +305,7 @@ public final class XSQLResult
 	 * @param i_Bigger           超级大结果集的存储器处理类
 	 * @param i_FilterColNames   过滤输出字段。只对结果集输出字段在这个集合 i_FilterColNames 中的字段才进行填充动作，即输出列可选择。
 	 */
-	public synchronized void getDatas(XSQLBigger i_Bigger ,List<String> i_FilterColNames)
+	public void getDatas(XSQLBigger i_Bigger ,List<String> i_FilterColNames)
 	{
 		this.getDatas(i_Bigger ,1 ,i_FilterColNames ,null);
 	}
@@ -341,9 +320,53 @@ public final class XSQLResult
 	 * @param i_Bigger           超级大结果集的存储器处理类
 	 * @param i_FilterColNoArr   过滤输出字段的位置。字段位置下标从零开始。只对结果集输出字段在这个数组 i_FilterColNoArr 中的字段才进行填充动作，即输出列可选择。
 	 */
-	public synchronized void getDatas(XSQLBigger i_Bigger ,int [] i_FilterColNoArr)
+	public void getDatas(XSQLBigger i_Bigger ,int [] i_FilterColNoArr)
 	{
 		this.getDatas(i_Bigger ,2 ,null ,i_FilterColNoArr);
+	}
+	
+	
+	
+	/**
+	 * 将数据库结果集转化为Java实例对象前，先解释元数据。
+	 * 
+	 * @author      ZhengWei(HY)
+	 * @createDate  2019-03-19
+	 * @version     v1.0
+	 *
+	 * @param i_ResultSet
+	 * @throws SQLException
+	 */
+	private synchronized void getDatasParse(ResultSet i_ResultSet) throws SQLException
+	{
+	    if ( this.dbMetaData.getColumnSize() == 0 )
+        {
+            // 解释数据集元数据
+            this.dbMetaData.set(i_ResultSet.getMetaData());
+            
+            if ( this.cfillMethodType == $CFILL_METHOD_VARY )
+            {
+                this.isAgainParse = true;
+            }
+        }
+        else
+        {
+            DBTableMetaData v_NewMetaData = new DBTableMetaData(this.cstyle);
+            v_NewMetaData.set(i_ResultSet.getMetaData());
+            
+            // 老的元数据与新的元数据不同时，必须重新"全量解释"
+            if ( !this.dbMetaData.equals(v_NewMetaData) )
+            {
+                this.dbMetaData = v_NewMetaData;
+                this.isAgainParse = true;
+            }
+        }
+        
+        
+        if ( this.isAgainParse )
+        {
+            this.parse();
+        }
 	}
 	
 	
@@ -363,12 +386,12 @@ public final class XSQLResult
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private Object getDatas(ResultSet    i_ResultSet 
-	                       ,int          i_FilterType 
-	                       ,List<String> i_FilterColNames 
-	                       ,int []       i_FilterColNoArr
-	                       ,int          i_StartRow
-	                       ,int          i_PagePerSize)
+	private XSQLData getDatas(ResultSet    i_ResultSet 
+	                         ,int          i_FilterType 
+	                         ,List<String> i_FilterColNames 
+	                         ,int []       i_FilterColNoArr
+	                         ,int          i_StartRow
+	                         ,int          i_PagePerSize)
 	{
 		if ( i_ResultSet == null )
 		{
@@ -376,45 +399,18 @@ public final class XSQLResult
 		}
 		
 		
-		Object  v_Table     = null;
-		int []  v_ColArr    = null;
-		long    v_RowNo     = 0;
-    	int     v_ColNo     = 0;
-    	boolean v_FillEvent = false;
-    	this.initTotalInfo();
+		Object  v_Table         = null;
+		int []  v_ColArr        = null;
+		long    v_RowNo         = 0;
+    	int     v_ColNo         = 0;
+    	boolean v_FillEvent     = false;
+    	Date    v_ExecBeginTime = null;
 		
 		try
 		{
 			v_Table = this.newTableObject();
 			
-			if ( this.dbMetaData.getColumnSize() == 0 )
-			{
-				// 解释数据集元数据
-				this.dbMetaData.set(i_ResultSet.getMetaData());
-				
-				if ( this.cfillMethodType == $CFILL_METHOD_VARY )
-				{
-					this.isAgainParse = true;
-				}
-			}
-			else
-			{
-				DBTableMetaData v_NewMetaData = new DBTableMetaData(this.cstyle);
-				v_NewMetaData.set(i_ResultSet.getMetaData());
-				
-				// 老的元数据与新的元数据不同时，必须重新"全量解释"
-				if ( !this.dbMetaData.equals(v_NewMetaData) )
-				{
-				    this.dbMetaData = v_NewMetaData;
-					this.isAgainParse = true;
-				}
-			}
-	    	
-			
-			if ( this.isAgainParse )
-			{
-				this.parse();
-			}
+			getDatasParse(i_ResultSet);
 			
 			
 			
@@ -508,8 +504,7 @@ public final class XSQLResult
 			
 			
 	    	
-			this.getDatasColSize = v_ColArr.length;
-	    	Date v_ExecBeginTime = new Date();
+	    	v_ExecBeginTime = new Date();
 	    	
 	    	// 游标分页功能。那怕是一丁点的性能，不性代码的冗余
 	    	if ( i_PagePerSize > 0 )
@@ -742,14 +737,9 @@ public final class XSQLResult
 	            }
 	    	}
 	    	
-	    	this.getDatasTimes   = (new Date()).getTime() - v_ExecBeginTime.getTime();
-	    	this.getDatasRowSize = v_RowNo;
 		}
 		catch (Exception exce)
 		{
-			this.getDatasTimes   = -1;
-			this.getDatasRowSize = v_RowNo;
-			
 			if ( !v_FillEvent )
 			{
 			    throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  ColName=" + this.dbMetaData.getColumnName(v_ColNo) + "  " + exce.getMessage());
@@ -760,7 +750,7 @@ public final class XSQLResult
 			}
 		}
 		
-		return v_Table;
+		return new XSQLData(v_Table ,v_RowNo ,v_ColArr.length ,Date.getNowTime().differ(v_ExecBeginTime));
 	}
 	
 	
@@ -785,14 +775,14 @@ public final class XSQLResult
      * @return
      */
     @SuppressWarnings("unchecked")
-    private Object getBigDatas(ResultSet      i_ResultSet 
-                              ,int            i_FilterType 
-                              ,List<String>   i_FilterColNames 
-                              ,int []         i_FilterColNoArr
-                              ,int            i_StartRow
-                              ,int            i_PagePerSize
-                              ,XSQLBigData    i_XSQLBigData
-                              )
+    private XSQLData getBigDatas(ResultSet    i_ResultSet 
+                                ,int          i_FilterType 
+                                ,List<String> i_FilterColNames 
+                                ,int []       i_FilterColNoArr
+                                ,int          i_StartRow
+                                ,int          i_PagePerSize
+                                ,XSQLBigData  i_XSQLBigData
+                                )
     {
         if ( i_ResultSet == null )
         {
@@ -800,45 +790,17 @@ public final class XSQLResult
         }
         
         
-        Object  v_Table     = null;
-        int []  v_ColArr    = null;
-        long    v_RowNo     = 0;
-        int     v_ColNo     = 0;
-        boolean v_FillEvent = false;
-        this.initTotalInfo();
+        Object  v_Table         = null;
+        int []  v_ColArr        = null;
+        long    v_RowNo         = 0;
+        int     v_ColNo         = 0;
+        boolean v_FillEvent     = false;
+        Date    v_ExecBeginTime = null;
         
         try
         {
             v_Table = this.newTableObject();
-            
-            if ( this.dbMetaData.getColumnSize() == 0 )
-            {
-                // 解释数据集元数据
-                this.dbMetaData.set(i_ResultSet.getMetaData());
-                
-                if ( this.cfillMethodType == $CFILL_METHOD_VARY )
-                {
-                    this.isAgainParse = true;
-                }
-            }
-            else
-            {
-                DBTableMetaData v_NewMetaData = new DBTableMetaData(this.cstyle);
-                v_NewMetaData.set(i_ResultSet.getMetaData());
-                
-                // 老的元数据与新的元数据不同时，必须重新"全量解释"
-                if ( !this.dbMetaData.equals(v_NewMetaData) )
-                {
-                    this.dbMetaData = v_NewMetaData;
-                    this.isAgainParse = true;
-                }
-            }
-            
-            
-            if ( this.isAgainParse )
-            {
-                this.parse();
-            }
+            this.getDatasParse(i_ResultSet);
             
             
             
@@ -932,8 +894,7 @@ public final class XSQLResult
             
             
             
-            this.getDatasColSize      = v_ColArr.length;
-            Date    v_ExecBeginTime   = new Date();
+            v_ExecBeginTime           = new Date();
             Object  v_RowPrevious     = null;
             Object  v_RowNext         = null;
             Object  v_Row             = null;
@@ -1393,25 +1354,14 @@ public final class XSQLResult
             
             i_XSQLBigData.finish(v_BigDataRet);
             
-            if ( v_BigDataRet )
+            if ( !v_BigDataRet )
             {
-                this.getDatasTimes   = (new Date()).getTime() - v_ExecBeginTime.getTime();
-                this.getDatasRowSize = v_RowNo;
-            }
-            else
-            {
-                this.getDatasTimes   = -1;
-                this.getDatasRowSize = v_RowNo;
-                
                 throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  XSQLBigData.row(...) return false.");
             }
         }
         catch (Exception exce)
         {
             i_XSQLBigData.finish(false);
-            
-            this.getDatasTimes   = -1;
-            this.getDatasRowSize = v_RowNo;
             
             if ( !v_FillEvent )
             {
@@ -1423,7 +1373,7 @@ public final class XSQLResult
             }
         }
         
-        return v_Table;
+        return new XSQLData(v_Table ,v_RowNo ,v_ColArr.length ,Date.getNowTime().differ(v_ExecBeginTime));
     }
 	
 	
@@ -1451,37 +1401,10 @@ public final class XSQLResult
 		
 		
 		ResultSet v_ResultSet = i_Bigger.getResultSet();
-    	this.initTotalInfo();
 		
 		try
 		{
-			if ( this.dbMetaData.getColumnSize() == 0 )
-			{
-				// 解释数据集元数据
-				this.dbMetaData.set(v_ResultSet.getMetaData());
-				
-				if ( this.cfillMethodType == $CFILL_METHOD_VARY )
-				{
-					this.isAgainParse = true;
-				}
-			}
-			else
-			{
-				DBTableMetaData v_NewMetaData = new DBTableMetaData(this.cstyle);
-				v_NewMetaData.set(v_ResultSet.getMetaData());
-				
-				// 老的元数据与新的元数据不同时，必须重新"全量解释"
-				if ( !this.dbMetaData.equals(v_NewMetaData) )
-				{
-					this.isAgainParse = true;
-				}
-			}
-	    	
-			
-			if ( this.isAgainParse )
-			{
-				this.parse();
-			}
+			this.getDatasParse(v_ResultSet);
 			
 			
 			
@@ -1589,7 +1512,7 @@ public final class XSQLResult
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public Object getDatasNextPage(XSQLBigger i_Bigger)
+	public XSQLData getDatasNextPage(XSQLBigger i_Bigger)
 	{
 		if ( i_Bigger == null || i_Bigger.getResultSet() == null )
 		{
@@ -1608,21 +1531,20 @@ public final class XSQLResult
 		
 		if ( !i_Bigger.isBiggerNextPage() )
 		{
-			return i_Bigger.getBiggerMemory().getMemory();
+			return new XSQLData(i_Bigger.getBiggerMemory().getMemory() ,0L ,0 ,0L);
 		}
 		
 		
-		ResultSet v_ResultSet = i_Bigger.getResultSet();
-		long      v_RowNo     = 0;
-    	int       v_ColNo     = 0;
+		ResultSet v_ResultSet     = i_Bigger.getResultSet();
+		long      v_RowNo         = 0;
+    	int       v_ColNo         = 0;
+    	Date      v_ExecBeginTime = new Date();
 		
 		try
 		{	
-			this.getDatasColSize = this.cfill_ValidIndex_BiggerMemory.length;
-			v_RowNo              = v_ResultSet.getRow();
-			int  v_PerIndex      = 1;
-			int  v_PerSize       = i_Bigger.getPerSize();
-	    	Date v_ExecBeginTime = new Date();
+			v_RowNo         = v_ResultSet.getRow();
+			int  v_PerIndex = 1;
+			int  v_PerSize  = i_Bigger.getPerSize();
 	    	
 	    	// 列级对象填充到行级对象中行级对象的方法类型: 固定方法
 	    	if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
@@ -1670,16 +1592,9 @@ public final class XSQLResult
 		    		i_Bigger.getBiggerMemory().setRowInfo(v_RowNo ,i_Bigger.getRowSize() ,v_Row);
 		    	}
 	    	}
-	    	
-	    	
-	    	this.getDatasTimes   = (new Date()).getTime() - v_ExecBeginTime.getTime();
-	    	this.getDatasRowSize = v_RowNo;
 		}
 		catch (Exception exce)
 		{
-			this.getDatasTimes   = -1;
-			this.getDatasRowSize = v_RowNo;
-			
 			if ( this.cfill_ValidIndex_BiggerMemory != null && this.cfill_ValidIndex_BiggerMemory.length > 0 )
 			{
 				throw new RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  ColName=" + this.dbMetaData.getColumnName(v_ColNo) + "  " + exce.getMessage());
@@ -1690,7 +1605,7 @@ public final class XSQLResult
 			}
 		}
 		
-		return i_Bigger.getBiggerMemory().getMemory();
+		return new XSQLData(i_Bigger.getBiggerMemory().getMemory() ,v_RowNo ,this.cfill_ValidIndex_BiggerMemory.length ,Date.getNowTime().differ(v_ExecBeginTime));
 	}
 	
 	
@@ -1734,8 +1649,7 @@ public final class XSQLResult
 		
 		try
 		{	
-			this.getDatasColSize = this.cfill_ValidIndex_BiggerMemory.length;
-			v_RowNo              = v_ResultSet.getRow();
+			v_RowNo = v_ResultSet.getRow();
 	    	
 	    	// 列级对象填充到行级对象中行级对象的方法类型: 固定方法
 	    	if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
@@ -1774,55 +1688,13 @@ public final class XSQLResult
 		    	}
 	    	}
 	    	
-	    	
-	    	this.getDatasRowSize = v_RowNo + 1;
 		}
 		catch (Exception exce)
 		{
-			this.getDatasRowSize = v_RowNo + 1;
-			
 			throw new java.lang.RuntimeException("RowNo=" + v_RowNo + "  ColNo=" + v_ColNo + "  ColName=" + this.dbMetaData.getColumnName(v_ColNo) + "  " + exce.getMessage());
 		}
 		
 		return v_Row;
-	}
-	
-	
-	
-	/**
-	 * 将数据库结果集转化为Java实例对象的用时时长(单位：毫秒)
-	 * 
-	 * 返回 -1 表示异常
-	 * 
-	 * @return
-	 */
-	public long getDatasTimes()
-	{
-		return this.getDatasTimes;
-	}
-	
-	
-	
-	/**
-	 * 将数据库结果集转化为Java实例对象的行数(已读取的行数)
-	 * 
-	 * @return
-	 */
-	public long getDatasRowSize()
-	{
-		return this.getDatasRowSize;
-	}
-	
-	
-	
-	/**
-	 * 将数据库结果集转化为Java实例对象的列数(有效列数)
-	 * 
-	 * @return
-	 */
-	public int getDatasColSize()
-	{
-		return this.getDatasColSize;
 	}
 	
 	

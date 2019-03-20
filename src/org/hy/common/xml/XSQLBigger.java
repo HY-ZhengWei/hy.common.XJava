@@ -146,12 +146,12 @@ public final class XSQLBigger implements FileBiggerMemory
 		}
 		
 		
-		Object v_Ret = this.xsql.getResult().getDatasNextPage(this);
+		XSQLData v_Ret = this.xsql.getResult().getDatasNextPage(this);
 		
-		this.getDatasTimes += this.xsql.getResult().getDatasTimes();
-		this.memorySize     = this.xsql.getResult().getDatasRowSize();
+		this.getDatasTimes += v_Ret.getTimeLen();
+		this.memorySize     = v_Ret.getRowCount();
 		
-		return v_Ret;
+		return v_Ret.getDatas();
 	}
 	
 	
