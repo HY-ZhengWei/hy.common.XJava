@@ -84,6 +84,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLGroupTree;
  *              v15.0 2018-12-20  添加：可以集群服务列表中，查看操作系统的当前时间
  *                                优化：尝试计算Linux的真实内存使用率
  *              v16.0 2019-02-26  添加：定时灾备多活集群情况
+ *              v17.0 2019-03-20  添加：XSQL及XSQL组的统计分析页面添加：读写行数
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -503,15 +504,17 @@ public class AnalyseBase extends Analyse
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
      * @param  i_Cluster         是否为集群
      * @param  i_SortType        排序类型
+     * @param  i_IsAll           是否显示所有XSQL组对象（解决：当对象十分庞大时，页面显示缓慢）
      * @return
      */
-    public String analyseDBGroup(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType)
+    public String analyseDBGroup(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType ,boolean i_IsAll)
     {
         StringBuilder       v_Buffer       = new StringBuilder();
         int                 v_Index        = 0;
         String              v_Content      = this.getTemplateShowTotalContent();
         long                v_RequestCount = 0;
         long                v_SuccessCount = 0;
+        long                v_IORowCount   = 0;
         double              v_TotalTimeLen = 0;
         double              v_AvgTimeLen   = 0;
         Date                v_MaxExecTime  = null;
@@ -545,6 +548,7 @@ public class AnalyseBase extends Analyse
                             
                             v_Total.getRequestCount().putAll(v_TempTotal.getRequestCount());
                             v_Total.getSuccessCount().putAll(v_TempTotal.getSuccessCount());
+                            v_Total.getIoRowcount()  .putAll(v_TempTotal.getIoRowcount());
                             v_Total.getMaxExecTime() .putAll(v_TempTotal.getMaxExecTime());
                             v_Total.getTotalTimeLen().putAll(v_TempTotal.getTotalTimeLen());
                         }
@@ -598,6 +602,11 @@ public class AnalyseBase extends Analyse
             // 按平均用时(毫秒)排序
             v_XSQLIDs = Help.toReverseByMap(v_AvgTimes).keySet();
         }
+        else if ( "7".equalsIgnoreCase(i_SortType) )
+        {
+            // 按IO读写行数排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getIoRowcount()).keySet();
+        }
         else
         {
             v_XSQLIDs = Help.toSort(v_Total.getRequestCount()).keySet();
@@ -608,6 +617,10 @@ public class AnalyseBase extends Analyse
         for (String v_XSQLID : v_XSQLIDs)
         {
             v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
+            if ( !i_IsAll && v_RequestCount <= 0 )
+            {
+                continue;
+            }
             v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
             v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
             v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
@@ -620,6 +633,7 @@ public class AnalyseBase extends Analyse
                                      .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount))
                                      .replaceAll(":ParamURL"     ,"#")
                                      .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : (v_MaxExecTime.getTime() >= v_NowTime ? v_MaxExecTime.getFull() : "<span style='color:gray;'>" + v_MaxExecTime.getFull() + "</span>"))
+                                     .replaceAll(":IORowCount"   ,String.valueOf(v_IORowCount))
                                      .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
                                      .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                            );
@@ -639,18 +653,29 @@ public class AnalyseBase extends Analyse
                                  .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount))
                                  .replaceAll(":ParamURL"     ,"#")
                                  .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : v_MaxExecTime.getFull())
+                                 .replaceAll(":IORowCount"   ,String.valueOf(v_IORowCount))
                                  .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
                                  .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                        );
         
-        String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseDB' style='color:#AA66CC'>查看SQL</a>" + StringHelp.lpad("" ,4 ,"&nbsp;");
-        if ( i_Cluster )
+        String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;");
+        if ( i_IsAll )
         {
-            v_Goto += "<a href='analyseDB?type=Group' style='color:#AA66CC'>查看本机</a>";
+            v_Goto += "<a href='analyseDB?type=Group&cluster=" + (i_Cluster?"Y":"N") + "&S=" + i_SortType + "&scope=N' style='color:#AA66CC'>只显示非零</a>";
         }
         else
         {
-            v_Goto += "<a href='analyseDB?type=Group&cluster=Y' style='color:#AA66CC'>查看集群</a>";
+            v_Goto += "<a href='analyseDB?type=Group&cluster=" + (i_Cluster?"Y":"N") + "&S=" + i_SortType + "&scope=Y' style='color:#AA66CC'>显示全部</a>";
+        }
+        
+        v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;");
+        if ( i_Cluster )
+        {
+            v_Goto += "<a href='analyseDB?type=Group&cluster=N&S=" + i_SortType + "&scope=" + (i_IsAll?"Y":"N") + "' style='color:#AA66CC'>查看本机</a>";
+        }
+        else
+        {
+            v_Goto += "<a href='analyseDB?type=Group&cluster=Y&S=" + i_SortType + "&scope=" + (i_IsAll?"Y":"N") + "' style='color:#AA66CC'>查看集群</a>";
         }
         
         v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;");
@@ -673,8 +698,8 @@ public class AnalyseBase extends Analyse
         v_XSQLIDs = null;
         
         return StringHelp.replaceAll(this.getTemplateShowTotal()
-                                    ,new String[]{":NameTitle"    ,":GotoTitle" ,":Title"                    ,":HttpBasePath" ,":cluster"             ,":Sort"    ,":IsGroup" ,":Content"}
-                                    ,new String[]{"组合SQL访问标识" ,v_Goto       ,"数据库组合SQL访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"Y"        ,v_Buffer.toString()});
+                                    ,new String[]{":NameTitle"    ,":GotoTitle" ,":Title"                    ,":HttpBasePath" ,":cluster"             ,":Sort"    ,":IsGroup" ,":scope" ,":Content"}
+                                    ,new String[]{"组合SQL访问标识" ,v_Goto       ,"数据库组合SQL访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"Y"   ,(i_IsAll?"Y":"N")  ,v_Buffer.toString()});
     }
     
     
@@ -690,9 +715,10 @@ public class AnalyseBase extends Analyse
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
      * @param  i_Cluster         是否为集群
      * @param  i_SortType        排序类型
+     * @param  i_IsAll           是否显示所有XSQL组对象（解决：当对象十分庞大时，页面显示缓慢）
      * @return
      */
-    public String analyseDB(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType)
+    public String analyseDB(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType ,boolean i_IsAll)
     {
         Map<String ,Object> v_XSQLs           = XJava.getObjects(XSQL.class);
         StringBuilder       v_Buffer          = new StringBuilder();
@@ -701,6 +727,7 @@ public class AnalyseBase extends Analyse
         String              v_OperateURL      = "";
         long                v_RequestCount    = 0;
         long                v_SuccessCount    = 0;
+        long                v_IORowCount      = 0;
         long                v_TriggerReqCount = 0;
         long                v_TriggerSucCount = 0;
         long                v_TriggerFaiCount = 0;
@@ -737,6 +764,7 @@ public class AnalyseBase extends Analyse
                             
                             v_Total.getRequestCount()   .putAll(v_TempTotal.getRequestCount());
                             v_Total.getSuccessCount()   .putAll(v_TempTotal.getSuccessCount());
+                            v_Total.getIoRowcount()     .putAll(v_TempTotal.getIoRowcount());
                             v_Total.getTriggerReqCount().putAll(v_TempTotal.getTriggerReqCount());
                             v_Total.getTriggerSucCount().putAll(v_TempTotal.getTriggerSucCount());
                             v_Total.getMaxExecTime()    .putAll(v_TempTotal.getMaxExecTime());
@@ -792,6 +820,11 @@ public class AnalyseBase extends Analyse
             // 按平均用时(毫秒)排序
             v_XSQLIDs = Help.toReverseByMap(v_AvgTimes).keySet();
         }
+        else if ( "7".equalsIgnoreCase(i_SortType) )
+        {
+            // 按IO读写行数排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getIoRowcount()).keySet();
+        }
         else
         {
             v_XSQLIDs = Help.toSort(v_Total.getRequestCount()).keySet();
@@ -802,7 +835,12 @@ public class AnalyseBase extends Analyse
         for (String v_XSQLID : v_XSQLIDs)
         {
             v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
+            if ( !i_IsAll && v_RequestCount <= 0 )
+            {
+                continue;
+            }
             v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
+            v_IORowCount   = v_Total.getIoRowcount()  .getSumValue(v_XSQLID);
             v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
             v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
             v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue(v_XSQLID).longValue());
@@ -843,6 +881,7 @@ public class AnalyseBase extends Analyse
                                      .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount) + (v_TriggerFaiCount > 0 ? "-T"+v_TriggerFaiCount : ""))
                                      .replaceAll(":ParamURL"     ,v_OperateURL)
                                      .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : (v_MaxExecTime.getTime() >= v_NowTime ? v_MaxExecTime.getFull() : "<span style='color:gray;'>" + v_MaxExecTime.getFull() + "</span>"))
+                                     .replaceAll(":IORowCount"   ,String.valueOf(v_IORowCount))
                                      .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
                                      .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                            );
@@ -850,6 +889,7 @@ public class AnalyseBase extends Analyse
         
         v_RequestCount = v_Total.getRequestCount().getSumValue();
         v_SuccessCount = v_Total.getSuccessCount().getSumValue();
+        v_IORowCount   = v_Total.getIoRowcount()  .getSumValue();
         v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue();
         v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
         v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue().longValue());
@@ -861,18 +901,29 @@ public class AnalyseBase extends Analyse
                                  .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount))
                                  .replaceAll(":ParamURL"     ,"#")
                                  .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : v_MaxExecTime.getFull())
+                                 .replaceAll(":IORowCount"   ,String.valueOf(v_IORowCount))
                                  .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
                                  .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                        );
         
-        String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;") + "<a href='analyseDB?type=Group' style='color:#AA66CC'>查看SQL组</a>" + StringHelp.lpad("" ,4 ,"&nbsp;");
-        if ( i_Cluster )
+        String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;");
+        if ( i_IsAll )
         {
-            v_Goto += "<a href='analyseDB' style='color:#AA66CC'>查看本机</a>";
+            v_Goto += "<a href='analyseDB?cluster=" + (i_Cluster?"Y":"N") + "&S=" + i_SortType + "&scope=N' style='color:#AA66CC'>只显示非零</a>";
         }
         else
         {
-            v_Goto += "<a href='analyseDB?cluster=Y' style='color:#AA66CC'>查看集群</a>";
+            v_Goto += "<a href='analyseDB?cluster=" + (i_Cluster?"Y":"N") + "&S=" + i_SortType + "&scope=Y' style='color:#AA66CC'>显示全部</a>";
+        }
+        
+        v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;");
+        if ( i_Cluster )
+        {
+            v_Goto += "<a href='analyseDB?cluster=N&S=" + i_SortType + "&scope=" + (i_IsAll?"Y":"N") + "' style='color:#AA66CC'>查看本机</a>";
+        }
+        else
+        {
+            v_Goto += "<a href='analyseDB?cluster=Y&S=" + i_SortType + "&scope=" + (i_IsAll?"Y":"N") + "' style='color:#AA66CC'>查看集群</a>";
         }
         
         v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;");
@@ -898,8 +949,8 @@ public class AnalyseBase extends Analyse
         v_XSQLs = null;
         
         return StringHelp.replaceAll(this.getTemplateShowTotal()
-                                    ,new String[]{":NameTitle" ,":GotoTitle" ,":Title"              ,":HttpBasePath" ,":cluster"            ,":Sort"     ,":IsGroup" ,":Content"}
-                                    ,new String[]{"SQL访问标识" ,v_Goto       ,"数据库访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"N"         ,v_Buffer.toString()});
+                                    ,new String[]{":NameTitle" ,":GotoTitle" ,":Title"              ,":HttpBasePath" ,":cluster"            ,":Sort"     ,":IsGroup" ,":scope" ,":Content"}
+                                    ,new String[]{"SQL访问标识" ,v_Goto       ,"数据库访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"N"  ,(i_IsAll?"Y":"N") ,v_Buffer.toString()});
     }
     
     
@@ -961,6 +1012,7 @@ public class AnalyseBase extends Analyse
                 
                 v_Total.getRequestCount().put(v_Item.getKey() ,v_XSQL.getRequestCount());
                 v_Total.getSuccessCount().put(v_Item.getKey() ,v_XSQL.getSuccessCount());
+                v_Total.getIoRowcount()  .put(v_Item.getKey() ,v_XSQL.getIoRowCount());
                 
                 // 触发器的执行统计
                 if ( v_XSQL.isTriggers() )
