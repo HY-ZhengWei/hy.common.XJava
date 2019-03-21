@@ -3993,6 +3993,11 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                     {
                         v_Ret += v_Count;
                     }
+                    else if ( Statement.SUCCESS_NO_INFO == v_Count )
+                    {
+                        // 执行成功了，但不知道影响的行数
+                        v_Ret++;
+                    }
                 }
             }
             else
@@ -4039,6 +4044,11 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                                 {
                                     v_Ret += v_Count;
                                 }
+                                else if ( Statement.SUCCESS_NO_INFO == v_Count )
+                                {
+                                    // 执行成功了，但不知道影响的行数
+                                    v_Ret++;
+                                }
                             }
                             
                             v_PStatement.clearBatch();
@@ -4061,6 +4071,11 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                         if ( v_Count >= 1 )
                         {
                             v_Ret += v_Count;
+                        }
+                        else if ( Statement.SUCCESS_NO_INFO == v_Count )
+                        {
+                            // 执行成功了，但不知道影响的行数
+                            v_Ret++;
                         }
                     }
                 }
