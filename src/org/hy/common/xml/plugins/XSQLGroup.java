@@ -23,6 +23,7 @@ import org.hy.common.thread.TaskGroup;
 import org.hy.common.thread.ThreadPool;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQLBigData;
+import org.hy.common.xml.XSQLData;
 
 
 
@@ -39,7 +40,7 @@ import org.hy.common.xml.XSQLBigData;
  *   特点06：当XSQL节点检查不通过时，通过noPassContinue属性决定是否继续执行其后的XSQL节点。默认检查只影响自己的节点，不影响其它及其后XSQL节点的执行。
  *   特点07：任何一个XSQL节点执行异常，都将全部终止执行（或查询）。
  *   特点08：可打印出执行轨迹，显示每一步执行的SQL语句。
- *   特点09：记录每个XSQL节点的上执行SQL（Insert、Update、Delete）影响的行数，可作为其后所有节点的执行参数（查询参数）。如变量EXECOUNT2，表示第二个步骤执行后影响的行数。但，不记录查询SQL的行数。
+ *   特点09：记录每个XSQL节点的上执行SQL（Insert、Update、Delete、Query）影响的行数，可作为其后所有节点的执行参数（查询参数）。如变量EXECOUNT2，表示第二个步骤执行后影响的行数。但，不记录查询SQL的行数。
  *   特点10：支持统一提交、统一回滚的事务功能。不做特别设置的时，默认情况下，在所有操作成功后，统一提交。或在出现异常后，统一回滚。
  *   特点11：有三种节点提交类型：
  *           1. beforeCommit   操作节点前提交；
@@ -152,11 +153,16 @@ import org.hy.common.xml.XSQLBigData;
  *                                2.添加：能从任一层次的循环中，获取之前任一层次的循环信息。
  *              v23.1 2018-07-26  1.优化：及时释放资源，自动的GC太慢了。
  *              v23.2 2018-09-10  1.添加：XJavaID接口，实现从XML配置文件中自动获取XID。
+ *              v24.0 2019-03-22  1.添加：统计项ioRowCount读写行数。查询结果的行数或写入数据库的记录数。
+ *                                2.添加：$Param_ExecCount相关的统计，添加对Query查询结果行数的统计。
+ *                                3.修正：executes(Object)方法中的对象类型的参数在内部转Map时，不再保留NULL值的属性。
+ *                                        防止Oracle全大写字段名称与Java成员名称大小写不一致时，出现未正确填充占位符的问题。
+ *                                        发现人：张德宏
  */
 public final class XSQLGroup implements XJavaID
 {
     
-    /** 执行SQL(Insert、Update、Delete)影响行数的变量名前缀 */
+    /** 执行SQL(Insert、Update、Delete、Query)影响行数的变量名前缀 */
     public  static final String      $Param_ExecCount   = "ExecCount_";
     
     /** 用于执行Java节点：执行查询SQL的结果集索引下标的变量名称（变量值下标从零开始） */
@@ -285,8 +291,8 @@ public final class XSQLGroup implements XJavaID
         this.cloudWait          = null;
         this.isLog              = false;
         this.isAutoCommit       = true;
-        this.requestCount       = 0;
-        this.successCount       = 0;
+        this.requestCount       = 0L;
+        this.successCount       = 0L;
         this.successTimeLen     = 0D;
         this.executeTime        = null;
         this.comment            = null;
@@ -304,8 +310,8 @@ public final class XSQLGroup implements XJavaID
      */
     public void reset()
     {
-        this.requestCount   = 0;
-        this.successCount   = 0;
+        this.requestCount   = 0L;
+        this.successCount   = 0L;
         this.successTimeLen = 0D;
         this.executeTime    = null;
     }
@@ -326,10 +332,16 @@ public final class XSQLGroup implements XJavaID
         ++this.successCount;
         this.successTimeLen += i_TimeLen;
         this.executeTime = new Date();
+        
+        // 不能在此对ioRowCount累加，因为当XSQL组嵌套时，可能会多次重复累加
+        // this.ioRowCount += i_IORowCount;
     }
     
     
     
+    /**
+     * 请求整体执行的次数
+     */
     public long getRequestCount()
     {
         return requestCount;
@@ -337,16 +349,55 @@ public final class XSQLGroup implements XJavaID
 
 
     
+    /**
+     * 请求成功，并成功返回次数
+     */
     public long getSuccessCount()
     {
         return successCount;
     }
-
-
     
+    
+    
+    /**
+     * 请求成功，并成功返回的累计用时时长
+     */
     public double getSuccessTimeLen()
     {
         return successTimeLen;
+    }
+    
+    
+    
+    /**
+     * 读写行数。查询结果的行数或写入数据库的记录数。
+     * 
+     * 注：只统计本XSQL组中直属的XSQL节点，统计不包含子XSQL组。
+     *     原因是：不好防止XSQL组递归时，可能出现死循环的问题。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     *
+     * @return
+     */
+    public long getIoRowCount()
+    {
+        if ( Help.isNull(this.xsqlNodes) )
+        {
+            return 0L;
+        }
+        
+        long v_Count = 0L;
+        for (XSQLNode v_XNode : this.xsqlNodes)
+        {
+            if ( v_XNode.getSql() != null )
+            {
+                v_Count += v_XNode.getSql().getIoRowCount();
+            }
+        }
+        
+        return v_Count;
     }
     
     
@@ -419,7 +470,7 @@ public final class XSQLGroup implements XJavaID
      *                          异常时：Return.paramStr  为异常时执行的SQL
      *                          异常时：Return.exception 为异常对象
      *                          成功时：Return.paramInt  为最后一个有效执行XSQL的索引位置。下标从0开始。
-     *                          成功时：Return.paramObj  为影响(Insert、Update、Delete)数据的累计行数。
+     *                          成功时：Return.paramObj  为影响(Insert、Update、Delete、Query)数据的累计行数。
      */
     @SuppressWarnings("unchecked")
     public XSQLGroupResult executes(Object i_Obj)
@@ -442,7 +493,7 @@ public final class XSQLGroup implements XJavaID
             }
             else
             {
-                return this.executeGroup(Help.toMap(i_Obj));
+                return this.executeGroup(Help.toMap(i_Obj ,null ,false));
             }
         }
         catch (Exception e)
@@ -690,7 +741,7 @@ public final class XSQLGroup implements XJavaID
      *                          异常时：Return.paramStr  为异常时执行的SQL
      *                          异常时：Return.exception 为异常对象
      *                          成功时：Return.paramInt  为最后一个有效执行XSQL的索引位置。下标从0开始。
-     *                          成功时：Return.paramObj  为影响(Insert、Update、Delete)数据的累计行数
+     *                          成功时：Return.paramObj  为影响(Insert、Update、Delete、Query)数据的累计行数
      */
     private XSQLGroupResult executeGroup_LastOnce(Map<String ,Object> io_Params ,Map<DataSourceGroup ,XConnection> io_DSGConns ,XSQLGroupResult i_Return)
     {
@@ -772,34 +823,35 @@ public final class XSQLGroup implements XJavaID
                     
                     if ( XSQLNode.$Type_Query.equals(v_Node.getType()) )
                     {
-                        Object v_QueryRet = null;
+                        XSQLData v_XSQLData = null;
                         
                         if ( Help.isNull(io_Params) )
                         {
                             if ( v_Node.isOneConnection() )
                             {
-                                v_QueryRet = v_Node.getSql().query(this.getConnection(v_Node ,io_DSGConns));
+                                v_XSQLData = v_Node.getSql().queryXSQLData(this.getConnection(v_Node ,io_DSGConns));
                             }
                             else
                             {
-                                v_QueryRet = v_Node.getSql().query();
+                                v_XSQLData = v_Node.getSql().queryXSQLData();
                             }
                         }
                         else
                         {
                             if ( v_Node.isOneConnection() )
                             {
-                                v_QueryRet = v_Node.getSql().query(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                                v_XSQLData = v_Node.getSql().queryXSQLData(io_Params ,this.getConnection(v_Node ,io_DSGConns));
                             }
                             else
                             {
-                                v_QueryRet = v_Node.getSql().query(io_Params);
+                                v_XSQLData = v_Node.getSql().queryXSQLData(io_Params);
                             }
                         }
                         
                         // put返回查询结果集
-                        this.putReturnID(v_Ret ,v_Node ,v_QueryRet);
+                        this.putReturnID(v_Ret ,v_Node ,v_XSQLData.getDatas());
                         v_ExecRet = true;
+                        v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_XSQLData.getRowCount());
                     }
                     else if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_Node.getType()) )
                     {
@@ -1061,31 +1113,40 @@ public final class XSQLGroup implements XJavaID
                                     v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(io_Params ,v_XSQLBigData);
                                 }
                             }
+                            
+                            if ( v_QueryRet != null )
+                            {
+                                v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_QueryRet.size());
+                            }
                         }
                         else
                         {
+                            XSQLData v_XSQLData = null;
                             if ( Help.isNull(io_Params) )
                             {
                                 if ( v_Node.isOneConnection() )
                                 {
-                                    v_QueryRet = (List<Object>)v_Node.getSql().query(this.getConnection(v_Node ,io_DSGConns));
+                                    v_XSQLData = v_Node.getSql().queryXSQLData(this.getConnection(v_Node ,io_DSGConns));
                                 }
                                 else
                                 {
-                                    v_QueryRet = (List<Object>)v_Node.getSql().query();
+                                    v_XSQLData = v_Node.getSql().queryXSQLData();
                                 }
                             }
                             else
                             {
                                 if ( v_Node.isOneConnection() )
                                 {
-                                    v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                                    v_XSQLData = v_Node.getSql().queryXSQLData(io_Params ,this.getConnection(v_Node ,io_DSGConns));
                                 }
                                 else
                                 {
-                                    v_QueryRet = (List<Object>)v_Node.getSql().query(io_Params);
+                                    v_XSQLData = v_Node.getSql().queryXSQLData(io_Params);
                                 }
                             }
+                            
+                            v_QueryRet = (List<Object>)v_XSQLData.getDatas();
+                            v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_XSQLData.getRowCount());
                         }
                         
                         this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
@@ -1390,9 +1451,9 @@ public final class XSQLGroup implements XJavaID
             // 返回查询结果集的查询
             else
             {
-                Object v_QueryRet      = null;
-                int    v_RetryCount    = v_Node.getRetryCount();
-                long   v_RetryInterval = v_Node.getRetryInterval();
+                XSQLData v_XSQLData      = null;
+                int      v_RetryCount    = v_Node.getRetryCount();
+                long     v_RetryInterval = v_Node.getRetryInterval();
                 do
                 {
                     if ( !v_Ret.isSuccess() )
@@ -1416,13 +1477,14 @@ public final class XSQLGroup implements XJavaID
                         
                         if ( Help.isNull(io_Params) )
                         {
-                            v_QueryRet = v_Node.getSql().query();
+                            v_XSQLData = v_Node.getSql().queryXSQLData();
                         }
                         else
                         {
-                            v_QueryRet = v_Node.getSql().query(io_Params);
+                            v_XSQLData = v_Node.getSql().queryXSQLData(io_Params);
                         }
                         
+                        v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_XSQLData.getRowCount());
                         this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
                     }
                     catch (Exception exce)
@@ -1463,7 +1525,7 @@ public final class XSQLGroup implements XJavaID
                     v_Ret.setSuccess(true).setExecLastNode(v_NodeIndex);
                     
                     // put返回查询结果集
-                    this.putReturnID(v_Ret ,v_Node ,v_QueryRet);
+                    this.putReturnID(v_Ret ,v_Node ,v_XSQLData.getDatas());
                     
                     // 继续向后击鼓传花
                     return this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
@@ -2140,7 +2202,7 @@ public final class XSQLGroup implements XJavaID
                 Map<String ,Object> v_ItemMap = new HashMap<String ,Object>();
                 
                 v_ItemMap.putAll(io_Params);
-                v_ItemMap.putAll(Help.toMap(v_Item));
+                v_ItemMap.putAll(Help.toMap(v_Item ,null ,false));
                 
                 v_CollectionMap.add(v_ItemMap);
             }
@@ -2201,6 +2263,8 @@ public final class XSQLGroup implements XJavaID
     {
         if ( !Help.isNull(io_DSGConns) )
         {
+            boolean v_IsSucceed = true;
+            
             for (XConnection v_XConn : io_DSGConns.values())
             {
                 try
@@ -2214,23 +2278,24 @@ public final class XSQLGroup implements XJavaID
                         
                         v_XConn.setCommit(true);
                         v_XConn.getConn().commit();
-                        
-                        if ( this.isLog )
-                        {
-                            if ( i_ExecSumCount != null )
-                            {
-                                System.out.println("  " + i_ExecSumCount.getSumValue() + " rows affected.");
-                            }
-                            else
-                            {
-                                System.out.println("  OK.");
-                            }
-                        }
                     }
                 }
                 catch (Exception exce)
                 {
+                    v_IsSucceed = false;
                     exce.printStackTrace();
+                }
+            }
+            
+            if ( this.isLog && v_IsSucceed )
+            {
+                if ( i_ExecSumCount != null )
+                {
+                    System.out.println("  " + i_ExecSumCount.getSumValue() + " rows affected.");
+                }
+                else
+                {
+                    System.out.println("  OK.");
                 }
             }
         }

@@ -548,7 +548,7 @@ public class AnalyseBase extends Analyse
                             
                             v_Total.getRequestCount().putAll(v_TempTotal.getRequestCount());
                             v_Total.getSuccessCount().putAll(v_TempTotal.getSuccessCount());
-                            v_Total.getIoRowcount()  .putAll(v_TempTotal.getIoRowcount());
+                            v_Total.getIoRowCount()  .putAll(v_TempTotal.getIoRowCount());
                             v_Total.getMaxExecTime() .putAll(v_TempTotal.getMaxExecTime());
                             v_Total.getTotalTimeLen().putAll(v_TempTotal.getTotalTimeLen());
                         }
@@ -605,7 +605,7 @@ public class AnalyseBase extends Analyse
         else if ( "7".equalsIgnoreCase(i_SortType) )
         {
             // 按IO读写行数排序
-            v_XSQLIDs = Help.toReverseByMap(v_Total.getIoRowcount()).keySet();
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getIoRowCount()).keySet();
         }
         else
         {
@@ -622,6 +622,7 @@ public class AnalyseBase extends Analyse
                 continue;
             }
             v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
+            v_IORowCount   = v_Total.getIoRowCount()  .getSumValue(v_XSQLID);
             v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
             v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
             v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue(v_XSQLID).longValue());
@@ -642,6 +643,7 @@ public class AnalyseBase extends Analyse
         
         v_RequestCount = v_Total.getRequestCount().getSumValue();
         v_SuccessCount = v_Total.getSuccessCount().getSumValue();
+        v_IORowCount   = v_Total.getIoRowCount()  .getSumValue();
         v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue();
         v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
         v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue().longValue());
@@ -764,7 +766,7 @@ public class AnalyseBase extends Analyse
                             
                             v_Total.getRequestCount()   .putAll(v_TempTotal.getRequestCount());
                             v_Total.getSuccessCount()   .putAll(v_TempTotal.getSuccessCount());
-                            v_Total.getIoRowcount()     .putAll(v_TempTotal.getIoRowcount());
+                            v_Total.getIoRowCount()     .putAll(v_TempTotal.getIoRowCount());
                             v_Total.getTriggerReqCount().putAll(v_TempTotal.getTriggerReqCount());
                             v_Total.getTriggerSucCount().putAll(v_TempTotal.getTriggerSucCount());
                             v_Total.getMaxExecTime()    .putAll(v_TempTotal.getMaxExecTime());
@@ -823,7 +825,7 @@ public class AnalyseBase extends Analyse
         else if ( "7".equalsIgnoreCase(i_SortType) )
         {
             // 按IO读写行数排序
-            v_XSQLIDs = Help.toReverseByMap(v_Total.getIoRowcount()).keySet();
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getIoRowCount()).keySet();
         }
         else
         {
@@ -840,7 +842,7 @@ public class AnalyseBase extends Analyse
                 continue;
             }
             v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
-            v_IORowCount   = v_Total.getIoRowcount()  .getSumValue(v_XSQLID);
+            v_IORowCount   = v_Total.getIoRowCount()  .getSumValue(v_XSQLID);
             v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
             v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
             v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue(v_XSQLID).longValue());
@@ -889,7 +891,7 @@ public class AnalyseBase extends Analyse
         
         v_RequestCount = v_Total.getRequestCount().getSumValue();
         v_SuccessCount = v_Total.getSuccessCount().getSumValue();
-        v_IORowCount   = v_Total.getIoRowcount()  .getSumValue();
+        v_IORowCount   = v_Total.getIoRowCount()  .getSumValue();
         v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue();
         v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
         v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue().longValue());
@@ -977,6 +979,7 @@ public class AnalyseBase extends Analyse
                 
                 v_Total.getRequestCount().put(v_Item.getKey() ,v_XSQLGroup.getRequestCount());
                 v_Total.getSuccessCount().put(v_Item.getKey() ,v_XSQLGroup.getSuccessCount());
+                v_Total.getIoRowCount()  .put(v_Item.getKey() ,v_XSQLGroup.getIoRowCount());
                 v_Total.getMaxExecTime() .put(v_Item.getKey() ,v_XSQLGroup.getExecuteTime() == null ? 0L : v_XSQLGroup.getExecuteTime().getTime());
                 v_Total.getTotalTimeLen().put(v_Item.getKey() ,v_XSQLGroup.getSuccessTimeLen());
             }
@@ -1012,7 +1015,7 @@ public class AnalyseBase extends Analyse
                 
                 v_Total.getRequestCount().put(v_Item.getKey() ,v_XSQL.getRequestCount());
                 v_Total.getSuccessCount().put(v_Item.getKey() ,v_XSQL.getSuccessCount());
-                v_Total.getIoRowcount()  .put(v_Item.getKey() ,v_XSQL.getIoRowCount());
+                v_Total.getIoRowCount()  .put(v_Item.getKey() ,v_XSQL.getIoRowCount());
                 
                 // 触发器的执行统计
                 if ( v_XSQL.isTriggers() )

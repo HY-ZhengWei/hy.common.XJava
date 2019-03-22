@@ -18,6 +18,7 @@ import org.hy.common.xml.plugins.XSQLGroup.XConnection;
  * @author      ZhengWei(HY)
  * @createDate  2017-12-22
  * @version     v1.0
+ *              v2.0  2019-03-22  添加：execSumCount相关的统计，添加对Query查询结果行数的统计。
  */
 public class XSQLGroupControl
 {
@@ -32,7 +33,7 @@ public class XSQLGroupControl
      */
     protected Map<DataSourceGroup ,XConnection> dsgConns;
     
-    /** 累计影响(Insert、Update、Delete)的总行数 */
+    /** 累计影响(Insert、Update、Delete、Query)的总行数 */
     protected Counter<String>                   execSumCount;
     
     /** 多任务的组信息 */
@@ -154,7 +155,7 @@ public class XSQLGroupControl
     
     
     /**
-     * 获取：累计影响(Insert、Update、Delete)的总行数
+     * 获取：累计影响(Insert、Update、Delete、Query)的总行数
      */
     public Counter<String> getExecSumCount()
     {
@@ -163,7 +164,7 @@ public class XSQLGroupControl
 
     
     /**
-     * 设置：累计影响(Insert、Update、Delete)的总行数
+     * 设置：累计影响(Insert、Update、Delete、Query)的总行数
      * 
      * @param execSumCount 
      */

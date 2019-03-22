@@ -31,7 +31,7 @@ public class AnalyseDBTotal extends SerializableDef
     private Counter<String> successCount;
     
     /** 读写行数。K:为XSQL的ID */
-    private Counter<String> ioRowcount;
+    private Counter<String> ioRowCount;
     
     /** 触发器的请求量。K:为XSQL的ID */
     private Counter<String> triggerReqCount;
@@ -51,7 +51,7 @@ public class AnalyseDBTotal extends SerializableDef
     {
         this.requestCount    = new Counter<String>();
         this.successCount    = new Counter<String>();
-        this.ioRowcount      = new Counter<String>();
+        this.ioRowCount      = new Counter<String>();
         this.triggerReqCount = new Counter<String>();
         this.triggerSucCount = new Counter<String>();
         this.maxExecTime     = new Max<String>();
@@ -107,9 +107,9 @@ public class AnalyseDBTotal extends SerializableDef
     /**
      * 获取：读写行数。K:为XSQL的ID
      */
-    public Counter<String> getIoRowcount()
+    public Counter<String> getIoRowCount()
     {
-        return ioRowcount;
+        return ioRowCount;
     }
 
 
@@ -117,11 +117,11 @@ public class AnalyseDBTotal extends SerializableDef
     /**
      * 设置：读写行数。K:为XSQL的ID
      * 
-     * @param ioRowcount 
+     * @param ioRowCount 
      */
-    public void setIoRowcount(Counter<String> ioRowcount)
+    public void setIoRowCount(Counter<String> ioRowCount)
     {
-        this.ioRowcount = ioRowcount;
+        this.ioRowCount = ioRowCount;
     }
 
 

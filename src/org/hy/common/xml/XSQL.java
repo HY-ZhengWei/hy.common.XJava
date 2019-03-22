@@ -131,6 +131,7 @@ import org.hy.common.xml.event.BLobEvent;
  *                                     有对所有XSQL异常统一处理的能力。
  *              v16.0 2019-03-20  添加：统计项ioRowCount读写行数。查询结果的行数或写入数据库的记录数。
  *                                优化：数据库记录翻译为Java对象的性能优化。 
+ *              v16.1 2019-03-22  添加：queryXSQLData()等一系列方法。在返回查询结果的同时，也返回其它更多的信息。
  */
 /*
  * 游标类型的说明
@@ -332,10 +333,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         this.batchCommit        = 0;
         this.allowExecutesSplit = false;
         this.uuid               = StringHelp.getUUID();
-        this.requestCount       = 0;
-        this.successCount       = 0;
+        this.requestCount       = 0L;
+        this.successCount       = 0L;
         this.successTimeLen     = 0D;
-        this.ioRowCount         = 0;
+        this.ioRowCount         = 0L;
         this.executeTime        = null;
         this.comment            = null;
         this.error              = (XSQLError)XJava.getObject($XSQLErrors);
@@ -353,10 +354,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 */
 	public void reset()
 	{
-	    this.requestCount   = 0;
-	    this.successCount   = 0;
+	    this.requestCount   = 0L;
+	    this.successCount   = 0L;
 	    this.successTimeLen = 0D;
-	    this.ioRowCount     = 0;
+	    this.ioRowCount     = 0L;
 	    this.executeTime    = null;
 	    
 	    if ( this.isTriggers() )
@@ -763,40 +764,56 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 */
 	public Object query()
 	{
-	    checkContent();
-		
-		boolean v_IsError = false;
+	    return queryXSQLData().getDatas();
+	}
+	
+	
+	
+	/**
+     * 占位符SQL的查询。 -- 无填充值的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @return
+     */
+    public XSQLData queryXSQLData()
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
 
-		try
-		{
-		    return this.query(this.content.getSQL());
-		}
-		catch (NullPointerException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
+        try
+        {
+            return this.queryXSQLData(this.content.getSQL());
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
             {
                 error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
             }
-		    throw exce;
-		}
-		catch (RuntimeException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
-		    {
-		        error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
-		    }
-		    throw exce;
-		}
-		finally
-		{
-		    if ( this.isTriggers(v_IsError) )
-		    {
-		        this.trigger.executes();
-		    }
-		}
-	}
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL() ,exce ,this));
+            }
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes();
+            }
+        }
+    }
 	
 	
 	
@@ -808,13 +825,30 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     public Object query(Connection i_Conn)
     {
+        return queryXSQLData(i_Conn).getDatas();
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的查询。 -- 无填充值的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_Conn
+     * @return
+     */
+    public XSQLData queryXSQLData(Connection i_Conn)
+    {
         checkContent();
         
         boolean v_IsError = false;
 
         try
         {
-            return this.query(this.content.getSQL() ,i_Conn);
+            return this.queryXSQLData(this.content.getSQL() ,i_Conn);
         }
         catch (NullPointerException exce)
         {
@@ -856,24 +890,35 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 */
 	public Object query(Map<String ,?> i_Values)
 	{
-	    checkContent();
-		
-		boolean v_IsError = false;
-		
-		try
-		{
-		    return this.query(this.content.getSQL(i_Values));
-		}
-		catch (NullPointerException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
-            {
-                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
-            }
-		    throw exce;
-		}
-		catch (RuntimeException exce)
+	    return queryXSQLData(i_Values).getDatas();
+	}
+	
+	
+	
+	/**
+     * 占位符SQL的查询。
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @return
+     */
+    public XSQLData queryXSQLData(Map<String ,?> i_Values)
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+        
+        try
+        {
+            return this.queryXSQLData(this.content.getSQL(i_Values));
+        }
+        catch (NullPointerException exce)
         {
             v_IsError = true;
             if ( error != null )
@@ -882,14 +927,23 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             }
             throw exce;
         }
-		finally
-		{
-		    if ( this.isTriggers(v_IsError) )
-	        {
-		        this.trigger.executes(i_Values);
-	        }
-		}
-	}
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes(i_Values);
+            }
+        }
+    }
 	
 	
 	
@@ -905,13 +959,34 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     public Object query(Map<String ,?> i_Values ,Connection i_Conn)
     {
+        return queryXSQLData(i_Values ,i_Conn).getDatas();
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的查询。（内部不再关闭数据库连接）
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @param i_Conn  
+     * @return
+     */
+    public XSQLData queryXSQLData(Map<String ,?> i_Values ,Connection i_Conn)
+    {
         checkContent();
         
         boolean v_IsError = false;
         
         try
         {
-            return this.query(this.content.getSQL(i_Values) ,i_Conn);
+            return this.queryXSQLData(this.content.getSQL(i_Values) ,i_Conn);
         }
         catch (NullPointerException exce)
         {
@@ -954,40 +1029,61 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 */
 	public Object query(Map<String ,?> i_Values ,List<String> i_FilterColNames)
 	{
-	    checkContent();
-		
-		boolean v_IsError = false;
-
-		try
-		{
-		    return this.query(this.content.getSQL(i_Values) ,i_FilterColNames);
-		}
-		catch (NullPointerException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
-            {
-                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
-            }
-		    throw exce;
-		}
-		catch (RuntimeException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
-            {
-                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
-            }
-		    throw exce;
-		}
-		finally
-		{
-		    if ( this.isTriggers(v_IsError) )
-		    {
-		        this.trigger.executes(i_Values);
-		    }
-		}
+	    return queryXSQLData(i_Values ,i_FilterColNames).getDatas();
 	}
+	
+	
+	
+	/**
+     * 占位符SQL的查询。(按输出字段名称过滤)
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @param i_FilterColNames   按输出字段名称过滤。
+     * @return
+     */
+    public XSQLData queryXSQLData(Map<String ,?> i_Values ,List<String> i_FilterColNames)
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+
+        try
+        {
+            return this.queryXSQLData(this.content.getSQL(i_Values) ,i_FilterColNames);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes(i_Values);
+            }
+        }
+    }
 	
 	
 	
@@ -1003,40 +1099,61 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 */
 	public Object query(Map<String ,?> i_Values ,int [] i_FilterColNoArr)
 	{
-	    checkContent();
-		
-		boolean v_IsError = false;
-
-		try
-		{
-		    return this.query(this.content.getSQL(i_Values) ,i_FilterColNoArr);
-		}
-		catch (NullPointerException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
-            {
-                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
-            }
-		    throw exce;
-		}
-		catch (RuntimeException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
-            {
-                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
-            }
-		    throw exce;
-		}
-		finally
-		{
-		    if ( this.isTriggers(v_IsError) )
-		    {
-		        this.trigger.executes(i_Values);
-		    }
-		}
+	    return queryXSQLData(i_Values ,i_FilterColNoArr).getDatas();
 	}
+	
+	
+	
+	/**
+     * 占位符SQL的查询。(按输出字段位置过滤)
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @param i_FilterColNoArr   按输出字段位置过滤。
+     * @return
+     */
+    public XSQLData queryXSQLData(Map<String ,?> i_Values ,int [] i_FilterColNoArr)
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+
+        try
+        {
+            return this.queryXSQLData(this.content.getSQL(i_Values) ,i_FilterColNoArr);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Values) ,exce ,this).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes(i_Values);
+            }
+        }
+    }
 	
 	
 	
@@ -1051,40 +1168,60 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 */
 	public Object query(Object i_Obj)
 	{
-	    checkContent();
-		
-		boolean v_IsError = false;
-
-		try
-		{
-		    return this.query(this.content.getSQL(i_Obj));
-		}
-		catch (NullPointerException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
-            {
-                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
-            }
-		    throw exce;
-		}
-		catch (RuntimeException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
-            {
-                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
-            }
-		    throw exce;
-		}
-		finally
-		{
-		    if ( this.isTriggers(v_IsError) )
-		    {
-		        this.trigger.executes(i_Obj);
-		    }
-		}
+	    return queryXSQLData(i_Obj).getDatas();
 	}
+	
+	
+	
+	/**
+     * 占位符SQL的查询。
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @return
+     */
+    public XSQLData queryXSQLData(Object i_Obj)
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+
+        try
+        {
+            return this.queryXSQLData(this.content.getSQL(i_Obj));
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes(i_Obj);
+            }
+        }
+    }
 	
 	
 	
@@ -1100,13 +1237,34 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     public Object query(Object i_Obj ,Connection i_Conn)
     {
+        return queryXSQLData(i_Obj ,i_Conn).getDatas();
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的查询。（内部不再关闭数据库连接）
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Conn
+     * @return
+     */
+    public XSQLData queryXSQLData(Object i_Obj ,Connection i_Conn)
+    {
         checkContent();
         
         boolean v_IsError = false;
 
         try
         {
-            return this.query(this.content.getSQL(i_Obj) ,i_Conn);
+            return this.queryXSQLData(this.content.getSQL(i_Obj) ,i_Conn);
         }
         catch (NullPointerException exce)
         {
@@ -1149,40 +1307,61 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 */
 	public Object query(Object i_Obj ,List<String> i_FilterColNames)
 	{
-	    checkContent();
-		
-		boolean v_IsError = false;
-
-		try
-		{
-		    return this.query(this.content.getSQL(i_Obj) ,i_FilterColNames);
-		}
-		catch (NullPointerException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
-            {
-                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
-            }
-		    throw exce;
-		}
-		catch (RuntimeException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
-            {
-                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
-            }
-		    throw exce;
-		}
-		finally
-		{
-		    if ( this.isTriggers(v_IsError) )
-		    {
-		        this.trigger.executes(i_Obj);
-		    }
-		}
+	    return queryXSQLData(i_Obj ,i_FilterColNames).getDatas();
 	}
+	
+	
+	
+	/**
+     * 占位符SQL的查询。(按输出字段名称过滤)
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_FilterColNames   按输出字段名称过滤。
+     * @return
+     */
+    public XSQLData queryXSQLData(Object i_Obj ,List<String> i_FilterColNames)
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+
+        try
+        {
+            return this.queryXSQLData(this.content.getSQL(i_Obj) ,i_FilterColNames);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes(i_Obj);
+            }
+        }
+    }
 	
 	
 	
@@ -1198,40 +1377,61 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 */
 	public Object query(Object i_Obj ,int [] i_FilterColNoArr)
 	{
-	    checkContent();
-		
-		boolean v_IsError = false;
-
-		try
-		{
-		    return this.query(this.content.getSQL(i_Obj) ,i_FilterColNoArr);
-		}
-		catch (NullPointerException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
-            {
-                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
-            }
-		    throw exce;
-		}
-		catch (RuntimeException exce)
-		{
-		    v_IsError = true;
-		    if ( error != null )
-            {
-                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
-            }
-		    throw exce;
-		}
-		finally
-		{
-		    if ( this.isTriggers(v_IsError) )
-		    {
-		        this.trigger.executes(i_Obj);
-		    }
-		}
+	    return queryXSQLData(i_Obj ,i_FilterColNoArr).getDatas();
 	}
+	
+	
+	
+	/**
+     * 占位符SQL的查询。(按输出字段位置过滤)
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_FilterColNoArr   按输出字段位置过滤。
+     * @return
+     */
+    public XSQLData queryXSQLData(Object i_Obj ,int [] i_FilterColNoArr)
+    {
+        checkContent();
+        
+        boolean v_IsError = false;
+
+        try
+        {
+            return this.queryXSQLData(this.content.getSQL(i_Obj) ,i_FilterColNoArr);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            if ( error != null )
+            {
+                error.errorLog(new XSQLErrorInfo(this.content.getSQL(i_Obj) ,exce ,this).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
+        finally
+        {
+            if ( this.isTriggers(v_IsError) )
+            {
+                this.trigger.executes(i_Obj);
+            }
+        }
+    }
 	
 	
 	
@@ -1245,47 +1445,66 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 */
 	public Object query(String i_SQL ,Connection i_Conn)
 	{
-		Statement  v_Statement = null;
-	    ResultSet  v_Resultset = null;
-	    long       v_BeginTime = this.request().getTime();
-		
-		try
-		{
-		    if ( this.result == null )
-	        {
-	            throw new NullPointerException("Result is null of XSQL.");
-	        }
-	        
-	        if ( Help.isNull(i_SQL) )
-	        {
-	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
-	        }
-	        
-	        if ( null == i_Conn)
-	        {
-	            throw new NullPointerException("Connection is null of XSQL.");
-	        }
-		    
-			v_Statement = i_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
-			v_Resultset = v_Statement.executeQuery(i_SQL);
-			$SQLBusway.put(new XSQLLog(i_SQL));
-			
-			XSQLData v_Ret = this.result.getDatas(v_Resultset);
-			Date v_EndTime = Date.getNowTime();
-			this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
-			
-			return v_Ret.getDatas();
-		}
-		catch (Exception exce)
-		{
-		    erroring(i_SQL ,exce ,this);
-			throw new RuntimeException(exce.getMessage());
-		}
-		finally
-		{
-			this.closeDB(v_Resultset ,v_Statement ,null);
-		}
+		return queryXSQLData(i_SQL ,i_Conn).getDatas();
 	}
+	
+	
+	
+	/**
+     * 常规SQL的查询。（内部不再关闭数据库连接）
+     * 
+     * 1. 提交数据库执行 i_SQL ，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_SQL              常规SQL语句
+     * @return
+     */
+    public XSQLData queryXSQLData(String i_SQL ,Connection i_Conn)
+    {
+        Statement  v_Statement = null;
+        ResultSet  v_Resultset = null;
+        long       v_BeginTime = this.request().getTime();
+        
+        try
+        {
+            if ( this.result == null )
+            {
+                throw new NullPointerException("Result is null of XSQL.");
+            }
+            
+            if ( Help.isNull(i_SQL) )
+            {
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+            }
+            
+            if ( null == i_Conn)
+            {
+                throw new NullPointerException("Connection is null of XSQL.");
+            }
+            
+            v_Statement = i_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
+            v_Resultset = v_Statement.executeQuery(i_SQL);
+            $SQLBusway.put(new XSQLLog(i_SQL));
+            
+            XSQLData v_Ret = this.result.getDatas(v_Resultset);
+            Date v_EndTime = Date.getNowTime();
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
+            
+            return v_Ret;
+        }
+        catch (Exception exce)
+        {
+            erroring(i_SQL ,exce ,this);
+            throw new RuntimeException(exce.getMessage());
+        }
+        finally
+        {
+            this.closeDB(v_Resultset ,v_Statement ,null);
+        }
+    }
 	
 	
 	
@@ -1298,6 +1517,25 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @return
      */
     public Object query(String i_SQL)
+    {
+        return queryXSQLData(i_SQL).getDatas();
+    }
+    
+    
+    
+    /**
+     * 常规SQL的查询。
+     * 
+     * 1. 提交数据库执行 i_SQL ，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_SQL              常规SQL语句
+     * @return
+     */
+    public XSQLData queryXSQLData(String i_SQL)
     {
         DataSourceGroup v_DSG       = null;
         Connection      v_Conn      = null;
@@ -1332,7 +1570,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
             
-            return v_Ret.getDatas();
+            return v_Ret;
         }
         catch (Exception exce)
         {
@@ -1360,13 +1598,31 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     public Object query(int i_StartRow ,int i_PagePerSize)
     {
+        return queryXSQLData(i_StartRow ,i_PagePerSize).getDatas();
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的查询。游标的分页查询（可通用于所有数据库）。 -- 无填充值的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_StartRow         开始读取的行号。下标从0开始。
+     * @param i_PagePerSize      每页显示多少条数据。只有大于0时，游标分页功能才生效。
+     * @return
+     */
+    public XSQLData queryXSQLData(int i_StartRow ,int i_PagePerSize)
+    {
         checkContent();
         
         boolean v_IsError = false;
 
         try
         {
-            return this.query(this.content.getSQL() ,i_StartRow ,i_PagePerSize);
+            return this.queryXSQLData(this.content.getSQL() ,i_StartRow ,i_PagePerSize);
         }
         catch (NullPointerException exce)
         {
@@ -1414,13 +1670,35 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     public Object query(Map<String ,?> i_Values ,int i_StartRow ,int i_PagePerSize)
     {
+        return queryXSQLData(i_Values ,i_StartRow ,i_PagePerSize).getDatas();
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的查询。游标的分页查询（可通用于所有数据库）。
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @param i_StartRow         开始读取的行号。下标从0开始。
+     * @param i_PagePerSize      每页显示多少条数据。只有大于0时，游标分页功能才生效。
+     * @return
+     */
+    public XSQLData queryXSQLData(Map<String ,?> i_Values ,int i_StartRow ,int i_PagePerSize)
+    {
         checkContent();
         
         boolean v_IsError = false;
 
         try
         {
-            return this.query(this.content.getSQL(i_Values) ,i_StartRow ,i_PagePerSize);
+            return this.queryXSQLData(this.content.getSQL(i_Values) ,i_StartRow ,i_PagePerSize);
         }
         catch (NullPointerException exce)
         {
@@ -1468,13 +1746,35 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     public Object query(Object i_Obj ,int i_StartRow ,int i_PagePerSize)
     {
+        return queryXSQLData(i_Obj ,i_StartRow ,i_PagePerSize).getDatas();
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的查询。游标的分页查询（可通用于所有数据库）。
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_StartRow         开始读取的行号。下标从0开始。
+     * @param i_PagePerSize      每页显示多少条数据。只有大于0时，游标分页功能才生效。
+     * @return
+     */
+    public XSQLData queryXSQLData(Object i_Obj ,int i_StartRow ,int i_PagePerSize)
+    {
         checkContent();
         
         boolean v_IsError = false;
 
         try
         {
-            return this.query(this.content.getSQL(i_Obj) ,i_StartRow ,i_PagePerSize);
+            return this.queryXSQLData(this.content.getSQL(i_Obj) ,i_StartRow ,i_PagePerSize);
         }
         catch (NullPointerException exce)
         {
@@ -1521,6 +1821,27 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 */
     public Object query(String i_SQL ,int i_StartRow ,int i_PagePerSize)
     {
+        return queryXSQLData(i_SQL ,i_StartRow ,i_PagePerSize).getDatas();
+    }
+    
+    
+    
+    /**
+     * 常规SQL的查询。游标的分页查询（可通用于所有数据库）。
+     * 
+     * 1. 提交数据库执行 i_SQL ，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     *
+     * @param i_SQL              常规SQL语句
+     * @param i_StartRow         开始读取的行号。下标从0开始。
+     * @param i_PagePerSize      每页显示多少条数据。只有大于0时，游标分页功能才生效。
+     * @return
+     */
+    public XSQLData queryXSQLData(String i_SQL ,int i_StartRow ,int i_PagePerSize)
+    {
         DataSourceGroup v_DSG       = null;
         Connection      v_Conn      = null;
         Statement       v_Statement = null;
@@ -1554,7 +1875,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
             
-            return v_Ret.getDatas();
+            return v_Ret;
         }
         catch (Exception exce)
         {
@@ -1580,51 +1901,71 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 */
 	public Object query(String i_SQL ,List<String> i_FilterColNames)
 	{
-	    DataSourceGroup v_DSG       = null;
-		Connection      v_Conn      = null;
-		Statement       v_Statement = null;
-	    ResultSet       v_Resultset = null;
-	    long            v_BeginTime = this.request().getTime();
-		
-		try
-		{
-		    if ( this.result == null )
-	        {
-	            throw new NullPointerException("Result is null of XSQL.");
-	        }
-	        
-		    v_DSG = this.getDataSourceGroup();
+	    return queryXSQLData(i_SQL ,i_FilterColNames).getDatas();
+	}
+	
+	
+	
+	/**
+     * 常规SQL的查询。(按输出字段名称过滤)
+     * 
+     * 1. 提交数据库执行 i_SQL ，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_SQL              常规SQL语句
+     * @param i_FilterColNames   按输出字段名称过滤。
+     * @return
+     */
+    public XSQLData queryXSQLData(String i_SQL ,List<String> i_FilterColNames)
+    {
+        DataSourceGroup v_DSG       = null;
+        Connection      v_Conn      = null;
+        Statement       v_Statement = null;
+        ResultSet       v_Resultset = null;
+        long            v_BeginTime = this.request().getTime();
+        
+        try
+        {
+            if ( this.result == null )
+            {
+                throw new NullPointerException("Result is null of XSQL.");
+            }
+            
+            v_DSG = this.getDataSourceGroup();
             if ( !v_DSG.isValid() )
             {
                 throw new RuntimeException("DataSourceGroup is not valid.");
             }
-	        
-	        if ( Help.isNull(i_SQL) )
-	        {
-	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
-	        }
-		    
-			v_Conn      = this.getConnection(v_DSG);
-			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
-			v_Resultset = v_Statement.executeQuery(i_SQL);
-			$SQLBusway.put(new XSQLLog(i_SQL));
-			
-			XSQLData v_Ret = this.result.getDatas(v_Resultset ,i_FilterColNames);
-			Date v_EndTime = Date.getNowTime();
+            
+            if ( Help.isNull(i_SQL) )
+            {
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+            }
+            
+            v_Conn      = this.getConnection(v_DSG);
+            v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
+            v_Resultset = v_Statement.executeQuery(i_SQL);
+            $SQLBusway.put(new XSQLLog(i_SQL));
+            
+            XSQLData v_Ret = this.result.getDatas(v_Resultset ,i_FilterColNames);
+            Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
-			
-			return v_Ret.getDatas();
-		}
-		catch (Exception exce)
-		{
-		    erroring(i_SQL ,exce ,this);
+            
+            return v_Ret;
+        }
+        catch (Exception exce)
+        {
+            erroring(i_SQL ,exce ,this);
             throw new RuntimeException(exce.getMessage());
-		}
-		finally
-		{
-			this.closeDB(v_Resultset ,v_Statement ,v_Conn);
-		}
-	}
+        }
+        finally
+        {
+            this.closeDB(v_Resultset ,v_Statement ,v_Conn);
+        }
+    }
 	
 	
 	
@@ -1639,51 +1980,71 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	 */
 	public Object query(String i_SQL ,int [] i_FilterColNoArr)
 	{
-	    DataSourceGroup v_DSG       = null;
-		Connection      v_Conn      = null;
-		Statement       v_Statement = null;
-	    ResultSet       v_Resultset = null;
-	    long            v_BeginTime = this.request().getTime();
-		
-		try
-		{
-		    if ( this.result == null )
-	        {
-	            throw new NullPointerException("Result is null of XSQL.");
-	        }
-	        
-		    v_DSG = this.getDataSourceGroup();
+	    return queryXSQLData(i_SQL ,i_FilterColNoArr).getDatas();
+	}
+	
+	
+	
+	/**
+     * 常规SQL的查询。(按输出字段位置过滤)
+     * 
+     * 1. 提交数据库执行 i_SQL ，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-03-22
+     * @version     v1.0
+     * 
+     * @param i_SQL              常规SQL语句
+     * @param i_FilterColNoArr   按输出字段位置过滤。
+     * @return
+     */
+    public XSQLData queryXSQLData(String i_SQL ,int [] i_FilterColNoArr)
+    {
+        DataSourceGroup v_DSG       = null;
+        Connection      v_Conn      = null;
+        Statement       v_Statement = null;
+        ResultSet       v_Resultset = null;
+        long            v_BeginTime = this.request().getTime();
+        
+        try
+        {
+            if ( this.result == null )
+            {
+                throw new NullPointerException("Result is null of XSQL.");
+            }
+            
+            v_DSG = this.getDataSourceGroup();
             if ( !v_DSG.isValid() )
             {
                 throw new RuntimeException("DataSourceGroup is not valid.");
             }
-	        
-	        if ( Help.isNull(i_SQL) )
-	        {
-	            throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
-	        }
-		    
-			v_Conn      = this.getConnection(v_DSG);
-			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
-			v_Resultset = v_Statement.executeQuery(i_SQL);
-			$SQLBusway.put(new XSQLLog(i_SQL));
-			
-			XSQLData v_Ret = this.result.getDatas(v_Resultset ,i_FilterColNoArr);
-			Date v_EndTime = Date.getNowTime();
+            
+            if ( Help.isNull(i_SQL) )
+            {
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+            }
+            
+            v_Conn      = this.getConnection(v_DSG);
+            v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
+            v_Resultset = v_Statement.executeQuery(i_SQL);
+            $SQLBusway.put(new XSQLLog(i_SQL));
+            
+            XSQLData v_Ret = this.result.getDatas(v_Resultset ,i_FilterColNoArr);
+            Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
-			
-			return v_Ret.getDatas();
-		}
-		catch (Exception exce)
-		{
-		    erroring(i_SQL ,exce ,this);
+            
+            return v_Ret;
+        }
+        catch (Exception exce)
+        {
+            erroring(i_SQL ,exce ,this);
             throw new RuntimeException(exce.getMessage());
-		}
-		finally
-		{
-			this.closeDB(v_Resultset ,v_Statement ,v_Conn);
-		}
-	}
+        }
+        finally
+        {
+            this.closeDB(v_Resultset ,v_Statement ,v_Conn);
+        }
+    }
 	
 	
 	
