@@ -2409,11 +2409,11 @@ public final class XSQLGroup implements XJavaID
             {
                 if ( Help.isNull(i_Params) )
                 {
-                    return i_Node.getSql().getContent().getSQL();
+                    return i_Node.getSql().getContent().getSQL(i_Node.getSql().getDataSourceGroup());
                 }
                 else
                 {
-                    return i_Node.getSql().getContent().getSQL(i_Params);
+                    return i_Node.getSql().getContent().getSQL(i_Params ,i_Node.getSql().getDataSourceGroup());
                 }
             }
         }
