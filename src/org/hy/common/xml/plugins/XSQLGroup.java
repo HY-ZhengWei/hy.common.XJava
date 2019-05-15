@@ -2585,12 +2585,12 @@ public final class XSQLGroup implements XJavaID
         {
             StringBuilder v_Buffer = new StringBuilder();
             
-            v_Buffer.append("-- Error Index：").append(i_Return.getExceptionNode()).append("\n");
-            v_Buffer.append("-- Error SQL：  ").append(i_Return.getExceptionSQL()).append("\n");
+            v_Buffer.append("-- Error Index: ").append(i_Return.getExceptionNode()).append("\n");
+            v_Buffer.append("-- Error SQL:   ").append(i_Return.getExceptionSQL()).append("\n");
             
             if ( null != i_Return.getException() )
             {
-                v_Buffer.append("-- Error MSG：  ").append(i_Return.getException().getMessage()).append("\n");
+                v_Buffer.append("-- Error MSG:  ").append(i_Return.getException().getMessage()).append("\n");
                 System.out.print(v_Buffer.toString());
                 
                 i_Return.getException().printStackTrace();

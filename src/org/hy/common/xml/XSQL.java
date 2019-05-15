@@ -33,6 +33,8 @@ import org.hy.common.xml.event.DefaultBLobEvent;
 import oracle.sql.BLOB;
 import oracle.sql.CLOB;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hy.common.Busway;
 import org.hy.common.ByteHelp;
 import org.hy.common.CycleNextList;
@@ -132,6 +134,7 @@ import org.hy.common.xml.event.BLobEvent;
  *              v16.0 2019-03-20  添加：统计项ioRowCount读写行数。查询结果的行数或写入数据库的记录数。
  *                                优化：数据库记录翻译为Java对象的性能优化。 
  *              v16.1 2019-03-22  添加：queryXSQLData()等一系列方法。在返回查询结果的同时，也返回其它更多的信息。
+ *              v17.0 2019-05-15  添加：Log4j2的日志输出。建议人：李浩、张宇
  */
 /*
  * 游标类型的说明
@@ -144,6 +147,12 @@ import org.hy.common.xml.event.BLobEvent;
  */
 public final class XSQL implements Comparable<XSQL> ,XJavaID
 {
+    
+    private static final Logger $Logger = LogManager.getLogger(XSQL.class);
+    
+    // private static final Marker $Marker = MarkerManager.getMarker("XSQL");
+    
+    
     /** SQL类型。N: 增、删、改、查的普通SQL语句  (默认值) */
     public  static final String            $Type_NormalSQL = "N";
     
@@ -453,62 +462,6 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     
-    /**
-     * 执行SQL异常时的统一处理方法
-     * 
-     * @author      ZhengWei(HY)
-     * @createDate  2017-01-04
-     * @version     v1.0
-     *
-     * @param i_SQL
-     * @param i_Exce
-     */
-    private static void erroring(String i_SQL ,Exception i_Exce ,XSQL i_XSQL)
-    {
-        $SQLBusway     .put(new XSQLLog(i_SQL ,i_Exce));
-        $SQLBuswayError.put(new XSQLLog(i_SQL ,i_Exce ,i_XSQL == null ? "" : i_XSQL.getObjectID()));
-        
-        String v_XJavaID = "";
-        
-        if ( i_XSQL != null )
-        {
-            v_XJavaID = Help.NVL(i_XSQL.getXJavaID());
-            
-            if ( i_XSQL.getDataSourceGroup() != null )
-            {
-                i_XSQL.getDataSourceGroup().setException(true);
-            }
-        }
-        
-        System.err.println("-- Error time：  " + Date.getNowTime().getFull() 
-                       + "\n-- Error XSQL ID：  " + v_XJavaID
-                       + "\n-- Error SQL：  " + i_SQL);
-    }
-    
-    
-    
-    /**
-     * 获取：可自行定制的XSQL异常处理机制
-     */
-    public XSQLError getError()
-    {
-        return error;
-    }
-
-
-
-    /**
-     * 设置：可自行定制的XSQL异常处理机制
-     * 
-     * @param error 
-     */
-    public void setError(XSQLError error)
-    {
-        this.error = error;
-    }
-
-
-
     /**
      * 检查数据库占位符SQL的对象是否为null。同时统计异常数据。
      * 
@@ -1487,7 +1440,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             
             v_Statement = i_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
-            $SQLBusway.put(new XSQLLog(i_SQL));
+            log(i_SQL);
             
             XSQLData v_Ret = this.result.getDatas(v_Resultset);
             Date v_EndTime = Date.getNowTime();
@@ -1564,7 +1517,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             v_Conn      = this.getConnection(v_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
-            $SQLBusway.put(new XSQLLog(i_SQL));
+            log(i_SQL);
             
             XSQLData v_Ret = this.result.getDatas(v_Resultset);
             Date v_EndTime = Date.getNowTime();
@@ -1869,7 +1822,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             v_Conn      = this.getConnection(v_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
-            $SQLBusway.put(new XSQLLog(i_SQL));
+            log(i_SQL);
             
             XSQLData v_Ret = this.result.getDatas(v_Resultset ,i_StartRow ,i_PagePerSize);
             Date v_EndTime = Date.getNowTime();
@@ -1948,7 +1901,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             v_Conn      = this.getConnection(v_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
-            $SQLBusway.put(new XSQLLog(i_SQL));
+            log(i_SQL);
             
             XSQLData v_Ret = this.result.getDatas(v_Resultset ,i_FilterColNames);
             Date v_EndTime = Date.getNowTime();
@@ -2027,7 +1980,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             v_Conn      = this.getConnection(v_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
-            $SQLBusway.put(new XSQLLog(i_SQL));
+            log(i_SQL);
             
             XSQLData v_Ret = this.result.getDatas(v_Resultset ,i_FilterColNoArr);
             Date v_EndTime = Date.getNowTime();
@@ -2401,7 +2354,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             
             v_Statement = i_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
-            $SQLBusway.put(new XSQLLog(i_SQL));
+            log(i_SQL);
             
             XSQLData v_Ret = this.result.getBigDatas(v_Resultset ,i_XSQLBigData);
             Date v_EndTime = Date.getNowTime();
@@ -2464,7 +2417,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             v_Conn      = this.getConnection(v_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
-            $SQLBusway.put(new XSQLLog(i_SQL));
+            log(i_SQL);
             
             XSQLData v_Ret = this.result.getBigDatas(v_Resultset ,i_XSQLBigData);
             Date v_EndTime = Date.getNowTime();
@@ -2811,7 +2764,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 			v_Resultset = v_Statement.executeQuery(i_SQL);
-			$SQLBusway.put(new XSQLLog(i_SQL));
+			log(i_SQL);
 			
 			XSQLBigger v_Bigger = new XSQLBigger(this ,v_Resultset ,v_RowSize ,(new Date()).getTime() - v_BeginTime);
 			
@@ -2875,7 +2828,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 			v_Resultset = v_Statement.executeQuery(i_SQL);
-			$SQLBusway.put(new XSQLLog(i_SQL));
+			log(i_SQL);
 			
 			XSQLBigger v_Bigger = new XSQLBigger(this ,v_Resultset ,v_RowSize ,(new Date()).getTime() - v_BeginTime);
 			
@@ -2939,7 +2892,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 			v_Resultset = v_Statement.executeQuery(i_SQL);
-			$SQLBusway.put(new XSQLLog(i_SQL));
+			log(i_SQL);
 			
 			XSQLBigger v_Bigger = new XSQLBigger(this ,v_Resultset ,v_RowSize ,(new Date()).getTime() - v_BeginTime);
 			
@@ -3146,7 +3099,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	    	v_Conn      = this.getConnection(v_DSG);
 	    	v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 	    	v_Resultset = v_Statement.executeQuery(i_SQL);
-	    	$SQLBusway.put(new XSQLLog(i_SQL));
+	    	log(i_SQL);
 	    	
 	    	if ( v_Resultset.next() ) 
 	    	{
@@ -3519,7 +3472,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement();
 			int v_Count = v_Statement.executeUpdate(i_SQL);
-			$SQLBusway.put(new XSQLLog(i_SQL));
+			log(i_SQL);
 			
 			Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Count);
@@ -3706,7 +3659,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             
             v_Statement = i_Conn.createStatement();
             int v_Count = v_Statement.executeUpdate(i_SQL);
-            $SQLBusway.put(new XSQLLog(i_SQL));
+            log(i_SQL);
             
             Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Count);
@@ -3899,7 +3852,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                         {
                             v_Ret += v_SQLCount;
                         }
-                        $SQLBusway.put(new XSQLLog(v_SQL));
+                        log(v_SQL);
                     }
                 }
                 
@@ -3922,7 +3875,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                         {
                             v_Ret += v_SQLCount;
                         }
-                        $SQLBusway.put(new XSQLLog(v_SQL));
+                        log(v_SQL);
                         v_EC++;
                         
                         if ( v_EC % this.batchCommit == 0 )
@@ -4442,7 +4395,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 }
             }
             
-            $SQLBusway.put(new XSQLLog(v_SQL));
+            log(v_SQL);
             Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,i_ObjList.size() ,v_Ret);
             
@@ -4966,7 +4919,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             v_Conn.setAutoCommit(false);
             v_Statement      = v_Conn.createStatement();
             v_ResultSet      = v_Statement.executeQuery(i_SQL);
-            $SQLBusway.put(new XSQLLog(i_SQL));
+            log(i_SQL);
             
             if ( v_ResultSet.next() )
             {
@@ -5243,7 +5196,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 			v_Conn.setAutoCommit(false);
 			v_Statement      = v_Conn.createStatement();
 			v_ResultSet      = v_Statement.executeQuery(i_SQL);
-			$SQLBusway.put(new XSQLLog(i_SQL));
+			log(i_SQL);
 			
 			
 			v_IsContinue = this.fireBLobBeforeListener(v_Event);
@@ -5521,7 +5474,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 			v_Conn      = this.getConnection(v_DSG);
 			v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
 			v_ResultSet = v_Statement.executeQuery(i_SQL);
-			$SQLBusway.put(new XSQLLog(i_SQL));
+			log(i_SQL);
 			
 			if ( v_ResultSet.next() )
 			{
@@ -5798,13 +5751,13 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     			{
     			    v_SQL = v_SQLs[i].trim();
     			    v_Statement.execute(v_SQL);
-    			    $SQLBusway.put(new XSQLLog(v_SQL));
+    			    log(v_SQL);
     			}
 			}
 			else
 			{
 			    v_Statement.execute(v_SQL);
-                $SQLBusway.put(new XSQLLog(v_SQL));
+			    log(v_SQL);
 			}
 			
 			Date v_EndTime = Date.getNowTime();
@@ -5993,7 +5946,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             v_Statement = i_Conn.createStatement();
             
             v_Statement.execute(i_SQL);
-            $SQLBusway.put(new XSQLLog(i_SQL));
+            log(i_SQL);
             Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,1L);
             
@@ -6054,7 +6007,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 v_Statement = v_Conn.prepareCall("{call " + i_SQLCallName + "()}");
                 
                 v_Statement.execute();
-                $SQLBusway.put(new XSQLLog("{call " + i_SQLCallName + "()}"));
+                log("{call " + i_SQLCallName + "()}");
                 Date v_EndTime = Date.getNowTime();
                 this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,1L);
                 
@@ -6078,7 +6031,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                     v_RetType = 2;
                 }
                 
-                $SQLBusway.put(new XSQLLog("{call " + i_SQLCallName + "()}"));
+                log("{call " + i_SQLCallName + "()}");
                 Date v_EndTime = Date.getNowTime();
                 this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,1L);
                 
@@ -6279,7 +6232,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             if ( v_OutParamIndexs.size() <= 0 )
             {
                 v_Statement.execute();
-                $SQLBusway.put(new XSQLLog(v_Buffer.toString()));
+                log(v_Buffer.toString());
                 Date v_EndTime = Date.getNowTime();
                 this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,1L);
                 return true;
@@ -6287,7 +6240,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             else
             {
                 v_Statement.execute();
-                $SQLBusway.put(new XSQLLog(v_Buffer.toString()));
+                log(v_Buffer.toString());
                 
                 if ( v_OutParamIndexs.size() == 1 )
                 {
@@ -6508,7 +6461,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             if ( v_OutParamIndexs.size() <= 0 )
             {
                 v_Statement.execute();
-                $SQLBusway.put(new XSQLLog(v_Buffer.toString()));
+                log(v_Buffer.toString());
                 Date v_EndTime = Date.getNowTime();
                 this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,1L);
                 return true;
@@ -6516,7 +6469,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             else
             {
                 v_Statement.execute();
-                $SQLBusway.put(new XSQLLog(v_Buffer.toString()));
+                log(v_Buffer.toString());
                 
                 if ( v_OutParamIndexs.size() == 1 )
                 {
@@ -7518,6 +7471,103 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     public String getObjectID()
     {
         return this.uuid;
+    }
+    
+    
+    
+    /**
+     * 执行SQL异常时的统一处理方法
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-01-04
+     * @version     v1.0
+     *
+     * @param i_SQL
+     * @param i_Exce
+     */
+    private static void erroring(String i_SQL ,Exception i_Exce ,XSQL i_XSQL)
+    {
+        $SQLBusway     .put(new XSQLLog(i_SQL ,i_Exce));
+        $SQLBuswayError.put(new XSQLLog(i_SQL ,i_Exce ,i_XSQL == null ? "" : i_XSQL.getObjectID()));
+        
+        String v_XJavaID = "";
+        
+        if ( i_XSQL != null )
+        {
+            v_XJavaID = Help.NVL(i_XSQL.getXJavaID());
+            
+            if ( i_XSQL.getDataSourceGroup() != null )
+            {
+                i_XSQL.getDataSourceGroup().setException(true);
+            }
+        }
+        
+        System.err.println("\n-- Error time:    " + Date.getNowTime().getFull() 
+                         + "\n-- Error XSQL ID: " + v_XJavaID
+                         + "\n-- Error SQL:     " + i_SQL);
+        
+        i_Exce.printStackTrace();
+    }
+    
+    
+    
+    /**
+     * 获取：可自行定制的XSQL异常处理机制
+     */
+    public XSQLError getError()
+    {
+        return error;
+    }
+
+
+
+    /**
+     * 设置：可自行定制的XSQL异常处理机制
+     * 
+     * @param error 
+     */
+    public void setError(XSQLError error)
+    {
+        this.error = error;
+    }
+    
+    
+    
+    /**
+     * 执行之后的日志。（在SQL语法成功执行之后，在this.result.getDatas(...)方法之前执行）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-05-15
+     * @version     v1.0
+     *
+     * @param i_SQL
+     */
+    private void log(String i_SQL)
+    {
+        $SQLBusway.put(new XSQLLog(i_SQL));
+        
+        if ( !Help.isNull(this.xjavaID) )
+        {
+            if ( !Help.isNull(this.comment) )
+            {
+                $Logger.debug(this.xjavaID + " : " + this.comment + "\n" + i_SQL);
+            }
+            else
+            {
+                $Logger.debug(this.xjavaID + "\n" + i_SQL);
+            }
+        }
+        else
+        {
+            if ( !Help.isNull(this.comment) )
+            {
+                $Logger.debug(this.comment + "\n" + i_SQL);
+            }
+            else
+            {
+                $Logger.debug(i_SQL);
+            }
+        }
     }
     
     
