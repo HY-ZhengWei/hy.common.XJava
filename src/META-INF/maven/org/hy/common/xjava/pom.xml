@@ -4,7 +4,7 @@
 
   <groupId>org</groupId>
   <artifactId>hy.common.xjava</artifactId>
-  <version>3.9.32</version>
+  <version>3.9.33</version>
   <packaging>jar</packaging>
 
   <name>hy.common.xjava</name>
@@ -56,6 +56,18 @@
 	    <groupId>org.eweb4j</groupId>
 	    <artifactId>fel</artifactId>
 	    <version>0.8</version>
+	</dependency>
+	
+	<dependency>
+   		<groupId>org.apache.logging.log4j</groupId>
+   		<artifactId>log4j-core</artifactId>
+   		<version>2.11.2</version>
+	</dependency>
+	
+	<dependency>
+		<groupId>org.apache.logging.log4j</groupId>
+		<artifactId>log4j-api</artifactId>
+		<version>2.11.2</version>
 	</dependency>
     
     <!-- Struts -->

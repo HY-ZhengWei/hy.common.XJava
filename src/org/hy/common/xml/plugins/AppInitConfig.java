@@ -34,6 +34,7 @@ import org.hy.common.file.FileHelp;
  *                                     Invalid character found in the request target. The valid characters are defined in RFC 7230 and RFC 3986
  *              v4.0  2018-06-20  添加：按文件名称排序后的顺序加载XML配置文件。
  *              v4.1  2019-02-27  修复：加载目录中所有配置文件时，某一配置文件加载异常，继续加载后面的配置文件。
+ *              v4.2  2019-05-20  添加：加载空目录时，显示it is empty的提示。
  */
 public class AppInitConfig
 {
@@ -56,6 +57,9 @@ public class AppInitConfig
        
         /** 完成日志 */
        ,$Finish
+       
+        /** 空目录，未加载任何XML配置文件 */
+       ,$Empty
     }
     
     
@@ -238,6 +242,11 @@ public class AppInitConfig
                             {
                                 this.init(null ,v_ChildParams ,i_XmlRootPath);
                                 v_OK++;
+                            }
+                            else
+                            {
+                                v_OK++;
+                                log(v_Param ,LogType.$Empty);
                             }
                         }
                         else
@@ -571,7 +580,11 @@ public class AppInitConfig
         }
         else if ( LogType.$Finish == i_LogType )
         {
-            System.out.println("load finish.");
+            System.out.println("load " + i_Param.getValue() + " finish.");
+        }
+        else if ( LogType.$Empty == i_LogType )
+        {
+            System.out.println("load " + i_Param.getValue() + " finish, but it is empty.");
         }
         else
         {
