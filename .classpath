@@ -28,6 +28,7 @@
 	<classpathentry kind="lib" path="lib/spring-web-5.0.7.RELEASE.jar" sourcepath="/Volumes/HY_HD_06/Develop_HD/apache-maven-localRepository/org/springframework/spring-web/5.0.7.RELEASE/spring-web-5.0.7.RELEASE-sources.jar"/>
 	<classpathentry kind="lib" path="lib/spring-webmvc-5.0.7.RELEASE.jar" sourcepath="/Volumes/HY_HD_06/Develop_HD/apache-maven-localRepository/org/springframework/spring-webmvc/5.0.7.RELEASE/spring-webmvc-5.0.7.RELEASE-sources.jar"/>
 	<classpathentry kind="lib" path="lib/spring-beans-5.0.7.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-api-2.11.2.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-core-2.11.2.jar"/>
 	<classpathentry kind="output" path="bin"/>

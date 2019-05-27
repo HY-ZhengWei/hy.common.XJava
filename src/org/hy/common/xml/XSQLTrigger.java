@@ -59,6 +59,9 @@ public class XSQLTrigger
     /** 可自行定制的XSQL异常处理机制。当触发的XSQL未设置异常处理机制（XSQL.getError()==null）时，才生效 */
     private XSQLError error;
     
+    /** 是否初始化 createBackup() 添加的XSQL。只针对 createBackup() 功能的初始化 */
+    private boolean   isInit;
+    
     
     
     public XSQLTrigger()
@@ -67,6 +70,7 @@ public class XSQLTrigger
         this.syncMode  = false;
         this.errorMode = true;
         this.error     = null;
+        this.isInit    = false;
     }
     
     
@@ -239,6 +243,8 @@ public class XSQLTrigger
         v_Trigger.setDataSourceGroup(i_DSG);
         
         this.setCreate(v_Trigger);
+        
+        this.isInit = true;
     }
     
     
@@ -441,6 +447,28 @@ public class XSQLTrigger
     public void setError(XSQLError error)
     {
         this.error = error;
+    }
+
+
+    
+    /**
+     * 获取：是否初始化过所有的XSQL。只针对 createBackup() 功能的初始化
+     */
+    public boolean isInit()
+    {
+        return isInit;
+    }
+
+
+    
+    /**
+     * 设置：是否初始化过所有的XSQL。只针对 createBackup() 功能的初始化
+     * 
+     * @param isInit 
+     */
+    public void setInit(boolean isInit)
+    {
+        this.isInit = isInit;
     }
     
 }

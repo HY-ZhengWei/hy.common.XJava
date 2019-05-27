@@ -29,12 +29,11 @@ import org.hy.common.db.DBSQL;
 import org.hy.common.db.DataSourceGroup;
 import org.hy.common.xml.event.BLobListener;
 import org.hy.common.xml.event.DefaultBLobEvent;
+import org.hy.common.xml.log.Logger;
 
 import oracle.sql.BLOB;
 import oracle.sql.CLOB;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hy.common.Busway;
 import org.hy.common.ByteHelp;
 import org.hy.common.CycleNextList;
@@ -148,7 +147,7 @@ import org.hy.common.xml.event.BLobEvent;
 public final class XSQL implements Comparable<XSQL> ,XJavaID
 {
     
-    private static final Logger $Logger = LogManager.getLogger(XSQL.class);
+    private static final Logger $Logger = new Logger(XSQL.class);
     
     // private static final Marker $Marker = MarkerManager.getMarker("XSQL");
     
@@ -498,7 +497,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     private boolean isTriggers(boolean i_IsError)
     {
-        if ( null != this.trigger && !Help.isNull(this.trigger.getXsqls()) )
+        if ( this.isTriggers() )
         {
             if ( !i_IsError || this.trigger.isErrorMode() )
             {
@@ -540,15 +539,27 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     private synchronized void initTriggers()
     {
+        if ( !this.trigger.isInit() )
+        {
+            return;
+        }
+        
         for (XSQL v_XSQL : this.trigger.getXsqls())
         {
             if ( Help.isNull(v_XSQL.getContentDB().getSqlText()) )
             {
-                v_XSQL.setContentDB(this.getContentDB());
-                v_XSQL.setResult(   this.getResult());
-                v_XSQL.setType(     this.getType());
+                v_XSQL.setContentDB(  this.getContentDB());
+                v_XSQL.setResult(     this.getResult());
+                v_XSQL.setType(       this.getType());
+                v_XSQL.setLobName(    this.getLobName());
+                v_XSQL.setLobWheres(  this.getLobWheres());
+                v_XSQL.setDomain(     this.getDomain());
+                v_XSQL.setBatchCommit(this.getBatchCommit());
+                v_XSQL.setBlobSafe(   this.isBlobSafe());
             }
         }
+        
+        this.trigger.setInit(false);
     }
     
     
@@ -7166,7 +7177,6 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     {
         this.create = i_CreateObjectName.trim();
         this.type   = $Type_Create;
-        
         
         createObject();
     }
