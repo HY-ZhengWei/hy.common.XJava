@@ -41,13 +41,15 @@ public class Logger
     
     public Logger(Class<?> i_Class)
     {
-        Class<?> v_LogClass = null;
-        int      v_Version  = 0;
+        Class<?> v_LogClass   = null;
+        Class<?> v_LogManager = null;
+        int      v_Version    = 0;
         
         try
         {
             // Log4j 1.x 的版本
-            v_LogClass = Help.forName("org.apache.log4j.Logger");
+            v_LogClass   = Help.forName("org.apache.log4j.Logger");
+            v_LogManager = Help.forName("org.apache.log4j.LogManager");
             v_Version  = 1;
         }
         catch (Exception exce)
@@ -60,7 +62,8 @@ public class Logger
             try
             {
                 // Log4j 2.x 的版本
-                v_LogClass = Help.forName("org.apache.logging.log4j.Logger");
+                v_LogClass   = Help.forName("org.apache.logging.log4j.Logger");
+                v_LogManager = Help.forName("org.apache.logging.log4j.LogManager");
                 v_Version  = 2;
             }
             catch (Exception exce)
@@ -73,7 +76,7 @@ public class Logger
         {
             try
             {
-                Method v_Methd = v_LogClass.getMethod("getLogger" ,Class.class);
+                Method v_Methd = v_LogManager.getMethod("getLogger" ,Class.class);
                 this.log = StaticReflect.invoke(v_Methd ,i_Class);
                 
             }
