@@ -548,6 +548,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         {
             if ( Help.isNull(v_XSQL.getContentDB().getSqlText()) )
             {
+                v_XSQL.setXJavaID(    Help.NVL(this.getXJavaID()) + "_" + Date.getNowTime().getFullMilli_ID());
                 v_XSQL.setContentDB(  this.getContentDB());
                 v_XSQL.setResult(     this.getResult());
                 v_XSQL.setType(       this.getType());
@@ -556,6 +557,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 v_XSQL.setDomain(     this.getDomain());
                 v_XSQL.setBatchCommit(this.getBatchCommit());
                 v_XSQL.setBlobSafe(   this.isBlobSafe());
+                
+                XJava.putObject(v_XSQL.getXJavaID() ,v_XSQL);
             }
         }
         
