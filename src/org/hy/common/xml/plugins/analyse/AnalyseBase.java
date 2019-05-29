@@ -13,7 +13,7 @@ import org.hy.common.Busway;
 import org.hy.common.Counter;
 import org.hy.common.Date;
 import org.hy.common.Help;
-import org.hy.common.Max;
+import org.hy.common.Max; 
 import org.hy.common.MethodReflect;
 import org.hy.common.Queue;
 import org.hy.common.Return;
@@ -560,11 +560,23 @@ public class AnalyseBase extends Analyse
         
         
         Set<String>     v_XSQLIDs    = v_Total.getRequestCount().keySet();
+        List<String>    v_XSQLIDList = Help.toList(v_XSQLIDs);
         Counter<String> v_FailCounts = new Counter<String>();
         Max<String>     v_AvgTimes   = new Max<String>();
-        for (String v_XSQLID : v_XSQLIDs)
+        for (String v_XSQLID : v_XSQLIDList)
         {
             v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
+            if ( !i_IsAll && v_RequestCount <= 0 )
+            {
+                v_Total.getRequestCount()   .remove(v_XSQLID);
+                v_Total.getSuccessCount()   .remove(v_XSQLID);
+                v_Total.getIoRowCount()     .remove(v_XSQLID);
+                v_Total.getMaxExecTime()    .remove(v_XSQLID);
+                v_Total.getTotalTimeLen()   .remove(v_XSQLID);
+                
+                continue;
+            }
+            
             v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
             v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
             
@@ -618,10 +630,6 @@ public class AnalyseBase extends Analyse
         for (String v_XSQLID : v_XSQLIDs)
         {
             v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
-            if ( !i_IsAll && v_RequestCount <= 0 )
-            {
-                continue;
-            }
             v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
             v_IORowCount   = v_Total.getIoRowCount()  .getSumValue(v_XSQLID);
             v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
@@ -699,6 +707,9 @@ public class AnalyseBase extends Analyse
         
         v_XSQLIDs.clear();
         v_XSQLIDs = null;
+        
+        v_XSQLIDList.clear();
+        v_XSQLIDList = null;
         
         return StringHelp.replaceAll(this.getTemplateShowTotal()
                                     ,new String[]{":NameTitle"    ,":GotoTitle" ,":Title"                    ,":HttpBasePath" ,":cluster"             ,":Sort"    ,":IsGroup" ,":scope" ,":Content"}
@@ -788,11 +799,28 @@ public class AnalyseBase extends Analyse
         
         
         Set<String>     v_XSQLIDs    = v_Total.getRequestCount().keySet();
+        List<String>    v_XSQLIDList = Help.toList(v_XSQLIDs);
         Counter<String> v_FailCounts = new Counter<String>();
         Max<String>     v_AvgTimes   = new Max<String>();
-        for (String v_XSQLID : v_XSQLIDs)
+        for (String v_XSQLID : v_XSQLIDList)
         {
             v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
+            if ( !i_IsAll && v_RequestCount <= 0 )
+            {
+                v_Total.getRequestCount()   .remove(v_XSQLID);
+                v_Total.getSuccessCount()   .remove(v_XSQLID);
+                v_Total.getIoRowCount()     .remove(v_XSQLID);
+                v_Total.getMaxExecTime()    .remove(v_XSQLID);
+                v_Total.getTotalTimeLen()   .remove(v_XSQLID);
+                v_Total.getTriggerCount()   .remove(v_XSQLID);
+                /*
+                v_Total.getTriggerReqCount().remove(v_XSQLID);
+                v_Total.getTriggerSucCount().remove(v_XSQLID);
+                */
+                
+                continue;
+            }
+            
             v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
             v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
             
@@ -851,10 +879,6 @@ public class AnalyseBase extends Analyse
         for (String v_XSQLID : v_XSQLIDs)
         {
             v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
-            if ( !i_IsAll && v_RequestCount <= 0 )
-            {
-                continue;
-            }
             v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
             v_IORowCount   = v_Total.getIoRowCount()  .getSumValue(v_XSQLID);
             v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
@@ -969,6 +993,9 @@ public class AnalyseBase extends Analyse
         
         v_XSQLIDs.clear();
         v_XSQLIDs = null;
+
+        v_XSQLIDList.clear();
+        v_XSQLIDList = null;
         
         v_XSQLs.clear();
         v_XSQLs = null;
