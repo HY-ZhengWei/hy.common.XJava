@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>:Title</title>
+<style type="text/css"> 
+html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
+.userInfoModify_logininfobody{ width:100%;height:100%;overflow-y:scroll;overflow-x:auto;}
+.userInfoModify_logininfo{ width:1410px;margin:0 auto;}
+.userInfoModify_logininfo1{ width:1410px;margin:0 auto; }
+.userInfoModify_labeTag,.userInfoModify_inputTag,.userInfoModify_HaveTrigger_Title,.userInfoModify_RequestCount_Title,.userInfoModify_SuccessCount_Title,.userInfoModify_FailCount_Title,.userInfoModify_ExecuteTime_Title,.userInfoModify_IORowCount_Title,.userInfoModify_SumTime_Title,.userInfoModify_AvgTime_Title{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px; background-color:#D5DDF6;}
+.userInfoModify_labeTag1,.userInfoModify_HaveTrigger,.userInfoModify_SuccessCount,.userInfoModify_FailCount,.userInfoModify_ExecuteTime,.userInfoModify_RequestCount,.userInfoModify_IORowCount,.userInfoModify_SumTime,.userInfoModify_AvgTime{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
+.userInfoModify_labeTag2,.userInfoModify_HaveTrigger_Other,.userInfoModify_RequestCount_Other,.userInfoModify_SuccessCount_Other,.userInfoModify_FailCount_Other,.userInfoModify_ExecuteTime_Other,.userInfoModify_IORowCount_Other,.userInfoModify_SumTime_Other,.userInfoModify_AvgTime_Other{float:left; height:30px; line-height:30px;font-family:"微软雅黑"; font-size:12px;}
+
+.userInfoModify_inputTag1,.userInfoModify_inputTag2 {
+	float:left; 
+	height:30px; 
+	line-height:30px;
+	font-family:"微软雅黑";   
+	font-size:11px;
+}
+
+.userInfoModify_clearTag           {clear:both;height:36px;margin-top:0px;position:absolute;z-index:2008;} 
+.userInfoModify_clearTag1          {clear:both;height:36px;margin-top:0px;} 
+.userInfoModify_labeTag            { width:40px;  text-align:center; border:#97B0F8 solid 1px; } 
+.userInfoModify_inputTag           { width:510px; vertical-align:middle;text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
+.userInfoModify_HaveTrigger_Title  { width:65px;  text-align:center;border:#97B0F8 solid 1px;} 
+.userInfoModify_RequestCount_Title { width:100px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_SuccessCount_Title { width:100px; text-align:center;border:#97B0F8 solid 1px;} 
+.userInfoModify_FailCount_Title    { width:100px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
+.userInfoModify_ExecuteTime_Title  { width:140px; text-align:center;border:#97B0F8 solid 1px;} 
+.userInfoModify_IORowCount_Title   { width:100px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_SumTime_Title      { width:120px; text-align:center;border:#97B0F8 solid 1px;} 
+.userInfoModify_AvgTime_Title      { width:120px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
+
+
+.userInfoModify_labeTag1     { width:40px;  text-align:center;border:#97B0F8 solid 1px;} 
+.userInfoModify_inputTag1    { width:510px; text-align:left;  border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_HaveTrigger  { width:65px;  text-align:center;border:#97B0F8 solid 1px;}  
+.userInfoModify_RequestCount { width:100px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_SuccessCount { width:100px; text-align:center;border:#97B0F8 solid 1px;} 
+.userInfoModify_FailCount    { width:100px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_ExecuteTime  { width:140px; text-align:center;border:#97B0F8 solid 1px;} 
+.userInfoModify_IORowCount   { width:100px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_SumTime      { width:120px; text-align:center;border:#97B0F8 solid 1px;} 
+.userInfoModify_AvgTime      { width:120px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
+
+
+.userInfoModify_labeTag2           { width:40px;  text-align:center;} 
+.userInfoModify_inputTag2          { width:510px; text-align:left;} 
+.userInfoModify_HaveTrigger_Other  { width:65px;  text-align:center;} 
+.userInfoModify_RequestCount_Other { width:100px; text-align:center;} 
+.userInfoModify_SuccessCount_Other { width:100px; text-align:center;} 
+.userInfoModify_FailCount_Other    { width:100px; text-align:center;} 
+.userInfoModify_ExecuteTime_Other  { width:140px; text-align:center;} 
+.userInfoModify_IORowCount_Other   { width:100px; text-align:center;} 
+.userInfoModify_SumTime_Other      { width:120px; text-align:center;} 
+.userInfoModify_AvgTime_Other      { width:90px;  text-align:center;} 
+
+
+.cont_show              { width:505px; margin-left:5px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_HaveTrigger  { width:60px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_RequestCount { width:95px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_SuccessCount { width:95px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_FailCount    { width:95px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_ExecuteTime  { width:135px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_IORowCount   { width:95px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; }
+.cont_show_SumTime      { width:115px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; }
+.cont_show_AvgTime      { width:115px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+a{ color:red; text-decoration:none; outline:none;}
+a:hover{color:red;text-decoration:none;}
+
+.Flow{ color:#669900; text-decoration:none; outline:none;}
+.Flow:hover{color:#99CC00;text-decoration:none;}
+
+</style>
+
+<script type="text/javascript" src=":HttpBasePath/jquery/jquery.min.js"></script>
+<script type="text/javascript">
+	 function inputstyle(){ 
+		 publicstyle("cont_show_RequestCount","green" ,"");
+		 publicstyle("cont_show_SuccessCount","green" ,"");
+		 publicstyle("cont_show_FailCount"   ,"red"   ,"yes"); 
+		 publicstyle("cont_show_IORowCount"  ,"green" ,"");
+	 }
+	 
+	 function publicstyle(i_class,i_color,i_is)
+	 { 
+		 $("."+i_class).each(function(){
+				var divValue = $(this).html();
+				var tmpHtml  = "";
+				if(divValue == 0)
+				{
+					tmpHtml = "<span style='color:gray;'>"+divValue+"</span>";
+					
+				}else
+				{
+					var url = $(this).attr("id"); 
+					if("yes" == i_is)
+					{
+						tmpHtml = "<span style='color:"+i_color+";font-weight:bold;'><a href='"+url+"'>"+divValue+"</a></span>";
+					}else
+					{
+						tmpHtml = "<span style='color:"+i_color+";font-weight:bold;'>"+divValue+"</span>";
+					}
+					
+				}
+				$(this).html(tmpHtml); 
+			 }); 
+	 }
+</script>
+
+</head>
+<body onload="inputstyle();"> 
+	
+	   <input type="hidden" id="cluster" name="cluster" value=":cluster" />
+	   <input type="hidden" id="S"       name="S"       value=":Sort" />
+	   <input type="hidden" id="IsGroup" name="IsGroup" value=":IsGroup" />
+	   <input type="hidden" id="scope"   name="scope"   value=":scope" />
+		
+	   <div class="userInfoModify_logininfobody" >
+	   	  <div class="userInfoModify_logininfo" /> 
+	      <div class="userInfoModify_clearTag">
+	            <div class="userInfoModify_labeTag">编号</div>
+	            <div class="userInfoModify_inputTag"><a id="Title_NameTitle" href="#" style='color:#AA66CC'>:NameTitle</a>:GotoTitle</div>
+	            <div class="userInfoModify_HaveTrigger_Title"> <a id="Title_HaveTrigger"  href="#" style='color:#AA66CC'>触发器</a></div>
+	            <div class="userInfoModify_RequestCount_Title"><a id="Title_RequestCount" href="#" style='color:#AA66CC'>请求量</a></div>
+				<div class="userInfoModify_SuccessCount_Title"><a id="Title_SuccessCount" href="#" style='color:#AA66CC'>成功量</a></div>
+	            <div class="userInfoModify_FailCount_Title">   <a id="Title_FailCount"    href="#" style='color:#AA66CC'>未成功量</a></div>
+	            <div class="userInfoModify_ExecuteTime_Title"> <a id="Title_ExecuteTime"  href="#" style='color:#AA66CC'>操作时间</a></div>
+	            <div class="userInfoModify_IORowCount_Title">  <a id="Title_IORowCount"   href="#" style='color:#AA66CC'>读写行数</a></div>
+	            <div class="userInfoModify_SumTime_Title">     <a id="Title_SumTime"      href="#" style='color:#AA66CC'>总时长</a></div>
+	            <div class="userInfoModify_AvgTime_Title">     <a id="Title_AvgTime"      href="#" style='color:#AA66CC'>平均用时(毫秒)</a></div>
+	      </div> 
+		 
+	   </div> 
+	   
+<script language="javascript" type="text/javascript">
+
+function f_Goto()
+{
+	var v_GroupFlag = "";
+	if ( $("#IsGroup").val() == "Y" )
+	{
+		v_GroupFlag = "&type=Group";
+	}
+	
+	if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+	{
+		window.location.href = "analyseDB?cluster=Y&S=" + $("#S").val() + v_GroupFlag + "&scope=" + $("#scope").val();
+	}
+	else
+	{
+		window.location.href = "analyseDB?S=" + $("#S").val() + v_GroupFlag + "&scope=" + $("#scope").val();
+	}
+}
+
+
+
+$("#Title_NameTitle").click(function()
+{
+	$("#S").val("");
+	f_Goto();
+});
+
+
+
+$("#Title_RequestCount").click(function()
+{
+	$("#S").val("1");
+	f_Goto();
+});
+
+
+
+$("#Title_SuccessCount").click(function()
+{
+	$("#S").val("2");
+	f_Goto();
+});
+
+
+
+$("#Title_FailCount").click(function()
+{
+	$("#S").val("3");
+	f_Goto();
+});
+
+
+
+$("#Title_ExecuteTime").click(function()
+{
+	$("#S").val("4");
+	f_Goto();
+});
+
+
+
+$("#Title_SumTime").click(function()
+{
+	$("#S").val("5");
+	f_Goto();
+});
+
+
+
+$("#Title_AvgTime").click(function()
+{
+	$("#S").val("6");
+	f_Goto();
+});
+
+
+
+$("#Title_IORowCount").click(function()
+{
+	$("#S").val("7");
+	f_Goto();
+});
+
+
+
+$("#Title_HaveTrigger").click(function()
+{
+	$("#S").val("8");
+	f_Goto();
+});
+
+
+
+if ( $("#S").val() == "1" )
+{
+	$("#Title_RequestCount").html("↓" + $("#Title_RequestCount").html());
+}
+else if ( $("#S").val() == "2" )
+{
+	$("#Title_SuccessCount").html("↓" + $("#Title_SuccessCount").html());
+}
+else if ( $("#S").val() == "3" )
+{
+	$("#Title_FailCount").html("↓" + $("#Title_FailCount").html());
+}
+else if ( $("#S").val() == "4" )
+{
+	$("#Title_ExecuteTime").html("↓" + $("#Title_ExecuteTime").html());
+}
+else if ( $("#S").val() == "5" )
+{
+	$("#Title_SumTime").html("↓" + $("#Title_SumTime").html());
+}
+else if ( $("#S").val() == "6" )
+{
+	$("#Title_AvgTime").html("↓" + $("#Title_AvgTime").html());
+}
+else if ( $("#S").val() == "7" )
+{
+	$("#Title_IORowCount").html("↓" + $("#Title_IORowCount").html());
+}
+else if ( $("#S").val() == "8" )
+{
+	$("#Title_HaveTrigger").html("↓" + $("#Title_HaveTrigger").html());
+}
+else
+{
+	$("#Title_NameTitle").html("↓" + $("#Title_NameTitle").html());
+}
+
+</script>
+	   
+   		<div id="info_fill" class="userInfoModify_logininfo1"> 
+   		
+   			<div class="userInfoModify_clearTag1">
+	            <div class="userInfoModify_labeTag2"></div>
+	            <div class="userInfoModify_inputTag2"></div>
+	            <div class="userInfoModify_HaveTrigger_Other"></div>
+	            <div class="userInfoModify_RequestCount_Other"></div>
+				<div class="userInfoModify_SuccessCount_Other"></div>
+	            <div class="userInfoModify_FailCount_Other"></div>
+				<div class="userInfoModify_ExecuteTime_Other"></div>
+				<div class="userInfoModify_IORowCount_Other"></div>
+				<div class="userInfoModify_SumTime_Other"></div>
+				<div class="userInfoModify_AvgTime_Other"></div>
+     	    </div> 
+   		
+    		:Content 
+    		
+    		<div class="userInfoModify_clearTag1">
+	            <div class="userInfoModify_labeTag2"></div>
+	            <div class="userInfoModify_inputTag2"></div>
+	            <div class="userInfoModify_HaveTrigger_Other"></div>
+	            <div class="userInfoModify_RequestCount_Other"></div>
+				<div class="userInfoModify_SuccessCount_Other"></div>
+	            <div class="userInfoModify_FailCount_Other"></div>
+				<div class="userInfoModify_ExecuteTime_Other"></div>
+				<div class="userInfoModify_IORowCount_Other"></div> 
+				<div class="userInfoModify_SumTime_Other"></div> 
+				<div class="userInfoModify_AvgTime_Other"></div>
+     	    </div> 
+   		</div>
+
+</body>
+</html>

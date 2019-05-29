@@ -85,6 +85,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLGroupTree;
  *                                优化：尝试计算Linux的真实内存使用率
  *              v16.0 2019-02-26  添加：定时灾备多活集群情况
  *              v17.0 2019-03-20  添加：XSQL及XSQL组的统计分析页面添加：读写行数
+ *              v18.0 2019-05-29  添加：显示XSQL拥有的应用级触发器的个数
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -712,6 +713,8 @@ public class AnalyseBase extends Analyse
      * @author      ZhengWei(HY)
      * @createDate  2015-12-15
      * @version     v1.0
+     *              v2.0  2019-05-29  添加：显示XSQL拥有的应用级触发器的个数
+     *                                删除：不再显示触发器的请求量、成功量、失败量。因为，触发器将独立成为一行统计数据来显示。
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
@@ -725,14 +728,17 @@ public class AnalyseBase extends Analyse
         Map<String ,Object> v_XSQLs           = XJava.getObjects(XSQL.class);
         StringBuilder       v_Buffer          = new StringBuilder();
         int                 v_Index           = 0;
-        String              v_Content         = this.getTemplateShowTotalContent();
+        String              v_Content         = this.getTemplateShowXSQLContent();
         String              v_OperateURL      = "";
         long                v_RequestCount    = 0;
         long                v_SuccessCount    = 0;
         long                v_IORowCount      = 0;
+        long                v_TriggerCount    = 0;
+        /*
         long                v_TriggerReqCount = 0;
         long                v_TriggerSucCount = 0;
         long                v_TriggerFaiCount = 0;
+        */
         double              v_TotalTimeLen    = 0;
         double              v_AvgTimeLen      = 0;
         Date                v_MaxExecTime     = null;
@@ -767,10 +773,13 @@ public class AnalyseBase extends Analyse
                             v_Total.getRequestCount()   .putAll(v_TempTotal.getRequestCount());
                             v_Total.getSuccessCount()   .putAll(v_TempTotal.getSuccessCount());
                             v_Total.getIoRowCount()     .putAll(v_TempTotal.getIoRowCount());
-                            v_Total.getTriggerReqCount().putAll(v_TempTotal.getTriggerReqCount());
-                            v_Total.getTriggerSucCount().putAll(v_TempTotal.getTriggerSucCount());
                             v_Total.getMaxExecTime()    .putAll(v_TempTotal.getMaxExecTime());
                             v_Total.getTotalTimeLen()   .putAll(v_TempTotal.getTotalTimeLen());
+                            v_Total.getTriggerCount()   .putAll(v_TempTotal.getTriggerCount());
+                            /*
+                            v_Total.getTriggerReqCount().putAll(v_TempTotal.getTriggerReqCount());
+                            v_Total.getTriggerSucCount().putAll(v_TempTotal.getTriggerSucCount());
+                            */
                         }
                     }
                 }
@@ -827,6 +836,11 @@ public class AnalyseBase extends Analyse
             // 按IO读写行数排序
             v_XSQLIDs = Help.toReverseByMap(v_Total.getIoRowCount()).keySet();
         }
+        else if ( "8".equalsIgnoreCase(i_SortType) )
+        {
+            // 按XSQL应用级触发器的个数排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getTriggerCount()).keySet();
+        }
         else
         {
             v_XSQLIDs = Help.toSort(v_Total.getRequestCount()).keySet();
@@ -865,22 +879,29 @@ public class AnalyseBase extends Analyse
             XSQL v_XSQL = (XSQL)v_XSQLs.get(v_XSQLID);
             if ( v_XSQL != null && v_XSQL.isTriggers() )
             {
+                v_TriggerCount    = v_Total.getTriggerCount()   .getSumValue(v_XSQLID);
+                /*
                 v_TriggerReqCount = v_Total.getTriggerReqCount().getSumValue(v_XSQLID);
                 v_TriggerSucCount = v_Total.getTriggerSucCount().getSumValue(v_XSQLID);
+                */
             }
             else
             {
+                v_TriggerCount    = 0;
+                /*
                 v_TriggerReqCount = 0;
                 v_TriggerSucCount = 0;
+                */
             }
             
-            v_TriggerFaiCount = v_TriggerReqCount - v_TriggerSucCount;
+            // v_TriggerFaiCount = v_TriggerReqCount - v_TriggerSucCount;
             
             v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
                                      .replaceAll(":Name"         ,v_XSQLID)
-                                     .replaceAll(":RequestCount" ,String.valueOf(v_RequestCount)                  + (v_TriggerReqCount > 0 ? "-T"+v_TriggerReqCount : ""))
-                                     .replaceAll(":SuccessCount" ,String.valueOf(v_SuccessCount)                  + (v_TriggerReqCount > 0 ? "-T"+v_TriggerSucCount : ""))
-                                     .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount) + (v_TriggerFaiCount > 0 ? "-T"+v_TriggerFaiCount : ""))
+                                     .replaceAll(":HaveTrigger"  ,String.valueOf(v_TriggerCount))
+                                     .replaceAll(":RequestCount" ,String.valueOf(v_RequestCount))
+                                     .replaceAll(":SuccessCount" ,String.valueOf(v_SuccessCount))
+                                     .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount))
                                      .replaceAll(":ParamURL"     ,v_OperateURL)
                                      .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : (v_MaxExecTime.getTime() >= v_NowTime ? v_MaxExecTime.getFull() : "<span style='color:gray;'>" + v_MaxExecTime.getFull() + "</span>"))
                                      .replaceAll(":IORowCount"   ,String.valueOf(v_IORowCount))
@@ -889,6 +910,7 @@ public class AnalyseBase extends Analyse
                            );
         }
         
+        v_TriggerCount = v_Total.getTriggerCount().getSumValue();
         v_RequestCount = v_Total.getRequestCount().getSumValue();
         v_SuccessCount = v_Total.getSuccessCount().getSumValue();
         v_IORowCount   = v_Total.getIoRowCount()  .getSumValue();
@@ -898,6 +920,7 @@ public class AnalyseBase extends Analyse
         
         v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
                                  .replaceAll(":Name"         ,"合计")
+                                 .replaceAll(":HaveTrigger"  ,String.valueOf(v_TriggerCount))
                                  .replaceAll(":RequestCount" ,String.valueOf(v_RequestCount))
                                  .replaceAll(":SuccessCount" ,String.valueOf(v_SuccessCount))
                                  .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount))
@@ -950,7 +973,7 @@ public class AnalyseBase extends Analyse
         v_XSQLs.clear();
         v_XSQLs = null;
         
-        return StringHelp.replaceAll(this.getTemplateShowTotal()
+        return StringHelp.replaceAll(this.getTemplateShowXSQL()
                                     ,new String[]{":NameTitle" ,":GotoTitle" ,":Title"              ,":HttpBasePath" ,":cluster"            ,":Sort"     ,":IsGroup" ,":scope" ,":Content"}
                                     ,new String[]{"SQL访问标识" ,v_Goto       ,"数据库访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"N"  ,(i_IsAll?"Y":"N") ,v_Buffer.toString()});
     }
@@ -1020,8 +1043,19 @@ public class AnalyseBase extends Analyse
                 // 触发器的执行统计
                 if ( v_XSQL.isTriggers() )
                 {
+                    v_Total.getTriggerCount()   .put(v_Item.getKey() ,v_XSQL.getTrigger().getXsqls().size());
+                    /*
                     v_Total.getTriggerReqCount().put(v_Item.getKey() ,v_XSQL.getTrigger().getRequestCount());
                     v_Total.getTriggerSucCount().put(v_Item.getKey() ,v_XSQL.getTrigger().getSuccessCount());
+                    */
+                }
+                else
+                {
+                    v_Total.getTriggerCount()   .put(v_Item.getKey() ,0);
+                    /*
+                    v_Total.getTriggerReqCount().put(v_Item.getKey() ,0);
+                    v_Total.getTriggerSucCount().put(v_Item.getKey() ,0);
+                    */
                 }
                 
                 v_Total.getMaxExecTime() .put(v_Item.getKey() ,v_XSQL.getExecuteTime() == null ? 0L : v_XSQL.getExecuteTime().getTime());
@@ -2666,6 +2700,20 @@ public class AnalyseBase extends Analyse
     private String getTemplateShowTotalContent()
     {
         return this.getTemplateContent("template.showTotalContent.html");
+    }
+    
+    
+    
+    private String getTemplateShowXSQL()
+    {
+        return this.getTemplateContent("template.showXSQL.html");
+    }
+    
+    
+    
+    private String getTemplateShowXSQLContent()
+    {
+        return this.getTemplateContent("template.showXSQLContent.html");
     }
     
     
