@@ -64,42 +64,9 @@ a:hover{color:red;text-decoration:none;}
 </style>
 
 <script type="text/javascript" src=":HttpBasePath/jquery/jquery.min.js"></script>
-<script type="text/javascript">
-	 function inputstyle(){ 
-		 publicstyle("cont_show_RequestCount","green" ,"");
-		 publicstyle("cont_show_SuccessCount","green" ,"");
-		 publicstyle("cont_show_FailCount"   ,"red"   ,"yes"); 
-		 publicstyle("cont_show_IORowCount"  ,"green" ,"");
-	 }
-	 
-	 function publicstyle(i_class,i_color,i_is)
-	 { 
-		 $("."+i_class).each(function(){
-				var divValue = $(this).html();
-				var tmpHtml  = "";
-				if(divValue == 0)
-				{
-					tmpHtml = "<span style='color:gray;'>"+divValue+"</span>";
-					
-				}else
-				{
-					var url = $(this).attr("id"); 
-					if("yes" == i_is)
-					{
-						tmpHtml = "<span style='color:"+i_color+";font-weight:bold;'><a href='"+url+"'>"+divValue+"</a></span>";
-					}else
-					{
-						tmpHtml = "<span style='color:"+i_color+";font-weight:bold;'>"+divValue+"</span>";
-					}
-					
-				}
-				$(this).html(tmpHtml); 
-			 }); 
-	 }
-</script>
 
 </head>
-<body onload="inputstyle();"> 
+<body> 
 	
 	   <input type="hidden" id="cluster" name="cluster" value=":cluster" />
 	   <input type="hidden" id="S"       name="S"       value=":Sort" />

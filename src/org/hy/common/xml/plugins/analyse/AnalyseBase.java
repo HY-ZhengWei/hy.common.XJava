@@ -512,9 +512,10 @@ public class AnalyseBase extends Analyse
     {
         StringBuilder       v_Buffer       = new StringBuilder();
         int                 v_Index        = 0;
-        String              v_Content      = this.getTemplateShowTotalContent();
+        String              v_Content      = this.getTemplateShowXSQLGroupContent();
         long                v_RequestCount = 0;
         long                v_SuccessCount = 0;
+        long                v_FailCount    = 0;
         long                v_IORowCount   = 0;
         double              v_TotalTimeLen = 0;
         double              v_AvgTimeLen   = 0;
@@ -631,6 +632,7 @@ public class AnalyseBase extends Analyse
         {
             v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
             v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
+            v_FailCount    = v_RequestCount - v_SuccessCount;
             v_IORowCount   = v_Total.getIoRowCount()  .getSumValue(v_XSQLID);
             v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
             v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
@@ -638,12 +640,12 @@ public class AnalyseBase extends Analyse
             
             v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
                                      .replaceAll(":Name"         ,"<a href='analyseObject?XSGFlow=Y&xid=" + v_XSQLID + "' class='Flow'>" + v_XSQLID + "</a>")
-                                     .replaceAll(":RequestCount" ,String.valueOf(v_RequestCount))
-                                     .replaceAll(":SuccessCount" ,String.valueOf(v_SuccessCount))
-                                     .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount))
+                                     .replaceAll(":RequestCount" ,"<span style='color:" + (v_RequestCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_RequestCount + "</span>")
+                                     .replaceAll(":SuccessCount" ,"<span style='color:" + (v_SuccessCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SuccessCount + "</span>")
+                                     .replaceAll(":FailCount"    ,"<span style='color:" + (v_FailCount    > 0 ? "red;font-weight:bold"   : "gray") + ";'>" + (v_FailCount > 0 ? "<a href='#'>" + v_FailCount + "</a>" : v_FailCount) + "</span>")
+                                     .replaceAll(":IORowCount"   ,"<span style='color:" + (v_IORowCount   > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_IORowCount   + "</span>")
                                      .replaceAll(":ParamURL"     ,"#")
                                      .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : (v_MaxExecTime.getTime() >= v_NowTime ? v_MaxExecTime.getFull() : "<span style='color:gray;'>" + v_MaxExecTime.getFull() + "</span>"))
-                                     .replaceAll(":IORowCount"   ,String.valueOf(v_IORowCount))
                                      .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
                                      .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                            );
@@ -652,6 +654,7 @@ public class AnalyseBase extends Analyse
         
         v_RequestCount = v_Total.getRequestCount().getSumValue();
         v_SuccessCount = v_Total.getSuccessCount().getSumValue();
+        v_FailCount    = v_RequestCount - v_SuccessCount;
         v_IORowCount   = v_Total.getIoRowCount()  .getSumValue();
         v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue();
         v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
@@ -659,12 +662,12 @@ public class AnalyseBase extends Analyse
         
         v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
                                  .replaceAll(":Name"         ,"合计")
-                                 .replaceAll(":RequestCount" ,String.valueOf(v_RequestCount))
-                                 .replaceAll(":SuccessCount" ,String.valueOf(v_SuccessCount))
-                                 .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount))
+                                 .replaceAll(":RequestCount" ,"<span style='color:" + (v_RequestCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_RequestCount + "</span>")
+                                 .replaceAll(":SuccessCount" ,"<span style='color:" + (v_SuccessCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SuccessCount + "</span>")
+                                 .replaceAll(":FailCount"    ,"<span style='color:" + (v_FailCount    > 0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_FailCount    + "</span>")
+                                 .replaceAll(":IORowCount"   ,"<span style='color:" + (v_IORowCount   > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_IORowCount   + "</span>")
                                  .replaceAll(":ParamURL"     ,"#")
                                  .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : v_MaxExecTime.getFull())
-                                 .replaceAll(":IORowCount"   ,String.valueOf(v_IORowCount))
                                  .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
                                  .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                        );
@@ -711,7 +714,7 @@ public class AnalyseBase extends Analyse
         v_XSQLIDList.clear();
         v_XSQLIDList = null;
         
-        return StringHelp.replaceAll(this.getTemplateShowTotal()
+        return StringHelp.replaceAll(this.getTemplateShowXSQLGroup()
                                     ,new String[]{":NameTitle"    ,":GotoTitle" ,":Title"                    ,":HttpBasePath" ,":cluster"             ,":Sort"    ,":IsGroup" ,":scope" ,":Content"}
                                     ,new String[]{"组合SQL访问标识" ,v_Goto       ,"数据库组合SQL访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"Y"   ,(i_IsAll?"Y":"N")  ,v_Buffer.toString()});
     }
@@ -743,6 +746,7 @@ public class AnalyseBase extends Analyse
         String              v_OperateURL      = "";
         long                v_RequestCount    = 0;
         long                v_SuccessCount    = 0;
+        long                v_FailCount       = 0;
         long                v_IORowCount      = 0;
         long                v_TriggerCount    = 0;
         /*
@@ -880,6 +884,7 @@ public class AnalyseBase extends Analyse
         {
             v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
             v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
+            v_FailCount    = v_RequestCount - v_SuccessCount;
             v_IORowCount   = v_Total.getIoRowCount()  .getSumValue(v_XSQLID);
             v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
             v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
@@ -922,13 +927,13 @@ public class AnalyseBase extends Analyse
             
             v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
                                      .replaceAll(":Name"         ,v_XSQLID)
-                                     .replaceAll(":HaveTrigger"  ,String.valueOf(v_TriggerCount))
-                                     .replaceAll(":RequestCount" ,String.valueOf(v_RequestCount))
-                                     .replaceAll(":SuccessCount" ,String.valueOf(v_SuccessCount))
-                                     .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount))
+                                     .replaceAll(":HaveTrigger"  ,"<span style='color:" + (v_TriggerCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_TriggerCount + "</span>")
+                                     .replaceAll(":RequestCount" ,"<span style='color:" + (v_RequestCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_RequestCount + "</span>")
+                                     .replaceAll(":SuccessCount" ,"<span style='color:" + (v_SuccessCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SuccessCount + "</span>")
+                                     .replaceAll(":FailCount"    ,"<span style='color:" + (v_FailCount    > 0 ? "red;font-weight:bold"   : "gray") + ";'>" + (v_FailCount > 0 ? "<a href='" + v_OperateURL + "'>" + v_FailCount + "</a>" : v_FailCount) + "</span>")
+                                     .replaceAll(":IORowCount"   ,"<span style='color:" + (v_IORowCount   > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_IORowCount   + "</span>")
                                      .replaceAll(":ParamURL"     ,v_OperateURL)
                                      .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : (v_MaxExecTime.getTime() >= v_NowTime ? v_MaxExecTime.getFull() : "<span style='color:gray;'>" + v_MaxExecTime.getFull() + "</span>"))
-                                     .replaceAll(":IORowCount"   ,String.valueOf(v_IORowCount))
                                      .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
                                      .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                            );
@@ -937,6 +942,7 @@ public class AnalyseBase extends Analyse
         v_TriggerCount = v_Total.getTriggerCount().getSumValue();
         v_RequestCount = v_Total.getRequestCount().getSumValue();
         v_SuccessCount = v_Total.getSuccessCount().getSumValue();
+        v_FailCount    = v_RequestCount - v_SuccessCount;
         v_IORowCount   = v_Total.getIoRowCount()  .getSumValue();
         v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue();
         v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
@@ -944,13 +950,13 @@ public class AnalyseBase extends Analyse
         
         v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
                                  .replaceAll(":Name"         ,"合计")
-                                 .replaceAll(":HaveTrigger"  ,String.valueOf(v_TriggerCount))
-                                 .replaceAll(":RequestCount" ,String.valueOf(v_RequestCount))
-                                 .replaceAll(":SuccessCount" ,String.valueOf(v_SuccessCount))
-                                 .replaceAll(":FailCount"    ,String.valueOf(v_RequestCount - v_SuccessCount))
+                                 .replaceAll(":HaveTrigger"  ,"<span style='color:" + (v_TriggerCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_TriggerCount + "</span>")
+                                 .replaceAll(":RequestCount" ,"<span style='color:" + (v_RequestCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_RequestCount + "</span>")
+                                 .replaceAll(":SuccessCount" ,"<span style='color:" + (v_SuccessCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SuccessCount + "</span>")
+                                 .replaceAll(":FailCount"    ,"<span style='color:" + (v_FailCount    > 0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_FailCount    + "</span>")
+                                 .replaceAll(":IORowCount"   ,"<span style='color:" + (v_IORowCount   > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_IORowCount   + "</span>")
                                  .replaceAll(":ParamURL"     ,"#")
                                  .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : v_MaxExecTime.getFull())
-                                 .replaceAll(":IORowCount"   ,String.valueOf(v_IORowCount))
                                  .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
                                  .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                        );
@@ -2717,16 +2723,16 @@ public class AnalyseBase extends Analyse
     
     
     
-    private String getTemplateShowTotal()
+    private String getTemplateShowXSQLGroup()
     {
-        return this.getTemplateContent("template.showTotal.html");
+        return this.getTemplateContent("template.showXSQLGroup.html");
     }
     
     
     
-    private String getTemplateShowTotalContent()
+    private String getTemplateShowXSQLGroupContent()
     {
-        return this.getTemplateContent("template.showTotalContent.html");
+        return this.getTemplateContent("template.showXSQLGroupContent.html");
     }
     
     
