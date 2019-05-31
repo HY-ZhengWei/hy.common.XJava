@@ -58,6 +58,7 @@
 	    <version>0.8</version>
 	</dependency>
 	
+	<!-- XJava support Log4j 1.x and 2.x
 	<dependency>
    		<groupId>org.apache.logging.log4j</groupId>
    		<artifactId>log4j-core</artifactId>
@@ -69,6 +70,7 @@
 		<artifactId>log4j-api</artifactId>
 		<version>2.11.2</version>
 	</dependency>
+	-->
     
     <!-- Struts -->
     <!-- 
