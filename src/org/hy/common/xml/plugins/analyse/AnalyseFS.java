@@ -1632,6 +1632,7 @@ public class AnalyseFS extends Analyse
                     {
                         String v_RetValue = v_ResponseData.getData().toString();
                         v_Times.put(v_Item.getKey().getHostName() ,v_RetValue);
+                        v_ExecRet++;
                     }
                 }
                 else
