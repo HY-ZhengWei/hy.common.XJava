@@ -4,7 +4,7 @@
 
   <groupId>org</groupId>
   <artifactId>hy.common.xjava</artifactId>
-  <version>3.9.34</version>
+  <version>4.0.0</version>
   <packaging>jar</packaging>
 
   <name>hy.common.xjava</name>

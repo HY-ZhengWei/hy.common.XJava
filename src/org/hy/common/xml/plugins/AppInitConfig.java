@@ -580,11 +580,11 @@ public class AppInitConfig
         }
         else if ( LogType.$Finish == i_LogType )
         {
-            System.out.println("load " + i_Param.getValue() + " finish.");
+            System.out.println("Load " + i_Param.getValue() + " finish.");
         }
         else if ( LogType.$Empty == i_LogType )
         {
-            System.out.println("load " + i_Param.getValue() + " finish, but it is empty.");
+            System.out.println("Load " + i_Param.getValue() + " finish, but it is empty.");
         }
         else
         {

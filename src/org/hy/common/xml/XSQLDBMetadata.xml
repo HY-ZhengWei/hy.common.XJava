@@ -15,11 +15,18 @@
 		
 			<content>
 				<![CDATA[
-					SELECT  COUNT(1)
+					SELECT  A.Object_Name  AS ONAME
 					  FROM  User_Objects  A
-					 WHERE  UPPER(A.Object_Name) = UPPER(':objectName')
+					 WHERE  1 = 1
+				  <[   AND  UPPER(A.Object_Name) = UPPER(':objectName')   ]>
 				]]>
 			</content>
+			
+			<result>
+				<row>java.util.HashMap</row>
+				<cfill>put(colName ,colValue)</cfill>
+				<cstyle>NORMAL</cstyle>
+			</result>
 			
 		</sql>
 		
@@ -30,7 +37,7 @@
 		
 			<content>
 				<![CDATA[
-                SELECT  COUNT(1)
+                SELECT  A.ObjectName  AS ONAME
                   FROM  (
                           SELECT  Table_Name      AS ObjectName
                                  ,Table_Schema    AS DBName 
@@ -49,9 +56,15 @@
                            FROM  INFORMATION_SCHEMA.Routines
                         )  A
                  WHERE  A.DBName            = Database()
-                   AND  UPPER(A.ObjectName) = UPPER(':objectName')
+              <[   AND  UPPER(A.ObjectName) = UPPER(':objectName')   ]>
 				]]>
 			</content>
+			
+			<result>
+				<row>java.util.HashMap</row>
+				<cfill>put(colName ,colValue)</cfill>
+				<cstyle>NORMAL</cstyle>
+			</result>
 			
 		</sql>
 		
@@ -62,11 +75,18 @@
 		
 			<content>
 				<![CDATA[
-					SELECT  COUNT(1)
+					SELECT  A.Name  AS ONAME
                       FROM  SysObjects  A
-                     WHERE  UPPER(A.Name) = UPPER(':objectName')
+                     WHERE  1 = 1
+                  <[   AND  UPPER(A.Name) = UPPER(':objectName')   ]>
 				]]>
 			</content>
+			
+			<result>
+				<row>java.util.HashMap</row>
+				<cfill>put(colName ,colValue)</cfill>
+				<cstyle>NORMAL</cstyle>
+			</result>
 			
 		</sql>
 		
@@ -77,7 +97,7 @@
 		
 			<content>
 				<![CDATA[
-                SELECT  COUNT(1)
+                SELECT  A.ObjectName  AS ONAME
                   FROM  (
                           SELECT  TabName         AS ObjectName
                                  ,TabSchema       AS DBName 
@@ -96,9 +116,15 @@
                            FROM  SysCat.Routines
                         )  A
                  WHERE  A.DBName            = Current Schema
-                   AND  UPPER(A.ObjectName) = UPPER(':objectName')
+              <[   AND  UPPER(A.ObjectName) = UPPER(':objectName')   ]>
 				]]>
 			</content>
+			
+			<result>
+				<row>java.util.HashMap</row>
+				<cfill>put(colName ,colValue)</cfill>
+				<cstyle>NORMAL</cstyle>
+			</result>
 			
 		</sql>
 		
@@ -109,11 +135,18 @@
 		
 			<content>
 				<![CDATA[
-					SELECT  COUNT(1)
+					SELECT  A.name  AS ONAME
                       FROM  Sqlite_Master  A
-                     WHERE  UPPER(A.name) = UPPER(':objectName')
+                     WHERE  1 = 1
+                  <[   AND  UPPER(A.name) = UPPER(':objectName')   ]>
 				]]>
 			</content>
+			
+			<result>
+				<row>java.util.HashMap</row>
+				<cfill>put(colName ,colValue)</cfill>
+				<cstyle>NORMAL</cstyle>
+			</result>
 			
 		</sql>
 		
@@ -124,12 +157,18 @@
 		
 			<content>
 				<![CDATA[
-					SELECT  COUNT(1)
+					SELECT  A.tablename  AS ONAME
                       FROM  PG_Tables  A
                      WHERE  A.schemaname       = 'public'
-                       AND  UPPER(A.tablename) = UPPER(':objectName')
+                  <[   AND  UPPER(A.tablename) = UPPER(':objectName')   ]>
 				]]>
 			</content>
+			
+			<result>
+				<row>java.util.HashMap</row>
+				<cfill>put(colName ,colValue)</cfill>
+				<cstyle>NORMAL</cstyle>
+			</result>
 			
 		</sql>
 		

@@ -19,6 +19,7 @@ import org.hy.common.Queue;
 import org.hy.common.Return;
 import org.hy.common.StringHelp;
 import org.hy.common.app.Param;
+import org.hy.common.db.DataSourceGroup;
 import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
 import org.hy.common.net.data.CommunicationResponse;
@@ -44,6 +45,7 @@ import org.hy.common.xml.plugins.analyse.data.AnalyseThreadPoolTotal;
 import org.hy.common.xml.plugins.analyse.data.ClusterReport;
 import org.hy.common.xml.plugins.analyse.data.DataSourceGroupReport;
 import org.hy.common.xml.plugins.analyse.data.XSQLGroupTree;
+import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
 
 
 
@@ -1533,6 +1535,112 @@ public class AnalyseBase extends Analyse
     
     
     /**
+     * 功能1. 查看XSQL与表的关系图
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-06-11
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?DSG=Y
+     * @param  i_DSGID           数据库连接池的XID
+     * @return
+     */
+    public String showXSQLRefTable(String i_BasePath ,String i_ObjectValuePath ,String i_DSGID)
+    {
+        List<XSQLRetTable> v_Tables = new ArrayList<XSQLRetTable>();
+        List<XSQLRetTable> v_XSQLs  = new ArrayList<XSQLRetTable>();
+        XJSON              v_XJSON  = new XJSON();
+        String             v_RD     = "{datas:[]}";
+        String             v_RT     = "{datas:[]}";
+        String             v_RX     = "{datas:[]}";
+        String []          v_RepKey = {"(" ,")"};
+        String []          v_RepVal = {"（" ,"）"};
+        
+        v_XJSON.setReturnNVL(false);
+        
+        try
+        {
+            Map<String ,Object> v_DSGMap         = XJava.getObjects(DataSourceGroup.class);
+            Map<String ,Object> v_XSQLMap        = XJava.getObjects(XSQL.class);
+            DataSourceGroup     v_DSG            = (DataSourceGroup)XJava.getObject(i_DSGID);
+            XSQLDBMetadata      v_XSQLDBMetadata = new XSQLDBMetadata();
+            List<String>        v_Objects        = Help.toDistinct(v_XSQLDBMetadata.getObjects(v_DSG));
+            
+            // 生成XSQL信息列表
+            for (Map.Entry<String ,Object> v_XSQLItem : v_XSQLMap.entrySet())
+            {
+                XSQL v_XSQL = (XSQL)v_XSQLItem.getValue();
+                
+                if ( v_DSG == v_XSQL.getDataSourceGroup() )
+                {
+                    XSQLRetTable v_XSQLRef = new XSQLRetTable();
+                    v_XSQLRef.setXsql(StringHelp.replaceAll(v_XSQLItem.getKey() ,v_RepKey ,v_RepVal));
+                    v_XSQLRef.setType(v_XSQL.getContent().getSQLType());
+                    v_XSQLRef.setSqlText(Help.NVL(v_XSQL.getContent().getSqlText()).toUpperCase());
+                    v_XSQLs.add(v_XSQLRef);
+                }
+            }
+            
+            // 生成表与XSQL的关系数据
+            for (String v_OName : v_Objects)
+            {
+                String       v_ONameFindKey = " " + v_OName.toUpperCase() + " ";
+                List<String> v_RefXSQL      = new ArrayList<String>();
+                
+                for (XSQLRetTable v_XSQLItem : v_XSQLs)
+                {
+                    if ( !Help.isNull(v_XSQLItem.getSqlText()) )
+                    {
+                        if ( v_XSQLItem.getSqlText().indexOf(v_ONameFindKey) > 0 )
+                        {
+                            v_RefXSQL.add(v_XSQLItem.getXsql());
+                            v_XSQLItem.setRefCount(Help.NVL(v_XSQLItem.getRefCount()) + 1);
+                        }
+                    }
+                }
+                
+                if ( !Help.isNull(v_RefXSQL) )
+                {
+                    v_RefXSQL = Help.toSort(v_RefXSQL);
+                    
+                    XSQLRetTable v_Table = new XSQLRetTable();
+                    v_Table.setTableName(v_OName);
+                    v_Table.setXsqls(v_RefXSQL);
+                    v_Tables.add(v_Table);
+                }
+            }
+            
+            // 删除无引用的XSQL
+            for (int i=v_XSQLs.size() - 1; i>=0; i--)
+            {
+                if ( v_XSQLs.get(i).getRefCount() == null || v_XSQLs.get(i).getRefCount().intValue() <= 0 )
+                {
+                    v_XSQLs.remove(i);
+                }
+            }
+            
+            
+            Help.toSort(v_Tables ,"xsqlCount DESC" ,"orderTableName");
+            Help.toSort(v_XSQLs ,"refCount DESC"   ,"xsql");
+            
+            v_RD = v_XJSON.toJson(Help.toListKeys(v_DSGMap) ,"datas").toJSONString();
+            v_RT = v_XJSON.toJson(v_Tables                  ,"datas").toJSONString();
+            v_RX = v_XJSON.toJson(v_XSQLs                   ,"datas").toJSONString();
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+        }
+        
+        return StringHelp.replaceAll(this.getTemplateShowXSQLRefTable()
+                                    ,new String[]{":Title"       ,":DSGID" ,":DSGs" ,":Tables" ,":XSQLs" ,":HttpBasePath"}
+                                    ,new String[]{"XSQL与表关系" ,i_DSGID ,v_RD    ,v_RT      ,v_RX ,i_BasePath});
+    }
+    
+    
+    
+    /**
      * 功能1. 查看对象信息
      * 功能2. 执行对象方法（支持集群）
      * 
@@ -2880,6 +2988,13 @@ public class AnalyseBase extends Analyse
     private String getTemplateShowXSQLGroupFlow()
     {
         return this.getTemplateContent("template.showXSQLGroupFlow.html");
+    }
+    
+    
+    
+    private String getTemplateShowXSQLRefTable()
+    {
+        return this.getTemplateContent("template.showXSQLRefTable.html");
     }
     
 }

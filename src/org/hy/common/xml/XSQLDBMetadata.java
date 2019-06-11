@@ -1,10 +1,12 @@
 package org.hy.common.xml;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.hy.common.Help;
+import org.hy.common.db.DataSourceGroup;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.Xjava;
 
@@ -18,6 +20,7 @@ import org.hy.common.xml.annotation.Xjava;
  * @author      ZhengWei(HY)
  * @createDate  2018-01-12
  * @version     v1.0
+ *              v2.0  2019-06-11  添加：获取数据库对象
  */
 @Xjava(value=XType.XML)
 public class XSQLDBMetadata
@@ -39,6 +42,38 @@ public class XSQLDBMetadata
     
     
     /**
+     * 获取数据库对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-06-11
+     * @version     v1.0
+     *
+     * @param i_DSG
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> getObjects(DataSourceGroup i_DSG)
+    {
+        XSQL                v_XSQLMetdata = XJava.getXSQL("XSQL_DBMetadata_QueryByName_" + i_DSG.getDbProductType());
+        Map<String ,String> v_Params      = new HashMap<String ,String>();
+        
+        v_XSQLMetdata.setDataSourceGroup(i_DSG);
+        v_Params.put("objectName" ,null);
+        
+        List<Map<String ,String>> v_Datas = (List<Map<String ,String>>)v_XSQLMetdata.query(v_Params);
+        
+        if ( Help.isNull(v_Datas) )
+        {
+            return new ArrayList<String>();
+        }
+        
+        return (List<String>) Help.toList(v_Datas ,"ONAME");
+    }
+    
+    
+    
+    
+    /**
      * 判定对象是否存在。
      * 
      * 此不作过多的验证，交给使用者如XSQL.setCreate(...)来验证。
@@ -50,6 +85,7 @@ public class XSQLDBMetadata
      * @param i_XSQL
      * @return
      */
+    @SuppressWarnings("unchecked")
     public boolean isExists(XSQL i_XSQL)
     {
         XSQL                v_XSQLMetdata = XJava.getXSQL("XSQL_DBMetadata_QueryByName_" + i_XSQL.getDataSourceGroup().getDbProductType());
@@ -58,7 +94,9 @@ public class XSQLDBMetadata
         v_XSQLMetdata.setDataSourceGroup(i_XSQL.getDataSourceGroup());
         v_Params.put("objectName" ,i_XSQL.getCreateObjectName());
         
-        return v_XSQLMetdata.getSQLCount(v_Params) >= 1;
+        List<Map<String ,Object>> v_Datas = (List<Map<String ,Object>>)v_XSQLMetdata.query(v_Params);
+        
+        return !Help.isNull(v_Datas);
     }
     
     

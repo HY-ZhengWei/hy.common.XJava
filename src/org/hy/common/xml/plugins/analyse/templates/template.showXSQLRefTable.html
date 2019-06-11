@@ -1,0 +1,637 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery.min.js"></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/d3/d3.min.js"></script>
+	
+	<style type="text/css">
+	body { 
+		background-color: #FAFAFA; 
+		margin: 20px;
+	}
+	
+	#createdBy {
+		width: 120px; 
+		height: 15px; 
+		position: fixed;
+		right: 10;
+		bottom: 10;
+		font-size: 11px;
+	}
+	
+	#createdBy a { 
+		color: #4F4F4F; 
+		text-decoration: none; 
+		outline: none;
+	}
+	
+	#createdBy a:hover {
+		color: #1E90FF;
+		text-decoration: none;
+	}
+	</style>
+</head>
+<body oncontextmenu="return false">
+
+	<div>
+		数据连接池组：
+		<select id="DSGIDs"></select>
+	</div>
+
+	<svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
+	</svg>
+	
+	<div id="createdBy">
+		<a href="https://github.com/HY-ZhengWei/XJava" target="_brank">Source code by <b>XSQL</b></a>
+	</div>
+	
+	<script type="text/javascript">
+		var v_SVG = d3.select("body").select("svg")
+		.on("contextmenu" ,function()
+		{
+			if ( v_ClickTable != "" )
+			{
+				tableNameOnMouseout(v_ClickTable);
+				v_ClickTable = "";
+			}
+			if ( v_ClickXSQL != "" )
+			{
+				xsqlOnMouseout(v_ClickXSQL);
+				v_ClickXSQL = "";
+			}
+		});
+
+		
+		
+		/**
+		 * 从P1点到P2点绘制柔性连接线
+		 *
+		 * i_P1      点1的XY坐标，如[x ,y]
+		 * i_P2      点2的XY坐标，如[x ,y]
+		 *
+		 * ZhengWei(HY) Add 2019-06-10
+		 */
+		function drawLink(i_P1 ,i_P2)
+		{
+			var v_Width = i_P2[0] - i_P1[0];
+			
+			/* 降低绘制 */
+			if ( i_P1[1] < i_P2[1] )
+			{
+				var v_C1 = [i_P1[0] + v_Width / 2 ,i_P1[1]];
+				var v_C2 = [i_P1[0] + v_Width / 2 ,i_P2[1]];
+				var v_C3 = [i_P2[0] ,i_P2[1]];
+				
+				return "M" + i_P1[0] + "," +  i_P1[1] + " "
+				     + "C" + v_C1[0] + "," +  v_C1[1] + " "
+				     +       v_C2[0] + "," +  v_C2[1] + " "
+				     +       v_C3[0] + "," +  v_C3[1] + " ";
+			}
+			/* 抬高绘制 */
+			else if ( i_P1[1] > i_P2[1] )
+			{
+				var v_C1 = [i_P1[0] + v_Width / 2 ,i_P1[1]];
+				var v_C2 = [i_P1[0] + v_Width / 2 ,i_P2[1]];
+				var v_C3 = [i_P2[0] ,i_P2[1]];
+				
+				return "M" + i_P1[0] + "," +  i_P1[1] + " "
+				     + "C" + v_C1[0] + "," +  v_C1[1] + " "
+				     +       v_C2[0] + "," +  v_C2[1] + " "
+				     +       v_C3[0] + "," +  v_C3[1] + " ";
+			}
+			/* 平行线 */
+			else
+			{
+				return "M" + i_P1[0] + "," +  i_P1[1] + " "
+					 + "L" + i_P2[0] + "," +  i_P2[1] ;
+			}
+		}
+		
+		
+		
+		var v_Colors      = {blockColor:      "black"
+				            ,xsqlQuerySelect: "#28A745"
+				            ,xsqlExecSelect:  "#FF6347"
+				            ,textColor:       "#BFBFBF"
+				            ,textSelectColor: "white"
+				            ,selectColor:     "#0DA4D3"
+				            ,linkColor:       "#E5E5E5"};
+		var v_BlockWidth  = 300;
+		var v_BlockHeight = 18;
+		var v_BlockSpace  = 1;
+		var v_LeftX       = 50;
+		var v_RightX      = 1280 - v_BlockWidth - 50;
+		var v_FontSize    = 12;
+		var v_LinkSize    = 1;
+		var v_LinkSelSize = 3;
+		var v_DSGID       = ":DSGID";
+		var v_DSGs        = :DSGs.datas;
+		var v_Tables      = :Tables.datas;
+		var v_XSQLs       = :XSQLs.datas;
+		var v_TableRefs   = {};   /* 格式如，{"表名称":["XSQLID01" ,"XSQLID02"]} */
+		var v_XSQLRefs    = {};   /* 格式如，{"XSQLID":["表名称01" ,"表名称02"]} */
+		var v_XSQLIndexes = {};   /* 格式如，{"XSQLID01":位置索引} */
+		var v_ClickTable  = "";
+		var v_ClickXSQL   = "";
+		
+		
+		
+		v_SVG.attr("height" ,(v_Tables.length >= v_XSQLs.length ? v_Tables.length : v_XSQLs.length) * (v_BlockHeight + v_BlockSpace) + 100);
+		
+		
+		
+		for (var i=0; i<v_DSGs.length; i++)
+		{
+			if ( v_DSGs[i] == v_DSGID )
+			{
+				$("#DSGIDs").append("<option value='" + v_DSGs[i] + "' selected>" + v_DSGs[i] + "</option>");
+			}
+			else
+			{
+				$("#DSGIDs").append("<option value='" + v_DSGs[i] + "'>" + v_DSGs[i] + "</option>");
+			}
+		}
+		
+		$("#DSGIDs").change(function (data) 
+		{
+	        var v_DSGID = $("#DSGIDs option:selected").attr("value");
+	        window.location.href = "analyseObject?dsgid=" + v_DSGID;
+	    });
+		
+		
+		
+		/**
+		 * 获取XSQL的选择中时的颜色
+		 *
+		 * i_Type  XSQL的类型
+		 *
+		 * ZhengWei(HY) Add 2019-06-11
+		 */
+		function getXSQLColor(i_Type)
+		{
+			if ( i_Type == 1 )
+			{
+				return v_Colors.xsqlQuerySelect;
+			}
+			else if ( i_Type > 1 )
+			{
+				return v_Colors.xsqlExecSelect;
+			}
+			else
+			{
+				return v_Colors.selectColor;
+			}
+		}
+		
+		
+		
+		/* 绘制表的矩形块 */
+		v_SVG.selectAll(".leftBlock").data(v_Tables).enter().append("rect")
+		.attr("class"  ,"leftBlock")
+		.attr("id" ,function(d ,i)
+		{
+			v_TableRefs[d.tableName] = d.xsqls;
+			
+			if ( d.xsqls != null )
+			{
+				for (var x=0; x<d.xsqls.length; x++)
+				{
+					if ( v_XSQLRefs[d.xsqls[x]] == null )
+					{
+						v_XSQLRefs[d.xsqls[x]] = [];
+					}
+					
+					v_XSQLRefs[d.xsqls[x]].push(d.tableName);
+				}
+			}
+			
+			return "leftBlock_" + d.tableName;	
+		})
+		.attr("fill"   ,v_Colors.blockColor)
+		.attr("stroke" ,v_Colors.textColor)
+		.attr("stroke-width" ,"1")
+		.attr("width"  ,v_BlockWidth)
+		.attr("height" ,v_BlockHeight)
+		.attr("x" ,function(d ,i)
+		{
+			return v_LeftX;
+		})
+		.attr("y" ,function(d ,i)
+		{
+			return v_BlockHeight * (i + 1) + v_BlockSpace * i;
+		})
+		.on("mouseover" ,function(d ,i)
+		{
+			if ( v_ClickTable == "" && v_ClickXSQL == "" )
+			{
+				tableNameOnMouseover(d.tableName);
+			}
+		})
+		.on("mouseout" ,function(d ,i)
+		{
+			if ( v_ClickTable == "" && v_ClickXSQL == "" )
+			{
+				tableNameOnMouseout(d.tableName);
+			}
+		})
+		.on("click" ,function(d ,i)
+		{
+			if ( v_ClickTable == d.tableName )
+			{
+				tableNameOnMouseout(v_ClickTable);
+				v_ClickTable = "";
+				return;
+			}
+			if ( v_ClickTable != "" )
+			{
+				tableNameOnMouseout(v_ClickTable);
+				v_ClickTable = "";
+			}
+			if ( v_ClickXSQL != "" )
+			{
+				xsqlOnMouseout(v_ClickXSQL);
+				v_ClickXSQL = "";
+			}
+			
+			v_ClickTable = d.tableName;
+			tableNameOnMouseover(v_ClickTable);
+		});
+		
+		
+		/* 绘制表的文字 */
+		v_SVG.selectAll(".leftBlockText").data(v_Tables).enter().append("text")
+		.attr("class" ,"leftBlockText")
+		.attr("id" ,function(d ,i)
+		{
+			return "leftBlockText_" + d.tableName;	
+		})
+		.attr("fill" ,v_Colors.textColor)
+		.attr("x" ,function(d ,i)
+		{
+			return 60;
+		})
+		.attr("y" ,function(d ,i)
+		{
+			return v_BlockHeight * (i + 2) + v_BlockSpace * i;
+		})
+		.attr("dy" ,"-4")
+      	.attr("font-size" ,v_FontSize)
+		.text(function(d ,i)
+		{
+			return d.tableName;
+		})
+		.on("mouseover" ,function(d ,i)
+		{
+			if ( v_ClickTable == "" && v_ClickXSQL == "" )
+			{
+				tableNameOnMouseover(d.tableName);
+			}
+		})
+		.on("mouseout" ,function(d ,i)
+		{
+			if ( v_ClickTable == "" && v_ClickXSQL == "" )
+			{
+				tableNameOnMouseout(d.tableName);
+			}
+		})
+		.on("click" ,function(d ,i)
+		{
+			if ( v_ClickTable == d.tableName )
+			{
+				tableNameOnMouseout(v_ClickTable);
+				v_ClickTable = "";
+				return;
+			}
+			if ( v_ClickTable != "" )
+			{
+				tableNameOnMouseout(v_ClickTable);
+				v_ClickTable = "";
+			}
+			if ( v_ClickXSQL != "" )
+			{
+				xsqlOnMouseout(v_ClickXSQL);
+				v_ClickXSQL = "";
+			}
+			
+			v_ClickTable = d.tableName;
+			tableNameOnMouseover(v_ClickTable);
+		});
+		
+		
+		
+		/**
+		 * 表名称及块的鼠标划动事件
+		 *
+		 * i_TableName  表名称
+		 *
+		 * ZhengWei(HY) Add 2019-06-10
+		 */
+		function tableNameOnMouseover(i_TableName)
+		{
+			d3.select("#leftBlock_"     + i_TableName).attr("fill" ,v_Colors.selectColor);
+			d3.select("#leftBlockText_" + i_TableName).attr("fill" ,v_Colors.textSelectColor);
+			
+			/* Link删除后重新添加 */
+			var v_NewLinks = [];
+			var v_NewXSQLs = [];
+			d3.selectAll(".link_" + i_TableName)
+			.each(function()
+			{
+				v_NewLinks.push(d3.select(this).attr("d"));	
+				v_NewXSQLs.push(d3.select(this).attr("data-xsql"));
+			});
+			d3.selectAll(".link_" + i_TableName).remove();
+			
+			for (var i=0; i<v_NewLinks.length; i++)
+			{
+				var v_Type = d3.select("#rightBlock_" + v_NewXSQLs[i]).attr("data-xsql-type");
+				createLink(i_TableName ,v_NewXSQLs[i] ,v_NewLinks[i] ,getXSQLColor(v_Type) ,v_LinkSelSize);
+			}
+			
+			var v_XSQLs = v_TableRefs[i_TableName];
+			if ( v_XSQLs != null )
+			{
+				for (var i=0; i<v_XSQLs.length; i++)
+				{
+					var v_XSQLID = v_XSQLs[i];
+					var v_Type   = d3.select("#rightBlock_" + v_XSQLID).attr("data-xsql-type");
+					
+					d3.select("#rightBlock_"     + v_XSQLID).attr("fill" ,getXSQLColor(v_Type));
+					d3.select("#rightBlockText_" + v_XSQLID).attr("fill" ,v_Colors.textSelectColor);
+				}
+			}
+		}
+		
+		
+		
+		/**
+		 * 表名称及块的鼠标划动事件
+		 *
+		 * i_TableName  表名称
+		 *
+		 * ZhengWei(HY) Add 2019-06-10
+		 */
+		function tableNameOnMouseout(i_TableName)
+		{
+			d3.select("#leftBlock_"     + i_TableName).attr("fill"   ,v_Colors.blockColor);
+			d3.select("#leftBlockText_" + i_TableName).attr("fill"   ,v_Colors.textColor);
+			d3.selectAll(".link_"       + i_TableName).attr("stroke" ,v_Colors.linkColor).attr("stroke-width" ,v_LinkSize);
+			
+			var v_XSQLs = v_TableRefs[i_TableName];
+			if ( v_XSQLs != null )
+			{
+				for (var i=0; i<v_XSQLs.length; i++)
+				{
+					var v_XSQLID = v_XSQLs[i];
+					
+					d3.select("#rightBlock_"     + v_XSQLID).attr("fill" ,v_Colors.blockColor);
+					d3.select("#rightBlockText_" + v_XSQLID).attr("fill" ,v_Colors.textColor);
+				}
+			}
+		}
+		
+		
+		
+		/**
+		 * XSQL ID及块的鼠标划动事件
+		 *
+		 * i_XSQL  XSQL的ID标识
+		 *
+		 * ZhengWei(HY) Add 2019-06-11
+		 */
+		function xsqlOnMouseover(i_XSQL)
+		{
+			var v_Type = d3.select("#rightBlock_" + i_XSQL).attr("data-xsql-type");
+			d3.select("#rightBlock_"     + i_XSQL).attr("fill" ,getXSQLColor(v_Type));
+			d3.select("#rightBlockText_" + i_XSQL).attr("fill" ,v_Colors.textSelectColor);
+			
+			var v_Tables = v_XSQLRefs[i_XSQL];
+			if ( v_Tables != null )
+			{
+				for (var i=0; i<v_Tables.length; i++)
+				{
+					var v_TableName = v_Tables[i];
+					
+					d3.select("#leftBlock_"     + v_TableName).attr("fill" ,v_Colors.selectColor);
+					d3.select("#leftBlockText_" + v_TableName).attr("fill" ,v_Colors.textSelectColor);
+					
+					d3.selectAll(".link_" + v_TableName)
+					.each(function()
+					{
+						var v_XSQLLink = d3.select(this).attr("data-xsql");
+						
+						if ( i_XSQL == v_XSQLLink )
+						{
+							var v_D = d3.select(this).attr("d");
+							d3.select(this).remove();
+							
+							createLink(v_TableName ,v_XSQLLink ,v_D ,getXSQLColor(v_Type) ,v_LinkSelSize);
+						}
+					});
+				}
+			}
+		}
+		
+		
+		
+		/**
+		 * XSQL ID及块的鼠标划动事件
+		 *
+		 * i_XSQL  XSQL的ID标识
+		 *
+		 * ZhengWei(HY) Add 2019-06-11
+		 */
+		function xsqlOnMouseout(i_XSQL)
+		{
+			var v_Type = d3.select("#rightBlock_" + i_XSQL).attr("data-xsql-type");
+			d3.select("#rightBlock_"     + i_XSQL).attr("fill" ,v_Colors.blockColor);
+			d3.select("#rightBlockText_" + i_XSQL).attr("fill" ,v_Colors.textColor);
+			
+			var v_Tables = v_XSQLRefs[i_XSQL];
+			if ( v_Tables != null )
+			{
+				for (var i=0; i<v_Tables.length; i++)
+				{
+					var v_TableName = v_Tables[i];
+					
+					tableNameOnMouseout(v_TableName);
+				}
+			}
+		}
+		
+		
+		
+		/* 绘制XSQL的矩形块 */
+		v_SVG.selectAll(".rightBlock").data(v_XSQLs).enter().append("rect")
+		.attr("class"  ,"rightBlock")
+		.attr("id" ,function(d ,i)
+		{
+			v_XSQLIndexes[d.xsql] = i;
+			return "rightBlock_" + d.xsql;	
+		})
+		.attr("data-xsql-type" ,function(d ,i)
+		{
+			return d.type;
+		})
+		.attr("fill" ,v_Colors.blockColor)
+		.attr("stroke" ,v_Colors.textColor)
+		.attr("stroke-width" ,"1")
+		.attr("width"  ,v_BlockWidth * 2)
+		.attr("height" ,v_BlockHeight)
+		.attr("x" ,function(d ,i)
+		{
+			return v_RightX;
+		})
+		.attr("y" ,function(d ,i)
+		{
+			return v_BlockHeight * (i + 1) + v_BlockSpace * i;
+		})
+		.on("mouseover" ,function(d ,i)
+		{
+			if ( v_ClickTable == "" && v_ClickXSQL == "" )
+			{
+				xsqlOnMouseover(d.xsql);
+			}
+		})
+		.on("mouseout" ,function(d ,i)
+		{
+			if ( v_ClickTable == "" && v_ClickXSQL == "" )
+			{
+				xsqlOnMouseout(d.xsql);
+			}
+		})
+		.on("click" ,function(d ,i)
+		{
+			if ( v_ClickXSQL == d.xsql )
+			{
+				xsqlOnMouseout(v_ClickXSQL);
+				v_ClickXSQL = "";
+				return;
+			}
+			if ( v_ClickTable != "" )
+			{
+				tableNameOnMouseout(v_ClickTable);
+				v_ClickTable = "";
+			}
+			if ( v_ClickXSQL != "" )
+			{
+				xsqlOnMouseout(v_ClickXSQL);
+				v_ClickXSQL = "";
+			}
+			
+			v_ClickXSQL = d.xsql;
+			xsqlOnMouseover(v_ClickXSQL);
+		});
+		
+		
+		/* 绘制XSQL的文字 */
+		v_SVG.selectAll(".rightBlockText").data(v_XSQLs).enter().append("text")
+		.attr("class" ,"rightBlockText")
+		.attr("id" ,function(d ,i)
+		{
+			return "rightBlockText_" + d.xsql;	
+		})
+		.attr("data-xsql-type" ,function(d ,i)
+		{
+			return d.type;
+		})
+		.attr("fill" ,v_Colors.textColor)
+		.attr("x" ,function(d ,i)
+		{
+			return v_RightX + 10;
+		})
+		.attr("y" ,function(d ,i)
+		{
+			return v_BlockHeight * (i + 2) + v_BlockSpace * i;
+		})
+		.attr("dy" ,"-4")
+      	.attr("font-size" ,v_FontSize)
+		.text(function(d ,i)
+		{
+			return d.xsql;
+		})
+		.on("mouseover" ,function(d ,i)
+		{
+			if ( v_ClickTable == "" && v_ClickXSQL == "" )
+			{
+				xsqlOnMouseover(d.xsql);
+			}
+		})
+		.on("mouseout" ,function(d ,i)
+		{
+			if ( v_ClickTable == "" && v_ClickXSQL == "" )
+			{
+				xsqlOnMouseout(d.xsql);
+			}
+		})
+		.on("click" ,function(d ,i)
+		{
+			if ( v_ClickXSQL == d.xsql )
+			{
+				xsqlOnMouseout(v_ClickXSQL);
+				v_ClickXSQL = "";
+				return;
+			}
+			if ( v_ClickTable != "" )
+			{
+				tableNameOnMouseout(v_ClickTable);
+				v_ClickTable = "";
+			}
+			if ( v_ClickXSQL != "" )
+			{
+				xsqlOnMouseout(v_ClickXSQL);
+				v_ClickXSQL = "";
+			}
+			
+			v_ClickXSQL = d.xsql;
+			xsqlOnMouseover(v_ClickXSQL);
+		});
+		
+		
+		
+		/**
+		 * 绘制一个Link
+		 *
+		 * i_TableName  表名称
+		 * i_XSQL       XSQL的ID标识
+		 * i_D          绘制数据
+		 * i_Color      Link的颜色
+		 * i_LinkSize   Link的大小
+		 *
+		 * ZhengWei(HY) Add 2019-06-11
+		 */
+		function createLink(i_TableName ,i_XSQL ,i_D ,i_Color ,i_LinkSize)
+		{
+			v_SVG.append("path")
+			.attr("class" ,"link_" + i_TableName)
+			.attr("data-xsql" ,i_XSQL)
+			.attr("fill" ,"none")
+			.attr("stroke" ,i_Color)
+			.attr("stroke-width" ,i_LinkSize)
+			.attr("d" ,i_D);
+		}
+		
+		
+		
+		/* 绘制所有Link */
+		for (var i=0; i<v_Tables.length; i++)
+		{
+			if (  v_Tables[i].xsqls != null )
+			{
+				var v_P1 = [v_LeftX + v_BlockWidth ,v_BlockHeight * (i + 1) + v_BlockSpace * i + v_BlockHeight / 2];
+				
+				for (var x=0; x<v_Tables[i].xsqls.length; x++)
+				{
+					var v_XSQL      = v_Tables[i].xsqls[x];
+					var v_XSQLIndex = v_XSQLIndexes[v_XSQL];
+					var v_P2        = [v_RightX ,v_BlockHeight * (v_XSQLIndex + 1) + v_BlockSpace * v_XSQLIndex + v_BlockHeight / 2];
+					
+					createLink(v_Tables[i].tableName ,v_XSQL ,drawLink(v_P1 ,v_P2) ,v_Colors.linkColor ,v_LinkSize);
+				}
+			}
+		}
+		
+	</script>
+
+</body>
+</html>
