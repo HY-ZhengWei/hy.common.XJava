@@ -42,7 +42,7 @@
 	        <item>
 	            <name>XSQL与表的关系图</name>
 				<comment>XSQL与表的关系图</comment>
-				<value><![CDATA[ /analyseDB?dsgid=* ]]></value>
+				<value><![CDATA[ /analyseObject?dsgid=* ]]></value>
 	        </item>
 	        
 	        <item>

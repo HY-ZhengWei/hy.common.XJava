@@ -1636,8 +1636,14 @@ public class AnalyseBase extends Analyse
                     Help.toSort(v_XSQLs ,"refCount DESC"   ,"xsql");
                     
                     v_RD = v_XJSON.toJson(Help.toListKeys(v_DSGMap) ,"datas").toJSONString();
-                    v_RT = v_XJSON.toJson(v_Tables                  ,"datas").toJSONString();
-                    v_RX = v_XJSON.toJson(v_XSQLs                   ,"datas").toJSONString();
+                    if ( !Help.isNull(v_Tables) )
+                    {
+                        v_RT = v_XJSON.toJson(v_Tables ,"datas").toJSONString();
+                    }
+                    if ( !Help.isNull(v_XSQLs) )
+                    {
+                        v_RX = v_XJSON.toJson(v_XSQLs ,"datas").toJSONString();
+                    }
                 }
             }
         }
