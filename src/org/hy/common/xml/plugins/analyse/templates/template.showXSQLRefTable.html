@@ -1,12 +1,13 @@
 <html>
 <head>
+	<title>:Title</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery.min.js"></script>
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/d3/d3.min.js"></script>
 	
 	<style type="text/css">
 	body { 
-		background-color: #FAFAFA; 
+		background-color: white; 
 		margin: 20px;
 	}
 	
@@ -29,6 +30,22 @@
 		color: #1E90FF;
 		text-decoration: none;
 	}
+	
+	.filterBar {
+		display: flex;
+		flex-direction: row;
+		padding-top: 20px;
+		padding-left: 50px;
+	}
+	
+	#filterTable {
+		width: 300px;
+		margin-right: 580px;
+	}
+	
+	#filterXSQL {
+		width: 600px;
+	}
 	</style>
 </head>
 <body oncontextmenu="return false">
@@ -36,6 +53,11 @@
 	<div>
 		数据连接池组：
 		<select id="DSGIDs"></select>
+	</div>
+	
+	<div class="filterBar">
+		<input type="text" id="filterTable" onKeyUp="filterTableOnKeyUp(event);" placeholder="过滤表名称。回车过滤">
+		<input type="text" id="filterXSQL"  onKeyUp="filterXSQLOnKeyUp(event);"  placeholder="过滤XSQL。回车过滤">
 	</div>
 
 	<svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -133,6 +155,8 @@
 		var v_XSQLIndexes = {};   /* 格式如，{"XSQLID01":位置索引} */
 		var v_ClickTable  = "";
 		var v_ClickXSQL   = "";
+		var v_FilterTable = "";
+		var v_FilterXSQL  = "";
 		
 		
 		
@@ -182,140 +206,6 @@
 				return v_Colors.selectColor;
 			}
 		}
-		
-		
-		
-		/* 绘制表的矩形块 */
-		v_SVG.selectAll(".leftBlock").data(v_Tables).enter().append("rect")
-		.attr("class"  ,"leftBlock")
-		.attr("id" ,function(d ,i)
-		{
-			v_TableRefs[d.tableName] = d.xsqls;
-			
-			if ( d.xsqls != null )
-			{
-				for (var x=0; x<d.xsqls.length; x++)
-				{
-					if ( v_XSQLRefs[d.xsqls[x]] == null )
-					{
-						v_XSQLRefs[d.xsqls[x]] = [];
-					}
-					
-					v_XSQLRefs[d.xsqls[x]].push(d.tableName);
-				}
-			}
-			
-			return "leftBlock_" + d.tableName;	
-		})
-		.attr("fill"   ,v_Colors.blockColor)
-		.attr("stroke" ,v_Colors.textColor)
-		.attr("stroke-width" ,"1")
-		.attr("width"  ,v_BlockWidth)
-		.attr("height" ,v_BlockHeight)
-		.attr("x" ,function(d ,i)
-		{
-			return v_LeftX;
-		})
-		.attr("y" ,function(d ,i)
-		{
-			return v_BlockHeight * (i + 1) + v_BlockSpace * i;
-		})
-		.on("mouseover" ,function(d ,i)
-		{
-			if ( v_ClickTable == "" && v_ClickXSQL == "" )
-			{
-				tableNameOnMouseover(d.tableName);
-			}
-		})
-		.on("mouseout" ,function(d ,i)
-		{
-			if ( v_ClickTable == "" && v_ClickXSQL == "" )
-			{
-				tableNameOnMouseout(d.tableName);
-			}
-		})
-		.on("click" ,function(d ,i)
-		{
-			if ( v_ClickTable == d.tableName )
-			{
-				tableNameOnMouseout(v_ClickTable);
-				v_ClickTable = "";
-				return;
-			}
-			if ( v_ClickTable != "" )
-			{
-				tableNameOnMouseout(v_ClickTable);
-				v_ClickTable = "";
-			}
-			if ( v_ClickXSQL != "" )
-			{
-				xsqlOnMouseout(v_ClickXSQL);
-				v_ClickXSQL = "";
-			}
-			
-			v_ClickTable = d.tableName;
-			tableNameOnMouseover(v_ClickTable);
-		});
-		
-		
-		/* 绘制表的文字 */
-		v_SVG.selectAll(".leftBlockText").data(v_Tables).enter().append("text")
-		.attr("class" ,"leftBlockText")
-		.attr("id" ,function(d ,i)
-		{
-			return "leftBlockText_" + d.tableName;	
-		})
-		.attr("fill" ,v_Colors.textColor)
-		.attr("x" ,function(d ,i)
-		{
-			return 60;
-		})
-		.attr("y" ,function(d ,i)
-		{
-			return v_BlockHeight * (i + 2) + v_BlockSpace * i;
-		})
-		.attr("dy" ,"-4")
-      	.attr("font-size" ,v_FontSize)
-		.text(function(d ,i)
-		{
-			return d.tableName;
-		})
-		.on("mouseover" ,function(d ,i)
-		{
-			if ( v_ClickTable == "" && v_ClickXSQL == "" )
-			{
-				tableNameOnMouseover(d.tableName);
-			}
-		})
-		.on("mouseout" ,function(d ,i)
-		{
-			if ( v_ClickTable == "" && v_ClickXSQL == "" )
-			{
-				tableNameOnMouseout(d.tableName);
-			}
-		})
-		.on("click" ,function(d ,i)
-		{
-			if ( v_ClickTable == d.tableName )
-			{
-				tableNameOnMouseout(v_ClickTable);
-				v_ClickTable = "";
-				return;
-			}
-			if ( v_ClickTable != "" )
-			{
-				tableNameOnMouseout(v_ClickTable);
-				v_ClickTable = "";
-			}
-			if ( v_ClickXSQL != "" )
-			{
-				xsqlOnMouseout(v_ClickXSQL);
-				v_ClickXSQL = "";
-			}
-			
-			v_ClickTable = d.tableName;
-			tableNameOnMouseover(v_ClickTable);
-		});
 		
 		
 		
@@ -461,134 +351,6 @@
 		
 		
 		
-		/* 绘制XSQL的矩形块 */
-		v_SVG.selectAll(".rightBlock").data(v_XSQLs).enter().append("rect")
-		.attr("class"  ,"rightBlock")
-		.attr("id" ,function(d ,i)
-		{
-			v_XSQLIndexes[d.xsql] = i;
-			return "rightBlock_" + d.xsql;	
-		})
-		.attr("data-xsql-type" ,function(d ,i)
-		{
-			return d.type;
-		})
-		.attr("fill" ,v_Colors.blockColor)
-		.attr("stroke" ,v_Colors.textColor)
-		.attr("stroke-width" ,"1")
-		.attr("width"  ,v_BlockWidth * 2)
-		.attr("height" ,v_BlockHeight)
-		.attr("x" ,function(d ,i)
-		{
-			return v_RightX;
-		})
-		.attr("y" ,function(d ,i)
-		{
-			return v_BlockHeight * (i + 1) + v_BlockSpace * i;
-		})
-		.on("mouseover" ,function(d ,i)
-		{
-			if ( v_ClickTable == "" && v_ClickXSQL == "" )
-			{
-				xsqlOnMouseover(d.xsql);
-			}
-		})
-		.on("mouseout" ,function(d ,i)
-		{
-			if ( v_ClickTable == "" && v_ClickXSQL == "" )
-			{
-				xsqlOnMouseout(d.xsql);
-			}
-		})
-		.on("click" ,function(d ,i)
-		{
-			if ( v_ClickXSQL == d.xsql )
-			{
-				xsqlOnMouseout(v_ClickXSQL);
-				v_ClickXSQL = "";
-				return;
-			}
-			if ( v_ClickTable != "" )
-			{
-				tableNameOnMouseout(v_ClickTable);
-				v_ClickTable = "";
-			}
-			if ( v_ClickXSQL != "" )
-			{
-				xsqlOnMouseout(v_ClickXSQL);
-				v_ClickXSQL = "";
-			}
-			
-			v_ClickXSQL = d.xsql;
-			xsqlOnMouseover(v_ClickXSQL);
-		});
-		
-		
-		/* 绘制XSQL的文字 */
-		v_SVG.selectAll(".rightBlockText").data(v_XSQLs).enter().append("text")
-		.attr("class" ,"rightBlockText")
-		.attr("id" ,function(d ,i)
-		{
-			return "rightBlockText_" + d.xsql;	
-		})
-		.attr("data-xsql-type" ,function(d ,i)
-		{
-			return d.type;
-		})
-		.attr("fill" ,v_Colors.textColor)
-		.attr("x" ,function(d ,i)
-		{
-			return v_RightX + 10;
-		})
-		.attr("y" ,function(d ,i)
-		{
-			return v_BlockHeight * (i + 2) + v_BlockSpace * i;
-		})
-		.attr("dy" ,"-4")
-      	.attr("font-size" ,v_FontSize)
-		.text(function(d ,i)
-		{
-			return d.xsql;
-		})
-		.on("mouseover" ,function(d ,i)
-		{
-			if ( v_ClickTable == "" && v_ClickXSQL == "" )
-			{
-				xsqlOnMouseover(d.xsql);
-			}
-		})
-		.on("mouseout" ,function(d ,i)
-		{
-			if ( v_ClickTable == "" && v_ClickXSQL == "" )
-			{
-				xsqlOnMouseout(d.xsql);
-			}
-		})
-		.on("click" ,function(d ,i)
-		{
-			if ( v_ClickXSQL == d.xsql )
-			{
-				xsqlOnMouseout(v_ClickXSQL);
-				v_ClickXSQL = "";
-				return;
-			}
-			if ( v_ClickTable != "" )
-			{
-				tableNameOnMouseout(v_ClickTable);
-				v_ClickTable = "";
-			}
-			if ( v_ClickXSQL != "" )
-			{
-				xsqlOnMouseout(v_ClickXSQL);
-				v_ClickXSQL = "";
-			}
-			
-			v_ClickXSQL = d.xsql;
-			xsqlOnMouseover(v_ClickXSQL);
-		});
-		
-		
-		
 		/**
 		 * 绘制一个Link
 		 *
@@ -613,23 +375,471 @@
 		
 		
 		
-		/* 绘制所有Link */
-		for (var i=0; i<v_Tables.length; i++)
+		function draw()
 		{
-			if (  v_Tables[i].xsqls != null )
+			v_SVG.selectAll("rect").remove();
+			v_SVG.selectAll("text").remove();
+			v_SVG.selectAll("path").remove();
+			
+			v_TableRefs   = {};
+			v_XSQLRefs    = {};
+			v_XSQLIndexes = {};
+		
+			
+			/* 绘制表的矩形块 */
+			v_SVG.selectAll(".leftBlock").data(v_Tables).enter()
+			.filter(function(d ,i)
 			{
-				var v_P1 = [v_LeftX + v_BlockWidth ,v_BlockHeight * (i + 1) + v_BlockSpace * i + v_BlockHeight / 2];
-				
-				for (var x=0; x<v_Tables[i].xsqls.length; x++)
+				if ( v_FilterTable == null || v_FilterTable == "" || d.tableName.toUpperCase().indexOf(v_FilterTable) >= 0 )
 				{
-					var v_XSQL      = v_Tables[i].xsqls[x];
-					var v_XSQLIndex = v_XSQLIndexes[v_XSQL];
-					var v_P2        = [v_RightX ,v_BlockHeight * (v_XSQLIndex + 1) + v_BlockSpace * v_XSQLIndex + v_BlockHeight / 2];
+					if ( v_FilterXSQL == null || v_FilterXSQL == "" )
+					{
+						return true;
+					}
 					
-					createLink(v_Tables[i].tableName ,v_XSQL ,drawLink(v_P1 ,v_P2) ,v_Colors.linkColor ,v_LinkSize);
+					for (var x=0; x<d.xsqls.length; x++)
+					{
+						if ( d.xsqls[x].toUpperCase().indexOf(v_FilterXSQL) >= 0 )
+						{
+							return true;
+						}
+					}
+					
+					return false;
+				}
+				else
+				{
+					return false;
+				}
+			})
+			.append("rect")
+			.attr("class"  ,"leftBlock")
+			.attr("id" ,function(d ,i)
+			{
+				v_TableRefs[d.tableName] = [];
+				
+				if ( d.xsqls != null )
+				{
+					for (var x=0; x<d.xsqls.length; x++)
+					{
+						if ( v_FilterXSQL == null || v_FilterXSQL == "" )
+						{
+							/* Nothing. */
+						}
+						else if ( d.xsqls[x].toUpperCase().indexOf(v_FilterXSQL) >= 0 )
+						{
+							/* Nothing. */
+						}
+						else
+						{
+							continue;
+						}
+						
+						if ( v_XSQLRefs[d.xsqls[x]] == null )
+						{
+							v_XSQLRefs[d.xsqls[x]] = [];
+						}
+						
+						v_XSQLRefs[d.xsqls[x]].push(d.tableName);
+						v_TableRefs[d.tableName].push(d.xsqls[x]);
+					}
+				}
+				
+				return "leftBlock_" + d.tableName;	
+			})
+			.attr("fill"   ,v_Colors.blockColor)
+			.attr("stroke" ,v_Colors.textColor)
+			.attr("stroke-width" ,"1")
+			.attr("width"  ,v_BlockWidth)
+			.attr("height" ,v_BlockHeight)
+			.attr("x" ,function(d ,i)
+			{
+				return v_LeftX;
+			})
+			.attr("y" ,function(d ,i)
+			{
+				return v_BlockHeight * (i + 0) + v_BlockSpace * i;
+			})
+			.on("mouseover" ,function(d ,i)
+			{
+				if ( v_ClickTable == "" && v_ClickXSQL == "" )
+				{
+					tableNameOnMouseover(d.tableName);
+				}
+			})
+			.on("mouseout" ,function(d ,i)
+			{
+				if ( v_ClickTable == "" && v_ClickXSQL == "" )
+				{
+					tableNameOnMouseout(d.tableName);
+				}
+			})
+			.on("click" ,function(d ,i)
+			{
+				if ( v_ClickTable == d.tableName )
+				{
+					tableNameOnMouseout(v_ClickTable);
+					v_ClickTable = "";
+					return;
+				}
+				if ( v_ClickTable != "" )
+				{
+					tableNameOnMouseout(v_ClickTable);
+					v_ClickTable = "";
+				}
+				if ( v_ClickXSQL != "" )
+				{
+					xsqlOnMouseout(v_ClickXSQL);
+					v_ClickXSQL = "";
+				}
+				
+				v_ClickTable = d.tableName;
+				tableNameOnMouseover(v_ClickTable);
+			});
+			
+			
+			/* 绘制表的文字 */
+			v_SVG.selectAll(".leftBlockText").data(v_Tables).enter()
+			.filter(function(d ,i)
+			{
+				if ( v_FilterTable == null || v_FilterTable == "" || d.tableName.toUpperCase().indexOf(v_FilterTable) >= 0 )
+				{
+					if ( v_FilterXSQL == null || v_FilterXSQL == "" )
+					{
+						return true;
+					}
+					
+					for (var x=0; x<d.xsqls.length; x++)
+					{
+						if ( d.xsqls[x].toUpperCase().indexOf(v_FilterXSQL) >= 0 )
+						{
+							return true;
+						}
+					}
+					
+					return false;
+				}
+				else
+				{
+					return false;
+				}
+			})
+			.append("text")
+			.attr("class" ,"leftBlockText")
+			.attr("id" ,function(d ,i)
+			{
+				return "leftBlockText_" + d.tableName;	
+			})
+			.attr("fill" ,v_Colors.textColor)
+			.attr("x" ,function(d ,i)
+			{
+				return 60;
+			})
+			.attr("y" ,function(d ,i)
+			{
+				return v_BlockHeight * (i + 1) + v_BlockSpace * i;
+			})
+			.attr("dy" ,"-4")
+	      	.attr("font-size" ,v_FontSize)
+			.text(function(d ,i)
+			{
+				return d.tableName;
+			})
+			.on("mouseover" ,function(d ,i)
+			{
+				if ( v_ClickTable == "" && v_ClickXSQL == "" )
+				{
+					tableNameOnMouseover(d.tableName);
+				}
+			})
+			.on("mouseout" ,function(d ,i)
+			{
+				if ( v_ClickTable == "" && v_ClickXSQL == "" )
+				{
+					tableNameOnMouseout(d.tableName);
+				}
+			})
+			.on("click" ,function(d ,i)
+			{
+				if ( v_ClickTable == d.tableName )
+				{
+					tableNameOnMouseout(v_ClickTable);
+					v_ClickTable = "";
+					return;
+				}
+				if ( v_ClickTable != "" )
+				{
+					tableNameOnMouseout(v_ClickTable);
+					v_ClickTable = "";
+				}
+				if ( v_ClickXSQL != "" )
+				{
+					xsqlOnMouseout(v_ClickXSQL);
+					v_ClickXSQL = "";
+				}
+				
+				v_ClickTable = d.tableName;
+				tableNameOnMouseover(v_ClickTable);
+			});
+			
+			
+			
+			/* 绘制XSQL的矩形块 */
+			v_SVG.selectAll(".rightBlock").data(v_XSQLs).enter()
+			.filter(function(d ,i)
+			{
+				if ( v_FilterXSQL == null || v_FilterXSQL == "" || d.xsql.toUpperCase().indexOf(v_FilterXSQL) >= 0 )
+				{
+					return v_XSQLRefs[d.xsql] != null;
+				}
+				else
+				{
+					return false;
+				}
+			})
+			.append("rect")
+			.attr("class"  ,"rightBlock")
+			.attr("id" ,function(d ,i)
+			{
+				v_XSQLIndexes[d.xsql] = i;
+				return "rightBlock_" + d.xsql;	
+			})
+			.attr("data-xsql-type" ,function(d ,i)
+			{
+				return d.type;
+			})
+			.attr("fill" ,v_Colors.blockColor)
+			.attr("stroke" ,v_Colors.textColor)
+			.attr("stroke-width" ,"1")
+			.attr("width"  ,v_BlockWidth * 2)
+			.attr("height" ,v_BlockHeight)
+			.attr("x" ,function(d ,i)
+			{
+				return v_RightX;
+			})
+			.attr("y" ,function(d ,i)
+			{
+				return v_BlockHeight * (i + 0) + v_BlockSpace * i;
+			})
+			.on("mouseover" ,function(d ,i)
+			{
+				if ( v_ClickTable == "" && v_ClickXSQL == "" )
+				{
+					xsqlOnMouseover(d.xsql);
+				}
+			})
+			.on("mouseout" ,function(d ,i)
+			{
+				if ( v_ClickTable == "" && v_ClickXSQL == "" )
+				{
+					xsqlOnMouseout(d.xsql);
+				}
+			})
+			.on("click" ,function(d ,i)
+			{
+				if ( v_ClickXSQL == d.xsql )
+				{
+					xsqlOnMouseout(v_ClickXSQL);
+					v_ClickXSQL = "";
+					return;
+				}
+				if ( v_ClickTable != "" )
+				{
+					tableNameOnMouseout(v_ClickTable);
+					v_ClickTable = "";
+				}
+				if ( v_ClickXSQL != "" )
+				{
+					xsqlOnMouseout(v_ClickXSQL);
+					v_ClickXSQL = "";
+				}
+				
+				v_ClickXSQL = d.xsql;
+				xsqlOnMouseover(v_ClickXSQL);
+			});
+			
+			
+			/* 绘制XSQL的文字 */
+			v_SVG.selectAll(".rightBlockText").data(v_XSQLs).enter()
+			.filter(function(d ,i)
+			{
+				if ( v_FilterXSQL == null || v_FilterXSQL == "" || d.xsql.toUpperCase().indexOf(v_FilterXSQL) >= 0 )
+				{
+					return v_XSQLRefs[d.xsql] != null;
+				}
+				else
+				{
+					return false;
+				}
+			})
+			.append("text")
+			.attr("class" ,"rightBlockText")
+			.attr("id" ,function(d ,i)
+			{
+				return "rightBlockText_" + d.xsql;	
+			})
+			.attr("data-xsql-type" ,function(d ,i)
+			{
+				return d.type;
+			})
+			.attr("fill" ,v_Colors.textColor)
+			.attr("x" ,function(d ,i)
+			{
+				return v_RightX + 10;
+			})
+			.attr("y" ,function(d ,i)
+			{
+				return v_BlockHeight * (i + 1) + v_BlockSpace * i;
+			})
+			.attr("dy" ,"-4")
+	      	.attr("font-size" ,v_FontSize)
+			.text(function(d ,i)
+			{
+				return d.xsql;
+			})
+			.on("mouseover" ,function(d ,i)
+			{
+				if ( v_ClickTable == "" && v_ClickXSQL == "" )
+				{
+					xsqlOnMouseover(d.xsql);
+				}
+			})
+			.on("mouseout" ,function(d ,i)
+			{
+				if ( v_ClickTable == "" && v_ClickXSQL == "" )
+				{
+					xsqlOnMouseout(d.xsql);
+				}
+			})
+			.on("click" ,function(d ,i)
+			{
+				if ( v_ClickXSQL == d.xsql )
+				{
+					xsqlOnMouseout(v_ClickXSQL);
+					v_ClickXSQL = "";
+					return;
+				}
+				if ( v_ClickTable != "" )
+				{
+					tableNameOnMouseout(v_ClickTable);
+					v_ClickTable = "";
+				}
+				if ( v_ClickXSQL != "" )
+				{
+					xsqlOnMouseout(v_ClickXSQL);
+					v_ClickXSQL = "";
+				}
+				
+				v_ClickXSQL = d.xsql;
+				xsqlOnMouseover(v_ClickXSQL);
+			});
+			
+			
+			/* 绘制所有Link */
+			var v_TableIndex = 0;
+			for (var i=0; i<v_Tables.length; i++)
+			{
+				if (  v_Tables[i].xsqls != null )
+				{
+					if ( v_FilterTable == null || v_FilterTable == "" || v_Tables[i].tableName.toUpperCase().indexOf(v_FilterTable) >= 0 )
+					{
+						if ( v_FilterXSQL == null || v_FilterXSQL == "" )
+						{
+							/* Nothing. */
+						}
+						else
+						{
+							var v_IsRef = false;
+							for (var x=0; x<v_Tables[i].xsqls.length; x++)
+							{
+								if ( v_Tables[i].xsqls[x].toUpperCase().indexOf(v_FilterXSQL) >= 0 )
+								{
+									v_IsRef = true;
+									break;
+								}
+							}
+							
+							if ( !v_IsRef )
+							{
+								continue;
+							}
+						}
+					}
+					else
+					{
+						continue;
+					}
+					
+					var v_P1 = [v_LeftX + v_BlockWidth ,v_BlockHeight * (v_TableIndex + 0) + v_BlockSpace * v_TableIndex + v_BlockHeight / 2];
+					v_TableIndex++;
+					
+					for (var x=0; x<v_Tables[i].xsqls.length; x++)
+					{
+						var v_XSQL      = v_Tables[i].xsqls[x];
+						var v_XSQLIndex = v_XSQLIndexes[v_XSQL];
+						var v_P2        = [v_RightX ,v_BlockHeight * (v_XSQLIndex + 0) + v_BlockSpace * v_XSQLIndex + v_BlockHeight / 2];
+						
+						if ( v_FilterXSQL == null || v_FilterXSQL == "" || v_XSQL.toUpperCase().indexOf(v_FilterXSQL) >= 0 )
+						{
+							if ( v_XSQLRefs[v_XSQL] == null )
+							{
+								continue;
+							}
+						}
+						else
+						{
+							continue;
+						}
+						
+						createLink(v_Tables[i].tableName ,v_XSQL ,drawLink(v_P1 ,v_P2) ,v_Colors.linkColor ,v_LinkSize);
+					}
 				}
 			}
 		}
+		
+		
+		
+		/**
+		 * 过滤表名称
+		 *
+		 * ZhengWei(HY) Add 2019-06-12
+		 */
+		function filterTableOnKeyUp(event)
+		{
+			var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+	   		if ( keyCode == 13 ) 
+			{
+	   			v_FilterTable = $("#filterTable").val().toUpperCase();
+	   			v_FilterXSQL  = $("#filterXSQL") .val().toUpperCase();
+	   			draw();
+			}
+		}
+		
+		
+		
+		/**
+		 * 过滤XSQL
+		 *
+		 * ZhengWei(HY) Add 2019-06-12
+		 */
+		function filterXSQLOnKeyUp(event)
+		{
+			var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+	   		if ( keyCode == 13 ) 
+			{
+	   			v_FilterTable = $("#filterTable").val().toUpperCase();
+	   			v_FilterXSQL  = $("#filterXSQL") .val().toUpperCase();
+	   			draw();
+			}
+		}
+		
+		
+		
+		draw();
+		$("#filterTable").val("");
+		$("#filterXSQL") .val("");
+		v_FilterTable = "";
+		v_FilterXSQL  = "";
 		
 	</script>
 
