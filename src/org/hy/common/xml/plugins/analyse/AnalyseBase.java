@@ -1544,9 +1544,10 @@ public class AnalyseBase extends Analyse
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?DSG=Y
      * @param  i_DSGID           数据库连接池的XID
+     * @param  i_Sort            排序类型 
      * @return
      */
-    public String showXSQLRefTable(String i_BasePath ,String i_ObjectValuePath ,String i_DSGID)
+    public String showXSQLRefTable(String i_BasePath ,String i_ObjectValuePath ,String i_DSGID ,String i_Sort)
     {
         List<XSQLRetTable> v_Tables = new ArrayList<XSQLRetTable>();
         List<XSQLRetTable> v_XSQLs  = new ArrayList<XSQLRetTable>();
@@ -1632,8 +1633,16 @@ public class AnalyseBase extends Analyse
                     }
                     
                     
-                    Help.toSort(v_Tables ,"xsqlCount DESC" ,"orderTableName");
-                    Help.toSort(v_XSQLs ,"refCount DESC"   ,"xsql");
+                    if ( "2".equals(i_Sort) )
+                    {
+                        Help.toSort(v_Tables ,"xsqlCount DESC" ,"orderTableName");
+                        Help.toSort(v_XSQLs  ,"refCount DESC"   ,"xsql");
+                    }
+                    else
+                    {
+                        Help.toSort(v_Tables ,"tableName");
+                        Help.toSort(v_XSQLs  ,"xsql");
+                    }
                     
                     v_RD = v_XJSON.toJson(Help.toListKeys(v_DSGMap) ,"datas").toJSONString();
                     if ( !Help.isNull(v_Tables) )
@@ -1653,8 +1662,8 @@ public class AnalyseBase extends Analyse
         }
         
         return StringHelp.replaceAll(this.getTemplateShowXSQLRefTable()
-                                    ,new String[]{":Title"       ,":DSGID" ,":DSGs" ,":Tables" ,":XSQLs" ,":HttpBasePath"}
-                                    ,new String[]{"XSQL与表关系" ,v_DSGID ,v_RD    ,v_RT      ,v_RX ,i_BasePath});
+                                    ,new String[]{":Title"       ,":DSGID" ,":DSGs" ,":Tables" ,":XSQLs" ,":OrderType" ,":HttpBasePath"}
+                                    ,new String[]{"XSQL与表关系" ,v_DSGID ,v_RD    ,v_RT      ,v_RX      ,i_Sort       ,i_BasePath});
     }
     
     

@@ -250,7 +250,8 @@ public class AnalyseObjectServlet extends HttpServlet
             }
             else if ( !Help.isNull(v_DSGID) )
             {
-                i_Response.getWriter().println(this.analyse.showXSQLRefTable(v_BasePath ,i_Request.getRequestURL().toString() ,v_DSGID));
+                String v_Sort = Help.NVL(i_Request.getParameter("S"));
+                i_Response.getWriter().println(this.analyse.showXSQLRefTable(v_BasePath ,i_Request.getRequestURL().toString() ,v_DSGID ,Help.NVL(v_Sort ,"2")));
             }
             else if ( !Help.isNull(v_Job) )
             {

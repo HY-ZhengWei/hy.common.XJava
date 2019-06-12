@@ -31,6 +31,16 @@
 		text-decoration: none;
 	}
 	
+	.topBar {
+		display: flex;
+		flex-direction: row;
+		font-size: 14px;
+	}
+	
+	.topBarItem {
+		margin-right: 40px;
+	}
+	
 	.filterBar {
 		display: flex;
 		flex-direction: row;
@@ -50,9 +60,23 @@
 </head>
 <body oncontextmenu="return false">
 
-	<div>
-		数据连接池组：
-		<select id="DSGIDs"></select>
+	<div class="topBar">
+		<div class="topBarItem">
+			数据连接池组：
+			<select id="DSGIDs"></select>
+		</div>
+		
+		<div class="topBarItem">
+			排序规则：
+			<select id="OrderType">
+				<option value="1">按名称</option>
+				<option value="2">按关系权重</option>
+			</select>
+		</div>
+		
+		<div class="topBarItem">
+			<a href="#" id="helpMe">帮助</a>
+		</div>
 	</div>
 	
 	<div class="filterBar">
@@ -146,6 +170,7 @@
 		var v_FontSize    = 12;
 		var v_LinkSize    = 1;
 		var v_LinkSelSize = 3;
+		var v_OrderType   = :OrderType;
 		var v_DSGID       = ":DSGID";
 		var v_DSGs        = :DSGs.datas;
 		var v_Tables      = :Tables.datas;
@@ -164,6 +189,15 @@
 		
 		
 		
+		$("#OrderType").val(v_OrderType);
+		$("#OrderType").change(function (data) 
+		{
+			v_OrderType = $("#OrderType option:selected").attr("value");
+	        window.location.href = "analyseObject?dsgid=" + v_DSGID + "&S=" + v_OrderType;
+	    });
+		
+		
+		
 		for (var i=0; i<v_DSGs.length; i++)
 		{
 			if ( v_DSGs[i] == v_DSGID )
@@ -179,8 +213,15 @@
 		$("#DSGIDs").change(function (data) 
 		{
 	        var v_DSGID = $("#DSGIDs option:selected").attr("value");
-	        window.location.href = "analyseObject?dsgid=" + v_DSGID;
+	        window.location.href = "analyseObject?dsgid=" + v_DSGID + "&S=" + v_OrderType;
 	    });
+		
+		
+		
+		$("#helpMe").click(function (data)
+		{
+			alert("1 锁定关系线：点击表名称或XSQL\n2 解锁关系线：再次点击表名称、XSQL或右击\n3 红色关系线：写入数据的XSQL\n4 绿色关系线：查询数据的XSQL\n5 蓝色关系线：其它操作的XSQL，如创建对象、批量SQL等");
+		});
 		
 		
 		
