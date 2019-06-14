@@ -22,6 +22,9 @@ public class XSQLRetTable
     /** 表名称 */
     private String tableName;
     
+    /** 表与表的关系 */
+    private List<String> refs;
+    
     /** 表对应的XSQL */
     private List<String> xsqls;
     
@@ -37,6 +40,26 @@ public class XSQLRetTable
     /** 引用次数 */
     private Integer refCount;
     
+    
+    
+    /**
+     * 表与表的关系的个数，主要用于排序
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-06-14
+     * @version     v1.0
+     *
+     * @return
+     */
+    public Integer getRefsCount()
+    {
+        if ( this.refs == null )
+        {
+            return null;
+        }
+        
+        return this.refs.size();
+    }
     
     
     /**
@@ -198,6 +221,26 @@ public class XSQLRetTable
     public void setRefCount(Integer refCount)
     {
         this.refCount = refCount;
+    }
+
+
+    /**
+     * 获取：表与表的关系
+     */
+    public List<String> getRefs()
+    {
+        return refs;
+    }
+
+    
+    /**
+     * 设置：表与表的关系
+     * 
+     * @param refs 
+     */
+    public void setRefs(List<String> refs)
+    {
+        this.refs = refs;
     }
     
 }

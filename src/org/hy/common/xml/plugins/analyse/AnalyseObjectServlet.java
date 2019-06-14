@@ -62,7 +62,8 @@ import org.hy.common.xml.XJava;
  * 
  * 功能19：查看XSQL组流程图               http://IP:Port/WebService/../analyseObject?XSGFlow=Y&xid=xxx
  * 
- * 功能20：查看XSQL与表的关系图           http://IP:Port/WebService/../analyseObject?dsgid=xxx
+ * 功能20：查看XSQL与表的关系图           http://IP:Port/WebService/../analyseObject?dsgid=*
+ * 功能21：查看表的关系图                 http://IP:Port/WebService/../analyseObject?&tableRef=Ydsgid=*
  *
  * @author      ZhengWei(HY)
  * @createDate  2015-12-16
@@ -80,6 +81,7 @@ import org.hy.common.xml.XJava;
  *              v8.0  2018-09-10  添加：查看XSQL组流程图
  *              v9.0  2019-02-26  添加：定时灾备多活集群情况
  *              v10.0 2019-06-11  添加：查看XSQL与表的关系图
+ *              v11.0 2019-06-14  添加：查看表的关系图
  *              
  */
 public class AnalyseObjectServlet extends HttpServlet
@@ -250,8 +252,17 @@ public class AnalyseObjectServlet extends HttpServlet
             }
             else if ( !Help.isNull(v_DSGID) )
             {
-                String v_Sort = Help.NVL(i_Request.getParameter("S"));
-                i_Response.getWriter().println(this.analyse.showXSQLRefTable(v_BasePath ,i_Request.getRequestURL().toString() ,v_DSGID ,Help.NVL(v_Sort ,"2")));
+                String v_TableRef = Help.NVL(i_Request.getParameter("tableRef"));
+                String v_Sort     = Help.NVL(i_Request.getParameter("S"));
+                
+                if ( Help.isNull(v_TableRef) )
+                {
+                    i_Response.getWriter().println(this.analyse.showXSQLRefTable (v_BasePath ,i_Request.getRequestURL().toString() ,v_DSGID ,Help.NVL(v_Sort ,"2")));
+                }
+                else
+                {
+                    i_Response.getWriter().println(this.analyse.showXSQLTablesRef(v_BasePath ,i_Request.getRequestURL().toString() ,v_DSGID ,Help.NVL(v_Sort ,"2")));
+                }
             }
             else if ( !Help.isNull(v_Job) )
             {

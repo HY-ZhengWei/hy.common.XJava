@@ -46,6 +46,12 @@
 	        </item>
 	        
 	        <item>
+	            <name>表的关系图</name>
+				<comment>表的关系图</comment>
+				<value><![CDATA[ /analyseObject?tableRef=Y&dsgid=* ]]></value>
+	        </item>
+	        
+	        <item>
 	            <name>XSQL组的调试页面</name>
 				<comment><![CDATA[ 请自行编写URL：http://../analyseObject?xid=XSQL组ID ]]></comment>
 	        </item>

@@ -18,6 +18,7 @@ import org.hy.common.MethodReflect;
 import org.hy.common.Queue;
 import org.hy.common.Return;
 import org.hy.common.StringHelp;
+import org.hy.common.TablePartitionRID;
 import org.hy.common.app.Param;
 import org.hy.common.db.DataSourceGroup;
 import org.hy.common.net.ClientSocket;
@@ -1568,6 +1569,7 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_DSGMap) && !Help.isNull(v_XSQLMap) )
             {
+                v_RD = v_XJSON.toJson(Help.toListKeys(v_DSGMap) ,"datas").toJSONString();
                 if ( "*".equals(v_DSGID) )
                 {
                     v_DSGID = Help.toListKeys(v_DSGMap).get(0);
@@ -1644,7 +1646,6 @@ public class AnalyseBase extends Analyse
                         Help.toSort(v_XSQLs  ,"xsql");
                     }
                     
-                    v_RD = v_XJSON.toJson(Help.toListKeys(v_DSGMap) ,"datas").toJSONString();
                     if ( !Help.isNull(v_Tables) )
                     {
                         v_RT = v_XJSON.toJson(v_Tables ,"datas").toJSONString();
@@ -1662,8 +1663,156 @@ public class AnalyseBase extends Analyse
         }
         
         return StringHelp.replaceAll(this.getTemplateShowXSQLRefTable()
-                                    ,new String[]{":Title"       ,":DSGID" ,":DSGs" ,":Tables" ,":XSQLs" ,":OrderType" ,":HttpBasePath"}
-                                    ,new String[]{"XSQL与表关系" ,v_DSGID ,v_RD    ,v_RT      ,v_RX      ,i_Sort       ,i_BasePath});
+                                    ,new String[]{":Title"         ,":DSGID" ,":DSGs" ,":Tables" ,":XSQLs" ,":OrderType" ,":HttpBasePath"}
+                                    ,new String[]{"XSQL与表关系图" ,v_DSGID ,v_RD    ,v_RT      ,v_RX      ,i_Sort       ,i_BasePath});
+    }
+    
+    
+    
+    /**
+     * 功能1. 查看表的关系图
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-06-14
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?DSG=Y
+     * @param  i_DSGID           数据库连接池的XID
+     * @param  i_Sort            排序类型 
+     * @return
+     */
+    public String showXSQLTablesRef(String i_BasePath ,String i_ObjectValuePath ,String i_DSGID ,String i_Sort)
+    {
+        List<XSQLRetTable>                v_XSQLs      = new ArrayList<XSQLRetTable>();
+        TablePartitionRID<String ,String> v_XSQLTables = new TablePartitionRID<String ,String>();
+        TablePartitionRID<String ,String> v_Tables     = new TablePartitionRID<String ,String>();
+        List<XSQLRetTable>                v_RetTables  = new ArrayList<XSQLRetTable>();
+        XJSON                             v_XJSON      = new XJSON();
+        String                            v_RD         = "{datas:[]}";
+        String                            v_RT         = "{datas:[]}";
+        String []                         v_RepKey     = {"(" ,")"};
+        String []                         v_RepVal     = {"（" ,"）"};
+        String                            v_DSGID      = i_DSGID;
+        
+        v_XJSON.setReturnNVL(false);
+        
+        try
+        {
+            Map<String ,Object> v_DSGMap  = XJava.getObjects(DataSourceGroup.class);
+            Map<String ,Object> v_XSQLMap = XJava.getObjects(XSQL.class);
+            
+            if ( !Help.isNull(v_DSGMap) && !Help.isNull(v_XSQLMap) )
+            {
+                v_RD = v_XJSON.toJson(Help.toListKeys(v_DSGMap) ,"datas").toJSONString();
+                if ( "*".equals(v_DSGID) )
+                {
+                    v_DSGID = Help.toListKeys(v_DSGMap).get(0);
+                }
+                
+                DataSourceGroup v_DSG            = (DataSourceGroup)XJava.getObject(v_DSGID);
+                XSQLDBMetadata  v_XSQLDBMetadata = new XSQLDBMetadata();
+                List<String>    v_Objects        = Help.toDistinct(v_XSQLDBMetadata.getObjects(v_DSG));
+                
+                if ( !Help.isNull(v_Objects) )
+                {
+                    // 生成XSQL信息列表
+                    for (Map.Entry<String ,Object> v_XSQLItem : v_XSQLMap.entrySet())
+                    {
+                        XSQL v_XSQL = (XSQL)v_XSQLItem.getValue();
+                        
+                        if ( v_DSG == v_XSQL.getDataSourceGroup() )
+                        {
+                            XSQLRetTable v_XSQLRef = new XSQLRetTable();
+                            v_XSQLRef.setXsql(StringHelp.replaceAll(v_XSQLItem.getKey() ,v_RepKey ,v_RepVal));
+                            v_XSQLRef.setType(v_XSQL.getContent().getSQLType());
+                            v_XSQLRef.setSqlText(Help.NVL(v_XSQL.getContent().getSqlText()).toUpperCase());
+                            v_XSQLs.add(v_XSQLRef);
+                        }
+                    }
+                    
+                    // 生成表与XSQL的关系数据
+                    for (String v_OName : v_Objects)
+                    {
+                        String v_ONameFindKey = " " + v_OName.toUpperCase() + " ";
+                        
+                        for (XSQLRetTable v_XSQLItem : v_XSQLs)
+                        {
+                            if ( !Help.isNull(v_XSQLItem.getSqlText()) )
+                            {
+                                if ( v_XSQLItem.getSqlText().indexOf(v_ONameFindKey) > 0 )
+                                {
+                                    v_XSQLTables.putRow(v_XSQLItem.getXsql() ,v_OName ,v_OName);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 生成表与表的关系数据
+                    if ( !Help.isNull(v_XSQLTables) )
+                    {
+                        for (Map<String ,String> v_Item : v_XSQLTables.values())
+                        {
+                            for (String v_OName1 : v_Item.values())
+                            {
+                                for (String v_OName2 : v_Item.values())
+                                {
+                                    if ( !v_OName1.equals(v_OName2) )
+                                    {
+                                        v_Tables.putRow(v_OName1 ,v_OName2 ,v_OName2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 将表与表的关系数据转换格式
+                    if ( !Help.isNull(v_Tables) )
+                    {
+                        for (String v_OName : v_Tables.keySet())
+                        {
+                            List<String> v_Refs = new ArrayList<String>();
+                            for (String v_RefOName : v_Tables.get(v_OName).keySet())
+                            {
+                                v_Refs.add(v_RefOName);
+                            }
+                            
+                            if ( !Help.isNull(v_Refs) )
+                            {
+                                XSQLRetTable v_Table = new XSQLRetTable();
+                                
+                                v_Table.setTableName(v_OName);
+                                v_Table.setRefs(Help.toSort(v_Refs));
+                                
+                                v_RetTables.add(v_Table);
+                            }
+                        }
+                    }
+                    
+                    if ( !Help.isNull(v_RetTables) )
+                    {
+                        if ( "2".equals(i_Sort) )
+                        {
+                            Help.toSort(v_RetTables ,"refsCount DESC" ,"tableName");
+                        }
+                        else
+                        {
+                            Help.toSort(v_RetTables ,"tableName");
+                        }
+                        
+                        v_RT = v_XJSON.toJson(v_RetTables ,"datas").toJSONString();
+                    }
+                }
+            }
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+        }
+        
+        return StringHelp.replaceAll(this.getTemplateShowXSQLTablesRef()
+                                    ,new String[]{":Title"      ,":DSGID" ,":DSGs" ,":Tables" ,":OrderType" ,":HttpBasePath"}
+                                    ,new String[]{"表的关系图" ,v_DSGID ,v_RD    ,v_RT       ,i_Sort       ,i_BasePath});
     }
     
     
@@ -3023,6 +3172,13 @@ public class AnalyseBase extends Analyse
     private String getTemplateShowXSQLRefTable()
     {
         return this.getTemplateContent("template.showXSQLRefTable.html");
+    }
+    
+    
+    
+    private String getTemplateShowXSQLTablesRef()
+    {
+        return this.getTemplateContent("template.showXSQLTablesRef.html");
     }
     
 }
