@@ -59,6 +59,15 @@
 		</div>
 		
 		<div class="topBarItem">
+			显示：
+			<select id="RowMaxCount">
+				<option value="4">4排</option>
+				<option value="5">5排</option>
+				<option value="6">6排</option>
+			</select>
+		</div>
+		
+		<div class="topBarItem">
 			<a href="#" id="helpMe">帮助</a>
 		</div>
 	</div>
@@ -239,6 +248,15 @@
 		
 		
 		
+		$("#RowMaxCount").val(v_RowMaxCount);
+		$("#RowMaxCount").change(function (data) 
+		{
+			v_RowMaxCount = $("#RowMaxCount option:selected").attr("value");
+			draw();
+	    });
+		
+		
+		
 		for (var i=0; i<v_DSGs.length; i++)
 		{
 			if ( v_DSGs[i] == v_DSGID )
@@ -317,144 +335,157 @@
 		
 		
 		
-		for (var i=0; i<v_Tables.length; i++)
+		
+		function draw()
 		{
-			var v_Table = v_Tables[i];
+			v_SVG.selectAll("rect").remove();
+			v_SVG.selectAll("text").remove();
+			v_SVG.selectAll("path").remove();
 			
-			v_Table.width = calcBlockWidth(v_Table.tableName);
-			v_Table.x     = calcBlockX(i);   /* X轴，为块的中心点坐标 */
-			v_Table.y     = calcBlockY(i);   /* Y轴，为块的顶部点坐标 */
+			v_TableIndexes = {};
 			
-			v_TableIndexes[v_Table.tableName] = i;
+			
+			
+			/* 计算位置 */
+			for (var i=0; i<v_Tables.length; i++)
+			{
+				var v_Table = v_Tables[i];
+				
+				v_Table.width = calcBlockWidth(v_Table.tableName);
+				v_Table.x     = calcBlockX(i);   /* X轴，为块的中心点坐标 */
+				v_Table.y     = calcBlockY(i);   /* Y轴，为块的顶部点坐标 */
+				
+				v_TableIndexes[v_Table.tableName] = i;
+			}
+			
+						
+			
+			/* 绘制连接线 */
+			for (var i=0; i<v_Tables.length; i++)
+			{
+				if ( v_Tables[i].refs == null || v_Tables[i].refs.length <= 0 )
+				{
+					continue;
+				}
+				
+				createTableAllRefLink(v_Tables[i] ,null ,v_Colors.linkColor ,v_LinkSize);
+			}
+			
+			
+			
+			/* 绘制表的矩形块 */
+			v_SVG.selectAll(".tableBlock").data(v_Tables).enter()
+			.append("rect")
+			.attr("id" ,function(d ,i)
+			{
+				return "tableBlock_" + d.tableName;	
+			})
+			.attr("class"  ,"tableBlock")
+			.attr("fill"   ,v_Colors.blockColor)
+			.attr("stroke" ,v_Colors.textColor)
+			.attr("stroke-width" ,"1")
+			.attr("width"  ,function(d ,i)
+			{
+				return d.width;
+			})
+			.attr("height" ,v_BlockHeight)
+			.attr("x" ,function(d ,i)
+			{
+				return d.x - d.width / 2;
+			})
+			.attr("y" ,function(d ,i)
+			{
+				return d.y;
+			})
+			.on("mouseover" ,function(d ,i)
+			{
+				if ( v_ClickTable == "" )
+				{
+					tableNameOnMouseover(d.tableName);
+				}
+			})
+			.on("mouseout" ,function(d ,i)
+			{
+				if ( v_ClickTable == "" )
+				{
+					tableNameOnMouseout(d.tableName);
+				}
+			})
+			.on("click" ,function(d ,i)
+			{
+				if ( v_ClickTable == d.tableName )
+				{
+					tableNameOnMouseout(v_ClickTable);
+					v_ClickTable = "";
+					return;
+				}
+				if ( v_ClickTable != "" )
+				{
+					tableNameOnMouseout(v_ClickTable);
+					v_ClickTable = "";
+				}
+				
+				v_ClickTable = d.tableName;
+				tableNameOnMouseover(v_ClickTable);
+			});
+			
+			
+			
+			/* 绘制表的文字 */
+			v_SVG.selectAll(".tableBlockText").data(v_Tables).enter()
+			.append("text")
+			.attr("id" ,function(d ,i)
+			{
+				return "tableBlockText_" + d.tableName;	
+			})
+			.attr("class" ,"tableBlockText")
+			.attr("fill" ,v_Colors.textColor)
+			.attr("x" ,function(d ,i)
+			{
+				return d.x - d.width / 2 + 10;
+			})
+			.attr("y" ,function(d ,i)
+			{
+				return d.y + v_BlockHeight;
+			})
+			.attr("dy" ,"-4")
+	      	.attr("font-size" ,v_FontSize)
+			.text(function(d ,i)
+			{
+				return d.tableName;
+			})
+			.on("mouseover" ,function(d ,i)
+			{
+				if ( v_ClickTable == "" )
+				{
+					tableNameOnMouseover(d.tableName);
+				}
+			})
+			.on("mouseout" ,function(d ,i)
+			{
+				if ( v_ClickTable == "" )
+				{
+					tableNameOnMouseout(d.tableName);
+				}
+			})
+			.on("click" ,function(d ,i)
+			{
+				if ( v_ClickTable == d.tableName )
+				{
+					tableNameOnMouseout(v_ClickTable);
+					v_ClickTable = "";
+					return;
+				}
+				if ( v_ClickTable != "" )
+				{
+					tableNameOnMouseout(v_ClickTable);
+					v_ClickTable = "";
+				}
+				
+				v_ClickTable = d.tableName;
+				tableNameOnMouseover(v_ClickTable);
+			});
 		}
-		
-		
-		
-		/* 绘制连接线 */
-		for (var i=0; i<v_Tables.length; i++)
-		{
-			if ( v_Tables[i].refs == null || v_Tables[i].refs.length <= 0 )
-			{
-				continue;
-			}
-			
-			createTableAllRefLink(v_Tables[i] ,null ,v_Colors.linkColor ,v_LinkSize);
-		}
-		
-		
-		
-		/* 绘制表的矩形块 */
-		v_SVG.selectAll(".tableBlock").data(v_Tables).enter()
-		.append("rect")
-		.attr("id" ,function(d ,i)
-		{
-			return "tableBlock_" + d.tableName;	
-		})
-		.attr("class"  ,"tableBlock")
-		.attr("fill"   ,v_Colors.blockColor)
-		.attr("stroke" ,v_Colors.textColor)
-		.attr("stroke-width" ,"1")
-		.attr("width"  ,function(d ,i)
-		{
-			return d.width;
-		})
-		.attr("height" ,v_BlockHeight)
-		.attr("x" ,function(d ,i)
-		{
-			return d.x - d.width / 2;
-		})
-		.attr("y" ,function(d ,i)
-		{
-			return d.y;
-		})
-		.on("mouseover" ,function(d ,i)
-		{
-			if ( v_ClickTable == "" )
-			{
-				tableNameOnMouseover(d.tableName);
-			}
-		})
-		.on("mouseout" ,function(d ,i)
-		{
-			if ( v_ClickTable == "" )
-			{
-				tableNameOnMouseout(d.tableName);
-			}
-		})
-		.on("click" ,function(d ,i)
-		{
-			if ( v_ClickTable == d.tableName )
-			{
-				tableNameOnMouseout(v_ClickTable);
-				v_ClickTable = "";
-				return;
-			}
-			if ( v_ClickTable != "" )
-			{
-				tableNameOnMouseout(v_ClickTable);
-				v_ClickTable = "";
-			}
-			
-			v_ClickTable = d.tableName;
-			tableNameOnMouseover(v_ClickTable);
-		});
-		
-		
-		
-		/* 绘制表的文字 */
-		v_SVG.selectAll(".tableBlockText").data(v_Tables).enter()
-		.append("text")
-		.attr("id" ,function(d ,i)
-		{
-			return "tableBlockText_" + d.tableName;	
-		})
-		.attr("class" ,"tableBlockText")
-		.attr("fill" ,v_Colors.textColor)
-		.attr("x" ,function(d ,i)
-		{
-			return d.x - d.width / 2 + 10;
-		})
-		.attr("y" ,function(d ,i)
-		{
-			return d.y + v_BlockHeight;
-		})
-		.attr("dy" ,"-4")
-      	.attr("font-size" ,v_FontSize)
-		.text(function(d ,i)
-		{
-			return d.tableName;
-		})
-		.on("mouseover" ,function(d ,i)
-		{
-			if ( v_ClickTable == "" )
-			{
-				tableNameOnMouseover(d.tableName);
-			}
-		})
-		.on("mouseout" ,function(d ,i)
-		{
-			if ( v_ClickTable == "" )
-			{
-				tableNameOnMouseout(d.tableName);
-			}
-		})
-		.on("click" ,function(d ,i)
-		{
-			if ( v_ClickTable == d.tableName )
-			{
-				tableNameOnMouseout(v_ClickTable);
-				v_ClickTable = "";
-				return;
-			}
-			if ( v_ClickTable != "" )
-			{
-				tableNameOnMouseout(v_ClickTable);
-				v_ClickTable = "";
-			}
-			
-			v_ClickTable = d.tableName;
-			tableNameOnMouseover(v_ClickTable);
-		});
 		
 		
 		
@@ -544,6 +575,9 @@
 			}
 		}
 		
+		
+		
+		draw();
 	</script>
 
 </body>
