@@ -103,7 +103,7 @@
 				return "M" + i_P1[0] + "," +  i_P1[1] + " "
 				     + "C" + v_C1[0] + "," +  v_C1[1] + " "
 				     +       v_C2[0] + "," +  v_C2[1] + " "
-				     +       v_C3[0] + "," +  v_C3[1] + " ";
+				     +       v_C3[0] + "," +  v_C3[1];
 			}
 			/* 抬高绘制 */
 			else if ( i_P1[1] > i_P2[1] )
@@ -115,7 +115,7 @@
 				return "M" + i_P1[0] + "," +  i_P1[1] + " "
 				     + "C" + v_C1[0] + "," +  v_C1[1] + " "
 				     +       v_C2[0] + "," +  v_C2[1] + " "
-				     +       v_C3[0] + "," +  v_C3[1] + " ";
+				     +       v_C3[0] + "," +  v_C3[1];
 			}
 			/* 曲线 */
 			else
@@ -127,7 +127,7 @@
 				return "M" + i_P1[0] + "," +  i_P1[1] + " "
 				     + "C" + v_C1[0] + "," +  v_C1[1] + " "
 				     +       v_C2[0] + "," +  v_C2[1] + " "
-				     +       v_C3[0] + "," +  v_C3[1] + " ";
+				     +       v_C3[0] + "," +  v_C3[1];
 			}
 		}
 		
@@ -184,18 +184,32 @@
 		 * i_Class         样式类型名称，可为空，为空时取表名称
 		 * i_Color         Link的颜色
 		 * i_LinkSize      Link的大小
+		 * i_IsTransition  是否有过滤的动画
 		 *
 		 * ZhengWei(HY) Add 2019-06-13
 		 */
-		function createLink(i_TableName ,i_RefTableName ,i_D ,i_Class ,i_Color ,i_LinkSize)
+		function createLink(i_TableName ,i_RefTableName ,i_D ,i_Class ,i_Color ,i_LinkSize ,i_IsTransition)
 		{
-			v_SVG.append("path")
+			var v_DArr = i_D.split(" ");
+			var v_Path = v_SVG.append("path")
 			.attr("class" ,(i_Class == null) ? "link_" + i_TableName : i_Class)
 			.attr("data-ref" ,i_RefTableName)
 			.attr("fill" ,"none")
 			.attr("stroke" ,i_Color)
 			.attr("stroke-width" ,i_LinkSize)
-			.attr("d" ,i_D);
+			.attr("d" ,"M" + v_DArr[0] + "C" + v_DArr[0] + " " + v_DArr[0] + " " + v_DArr[0]); 
+			
+			if ( i_IsTransition != null )
+			{
+				v_Path
+				.transition()
+				.duration(500)
+				.attr("d" ,i_D);				
+			}
+			else
+			{
+				v_Path.attr("d" ,i_D);
+			}
 		}
 		
 		
@@ -571,7 +585,7 @@
 					console.log(v_P2);
 				}
 				
-				createLink(i_Table.tableName ,v_Ref.tableName ,drawLink(v_P1 ,v_P2) ,i_Class ,i_LinkColor ,i_LinkSize);
+				createLink(i_Table.tableName ,v_Ref.tableName ,drawLink(v_P1 ,v_P2) ,i_Class ,i_LinkColor ,i_LinkSize ,true);
 			}
 		}
 		
