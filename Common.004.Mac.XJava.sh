@@ -6,10 +6,10 @@ cd ./bin
 rm -R ./org/hy/common/xml/junit
 
 
-jar cvfm xjava.jar MANIFEST.MF META-INF org
+jar cvfm hy.common.xjava.jar MANIFEST.MF META-INF org
 
-cp xjava.jar ..
-rm xjava.jar
+cp hy.common.xjava.jar ..
+rm hy.common.xjava.jar
 cd ..
 
 
@@ -17,7 +17,7 @@ cd ..
 
 
 cd ./src
-jar cvfm xjava-sources.jar MANIFEST.MF META-INF org 
-cp xjava-sources.jar ..
-rm xjava-sources.jar
+jar cvfm hy.common.xjava-sources.jar MANIFEST.MF META-INF org 
+cp hy.common.xjava-sources.jar ..
+rm hy.common.xjava-sources.jar
 cd ..
