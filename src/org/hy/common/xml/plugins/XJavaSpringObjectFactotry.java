@@ -1,8 +1,10 @@
 package org.hy.common.xml.plugins;
 
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
@@ -115,13 +117,16 @@ import org.springframework.lang.Nullable;
  *           
  * 注意两点：
  *    1. XJava的对象池在在Spring的对象池初始前构造。即XJava优先于Spring。
- *    2. Spring 5.x 的版本与 Spring 3.x 的版本中 doResolveDependency() 方法的入参个数不同，
+ *    2. （已失效，同时支持两种版本）Spring 5.x 的版本与 Spring 3.x 的版本中 doResolveDependency() 方法的入参个数不同，
  *       而Spring并没有做兼容性处理，所以在两个不版本下，要重新引用不同版本的SpringBean.jar包到工程，
  *       并且重新编译XJava.jar。
  * 
  * @author      ZhengWei(HY)
  * @createDate  2018-11-08
  * @version     v1.0  
+ *              v2.0  2019-06-26  添加：不再专门编译支持Spring3.x和Spring5.x等两个版本的jar包了。
+ *                                      可以只编译一次，就能全动态反射的支持两个版本。
+ *                                      使用者引用哪个版本的Spring，XJava就支持那个版本。
  */
 public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
 {
@@ -130,7 +135,7 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
     private Map<String ,BeanDefinition> beanDefinitionCache = new Hashtable<String ,BeanDefinition>();
     
     /** 适用于多个Spring版本的doResolveDependency()方法 */
-    private Method                      doResolveDependency = null;
+    private MethodHandle                doResolveDependency = null;
     
     /** 配对的Spring版本 */
     private String                      version             = "";
@@ -165,30 +170,30 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
     {
         try
         {
-            Class<?> v_Class = DefaultListableBeanFactory.class;
+            MethodHandles.Lookup v_Lookup = MethodHandles.lookup();
+            
+            Field allowedModes = MethodHandles.Lookup.class.getDeclaredField("allowedModes");
+            allowedModes.setAccessible(true);
+            allowedModes.set(v_Lookup, -1);
             
             try
             {
-                this.doResolveDependency = v_Class.getDeclaredMethod("doResolveDependency" 
-                                                                    ,DependencyDescriptor.class 
-                                                                    ,String.class 
-                                                                    ,Set.class 
-                                                                    ,TypeConverter.class);
+                this.doResolveDependency = v_Lookup.findSpecial(DefaultListableBeanFactory.class
+                                                               ,"doResolveDependency"
+                                                               ,MethodType.methodType(Object.class ,new Class[]{DependencyDescriptor.class ,String.class ,Set.class ,TypeConverter.class})
+                                                               ,XJavaSpringObjectFactotry.class);
+                
                 this.version = "5.x";
             }
-            catch (Exception exce)
+            catch (Throwable exce)
             {
-                this.doResolveDependency = v_Class.getDeclaredMethod("doResolveDependency" 
-                                                                    ,DependencyDescriptor.class 
-                                                                    ,Class.class
-                                                                    ,String.class 
-                                                                    ,Set.class 
-                                                                    ,TypeConverter.class);
+                this.doResolveDependency = v_Lookup.findSpecial(DefaultListableBeanFactory.class
+                                                               ,"doResolveDependency"
+                                                               ,MethodType.methodType(Object.class ,new Class[]{DependencyDescriptor.class ,Class.class ,String.class ,Set.class ,TypeConverter.class})
+                                                               ,XJavaSpringObjectFactotry.class);
 
                 this.version = "3.x";
             }
-            
-            doResolveDependency.setAccessible(true);
         }
         catch (Exception exce)
         {
@@ -286,7 +291,8 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
         try
         {
             // System.err.println("请重新引Spring对应版本的Bean包，并重新编译XJava，好支持高于Spring 3.x版本的Spring版本。");
-            v_Ret = super.doResolveDependency(i_Descriptor ,i_BeanName ,i_AutowiredBeanNames ,i_TypeConverter);
+            // v_Ret = super.doResolveDependency(i_Descriptor ,i_BeanName ,i_AutowiredBeanNames ,i_TypeConverter);
+            v_Ret = this.doResolveDependency.invoke(this ,i_Descriptor ,i_BeanName ,i_AutowiredBeanNames ,i_TypeConverter);
         }
         catch (BeansException exce)
         {
@@ -297,6 +303,10 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
                 exce.printStackTrace();
                 throw exce;
             }
+        }
+        catch (Throwable exce)
+        {
+            exce.printStackTrace();
         }
         
         return v_Ret; 
@@ -330,8 +340,9 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
         Object v_Ret = null;
         try
         {
-            System.err.println("请重新引Spring对应版本的Bean包，并重新编译XJava，好支持低于Spring 5.x版本的Spring版本。");
+            // System.err.println("请重新引Spring对应版本的Bean包，并重新编译XJava，好支持低于Spring 5.x版本的Spring版本。");
             // v_Ret = super.doResolveDependency(i_Descriptor ,i_Type ,i_BeanName ,i_AutowiredBeanNames ,i_TypeConverter);
+            v_Ret = this.doResolveDependency.invoke(this ,i_Descriptor ,i_Type ,i_BeanName ,i_AutowiredBeanNames ,i_TypeConverter);
         }
         catch (BeansException exce)
         {
@@ -342,6 +353,10 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
                 exce.printStackTrace();
                 throw exce;
             }
+        }
+        catch (Throwable exce)
+        {
+            exce.printStackTrace();
         }
         
         return v_Ret; 

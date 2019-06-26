@@ -2,4 +2,4 @@ Manifest-Version: 4.0.0
 Created-By: HY.ZhengWei@qq.com  2011
 Specification-Version: 4.0.0.Spring3x  2019-06-26
 SourceCode: https://github.com/HY-ZhengWei/XJava
-Build-JDK: 1.6
+Build-JDK: 1.7
