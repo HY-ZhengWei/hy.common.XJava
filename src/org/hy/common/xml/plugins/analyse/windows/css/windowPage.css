@@ -1,0 +1,169 @@
+.windowPage {
+	position: absolute;
+	background-color: white;
+	border-radius: 6px;
+	border: 1px solid gainsboro;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+	top: 15%;
+	left: 15%;
+	width: 70%;
+	height: 70%;
+	display: none;
+}
+
+.windowPageBodyControl {
+	position: absolute;
+	top: 30px;
+	left: 0px;
+	width: 100%;
+	height: calc(100% - 30px);
+	display: none;
+}
+
+.windowPageHead {
+	position: absolute;
+	background: olive linear-gradient(to right, #1E90FF, white 90%); 
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	border: 0px solid gainsboro;
+	top: 0px;
+	width: 100%;
+	height: 30px;
+}
+
+.windowPageTitleBar {
+	position: absolute;
+	left: 8px;
+	top: 3px;
+	display: flex;
+	flex-direction: row;
+	color: white;
+}
+
+.windowPageIcon {
+	width: 24px;
+	height: 24px;
+}
+
+.windowPageTitle {
+	margin-left: 8px;
+	font-weight: bold;
+}
+
+.windowPageControlBar {
+	position: absolute;
+	right: 8px;
+	top: 3px;
+}
+
+.windowPageControlBar span {
+	padding-left: 5px;
+}
+
+.windowPageControlBack {
+	color: silver;
+}
+
+.windowPageControlBackFocus {
+	color: #4395FF;
+}
+
+.windowPageControlReload {
+	color: silver;
+}
+
+.windowPageControlReloadFocus {
+	color: #4395FF;
+}
+
+.windowPageControlNew {
+	color: silver;
+}
+
+.windowPageControlNewFocus {
+	color: #4395FF;
+}
+
+.windowPageControlMin {
+	color: silver;
+}
+
+.windowPageControlMinFocus {
+	color: #4395FF;
+}
+
+.windowPageControlMax {
+	color: silver;
+}
+
+.windowPageControlMaxFocus {
+	color: #4395FF;
+}
+
+.windowPageControlNormal {
+	color: silver;
+}
+
+.windowPageControlNormalFocus {
+	color: #4395FF;
+}
+
+.windowPageControlClose {
+	color: silver;
+}
+
+.windowPageControlCloseFocus {
+	color: red;
+}
+
+.windowPageBody {
+	margin-top: 30px;
+}
+
+.windowPageReSize_S {
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	width: calc(100% - 20px);
+	height: 5px;
+	cursor: s-resize;
+}
+
+.windowPageReSize_E {
+	position: absolute;
+	right: 0px;
+	top: 50px;
+	width: 5px;
+	height: calc(100% - 65px);
+	cursor: e-resize;
+}
+
+.windowPageReSize_SE_SE {
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	width: 5px;
+	height: 5px;
+	cursor: se-resize;
+}
+
+.windowPageReSize_SE_S {
+	position: absolute;
+	right: 5px;
+	bottom: 0px;
+	width: 5px;
+	height: 5px;
+	cursor: se-resize;
+}
+
+.windowPageReSize_SE_E {
+	position: absolute;
+	right: 0px;
+	bottom: 5px;
+	width: 5px;
+	height: 5px;
+	cursor: se-resize;
+}

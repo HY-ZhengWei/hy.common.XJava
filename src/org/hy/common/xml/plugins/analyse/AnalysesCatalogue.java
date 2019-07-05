@@ -2,10 +2,10 @@ package org.hy.common.xml.plugins.analyse;
 
 import java.util.List;
 
-import org.hy.common.app.Param;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.Xjava;
+import org.hy.common.xml.plugins.analyse.data.WindowsApp;
 
 
 
@@ -47,7 +47,7 @@ public class AnalysesCatalogue
      * @return
      */
     @SuppressWarnings("unchecked")
-    public synchronized static List<Param> getCatalogue()
+    public synchronized static List<WindowsApp> getCatalogue()
     {
         if ( !$isInit )
         {
@@ -61,7 +61,7 @@ public class AnalysesCatalogue
             }
         }
         
-        return (List<Param>)XJava.getObject("AnalysesCatalogue");
+        return (List<WindowsApp>)XJava.getObject("AnalysesCatalogue");
     }
     
 }

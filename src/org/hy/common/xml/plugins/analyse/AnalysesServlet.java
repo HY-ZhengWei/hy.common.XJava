@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.hy.common.StringHelp;
 import org.hy.common.xml.XJava;
 
 
@@ -31,6 +32,7 @@ import org.hy.common.xml.XJava;
  * @author      ZhengWei(HY)
  * @createDate  2017-08-01
  * @version     v1.0
+ *              v2.0  2019-07-05  添加：从列表改为云桌面的样式
  */
 public class AnalysesServlet extends HttpServlet
 {
@@ -61,7 +63,27 @@ public class AnalysesServlet extends HttpServlet
         String v_BasePath   = i_Request.getScheme() + "://" + i_Request.getServerName() + ":" + i_Request.getServerPort() + i_Request.getContextPath();
         String v_RequestURL = i_Request.getRequestURL().toString();
         
-        i_Response.getWriter().println(this.analyse.showCatalogue(v_BasePath ,v_RequestURL));
+        if ( v_RequestURL.indexOf("analyses/windows/") >= 0 )
+        {
+            if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".css") )
+            {
+                i_Response.setContentType("text/css;charset=UTF-8");
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".js") )
+            {
+                i_Response.setContentType("application/x-javascript;charset=UTF-8");
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".png" ,".jpg" ,".png" ,".gif" ,".bmp") )
+            {
+                i_Response.setContentType("image/png");
+            }
+            
+            i_Response.getWriter().println(this.analyse.getTemplateContent(v_RequestURL.split("analyses/windows/")[1] ,"org.hy.common.xml.plugins.analyse.windows"));
+        }
+        else
+        {
+            i_Response.getWriter().println(this.analyse.showWindows(v_BasePath ,v_RequestURL));
+        }
     }
     
     

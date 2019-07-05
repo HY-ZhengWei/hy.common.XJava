@@ -1,0 +1,66 @@
+.windowStartMenuBar {
+	position: absolute;
+	max-height: calc(100% - 40px);
+	bottom: 40px;
+	background-color: dimgray;
+	display: none;
+	flex-direction: column;
+	align-content: flex-end;
+	padding-left: 1px;
+	padding-right: 1px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	z-index: 8000001;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.windowStartMenuBarLevel_1 {
+	left: 0px;
+}
+
+.windowStartMenuBarLevel_2 {
+	left: 212px;
+}
+
+.windowStartMenuBarLevel_3 {
+	left: 424px;
+}
+
+.windowStartMenuBarLevel_4 {
+	left: 636px;
+}
+
+.windowStartMenuBarLevel_5 {
+	left: 848px;
+}
+
+.windowStartMenu {
+	width: 210px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	padding-left: 2px;
+	background-color: dimgray;
+	border: 1px solid dimgray;
+	margin: 0px;
+	display: flex;
+	flex-direction: row;
+}
+
+.windowStartMenuIcon {
+	width: 20px;
+	height: 20px;
+	border: 0px;
+}
+
+.windowStartMenuName {
+	color: white;
+	font-size: 14px;
+	margin-left: 4px; 
+	flex-grow: 1;
+}
+
+.windowStartMenuNextLevel {
+	font-size: 12px; 
+	color: white;
+}

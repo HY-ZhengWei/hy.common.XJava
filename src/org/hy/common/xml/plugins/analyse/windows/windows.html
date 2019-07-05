@@ -1,0 +1,702 @@
+<html>
+<head>
+	<title>:Title</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" href=":HttpBasePath/bootstrap-4.3.1-dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href=":HttpBasePath/bootstrap-fileinput/css/fileinput.min.css" />
+	<link rel="stylesheet" href=":HttpBasePath/bootstrap-fileinput/css/all.css" />
+	<link rel="stylesheet" href=":HttpBasePath/bootstrap-fileinput/themes/explorer-fas/theme.css" media="all" />
+	<link rel="stylesheet" href=":HttpBasePath/jquery/jquery-ui.min.css" />
+	<link rel="stylesheet" href=":HttpBasePath/jquery/colpick.css" />
+	<link rel="stylesheet" href=":HttpBasePath/analyses/windows/iconfont/iconfont.css" />
+	<link rel="stylesheet" href=":HttpBasePath/analyses/windows/css/windowPage.css" />
+	<link rel="stylesheet" href=":HttpBasePath/analyses/windows/css/windowTask.css" />
+	<link rel="stylesheet" href=":HttpBasePath/analyses/windows/css/windowStartMenu.css" />
+
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery-ui.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/colpick.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-4.3.1-dist/js/popper.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-4.3.1-dist/js/tooltip.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-4.3.1-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-4.3.1-dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-fileinput/js/plugins/piexif.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-fileinput/js/plugins/sortable.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-fileinput/js/fileinput.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-fileinput/js/locales/zh.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-fileinput/themes/fas/theme.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-fileinput/themes/explorer-fas/theme.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/d3/d3.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/d3/hy.common.d3.js"></script>
+    
+	<style type="text/css">
+	body { 
+		background-color: white; 
+		overflow-x: hidden;
+   		overflow-y: hidden;
+	}
+	
+	#createdBy {
+		width: 120px; 
+		height: 15px; 
+		position: fixed;
+		right: 10;
+		bottom: 10;
+		font-size: 11px;
+	}
+	
+	#createdBy a { 
+		color: #4F4F4F; 
+		text-decoration: none; 
+		outline: none;
+	}
+	
+	#createdBy a:hover {
+		color: #1E90FF;
+		text-decoration: none;
+	}
+	
+	#appTooltip {
+		position: absolute;
+		background-color: white;
+		border-radius: 6px;
+		border: 1px solid gray;
+		padding: 5px;
+		font-size: 14px;
+		color: black;
+		z-index: 9999990;
+		left: -99999px;
+		top: -99999px;
+	}
+	
+	#appMenuBar {
+	    position: fixed;
+	    font-size: 14px;
+	    z-index: 9999991;
+	}
+	
+	#appDesktopMenuBar {
+	    position: fixed;
+	    font-size: 14px;
+	    z-index: 9999992;
+	}
+	
+	.ui-menu { 
+		width: 130px; 
+	}
+	
+	#colorPicker {
+		background: white;
+	    display: inline-block;
+	    position: absolute;
+	    padding: 0px;
+	    border-radius: 0px;
+	    border: 0px solid #DDD;
+	    z-index: 9999993;
+	}
+	
+	.messageTitleIcon {
+		background-color: #007aff;
+		border-radius: 5px;
+		width: 15px;
+		height: 15px;
+		margin-right: 5px;
+	}
+	
+	.modal-title {
+		font-size: 16px;
+	}
+	
+	.newStyleBar {
+		display: flex;
+		flex-direction: row;
+	}
+	
+	.file-input {
+		width: 85%;
+	}
+	
+	.file-drop-zone-title {
+		font-size: 14px;
+	}
+	</style>
+</head>
+<body oncontextmenu="return false">
+
+	<svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
+	</svg>
+	
+	
+	<div id="windowPageTemplate" class="windowPage">
+		
+		<div class="windowPageHead" data-toggle="tooltip" data-placement="bottom" title="鼠标双击可最大化或正常化">
+			<div class="windowPageTitleBar">
+				<img class="windowPageIcon" />
+				<div class="windowPageTitle">标题</div>
+	        </div>
+       	</div>
+       	
+       	<div class="windowPageControlBar">
+        	<span class="windowPageControlNew    iconfont icon-newdoc"          data-toggle="tooltip" data-placement="bottom" title="新窗口中打开"></span>
+        	<span class="windowPageControlBack   iconfont icon-huilaiback41"    data-toggle="tooltip" data-placement="bottom" title="返回上一次的页面" style="display:none;"></span>
+        	<span class="windowPageControlReload iconfont icon-shuaxin"         data-toggle="tooltip" data-placement="bottom" title="刷新（重新加载）"></span>
+			<span class="windowPageControlMin    iconfont icon-minus3"          data-toggle="tooltip" data-placement="bottom" title="最小化"></span>
+			<span class="windowPageControlMax    iconfont icon-maximize_resume" data-toggle="tooltip" data-placement="bottom" title="最大化"></span>
+			<span class="windowPageControlNormal iconfont icon-normalsize"      data-toggle="tooltip" data-placement="bottom" title="正常化" style="display:none;"></span>
+			<span class="windowPageControlClose  iconfont icon-close1"          data-toggle="tooltip" data-placement="bottom" title="关闭窗口"></span>
+       	</div>
+		
+		<div class="windowPageBody">
+			<iframe src="" width="100%" height="100%" frameborder="no" border="0" marginwidth="0" marginheight="0" allowtransparency="yes"></iframe>
+		</div>
+		
+		<div class="windowPageBodyControl"></div>
+		
+		<div class="windowPageReSize windowPageReSize_S"></div>
+		<div class="windowPageReSize windowPageReSize_E"></div>
+		<div class="windowPageReSize windowPageReSize_SE windowPageReSize_SE_SE"></div>
+		<div class="windowPageReSize windowPageReSize_SE windowPageReSize_SE_S" ></div>
+		<div class="windowPageReSize windowPageReSize_SE windowPageReSize_SE_E" ></div>
+		
+	</div>
+	
+	
+	<div id="windowTasksBar">
+		<div class="windowTask windowTaskStartMenu" data-toggle="tooltip" data-placement="top" title="开始菜单">
+			<img src=":HttpBasePath/windows/images/startMenu.png" />
+		</div>
+		
+		<div class="windowTaskShowDesktop" data-toggle="tooltip" data-placement="top" title="显示桌面"></div>
+	</div>
+	
+	
+	<div class="windowStartMenuBar windowStartMenuBarLevel_1"></div>
+	<div class="windowStartMenuBar windowStartMenuBarLevel_2"></div>
+	<div class="windowStartMenuBar windowStartMenuBarLevel_3"></div>
+	<div class="windowStartMenuBar windowStartMenuBarLevel_4"></div>
+	<div class="windowStartMenuBar windowStartMenuBarLevel_5"></div>
+	
+	
+	<div id="appTooltip"></div>
+	
+	
+	<div id="colorPicker"></div>
+	
+	
+	<div id="appDesktopMenuBar">
+		<ul id="desktopMenu">
+			<li id="newApp-LI"  ><div id="newApp"   class="MenuItem">新建</div></li>
+			<li id="recovery-LI"><div id="recovery" class="MenuItem">恢复删除<span id="recoveryCount"></span></div></li>
+		</ul>
+	</div>
+	
+	
+	<div id="appMenuBar">
+		<ul id="appMenu">
+			<li id="copyApp-LI"><div id="copyApp" class="MenuItem">复制</div></li>
+			<li id="delApp-LI" ><div id="delApp"  class="MenuItem">删除</div></li>
+			<li><div class="MenuItem"></div></li>
+			<li>
+				<div class="MenuItem">调整大小</div>
+				<ul>
+					<li id="resizeMin-LI"       ><div id="resizeMin"        class="MenuItem">小</div></li>
+					<li id="resizeMiddle-LI"    ><div id="resizeMiddle"     class="MenuItem">中</div></li>
+					<li id="resizeLongHeight-LI"><div id="resizeLongHeight" class="MenuItem">高</div></li>
+					<li id="resizeLongWidth-LI" ><div id="resizeLongWidth"  class="MenuItem">宽</div></li>
+					<li id="resizeMax-LI"       ><div id="resizeMax"        class="MenuItem">大</div></li>
+				</ul>
+			</li>
+			<li id="reColor-LI"  ><div id="reColor"   class="MenuItem">颜色</div></li>
+			<li id="rename-LI"   ><div id="rename"    class="MenuItem">重命名</div></li>
+			<li><div class="MenuItem"></div></li>
+			<li id="attribute-LI"><div id="attribute" class="MenuItem">属性</div></li>
+		</ul>
+	</div>
+	
+	
+	<div id="newAppDialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">新建App</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        
+	        <div class="input-group mb-3">
+				<div class="input-group-prepend">
+				    <span class="input-group-text">应用名称</span>
+		  		</div>
+		  		<input id="newAppName" type="text" class="form-control" placeholder="App名称" aria-label="App名称" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入App名称">
+	      	</div>
+	      	
+			<div class="input-group mb-3">
+			  <div class="input-group-prepend">
+			    <label class="input-group-text" for="newActionType">访问方式</label>
+			  </div>
+			  <select id="newActionType" class="custom-select">
+			    <option value="open" selected>本页内打开</option>
+			    <option value="new"          >新页中打开</option>
+			    <option value="javaScript"   >执行JS函数</option>
+			  </select>
+			</div>
+			
+			<div class="input-group mb-3">
+      			<div class="input-group-prepend">
+				    <span class="input-group-text" id="basic-addon1">访问地址</span>
+		  		</div>
+			  	<input id="newAppUrl" type="text" class="form-control" placeholder="App访问地址" aria-label="App访问地址" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入App执行命令。如网址、JS函数等">
+			</div>
+			
+			<div class="input-group mb-3">
+      			<div class="input-group-prepend">
+				    <span class="input-group-text" id="basic-addon1">访问确认</span>
+		  		</div>
+			  	<input id="newAppConfirm" type="text" class="form-control" placeholder="App访问前的确认消息，确认后才能访问" aria-label="App访问前的确认消息，确认后才能访问" aria-describedby="basic-addon1">
+			</div>
+			
+			<div class="newStyleBar">
+				<div class="input-group mb-3">
+				  <div class="input-group-prepend">
+				    <label class="input-group-text" for="newBackgroundColor">背景颜色</label>
+				  </div>
+				  <div class="dropdown">
+					  <button id="newBackgroundColor" class="btn btn-secondary dropdown-toggle" type="button" style="background-color:#4395FF;" data-color="#4395FF" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">海军蓝</button>
+					  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					    <a class="dropdown-item newBackgroundColorItem" data-color="#4395FF" style="background-color:#4395FF; color:white;" href="#">海军蓝</a>
+					    <a class="dropdown-item newBackgroundColorItem" data-color="#17A2B8" style="background-color:#17A2B8; color:white;" href="#">皇家蓝</a>
+					    <a class="dropdown-item newBackgroundColorItem" data-color="#28A745" style="background-color:#28A745; color:white;" href="#">森林绿</a>
+					    <a class="dropdown-item newBackgroundColorItem" data-color="#3CB371" style="background-color:#3CB371; color:white;" href="#">春天绿</a>
+					    <a class="dropdown-item newBackgroundColorItem" data-color="#DC3545" style="background-color:#DC3545; color:white;" href="#">玫瑰红</a>
+					    <a class="dropdown-item newBackgroundColorItem" data-color="#FF6347" style="background-color:#FF6347; color:white;" href="#">蕃茄红</a>
+					    <a class="dropdown-item newBackgroundColorItem" data-color="#FFC107" style="background-color:#FFC107; color:white;" href="#">柠檬黄</a>
+					    <a class="dropdown-item newBackgroundColorItem" data-color="#6C757D" style="background-color:#6C757D; color:white;" href="#">低调灰</a>
+					    <a class="dropdown-item newBackgroundColorItem" data-color="#343A40" style="background-color:#343A40; color:white;" href="#">太空黑</a>
+					    <a class="dropdown-item newBackgroundColorItem" data-color="#563D7C" style="background-color:#563D7C; color:white;" href="#">紫罗兰</a>
+					  </div>
+				  </div>
+				</div>
+				
+				<div class="input-group mb-3">
+				  <div class="input-group-prepend">
+				    <label class="input-group-text" for="newSizeType">图标大小</label>
+				  </div>
+				  <div class="dropdown">
+					  <button id="newSizeType" class="btn btn-secondary dropdown-toggle" type="button" data-sizeType="middle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">中</button>
+					  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					    <a class="dropdown-item newSizeTypeItem" data-sizeType="min"        href="#">小</a>
+					    <a class="dropdown-item newSizeTypeItem" data-sizeType="middle"     href="#">中</a>
+					    <a class="dropdown-item newSizeTypeItem" data-sizeType="longwidth"  href="#">宽</a>
+					    <a class="dropdown-item newSizeTypeItem" data-sizeType="longHeight" href="#">高</a>
+					    <a class="dropdown-item newSizeTypeItem" data-sizeType="max"        href="#">大</a>
+					  </div>
+				  </div>
+				</div>
+			</div>
+			
+			<div class="input-group mb-3">
+      			<div class="input-group-prepend">
+				    <span class="input-group-text" id="basic-addon1">应用图标</span>
+		  		</div>
+			  	<div class="file-loading">
+            		<input id="newAppIcon" type="file" accept="image/png ,image/jpeg ,image/gif ,image/bmp ,image/x-icon">
+        		</div>
+			</div>
+	        
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+	        <button type="button" class="btn btn-primary" id="newAppBtn">确定</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+	
+	<div id="editAppDialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">App属性</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        
+	        <div class="input-group mb-3">
+				<div class="input-group-prepend">
+				    <span class="input-group-text">应用名称</span>
+		  		</div>
+		  		<input id="editAppName" type="text" class="form-control" placeholder="App名称" aria-label="App名称" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入App名称">
+	      	</div>
+	      	
+			<div class="input-group mb-3">
+			  <div class="input-group-prepend">
+			    <label class="input-group-text" for="editActionType">访问方式</label>
+			  </div>
+			  <select id="editActionType" class="custom-select">
+			    <option value="open"      >本页内打开</option>
+			    <option value="new"       >新页中打开</option>
+			    <option value="javaScript">执行JS函数</option>
+			  </select>
+			</div>
+			
+			<div class="input-group mb-3">
+      			<div class="input-group-prepend">
+				    <span class="input-group-text" id="basic-addon1">访问地址</span>
+		  		</div>
+			  	<input id="editAppUrl" type="text" class="form-control" placeholder="App访问地址" aria-label="App访问地址" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入App执行命令。如网址、JS函数等">
+			</div>
+			
+			<div class="input-group mb-3">
+      			<div class="input-group-prepend">
+				    <span class="input-group-text" id="basic-addon1">访问确认</span>
+		  		</div>
+			  	<input id="editAppConfirm" type="text" class="form-control" placeholder="App访问前的确认消息，确认后才能访问" aria-label="App访问前的确认消息，确认后才能访问" aria-describedby="basic-addon1">
+			</div>
+			
+			<div class="newStyleBar">
+				<div class="input-group mb-3">
+				  <div class="input-group-prepend">
+				    <label class="input-group-text" for="editBackgroundColor">背景颜色</label>
+				  </div>
+				  <div class="dropdown">
+					  <button id="editBackgroundColor" class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">海军蓝</button>
+					  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					    <a class="dropdown-item editBackgroundColorItem" data-color="#4395FF" style="background-color:#4395FF; color:white;" href="#">海军蓝</a>
+					    <a class="dropdown-item editBackgroundColorItem" data-color="#17A2B8" style="background-color:#17A2B8; color:white;" href="#">皇家蓝</a>
+					    <a class="dropdown-item editBackgroundColorItem" data-color="#28A745" style="background-color:#28A745; color:white;" href="#">森林绿</a>
+					    <a class="dropdown-item editBackgroundColorItem" data-color="#3CB371" style="background-color:#3CB371; color:white;" href="#">春天绿</a>
+					    <a class="dropdown-item editBackgroundColorItem" data-color="#DC3545" style="background-color:#DC3545; color:white;" href="#">玫瑰红</a>
+					    <a class="dropdown-item editBackgroundColorItem" data-color="#FF6347" style="background-color:#FF6347; color:white;" href="#">蕃茄红</a>
+					    <a class="dropdown-item editBackgroundColorItem" data-color="#FFC107" style="background-color:#FFC107; color:white;" href="#">柠檬黄</a>
+					    <a class="dropdown-item editBackgroundColorItem" data-color="#6C757D" style="background-color:#6C757D; color:white;" href="#">低调灰</a>
+					    <a class="dropdown-item editBackgroundColorItem" data-color="#343A40" style="background-color:#343A40; color:white;" href="#">太空黑</a>
+					    <a class="dropdown-item editBackgroundColorItem" data-color="#563D7C" style="background-color:#563D7C; color:white;" href="#">紫罗兰</a>
+					  </div>
+				  </div>
+				</div>
+				
+				<div class="input-group mb-3">
+				  <div class="input-group-prepend">
+				    <label class="input-group-text" for="editSizeType">图标大小</label>
+				  </div>
+				  <div class="dropdown">
+					  <button id="editSizeType" class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">中</button>
+					  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					    <a class="dropdown-item editSizeTypeItem" data-sizeType="min"        href="#">小</a>
+					    <a class="dropdown-item editSizeTypeItem" data-sizeType="middle"     href="#">中</a>
+					    <a class="dropdown-item editSizeTypeItem" data-sizeType="longwidth"  href="#">宽</a>
+					    <a class="dropdown-item editSizeTypeItem" data-sizeType="longHeight" href="#">高</a>
+					    <a class="dropdown-item editSizeTypeItem" data-sizeType="max"        href="#">大</a>
+					  </div>
+				  </div>
+				</div>
+			</div>
+			
+			<div class="input-group mb-3">
+      			<div class="input-group-prepend">
+				    <span class="input-group-text" id="basic-addon1">应用图标</span>
+		  		</div>
+			  	<div class="file-loading">
+            		<input id="editAppIcon" type="file" accept="image/png ,image/jpeg ,image/gif ,image/bmp ,image/x-icon">
+        		</div>
+			</div>
+	        
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+	        <button type="button" class="btn btn-primary" id="editAppBtn">确定</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+	
+	<div id="renameDialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	  <div class="modal-dialog modal-dialog-centered" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">重命名</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        <input id="renameText" type="text" class="form-control" placeholder="App的新名称" aria-label="App的新名称" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入App名称">
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+	        <button type="button" class="btn btn-primary" id="renameBtn">确定</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+	
+	<div id="delAppDialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	  <div class="modal-dialog modal-dialog-centered" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">确认</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div id="delAppTextDiv" class="modal-body">
+	        
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+	        <button type="button" class="btn btn-primary" id="delAppBtn">确定</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+	
+	<div id="confirmAppDialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	  <div class="modal-dialog modal-dialog-centered" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">确认</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div id="confirmAppTextDiv" class="modal-body">
+	        
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+	        <button type="button" class="btn btn-primary" id="confirmAppBtn">确定</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+	
+	<div aria-live="polite" aria-atomic="true" style="position: fixed; top: 50px; right: 20px; z-index: 9999994;">
+	  <div class="toast" data-delay="3000" style="position: absolute; top: 0; right: 0; min-height: 50px; min-width: 240px;">
+	    <div class="toast-header">
+	      <span class="messageTitleIcon"></span>
+	      <strong class="mr-auto">温馨提示</strong>
+	      <small></small>
+	      <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+	        <span aria-hidden="true">&times;</span>
+	      </button>
+	    </div>
+	    <div id="messageTextDiv" class="toast-body">
+	      
+	    </div>
+	  </div>
+	</div>
+	
+	
+	<div id="createdBy">
+		<a href="https://github.com/HY-ZhengWei/XJava" target="_brank"> </a>
+	</div>
+	
+	
+	
+	<script type="text/javascript">
+		d3.select("#newAppDialog") .call(v_HtmlDrag);
+		d3.select("#editAppDialog").call(v_HtmlDrag);
+		d3.select("#renameDialog") .call(v_HtmlDrag);
+		d3.selectAll("input")      .call(d3.drag());
+		d3.selectAll("button")     .call(d3.drag());
+	
+	
+		var v_Colors           = {textColor:          "white"
+					             ,tooltipTextColor:   "black"
+				            	 ,tooltipBGColor:     "white"
+				            	 ,tooltipBorderColor: "gray"
+					             ,borderColor:        "#0000CD"};
+		var v_SpaceX           = 5;
+		var v_SpaceY           = 5;
+		var v_BorderSize       = 3;
+		var v_Sizes            = {
+									max:        {width:215 ,height:215 ,iconSize:100 ,fontSize:13 ,comment:"大"},
+									longWidth:  {width:215 ,height:105 ,iconSize:50  ,fontSize:13 ,comment:"宽"},
+									longHeight: {width:105 ,height:215 ,iconSize:50  ,fontSize:13 ,comment:"高"},
+									middle:     {width:105 ,height:105 ,iconSize:50  ,fontSize:13 ,comment:"中"},
+									min:        {width:50  ,height:50  ,iconSize:40  ,fontSize:13 ,comment:"小"}
+		                         };
+		var v_Apps             = :Apps.datas;
+		var v_StartMenuIndexes = {};
+		var v_StartMenuDatas   = :StartMenus.datas;
+		var v_StartMenus       = [];
+		var v_FileConfigs      = {   
+									theme: 'fas',                                                      /* 样式 */
+							        language: 'zh',                                                    /* 语言 */
+							        allowedFileExtensions: ['jpg','jpeg','png','gif','bmp','ico'],     /* 允许的文件类型 */
+							        maxFileCount: 1,                                                   /* 限制上传文的个数 */
+							        maxFileSize: 50,                                                   /* 限制上传文件的最大大小。单位:KB */
+							        minImageWidth: 32,                                                 /* 图片的最小宽度 */
+						            minImageHeight: 32,                                                /* 图片的最小高度 */
+						            deleteUrl: "windows/deleteAppIcon.page",                           /* 删除时的请求地址 */
+						            uploadUrl: "windows/uploadAppIcon.page",                           /* 上传时的请求地址 */
+						            uploadExtraData: function (previewId, index)                       /* 额外的请求参数 */
+						            {
+						            	return {appName:"ZhengWei(HY)"};
+						            }
+							     };                        /* 文件上传组件的配置 */
+		var v_XOffset          = 0;                        /* 移动时相对鼠标的偏移量X */
+		var v_YOffset          = 0;                        /* 移动时相对鼠标的偏移量Y */
+		var v_IsDrag           = false;                    /* 是否拖动 */
+		var v_DragCount        = 0;                        /* 拖动触发的次数 */
+		var v_ContextMenu      = false;                    /* 是否触发了App图标上的右击事件 */
+		var v_ContextG         = null;                     /* 右击菜单时的目标App图标 */
+		var v_ContextData      = null;                     /* 右击菜单时的目标App图标的数据 */
+		var v_AppIndex         = v_Apps.length - 1;        /* App图标的惟一索引（只在当前会话页面内有效的索引）的累计数值。只增不减 */
+		var v_Recoverys        = [];                       /* 回收站。数组的先入后出原则，即最后元素就是最近才删除的（只在当前会话页面内有效） */
+
+		
+		
+		/**
+		 * 显示颜色选择器
+		 *
+		 * i_Color     初始化颜色
+		 * i_X         X坐标
+		 * i_Y         Y坐标
+		 *
+		 * ZhengWei(HY) Add 2019-06-20
+		 */
+		function showColorPicker(i_Color ,i_X ,i_Y ,i_OKFun)
+		{
+			$("#colorPicker").colpick({
+			    flat: true,
+			    layout: 'full',
+			    colorScheme: 'light',
+			    submit: true,
+			    onSubmit: function(hsb,hex,rgb,el,bySetColor)
+			    {
+			    	hideColorPicker();
+			    	i_OKFun('#' + hex);
+			    },
+				onChange: function (hsb,hex,rgb,el,bySetColor) 
+				{
+					/* Nothing. */
+		        }
+			});
+			
+			$("#colorPicker").colpickSetColor(i_Color ,true);
+			$("#colorPicker").css("left" ,(i_X + v_Sizes.min.width) + "px");
+			$("#colorPicker").css("top"  ,(i_Y - 20) + "px");
+			$("#colorPicker").css("opacity" ,100); 
+		}
+		
+		
+		
+		/**
+		 * 隐藏颜色选择器
+		 *
+		 * @author      ZhengWei(HY)
+		 * @createDate  2018-11-17
+		 * @version     v1.0
+		 */
+		function hideColorPicker()
+		{
+			$("#colorPicker").css("opacity" ,0);
+			$("#colorPicker").css("left" ,"-99999px");
+			$("#colorPicker").css("top"  ,"-99999px");
+		}
+		
+		
+		
+		/**
+		 * 显示消息
+		 *
+		 * i_Message   消息的内容
+		 *
+		 * ZhengWei(HY) Add 2019-06-20
+		 */
+		function showMessage(i_Message)
+		{
+			$('#messageTextDiv').html(i_Message);
+			$('.toast').toast('show');
+		}
+		
+		
+		
+		var v_SVG = d3.select("body").select("svg")
+		.on("click" ,function()
+		{
+			if ( v_ContextMenu )
+			{
+				hideAppMenu();
+				hideAppDesktopMenu();
+			}
+			
+			hideColorPicker();
+		})
+		.on("contextmenu" ,function()
+		{
+			if ( !v_ContextMenu )
+			{
+				d3.select("#recovery-LI").classed("ui-state-disabled" ,(v_Recoverys.length <= 0));
+				d3.select("#recoveryCount").html(v_Recoverys.length <= 0 ? "" : " (" + v_Recoverys.length + ")");
+				
+				$("#appDesktopMenuBar").css("left" ,(d3.event.pageX) + "px");  
+				$("#appDesktopMenuBar").css("top"  ,(d3.event.pageY) + "px");
+				$("#appDesktopMenuBar").css("opacity" ,100);
+				
+				v_ContextMenu = true;
+			}
+		});
+		
+		
+		
+		/* 水平、垂直标线 */
+		/*
+		v_SVG.selectAll(".HLine").data(d3.range(1 ,100)).enter()
+		.append("path")
+		.attr("stroke" ,"black")
+		.attr("stroke-width" ,"1")
+		.attr("d" ,function(d ,i)
+		{
+			return "M0," + (i * (v_Sizes.min.height + v_SpaceY) + v_SpaceY) + " H 10000";
+		});
+		
+		v_SVG.selectAll(".VLine").data(d3.range(1 ,100)).enter()
+		.append("path")
+		.attr("stroke" ,"black")
+		.attr("stroke-width" ,"1")
+		.attr("d" ,function(d ,i)
+		{
+			return "M" + (i * (v_Sizes.min.width + v_SpaceX) + v_SpaceX) + ",0 V 10000";
+		});
+		*/
+		
+		
+		
+		$(function() 
+		{
+			$("#appMenu")    .menu();
+			$("#desktopMenu").menu();
+			
+			/* 不设置一下话，可能会出现首次点击无效的问题 */
+			$("#newBackgroundColor") .dropdown();
+			$("#newSizeType")        .dropdown();
+			$("#editBackgroundColor").dropdown();
+			$("#editSizeType")       .dropdown();
+		});
+		
+	</script>
+	
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/contextMenu.App.js"    ></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/contextMenu.Desktop.js"></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.DelApp.js"      ></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.NewApp.js"      ></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.EditApp.js"     ></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.Rename.js"      ></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowApp.js"          ></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowPage.js"         ></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowTask.js"         ></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowStartMenu.js"    ></script>
+
+</body>
+</html>

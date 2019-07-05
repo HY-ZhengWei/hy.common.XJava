@@ -19,7 +19,6 @@ import org.hy.common.Queue;
 import org.hy.common.Return;
 import org.hy.common.StringHelp;
 import org.hy.common.TablePartitionRID;
-import org.hy.common.app.Param;
 import org.hy.common.db.DataSourceGroup;
 import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
@@ -45,6 +44,7 @@ import org.hy.common.xml.plugins.analyse.data.AnalyseJobTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseThreadPoolTotal;
 import org.hy.common.xml.plugins.analyse.data.ClusterReport;
 import org.hy.common.xml.plugins.analyse.data.DataSourceGroupReport;
+import org.hy.common.xml.plugins.analyse.data.WindowsApp;
 import org.hy.common.xml.plugins.analyse.data.XSQLGroupTree;
 import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
 
@@ -89,6 +89,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v16.0 2019-02-26  添加：定时灾备多活集群情况
  *              v17.0 2019-03-20  添加：XSQL及XSQL组的统计分析页面添加：读写行数
  *              v18.0 2019-05-29  添加：显示XSQL拥有的应用级触发器的个数
+ *              v19.0 2019-07-05  添加：显示云桌面
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -182,6 +183,69 @@ public class AnalyseBase extends Analyse
     
     
     /**
+     * 功能1. 显示云桌面
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-07-05
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject
+     * @return
+     */
+    public String showWindows(String i_BasePath ,String i_ObjectValuePath)
+    {
+        XJSON            v_XJson          = new XJSON();
+        List<WindowsApp> v_StartMenus     = AnalysesCatalogue.getCatalogue();
+        List<WindowsApp> v_Apps           = new ArrayList<WindowsApp>();
+        String           v_StartMenusJson = null;
+        String           v_AppsJson       = null;
+        
+        try
+        {
+            if ( !Help.isNull(v_StartMenus) )
+            {
+                v_StartMenusJson = v_XJson.toJson(v_StartMenus ,"datas").toJSONString();
+                
+                for (WindowsApp v_App : v_StartMenus)
+                {
+                    if ( v_App.isDesktopShow() )
+                    {
+                        v_Apps.add(v_App);
+                    }
+                }
+                
+                if ( !Help.isNull(v_Apps) )
+                {
+                    v_AppsJson = v_XJson.toJson(v_Apps ,"datas").toJSONString();
+                }
+            }
+            
+            
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+        }
+        
+        if ( Help.isNull(v_StartMenusJson) )
+        {
+            v_StartMenusJson = "{datas:[]}";
+        }
+        
+        if ( Help.isNull(v_AppsJson) )
+        {
+            v_AppsJson = "{datas:[]}";
+        }
+        
+        return StringHelp.replaceAll(this.getTemplateShowWindows()
+                                    ,new String[]{":Title"   ,":StartMenus"    ,":Apps"    ,":HttpBasePath" ,":HttpValuePath"}
+                                    ,new String[]{"分析中心" ,v_StartMenusJson ,v_AppsJson ,i_BasePath      ,i_ObjectValuePath});
+    }
+    
+    
+    
+    /**
      * 功能1. 显示大纲目录
      * 
      * @author      ZhengWei(HY)
@@ -192,64 +256,64 @@ public class AnalyseBase extends Analyse
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject
      * @return
      */
-    public String showCatalogue(String i_BasePath ,String i_ObjectValuePath)
-    {
-        List<Param>   v_Objects = AnalysesCatalogue.getCatalogue();
-        StringBuilder v_Buffer  = new StringBuilder();
-        int           v_Index   = 0;
-        String        v_Content = this.getTemplateShowObjectsContent();
-        
-        v_Buffer.append(StringHelp.replaceAll(v_Content 
-                ,new String[]{":No" 
-                             ,":Name" 
-                             ,":Info"
-                             ,":OperateURL" 
-                             ,":OperateTitle"} 
-                ,new String[]{String.valueOf(++v_Index)
-                             ,"系统启动时间"
-                             ,$ServerStartTime.getFull()
-                             ,""
-                             ,""
-                             })
-                );
-        
-        for (Param v_Item : v_Objects)
-        {
-            String v_URL     = "";
-            String v_Command = "";
-            
-            if ( !Help.isNull(v_Item.getValue()) )
-            {
-                if ( Help.NVL(v_Item.getValue()).trim().toLowerCase().startsWith("javascript:") )
-                {
-                    v_URL = v_Item.getValue().trim();
-                }
-                else
-                {
-                    v_URL = i_ObjectValuePath + v_Item.getValue().trim();
-                }
-                v_Command = "查看详情";
-            }
-            
-            v_Buffer.append(StringHelp.replaceAll(v_Content 
-                                                 ,new String[]{":No" 
-                                                              ,":Name" 
-                                                              ,":Info"
-                                                              ,":OperateURL" 
-                                                              ,":OperateTitle"} 
-                                                 ,new String[]{String.valueOf(++v_Index)
-                                                              ,v_Item.getName()
-                                                              ,Help.NVL(v_Item.getComment())
-                                                              ,v_URL
-                                                              ,v_Command
-                                                              })
-                           );
-        }
-        
-        return StringHelp.replaceAll(this.getTemplateShowObjects()
-                                    ,new String[]{":Title"  ,":Column01Title" ,":Column02Title"  ,":HttpBasePath" ,":HttpValuePath"  ,":Content"}
-                                    ,new String[]{"分析中心" ,"功能"            ,"说明"            ,i_BasePath      ,i_ObjectValuePath ,v_Buffer.toString()});
-    }
+//    public String showCatalogue(String i_BasePath ,String i_ObjectValuePath)
+//    {
+//        List<Param>   v_Objects = AnalysesCatalogue.getCatalogue();
+//        StringBuilder v_Buffer  = new StringBuilder();
+//        int           v_Index   = 0;
+//        String        v_Content = this.getTemplateShowObjectsContent();
+//        
+//        v_Buffer.append(StringHelp.replaceAll(v_Content 
+//                ,new String[]{":No" 
+//                             ,":Name" 
+//                             ,":Info"
+//                             ,":OperateURL" 
+//                             ,":OperateTitle"} 
+//                ,new String[]{String.valueOf(++v_Index)
+//                             ,"系统启动时间"
+//                             ,$ServerStartTime.getFull()
+//                             ,""
+//                             ,""
+//                             })
+//                );
+//        
+//        for (Param v_Item : v_Objects)
+//        {
+//            String v_URL     = "";
+//            String v_Command = "";
+//            
+//            if ( !Help.isNull(v_Item.getValue()) )
+//            {
+//                if ( Help.NVL(v_Item.getValue()).trim().toLowerCase().startsWith("javascript:") )
+//                {
+//                    v_URL = v_Item.getValue().trim();
+//                }
+//                else
+//                {
+//                    v_URL = i_ObjectValuePath + v_Item.getValue().trim();
+//                }
+//                v_Command = "查看详情";
+//            }
+//            
+//            v_Buffer.append(StringHelp.replaceAll(v_Content 
+//                                                 ,new String[]{":No" 
+//                                                              ,":Name" 
+//                                                              ,":Info"
+//                                                              ,":OperateURL" 
+//                                                              ,":OperateTitle"} 
+//                                                 ,new String[]{String.valueOf(++v_Index)
+//                                                              ,v_Item.getName()
+//                                                              ,Help.NVL(v_Item.getComment())
+//                                                              ,v_URL
+//                                                              ,v_Command
+//                                                              })
+//                           );
+//        }
+//        
+//        return StringHelp.replaceAll(this.getTemplateShowObjects()
+//                                    ,new String[]{":Title"  ,":Column01Title" ,":Column02Title"  ,":HttpBasePath" ,":HttpValuePath"  ,":Content"}
+//                                    ,new String[]{"分析中心" ,"功能"            ,"说明"            ,i_BasePath      ,i_ObjectValuePath ,v_Buffer.toString()});
+//    }
     
     
     
@@ -3046,6 +3110,13 @@ public class AnalyseBase extends Analyse
     private String getTemplateShowObjects()
     {
         return this.getTemplateContent("template.showObjects.html");
+    }
+    
+    
+    
+    private String getTemplateShowWindows()
+    {
+        return this.getTemplateContent("windows.html" ,"org.hy.common.xml.plugins.analyse.windows");
     }
     
     
