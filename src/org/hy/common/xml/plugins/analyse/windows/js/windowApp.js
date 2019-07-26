@@ -76,6 +76,8 @@ function appDragEnd(i_G)
 	v_IsDrag = false;
 	
 	appOnMouseout(i_G ,v_Data);
+	
+	commitWindowAppXXColorSize(v_Data);
 }
 
 
@@ -127,16 +129,19 @@ function appOnClick(i_G ,i_Data)
  */
 function openAppToWindowPage(i_Data)
 {
+	i_Data.userID = v_UserID;
 	if ( i_Data.url.toLowerCase().indexOf("javascript:") >= 0 )
 	{
 		var v_Func = eval(i_Data.url.split(":")[1]);
 		new v_Func();
+		commitWindowAppOpenCount(i_Data);
 	}
 	else
 	{
 		if ( i_Data.actionType == "new" )
 		{
 			window.open(i_Data.url); 
+			commitWindowAppOpenCount(i_Data);
 		}
 		else
 		{
@@ -584,6 +589,8 @@ function changeAppSize(i_G ,i_Data ,i_ToSize)
 			v_GText.remove();
 		}
 	}
+	
+	commitWindowAppXXColorSize(i_Data);
 }
 
 

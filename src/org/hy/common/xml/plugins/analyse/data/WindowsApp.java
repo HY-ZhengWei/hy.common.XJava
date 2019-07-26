@@ -27,6 +27,9 @@ public class WindowsApp extends SerializableDef
     /** App图标路径（允许为空） */
     private String  icon;
     
+    /** App图标ID（允许为空） */
+    private String  iconID;
+    
     /** App图标的背景色 */
     private String  backgroundColor;
     
@@ -48,6 +51,9 @@ public class WindowsApp extends SerializableDef
     /** App的Y坐标 */
     private Double  y;
     
+    /** 访问次数 */
+    private Integer openCount;
+    
     /** App的层次级别 */
     private Integer level;
     
@@ -65,6 +71,7 @@ public class WindowsApp extends SerializableDef
         this.sizeType    = "middle";
         this.level       = 1;
         this.desktopShow = false;
+        this.openCount   = 0;
     }
 
     
@@ -326,6 +333,46 @@ public class WindowsApp extends SerializableDef
     public void setDesktopShow(boolean desktopShow)
     {
         this.desktopShow = desktopShow;
+    }
+
+    
+    /**
+     * 获取：App图标ID（允许为空）
+     */
+    public String getIconID()
+    {
+        return iconID;
+    }
+
+    
+    /**
+     * 设置：App图标ID（允许为空）
+     * 
+     * @param iconID 
+     */
+    public void setIconID(String iconID)
+    {
+        this.iconID = iconID;
+    }
+
+    
+    /**
+     * 获取：访问次数
+     */
+    public Integer getOpenCount()
+    {
+        return openCount;
+    }
+
+
+    /**
+     * 设置：访问次数
+     * 
+     * @param openCount 
+     */
+    public void setOpenCount(Integer openCount)
+    {
+        this.openCount = openCount;
     }
     
 }

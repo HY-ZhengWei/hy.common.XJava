@@ -9,6 +9,8 @@
 function appOnContextmenu(i_G ,i_Data)
 {
 	hideAppDesktopMenu();
+	hideColorPicker();
+	hideWindowStartMenus(1);
 	
 	if ( i_Data != null )
 	{
@@ -74,9 +76,11 @@ d3.select("#copyApp").on("click" ,function()
 	if ( v_ContextG != null && v_ContextData != null )
 	{
 		var v_NewData = $.extend(true, {}, v_ContextData);
-		v_NewData.x += 20;
-		v_NewData.y += 20;
+		v_NewData.userID   = v_UserID;
+		v_NewData.appID    = "APP" + v_UserID + "_" + (new Date()).getTime();
 		v_NewData.appName += "-复本"; 
+		v_NewData.x        = parseFloat(v_NewData.x) + 20;
+		v_NewData.y        = parseFloat(v_NewData.y) + 20;
 		v_NewData.appIndex = -1;
 		
 		/*
@@ -97,6 +101,8 @@ d3.select("#copyApp").on("click" ,function()
 		.transition()
 		.duration(1200)
 		.attr("opacity" ,1);
+		
+		commitWindowAppCreate(v_NewData);
 	}
 });
 
@@ -135,6 +141,8 @@ d3.select("#reColor").on("click" ,function()
 		{
 			v_ContextData.backgroundColor = i_Color;
 			v_ContextG.select("rect").attr("fill" ,v_ContextData.backgroundColor);
+			
+			commitWindowAppXXColorSize(v_ContextData);
 		});
 	}
 });

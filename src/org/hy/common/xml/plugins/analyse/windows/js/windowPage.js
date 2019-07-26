@@ -1,6 +1,5 @@
 var v_WindowPageMinWidth  = 260;                                /* 窗口改变大小时，允许最小宽度 */
 var v_WindowPageMinHeight = 30;                                 /* 窗口改变大小时，允许最小高度 */
-var v_DefaultWindowIcon   = "windows/images/windowTask.png";    /* 默认窗口图标 */
 
 
 
@@ -340,6 +339,8 @@ function createWindowPage(i_Data)
 	v_Create.select(".windowPageIcon").attr("src" ,(i_Data.icon != null && i_Data.icon != "") ? i_Data.icon : v_DefaultWindowIcon);
 	v_Create.select(".windowPageTitle").html(i_Data.appName);
 	v_Create.select("iframe").attr("src" ,i_Data.url);
+	
+	commitWindowAppOpenCount(i_Data);
 	
 	return v_Create;
 }

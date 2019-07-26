@@ -16,4 +16,6 @@ d3.select("#delAppBtn").on("click" ,function()
 	.duration(1200)
 	.attr("opacity" ,0)
 	.remove();
+	
+	commitWindowAppDel(v_ContextData);
 });

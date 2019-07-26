@@ -13,6 +13,20 @@ d3.select("#newApp").on("click" ,function()
 
 
 /**
+ * 新建App图标
+ *
+ * ZhengWei(HY) Add 2019-07-17
+ */
+d3.select("#newMultiWindows").on("click" ,function()
+{
+	hideAppDesktopMenu();
+	
+	showNewAppDialog("MWT_" + (new Date()).getTime());
+});
+
+
+
+/**
  * 恢复App图标
  *
  * ZhengWei(HY) Add 2019-06-21
@@ -42,6 +56,7 @@ d3.select("#recovery").on("click" ,function()
 	});
 	
 	v_Recoverys.pop(v_DataIndex);
+	commitWindowAppRecovery(v_Data);
 });
 
 

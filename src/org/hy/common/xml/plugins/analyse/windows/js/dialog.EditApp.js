@@ -102,7 +102,7 @@ function showEditAppDialog()
 	
 
 /**
- * 新建App图标的确定按钮的事件
+ * 编辑App图标的确定按钮的事件
  *
  * ZhengWei(HY) Add 2019-06-24
  */
@@ -128,6 +128,7 @@ d3.select("#editAppBtn").on("click" ,function()
 	$('#editAppDialog').modal('hide');
 	
 	
+	v_ContextData.userID          = v_UserID;
 	v_ContextData.appName         = v_EditAppName;
 	v_ContextData.actionType      = v_EditActionType;
 	v_ContextData.url             = v_EditAppUrl;
@@ -137,7 +138,14 @@ d3.select("#editAppBtn").on("click" ,function()
 	v_ContextData.backgroundColor = d3.select("#editBackgroundColor").attr("data-color");
 	v_ContextData.sizeType        = d3.select("#editSizeType")       .attr("data-sizeType");
 	
+	if ( v_ContextData.sizeType == null || v_ContextData.sizeType == "" )
+	{
+		v_ContextData.sizeType = "middle";
+	}
+	
 	editApp(v_ContextData ,v_ContextG ,1000);
+	
+	commitWindowAppEdit(v_ContextData);
 });
 
 

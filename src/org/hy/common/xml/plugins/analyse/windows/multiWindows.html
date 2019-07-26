@@ -1,0 +1,235 @@
+<html>
+<head>
+	<title>:Title</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" href=":HttpBasePath/bootstrap-4.3.1-dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href=":HttpBasePath/jquery/jquery-ui.min.css" />
+	<link rel="stylesheet" href=":HttpBasePath/analyses/windows/css/multiWindows.css" />
+	<link rel="stylesheet" href=":HttpBasePath/analyses/windows/css/multiWindowsMenu.css" />
+
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery-ui.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-4.3.1-dist/js/popper.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-4.3.1-dist/js/tooltip.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-4.3.1-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-4.3.1-dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/d3/d3.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/d3/hy.common.d3.js"></script>
+    
+	<style type="text/css">
+	body { 
+		background-color: white; 
+		overflow-x: hidden;
+   		overflow-y: hidden;
+   		padding: 0px;
+		margin: 0px;
+	}
+	</style>
+</head>
+<body oncontextmenu="return false">
+	
+	<div class="controlBar">
+		<div class="controlBarBackground">
+			<button type="button" class="btn btn-danger  btn-sm"                    id="editMWindowsBtn">设计多屏同显</button>
+			<button type="button" class="btn btn-primary btn-sm MWindowSettingBtns" id="menuMWindowsBtn">菜单</button>
+			<label class="MWindowSettingBtns">&nbsp;</label>
+			
+			<div class="dropdown MWindowSettingBtns">
+			  <button class="btn btn-info btn-sm dropdown-toggle" type="button" id="defaultLayoutsBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			    默认布局
+			  </button>
+			  <div class="dropdown-menu" aria-labelledby="defaultLayoutsBtn">
+			    <a class="dropdown-item" href="#" id="defaultLayout2"><label>二分屏</label>     <label>&nbsp;&nbsp;2*1</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout3"><label>三分屏</label>     <label>&nbsp;&nbsp;3*1</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout4"><label>四分屏</label>     <label>&nbsp;&nbsp;2*2</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout6"><label>六分屏</label>     <label>&nbsp;&nbsp;3*2</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout8"><label>八分屏</label>     <label>&nbsp;&nbsp;4*2</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout9"><label>九分屏</label>     <label>&nbsp;&nbsp;3*3</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout10"><label>十分屏</label>    <label>&nbsp;&nbsp;5*2</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout12"><label>十二分屏</label>  <label>&nbsp;&nbsp;4*3</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout14"><label>十四分屏</label>  <label>&nbsp;&nbsp;7*2</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout15"><label>十五分屏</label>  <label>&nbsp;&nbsp;5*3</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout16"><label>十六分屏</label>  <label>&nbsp;&nbsp;4*4</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout18"><label>十八分屏</label>  <label>&nbsp;&nbsp;9*3</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout20"><label>二十分屏</label>  <label>&nbsp;&nbsp;5*4</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout21"><label>二十一分屏</label><label>&nbsp;&nbsp;7*3</label></a>
+			    <a class="dropdown-item" href="#" id="defaultLayout24"><label>二十四分屏</label><label>&nbsp;&nbsp;6*4</label></a>
+			    <div class="dropdown-divider"></div>
+			    <a class="dropdown-item" href="#" id="defaultLayoutX"><label>自定义分屏</label> <label>...</label></a>
+			  </div>
+			</div>
+			
+			<button type="button" class="btn btn-info      btn-sm MWindowSettingBtns" id="layoutTypeBtn"    >翻转布局</button>
+			<button type="button" class="btn btn-info      btn-sm MWindowSettingBtns" id="reSizeMWindowsBtn">自动布局</button>
+			<label class="MWindowSettingBtns">&nbsp;</label>
+			<button type="button" class="btn btn-success   btn-sm MWindowSettingBtns" id="saveMWindowsBtn"  >保存多屏</button>
+			<button type="button" class="btn btn-danger    btn-sm MWindowSettingBtns" id="cancelMWindowsBtn">取消</button>
+		</div>
+	</div>
+	
+	
+	<div class="MWindowMenuBar MWindowMenuBarLevel_1"></div>
+	<div class="MWindowMenuBar MWindowMenuBarLevel_2"></div>
+	<div class="MWindowMenuBar MWindowMenuBarLevel_3"></div>
+	<div class="MWindowMenuBar MWindowMenuBarLevel_4"></div>
+	<div class="MWindowMenuBar MWindowMenuBarLevel_5"></div>
+	
+	
+	<div id="urlMWindowDrag">
+		<img src=":HttpBasePath/windows/images/multiWindowURL.png" />
+	</div>
+	
+	
+	<div id="layoutXMWindowDialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	  <div class="modal-dialog modal-dialog-centered" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">自定义分屏</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        
+	      	<div class="input-group mb-3 input-align-center">
+				<div class="input-group-prepend">
+				    <span class="input-group-text">布局行数</span>
+		  		</div>
+		  		<input id="layoutXMWindowRowText" type="text" class="form-control" placeholder="行数" aria-label="行数" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入合法数字的行数">
+	      	</div>
+	      	
+	      	<div class="input-group mb-3">
+				<div class="input-group-prepend">
+				    <span class="input-group-text">布局列数</span>
+		  		</div>
+		  		<input id="layoutXMWindowColText" type="text" class="form-control" placeholder="列数" aria-label="列数" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入合法数字的列数">
+	      	</div>
+	        
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+	        <button type="button" class="btn btn-primary" id="layoutXMWindowBtn">确定</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+	
+	<div id="editMWindowDialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	  <div class="modal-dialog modal-dialog-centered" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">编辑</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        
+	        <div class="input-group mb-3">
+				<div class="input-group-prepend">
+				    <span class="input-group-text">访问地址</span>
+		  		</div>
+		  		<input id="editMWindowUrlText" type="text" class="form-control" placeholder="访问地址" aria-label="访问地址" aria-describedby="basic-addon1">
+	      	</div>
+	      	
+	      	<div class="input-group mb-3 input-align-center">
+				<div class="input-group-prepend">
+				    <span class="input-group-text">窗口宽度</span>
+		  		</div>
+		  		<input id="editMWindowWidthText" type="text" class="form-control" placeholder="宽度" aria-label="宽度" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入合法数字的宽度">
+	      		
+	      		<label>&nbsp;&nbsp;</label>
+	      		
+				<div class="custom-control custom-switch" data-toggle="tooltip" data-placement="top" title="锁定后，不受自动布局的影响">
+				  <input type="checkbox" class="custom-control-input" id="editLockWidth">
+				  <label class="custom-control-label" for="editLockWidth">锁定宽度</label>
+				</div>
+	      	</div>
+	      	
+	      	<div class="input-group mb-3">
+				<div class="input-group-prepend">
+				    <span class="input-group-text">窗口高度</span>
+		  		</div>
+		  		<input id="editMWindowHeightText" type="text" class="form-control" placeholder="高度" aria-label="高度" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入合法数字的高度">
+	      	
+	      		<label>&nbsp;&nbsp;</label>
+	      		
+				<div class="custom-control custom-switch" data-toggle="tooltip" data-placement="top" title="锁定后，不受自动布局的影响">
+				  <input type="checkbox" class="custom-control-input" id="editLockHeight">
+				  <label class="custom-control-label" for="editLockHeight">锁定高度</label>
+				</div>
+	      	</div>
+	        
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+	        <button type="button" class="btn btn-primary" id="editMWindowBtn">确定</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+	
+	<div id="addMWindowDialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	  <div class="modal-dialog modal-dialog-centered" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">确认</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        
+	        添加多屏窗口？
+	        
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+	        <button type="button" class="btn btn-primary" id="addMWindowBtn">确定</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+	
+	<div class="MWindowComponent MWindowColBar" id="MWindowBody">
+	
+		<div class="MWindowComponent MWindowRowBar">
+			<div class="MWindowComponent MWindowContent" data-url=""></div>
+		</div>
+		
+		<div class="MWindowComponent MWindowRowBar">
+			
+			<div class="MWindowComponent MWindowContent" data-url=""></div>
+			<div class="MWindowComponent MWindowContent" data-url=""></div>
+			<div class="MWindowComponent MWindowContent" data-url=""></div>
+			
+		</div>
+	
+	</div>
+	
+	
+	
+	<script type="text/javascript" charset="utf-8">
+		var v_MWindowsType     = "COL";     /* 多屏窗口的整体类型（COL:等高类型、ROW:等宽类型） */
+		var v_MWindowsConfig   = [];
+		var v_MWTID            = "";
+		var v_StartMenus       = [];
+		var v_StartMenuIndexes = {};
+		var v_StartMenuDatas   = :StartMenus.datas;
+	</script>
+	
+	
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/multiWindowsInit.js"></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/multiWindowsNull.js"></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/multiWindowsMenu.js"></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/multiWindows.js"></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/multiWindowsControl.js"></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/multiWindowsCommit.js"></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.EditMWindow.js"></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.LayoutXMWindow.js"></script>
+
+</body>
+</html>

@@ -21,8 +21,9 @@ var v_CreateAppDrag           = d3.drag()                                       
 	
 	if ( v_AppG == null )
 	{
-		v_AppData.x = 0;
-		v_AppData.y = 999999;
+		v_AppData.userID = v_UserID;
+		v_AppData.x      = 0;
+		v_AppData.y      = 999999;
 		
 		if ( v_AppData.backgroundColor == null || v_AppData.backgroundColor == "" )
 		{
@@ -31,6 +32,7 @@ var v_CreateAppDrag           = d3.drag()                                       
 		
 		v_Apps.push(v_AppData);
 		v_AppG = createApp(v_AppData ,null);
+		commitWindowAppCreate(v_AppData);
 	}
 	else
 	{

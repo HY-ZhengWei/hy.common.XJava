@@ -129,7 +129,7 @@
 	
 	<div id="windowPageTemplate" class="windowPage">
 		
-		<div class="windowPageHead" data-toggle="tooltip" data-placement="bottom" title="鼠标双击可最大化或正常化">
+		<div class="windowPageHead">
 			<div class="windowPageTitleBar">
 				<img class="windowPageIcon" />
 				<div class="windowPageTitle">标题</div>
@@ -185,8 +185,9 @@
 	
 	<div id="appDesktopMenuBar">
 		<ul id="desktopMenu">
-			<li id="newApp-LI"  ><div id="newApp"   class="MenuItem">新建</div></li>
-			<li id="recovery-LI"><div id="recovery" class="MenuItem">恢复删除<span id="recoveryCount"></span></div></li>
+			<li id="newApp-LI"         ><div id="newApp"          class="MenuItem">新建</div></li>
+			<li id="newMultiWindows-LI"><div id="newMultiWindows" class="MenuItem">新建多屏同显</div></li>
+			<li id="recovery-LI"       ><div id="recovery"        class="MenuItem">恢复删除<span id="recoveryCount"></span></div></li>
 		</ul>
 	</div>
 	
@@ -509,16 +510,19 @@
 		d3.selectAll("input")      .call(d3.drag());
 		d3.selectAll("button")     .call(d3.drag());
 	
-	
-		var v_Colors           = {textColor:          "white"
-					             ,tooltipTextColor:   "black"
-				            	 ,tooltipBGColor:     "white"
-				            	 ,tooltipBorderColor: "gray"
-					             ,borderColor:        "#0000CD"};
-		var v_SpaceX           = 5;
-		var v_SpaceY           = 5;
-		var v_BorderSize       = 3;
-		var v_Sizes            = {
+		
+		var v_IsCommit          = false;
+		var v_UserID            = "";
+		var v_DefaultWindowIcon = ":HttpBasePath/windows/images/windowTask.png";     /* 默认窗口图标 */
+		var v_Colors            = {textColor:          "white"
+					              ,tooltipTextColor:   "black"
+				             	  ,tooltipBGColor:     "white"
+				            	  ,tooltipBorderColor: "gray"
+					              ,borderColor:        "#0000CD"};
+		var v_SpaceX            = 5;
+		var v_SpaceY            = 5;
+		var v_BorderSize        = 3;
+		var v_Sizes             = {
 									max:        {width:215 ,height:215 ,iconSize:100 ,fontSize:13 ,comment:"大"},
 									longWidth:  {width:215 ,height:105 ,iconSize:50  ,fontSize:13 ,comment:"宽"},
 									longHeight: {width:105 ,height:215 ,iconSize:50  ,fontSize:13 ,comment:"高"},
@@ -556,147 +560,27 @@
 
 		
 		
-		/**
-		 * 显示颜色选择器
-		 *
-		 * i_Color     初始化颜色
-		 * i_X         X坐标
-		 * i_Y         Y坐标
-		 *
-		 * ZhengWei(HY) Add 2019-06-20
-		 */
-		function showColorPicker(i_Color ,i_X ,i_Y ,i_OKFun)
-		{
-			$("#colorPicker").colpick({
-			    flat: true,
-			    layout: 'full',
-			    colorScheme: 'light',
-			    submit: true,
-			    onSubmit: function(hsb,hex,rgb,el,bySetColor)
-			    {
-			    	hideColorPicker();
-			    	i_OKFun('#' + hex);
-			    },
-				onChange: function (hsb,hex,rgb,el,bySetColor) 
-				{
-					/* Nothing. */
-		        }
-			});
-			
-			$("#colorPicker").colpickSetColor(i_Color ,true);
-			$("#colorPicker").css("left" ,(i_X + v_Sizes.min.width) + "px");
-			$("#colorPicker").css("top"  ,(i_Y - 20) + "px");
-			$("#colorPicker").css("opacity" ,100); 
-		}
-		
-		
-		
-		/**
-		 * 隐藏颜色选择器
-		 *
-		 * @author      ZhengWei(HY)
-		 * @createDate  2018-11-17
-		 * @version     v1.0
-		 */
-		function hideColorPicker()
-		{
-			$("#colorPicker").css("opacity" ,0);
-			$("#colorPicker").css("left" ,"-99999px");
-			$("#colorPicker").css("top"  ,"-99999px");
-		}
-		
-		
-		
-		/**
-		 * 显示消息
-		 *
-		 * i_Message   消息的内容
-		 *
-		 * ZhengWei(HY) Add 2019-06-20
-		 */
-		function showMessage(i_Message)
-		{
-			$('#messageTextDiv').html(i_Message);
-			$('.toast').toast('show');
-		}
-		
-		
-		
-		var v_SVG = d3.select("body").select("svg")
-		.on("click" ,function()
-		{
-			if ( v_ContextMenu )
-			{
-				hideAppMenu();
-				hideAppDesktopMenu();
-			}
-			
-			hideColorPicker();
-		})
-		.on("contextmenu" ,function()
-		{
-			if ( !v_ContextMenu )
-			{
-				d3.select("#recovery-LI").classed("ui-state-disabled" ,(v_Recoverys.length <= 0));
-				d3.select("#recoveryCount").html(v_Recoverys.length <= 0 ? "" : " (" + v_Recoverys.length + ")");
-				
-				$("#appDesktopMenuBar").css("left" ,(d3.event.pageX) + "px");  
-				$("#appDesktopMenuBar").css("top"  ,(d3.event.pageY) + "px");
-				$("#appDesktopMenuBar").css("opacity" ,100);
-				
-				v_ContextMenu = true;
-			}
-		});
-		
-		
-		
-		/* 水平、垂直标线 */
-		/*
-		v_SVG.selectAll(".HLine").data(d3.range(1 ,100)).enter()
-		.append("path")
-		.attr("stroke" ,"black")
-		.attr("stroke-width" ,"1")
-		.attr("d" ,function(d ,i)
-		{
-			return "M0," + (i * (v_Sizes.min.height + v_SpaceY) + v_SpaceY) + " H 10000";
-		});
-		
-		v_SVG.selectAll(".VLine").data(d3.range(1 ,100)).enter()
-		.append("path")
-		.attr("stroke" ,"black")
-		.attr("stroke-width" ,"1")
-		.attr("d" ,function(d ,i)
-		{
-			return "M" + (i * (v_Sizes.min.width + v_SpaceX) + v_SpaceX) + ",0 V 10000";
-		});
-		*/
-		
-		
-		
 		$(function() 
 		{
-			$("#appMenu")    .menu();
-			$("#desktopMenu").menu();
-			
-			/* 不设置一下话，可能会出现首次点击无效的问题 */
-			$("#newBackgroundColor") .dropdown();
-			$("#newSizeType")        .dropdown();
-			$("#editBackgroundColor").dropdown();
-			$("#editSizeType")       .dropdown();
+			bodyPageInit();
 		});
 		
 	</script>
 	
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowInit.js"         ></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowApp.js"          ></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowPage.js"         ></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowTask.js"         ></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowStartMenu.js"    ></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowCommit.js"       ></script>
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/contextMenu.App.js"    ></script>
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/contextMenu.Desktop.js"></script>
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.DelApp.js"      ></script>
     <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.NewApp.js"      ></script>
     <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.EditApp.js"     ></script>
     <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.Rename.js"      ></script>
-    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowApp.js"          ></script>
-    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowPage.js"         ></script>
-    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowTask.js"         ></script>
-    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowStartMenu.js"    ></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.AppColor.js"    ></script>
+    
 
 </body>
 </html>

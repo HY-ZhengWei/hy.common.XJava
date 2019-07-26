@@ -98,6 +98,10 @@ d3.select(".windowTaskShowDesktop")
 })
 .on("click" ,function()
 {
+	hideAppDesktopMenu();
+	hideAppMenu();
+	hideColorPicker();
+	
 	if ( windowPageIsAllMin() )
 	{
 		windowPageAllToShow();
@@ -139,6 +143,9 @@ d3.select(".windowTaskStartMenu")
 .on("click" ,function()
 {
 	$(".windowTaskStartMenu").tooltip('hide');
+	hideAppDesktopMenu();
+	hideAppMenu();
+	hideColorPicker();
 	
 	if ( isShowWindowStartMenus() )
 	{

@@ -44,6 +44,8 @@ d3.select("#renameBtn").on("click" ,function()
 		.duration(1500)
 		.attr("fill" ,v_Colors.textColor);
 	}
+	
+	commitWindowAppName(v_ContextData);
 });
 
 

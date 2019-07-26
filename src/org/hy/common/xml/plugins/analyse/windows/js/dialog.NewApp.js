@@ -1,14 +1,23 @@
 /**
  * 显示新建App的对话窗口
+ * 
+ * i_MWTID  多屏同显的惟一ID
  *
  * ZhengWei(HY) Add 2019-06-21
  */
-function showNewAppDialog()
+function showNewAppDialog(i_MWTID)
 {
 	d3.select("#newAppName").attr("data-x" ,d3.event.x).attr("data-y" ,d3.event.y);
 	$('#newAppName')   .val("");
 	$('#newActionType').val("open");
-	$('#newAppUrl')    .val("http://");
+	if ( i_MWTID != null && i_MWTID != "" )
+	{
+		$('#newAppUrl').val("multiWindows.page?mwtid=" + i_MWTID);
+	}
+	else
+	{
+		$('#newAppUrl').val("http://");
+	}
 	$('#newAppConfirm').val("");
 	d3.select("#newAppIcon").attr("data-icon"   ,"");
 	d3.select("#newAppIcon").attr("data-iconID" ,"");
@@ -91,6 +100,8 @@ d3.select("#newAppBtn").on("click" ,function()
 	
 	
 	var v_NewData = {};
+	v_NewData.userID          = v_UserID;
+	v_NewData.appID           = "APP" + v_UserID + "_" + (new Date()).getTime();
 	v_NewData.appName         = v_NewAppName;
 	v_NewData.actionType      = v_NewActionType;
 	v_NewData.url             = v_NewAppUrl;
@@ -102,6 +113,11 @@ d3.select("#newAppBtn").on("click" ,function()
 	v_NewData.x               = d3.select("#newAppName")        .attr("data-x");
 	v_NewData.y               = d3.select("#newAppName")        .attr("data-y");
 	
+	if ( v_NewData.sizeType == null || v_NewData.sizeType == "" )
+	{
+		v_NewData.sizeType = "middle";
+	}
+	
 	v_Apps.push(v_NewData);
 	var v_MyG = createApp(v_NewData ,null);
 	v_MyG
@@ -109,6 +125,8 @@ d3.select("#newAppBtn").on("click" ,function()
 	.transition()
 	.duration(2000)
 	.attr("opacity" ,1);
+	
+	commitWindowAppCreate(v_NewData);
 });
 
 
