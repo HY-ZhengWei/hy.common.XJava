@@ -562,6 +562,11 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 
                 XJava.putObject(v_XSQL.getXJavaID() ,v_XSQL);
             }
+            
+            if ( v_XSQL.getContentDB().getSqlText().indexOf(";/") >= 0 )
+            {
+                v_XSQLTrigger.setExecuteType(XSQLTrigger.$Execute);
+            }
         }
         
         this.trigger.setInit(false);

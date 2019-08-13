@@ -13,38 +13,47 @@ package org.hy.common.xml;
  */
 public class XSQLTriggerInfo
 {
-   /** XSQL对象 */
-   private XSQL xsql;
+    /** XSQL对象 */
+    private XSQL xsql;
    
-   /** 执行类型（0按execute方法执行，1按executeUpdate方法执行） */
-   private int  executeType;
+    /** 执行类型（0按execute方法执行，1按executeUpdate方法执行） */
+    private int  executeType;
    
    
    
-   public XSQLTriggerInfo(XSQL i_XSQL ,int i_ExecuteType)
-   {
-       this.xsql        = i_XSQL;
-       this.executeType = i_ExecuteType;
-   }
+    public XSQLTriggerInfo(XSQL i_XSQL ,int i_ExecuteType)
+    {
+        this.xsql        = i_XSQL;
+        this.executeType = i_ExecuteType;
+    }
 
+    
+    /**
+     * 获取：XSQL对象
+     */
+    public XSQL getXsql()
+    {
+        return xsql;
+    }
 
-   
-   /**
-    * 获取：XSQL对象
-    */
-   public XSQL getXsql()
-   {
-       return xsql;
-   }
+    
+    /**
+     * 获取：执行类型（0按execute方法执行，1按executeUpdate方法执行）
+     */
+    public int getExecuteType()
+    {
+        return executeType;
+    }
 
-
-   
-   /**
-    * 获取：执行类型（0按execute方法执行，1按executeUpdate方法执行）
-    */
-   public int getExecuteType()
-   {
-       return executeType;
-   }
-   
+    
+    /**
+     * 设置：执行类型（0按execute方法执行，1按executeUpdate方法执行）
+     * 
+     * @param executeType 
+     */
+    public void setExecuteType(int executeType)
+    {
+        this.executeType = executeType;
+    }
+    
 }

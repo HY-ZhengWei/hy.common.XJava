@@ -36,11 +36,11 @@ import org.hy.common.db.DataSourceGroup;
  */
 public class XSQLTrigger
 {
-    /** 内部使用的执行方式之一：XSQL.execute(...) */
-    private static final          int $Execute       = 0;
+    /** 执行方式之一：XSQL.execute(...) */
+    public static final           int $Execute       = 0;
     
-    /** 内部使用的执行方式之一：XSQL.executeUpdate(...) */
-    private static final          int $ExecuteUpdate = 1;
+    /** 执行方式之一：XSQL.executeUpdate(...) */
+    public static final           int $ExecuteUpdate = 1;
     
     
     
