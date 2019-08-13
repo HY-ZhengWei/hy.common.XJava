@@ -1,13 +1,11 @@
 package org.hy.common.xml;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.hy.common.Execute;
 import org.hy.common.Help;
-import org.hy.common.MethodReflect;
 import org.hy.common.db.DataSourceGroup;
 
 
@@ -34,9 +32,17 @@ import org.hy.common.db.DataSourceGroup;
  * @createDate  2017-01-06
  * @version     v1.0
  *              v2.0  2019-02-18  添加：可自行定制的XSQL异常处理机制
+ *              v3.0  2019-08-13  添加：设定触发器中XSQL的执行方式（$Execute、$ExecuteUpdate）
  */
 public class XSQLTrigger
 {
+    /** 内部使用的执行方式之一：XSQL.execute(...) */
+    private static final          int $Execute       = 0;
+    
+    /** 内部使用的执行方式之一：XSQL.executeUpdate(...) */
+    private static final          int $ExecuteUpdate = 1;
+    
+    
     
     /** 
      * 触发器执行操作的集合
@@ -44,29 +50,29 @@ public class XSQLTrigger
      * 1. 在同步模式(单线程)下，执行按List顺序有序执行。零下标的元素第一个执行。
      * 2. 在异步模式(多线程)下，线程的发起按List有顺序发起。但不一定是有顺序的执行。
      */
-    private List<XSQL> xsqls;
+    private List<XSQLTriggerInfo> xsqls;
     
     /** 同步模式。默认为：false，即异步模式 */
-    private boolean syncMode;
+    private boolean               syncMode;
     
     /** 
      * 异常模式。
      * 默认为：true，主XSQL异常时，触发器也被触发执行。
      * 当为： false时，主XSQL执行成功后，触发器才被触发执行。
      */
-    private boolean errorMode;
+    private boolean               errorMode;
     
     /** 可自行定制的XSQL异常处理机制。当触发的XSQL未设置异常处理机制（XSQL.getError()==null）时，才生效 */
-    private XSQLError error;
+    private XSQLError             error;
     
     /** 是否初始化 createBackup() 添加的XSQL。只针对 createBackup() 功能的初始化 */
-    private boolean   isInit;
+    private boolean               isInit;
     
     
     
     public XSQLTrigger()
     {
-        this.xsqls     = new ArrayList<XSQL>();
+        this.xsqls     = new ArrayList<XSQLTriggerInfo>();
         this.syncMode  = false;
         this.errorMode = true;
         this.error     = null;
@@ -86,16 +92,30 @@ public class XSQLTrigger
     {
         if ( this.syncMode )
         {
-            for (XSQL v_XSQL : this.xsqls)
+            for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
             {
-                v_XSQL.execute();
+                if ( v_XSQLTrigger.getExecuteType() == $ExecuteUpdate )
+                {
+                    v_XSQLTrigger.getXsql().executeUpdate();
+                }
+                else 
+                {
+                    v_XSQLTrigger.getXsql().execute();
+                }
             }
         }
         else
         {
-            for (XSQL v_XSQL : this.xsqls)
+            for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
             {
-                (new Execute(v_XSQL ,"execute")).start();
+                if ( v_XSQLTrigger.getExecuteType() == $ExecuteUpdate )
+                {
+                    (new Execute(v_XSQLTrigger.getXsql() ,"executeUpdate")).start();
+                }
+                else 
+                {
+                    (new Execute(v_XSQLTrigger.getXsql() ,"execute")).start();
+                }
             }
         }
     }
@@ -115,22 +135,29 @@ public class XSQLTrigger
     {
         if ( this.syncMode )
         {
-            for (XSQL v_XSQL : this.xsqls)
+            for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
             {
-                v_XSQL.execute(i_Values);
+                if ( v_XSQLTrigger.getExecuteType() == $ExecuteUpdate )
+                {
+                    v_XSQLTrigger.getXsql().executeUpdate(i_Values);
+                }
+                else 
+                {
+                    v_XSQLTrigger.getXsql().execute(i_Values);
+                }
             }
         }
         else
         {
-            for (XSQL v_XSQL : this.xsqls)
+            for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
             {
-                if ( MethodReflect.isExtendImplement(i_Values ,Map.class) )
+                if ( v_XSQLTrigger.getExecuteType() == $ExecuteUpdate )
                 {
-                    (new Execute(v_XSQL ,"execute" ,new HashMap<Object ,Object>((Map<? ,?>)i_Values))).start();
+                    (new Execute(v_XSQLTrigger.getXsql() ,"executeUpdate" ,i_Values)).start();
                 }
-                else
+                else 
                 {
-                    (new Execute(v_XSQL ,"execute" ,i_Values)).start();
+                    (new Execute(v_XSQLTrigger.getXsql() ,"execute" ,i_Values)).start();
                 }
             }
         }
@@ -151,16 +178,30 @@ public class XSQLTrigger
     {
         if ( this.syncMode )
         {
-            for (XSQL v_XSQL : this.xsqls)
+            for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
             {
-                v_XSQL.execute(i_Obj);
+                if ( v_XSQLTrigger.getExecuteType() == $ExecuteUpdate )
+                {
+                    v_XSQLTrigger.getXsql().executeUpdate(i_Obj);
+                }
+                else 
+                {
+                    v_XSQLTrigger.getXsql().execute(i_Obj);
+                }
             }
         }
         else
         {
-            for (XSQL v_XSQL : this.xsqls)
+            for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
             {
-                (new Execute(v_XSQL ,"execute" ,i_Obj)).start();
+                if ( v_XSQLTrigger.getExecuteType() == $ExecuteUpdate )
+                {
+                    (new Execute(v_XSQLTrigger.getXsql() ,"executeUpdate" ,i_Obj)).start();
+                }
+                else 
+                {
+                    (new Execute(v_XSQLTrigger.getXsql() ,"execute" ,i_Obj)).start();
+                }
             }
         }
     }
@@ -180,16 +221,16 @@ public class XSQLTrigger
     {
         if ( this.syncMode )
         {
-            for (XSQL v_XSQL : this.xsqls)
+            for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
             {
-                v_XSQL.executeUpdates(i_ObjList);
+                v_XSQLTrigger.getXsql().executeUpdates(i_ObjList);
             }
         }
         else
         {
-            for (XSQL v_XSQL : this.xsqls)
+            for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
             {
-                (new Execute(v_XSQL ,"executeUpdates" ,i_ObjList)).start();
+                (new Execute(v_XSQLTrigger.getXsql() ,"executeUpdates" ,i_ObjList)).start();
             }
         }
     }
@@ -209,16 +250,16 @@ public class XSQLTrigger
     {
         if ( this.syncMode )
         {
-            for (XSQL v_XSQL : this.xsqls)
+            for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
             {
-                v_XSQL.executeUpdatesPrepared(i_ObjList);
+                v_XSQLTrigger.getXsql().executeUpdatesPrepared(i_ObjList);
             }
         }
         else
         {
-            for (XSQL v_XSQL : this.xsqls)
+            for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
             {
-                (new Execute(v_XSQL ,"executeUpdatesPrepared" ,i_ObjList)).start();
+                (new Execute(v_XSQLTrigger.getXsql() ,"executeUpdatesPrepared" ,i_ObjList)).start();
             }
         }
     }
@@ -241,10 +282,31 @@ public class XSQLTrigger
         XSQL v_Trigger = new XSQL();
         
         v_Trigger.setDataSourceGroup(i_DSG);
+        v_Trigger.setError(this.error);
         
-        this.setCreate(v_Trigger);
+        this.xsqls.add(new XSQLTriggerInfo(v_Trigger ,$ExecuteUpdate));
         
         this.isInit = true;
+    }
+    
+    
+    
+    /**
+     * 创建一个DML触发器
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-13
+     * @version     v1.0
+     *
+     * @param i_XSQL
+     */
+    public void setCreateUpdate(XSQL i_XSQL)
+    {
+        if ( i_XSQL.getError() == null )
+        {
+            i_XSQL.setError(this.error);
+        }
+        this.xsqls.add(new XSQLTriggerInfo(i_XSQL ,$ExecuteUpdate));
     }
     
     
@@ -264,7 +326,7 @@ public class XSQLTrigger
         {
             i_XSQL.setError(this.error);
         }
-        this.xsqls.add(i_XSQL);
+        this.xsqls.add(new XSQLTriggerInfo(i_XSQL ,$Execute));
     }
     
     
@@ -286,9 +348,9 @@ public class XSQLTrigger
             return v_Ret;
         }
         
-        for (XSQL v_XSQL : this.xsqls)
+        for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
         {
-            v_Ret += v_XSQL.getRequestCount();
+            v_Ret += v_XSQLTrigger.getXsql().getRequestCount();
         }
         
         return v_Ret;
@@ -314,9 +376,9 @@ public class XSQLTrigger
             return v_Ret;
         }
         
-        for (XSQL v_XSQL : this.xsqls)
+        for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
         {
-            v_Ret += v_XSQL.getSuccessCount();
+            v_Ret += v_XSQLTrigger.getXsql().getSuccessCount();
         }
         
         return v_Ret;
@@ -343,9 +405,9 @@ public class XSQLTrigger
             return v_Ret;
         }
         
-        for (XSQL v_XSQL : this.xsqls)
+        for (XSQLTriggerInfo v_XSQLTrigger : this.xsqls)
         {
-            v_Ret += v_XSQL.getSuccessTimeLen();
+            v_Ret += v_XSQLTrigger.getXsql().getSuccessTimeLen();
         }
         
         return v_Ret;
@@ -359,7 +421,7 @@ public class XSQLTrigger
      * 1. 在同步模式(单线程)下，执行按List顺序有序执行。零下标的元素第一个执行。
      * 2. 在异步模式(多线程)下，线程的发起按List有顺序发起。但不一定是有顺序的执行。
      */
-    public List<XSQL> getXsqls()
+    public List<XSQLTriggerInfo> getXsqls()
     {
         return xsqls;
     }
@@ -374,7 +436,7 @@ public class XSQLTrigger
      * 
      * @param xsqls 
      */
-    public void setXsqls(List<XSQL> xsqls)
+    public void setXsqls(List<XSQLTriggerInfo> xsqls)
     {
         this.xsqls = xsqls;
     }

@@ -370,9 +370,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 	    
 	    if ( this.isTriggers() )
 	    {
-	        for (XSQL v_Trigger : this.trigger.getXsqls())
+	        for (XSQLTriggerInfo v_XSQLTrigger : this.trigger.getXsqls())
 	        {
-	            v_Trigger.reset();
+	            v_XSQLTrigger.getXsql().reset();
 	        }
 	    }
 	}
@@ -544,8 +544,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             return;
         }
         
-        for (XSQL v_XSQL : this.trigger.getXsqls())
+        for (XSQLTriggerInfo v_XSQLTrigger : this.trigger.getXsqls())
         {
+            XSQL v_XSQL = v_XSQLTrigger.getXsql();
+            
             if ( Help.isNull(v_XSQL.getContentDB().getSqlText()) )
             {
                 v_XSQL.setXJavaID(    Help.NVL(this.getXJavaID()) + "_" + Date.getNowTime().getFullMilli_ID());

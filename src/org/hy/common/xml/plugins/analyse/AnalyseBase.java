@@ -34,6 +34,7 @@ import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
 import org.hy.common.xml.XSQLDBMetadata;
 import org.hy.common.xml.XSQLLog;
+import org.hy.common.xml.XSQLTriggerInfo;
 import org.hy.common.xml.annotation.Xjava;
 import org.hy.common.xml.plugins.AppInitConfig;
 import org.hy.common.xml.plugins.XSQLGroup;
@@ -1360,9 +1361,9 @@ public class AnalyseBase extends Analyse
                 else if ( v_XSQLMaster.isTriggers() )
                 {
                     // 同时添加主XSQL相关的触发器的异常SQL信息  ZengWei(HY) Add 2017-01-06
-                    for (XSQL v_XSQL : v_XSQLMaster.getTrigger().getXsqls())
+                    for (XSQLTriggerInfo v_XSQLTrigger : v_XSQLMaster.getTrigger().getXsqls())
                     {
-                        if ( v_XSQL.getObjectID().equals(v_XSQLLog.getOid()) )
+                        if ( v_XSQLTrigger.getXsql().getObjectID().equals(v_XSQLLog.getOid()) )
                         {
                             v_ErrorLogs.add(v_XSQLLog);
                         }

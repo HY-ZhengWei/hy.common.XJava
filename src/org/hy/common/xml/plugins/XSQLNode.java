@@ -73,6 +73,7 @@ import org.hy.common.xml.XSQL;
  *              v14.2 2018-07-27  1.添加：Fel表达式引擎的阻断符或是限定符。防止有歧义解释。
  *              v15.0 2018-08-09  1.添加：clear属性。控制是否及时释放this.collectionID指定集合资源，释放内存。
  *              v15.1 2018-08-10  1.剥离：将节点是否允许执行的条件，剥离到org.hy.common.db.DBCondition类中共用。
+ *              v16.0 2019-08-13  1.添加：$Type_ExecuteCommit类型，可实现执行后立即提交本次操作的节点。主要用于多线程的同时，也保证精准的XSQL统计。
  */
 public class XSQLNode implements XJavaID
 {
@@ -89,6 +90,13 @@ public class XSQLNode implements XJavaID
      *  即执行数据库操作，不获取操作结果。执行参数由外界或其它查询类型的节点(XSQLNode)提供
      */
     public static final String  $Type_ExecuteUpdate              = "DMLExecute";
+    
+    /** 
+     * 执行后立即提交，并且只提交本次连接上的操作。并不对整个XSQL组做提交动作。
+     * 
+     * 与 $Type_ExecuteUpdate 类型一样，但 this.freeConnection 为 true。
+     */
+    public static final String  $Type_ExecuteCommit              = "DMLExecuteCommit";
     
     /** 
      * 节点类型： 执行（包含DML、DDL、DCL、TCL）
@@ -547,11 +555,19 @@ public class XSQLNode implements XJavaID
     /**
      * 设置：节点类型。默认为：执行类型（包含DML、DDL、DCL、TCL）
      * 
-     * @param type 
+     * @param i_Type 
      */
-    public void setType(String type)
+    public void setType(String i_Type)
     {
-        this.type = type;
+        if ( $Type_ExecuteCommit.equals(i_Type) )
+        {
+            this.type           = $Type_ExecuteUpdate;
+            this.freeConnection = true;
+        }
+        else
+        {
+            this.type = i_Type;
+        }
     }
 
 
