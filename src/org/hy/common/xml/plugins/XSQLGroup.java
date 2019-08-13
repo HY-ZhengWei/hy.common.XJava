@@ -859,7 +859,14 @@ public final class XSQLGroup implements XJavaID
                         
                         if ( !Help.isNull(v_CollectionParam) )
                         {
-                            v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params) ,this.getConnection(v_Node ,io_DSGConns));
+                            if ( v_Node.isFreeConnection() )
+                            {
+                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params));
+                            }
+                            else
+                            {
+                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params) ,this.getConnection(v_Node ,io_DSGConns));
+                            }
                             
                             io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
                             v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_RCount);
@@ -882,13 +889,27 @@ public final class XSQLGroup implements XJavaID
                     }
                     else if ( XSQLNode.$Type_ExecuteUpdate.equals(v_Node.getType()) )
                     {
-                        if ( Help.isNull(io_Params) )
+                        if ( v_Node.isFreeConnection() )
                         {
-                            v_RCount = v_Node.getSql().executeUpdate(this.getConnection(v_Node ,io_DSGConns));
+                            if ( Help.isNull(io_Params) )
+                            {
+                                v_RCount = v_Node.getSql().executeUpdate();
+                            }
+                            else
+                            {
+                                v_RCount = v_Node.getSql().executeUpdate(io_Params);
+                            }
                         }
                         else
                         {
-                            v_RCount = v_Node.getSql().executeUpdate(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                            if ( Help.isNull(io_Params) )
+                            {
+                                v_RCount = v_Node.getSql().executeUpdate(this.getConnection(v_Node ,io_DSGConns));
+                            }
+                            else
+                            {
+                                v_RCount = v_Node.getSql().executeUpdate(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                            }
                         }
                         
                         io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
@@ -1600,22 +1621,22 @@ public final class XSQLGroup implements XJavaID
                     }
                     else if ( XSQLNode.$Type_ExecuteUpdate.equals(v_Node.getType()) )
                     {
-                        if ( Help.isNull(io_Params) )
+                        if ( v_Node.isFreeConnection() )
                         {
-                            if ( v_Node.isFreeConnection() )
+                            if ( Help.isNull(io_Params) )
                             {
                                 v_RCount = v_Node.getSql().executeUpdate();
                             }
                             else
                             {
-                                v_RCount = v_Node.getSql().executeUpdate(this.getConnection(v_Node ,io_DSGConns));
+                                v_RCount = v_Node.getSql().executeUpdate(io_Params);
                             }
                         }
                         else
                         {
-                            if ( v_Node.isFreeConnection() )
+                            if ( Help.isNull(io_Params) )
                             {
-                                v_RCount = v_Node.getSql().executeUpdate(io_Params);
+                                v_RCount = v_Node.getSql().executeUpdate(this.getConnection(v_Node ,io_DSGConns));
                             }
                             else
                             {

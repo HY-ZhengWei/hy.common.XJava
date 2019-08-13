@@ -1,3 +1,11 @@
+$.ajaxSetup({
+	 timeout: 30000
+	});
+
+
+
+
+
 var v_SVG = d3.select("body").select("svg")
 .on("click" ,function()
 {
