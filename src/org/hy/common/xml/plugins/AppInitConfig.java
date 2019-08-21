@@ -1,6 +1,7 @@
 package org.hy.common.xml.plugins;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -8,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.hy.common.xml.XJava;
+
 import org.hy.common.Date;
+import org.hy.common.Des;
 import org.hy.common.Help;
 import org.hy.common.app.Param;
 import org.hy.common.file.FileHelp;
@@ -35,6 +38,7 @@ import org.hy.common.file.FileHelp;
  *              v4.0  2018-06-20  添加：按文件名称排序后的顺序加载XML配置文件。
  *              v4.1  2019-02-27  修复：加载目录中所有配置文件时，某一配置文件加载异常，继续加载后面的配置文件。
  *              v4.2  2019-05-20  添加：加载空目录时，显示it is empty的提示。
+ *              v5.0  2019-08-21  添加：load(...)系列方法，显示区分功能划分，方便用户选择。
  */
 public class AppInitConfig
 {
@@ -132,6 +136,271 @@ public class AppInitConfig
     public synchronized void init(List<Param> i_Params)
     {
         this.init(null ,i_Params ,null);
+    }
+    
+    
+    
+    /**
+     * 加载所有包及子包中所有class文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-21
+     * @version     v1.0
+     *
+     */
+    public void loadClasses()
+    {
+        loadClasses(null);
+    }
+    
+    
+    
+    /**
+     * 加载包及子包中所有class文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-21
+     * @version     v1.0
+     *
+     * @param i_PackageName   1.支持Java包路径，如 com.xxx.yyy
+     *                        2.支持Java类名称，如 java.lang.Integer
+     */
+    public synchronized void loadClasses(String i_PackageName)
+    {
+        try
+        {
+            if ( Help.isNull(i_PackageName) )
+            {
+                XJava.parserAnnotation();
+            }
+            else
+            {
+                XJava.parserAnnotation(i_PackageName);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    
+    
+    /**
+     * 加载配置文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-21
+     * @version     v1.0
+     *
+     * @param i_XMLName  配置文件 
+     */
+    public void loadXML(String i_XMLName)
+    {
+        this.loadXML(i_XMLName ,null);
+    }
+    
+    
+    
+    /**
+     * 加载配置文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-21
+     * @version     v1.0
+     *
+     * @param i_XMLName       配置文件 
+     * @param i_XmlRootPath
+     */
+    public void loadXML(String i_XMLName ,String i_XmlRootPath)
+    {
+        List<Param> v_Params = new ArrayList<Param>();
+        v_Params.add(new Param(null ,i_XMLName));
+        this.init(v_Params ,i_XmlRootPath);
+    }
+    
+    
+    
+    /**
+     * 加载配置文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-21
+     * @version     v1.0
+     *
+     * @param i_XMLName  配置文件 
+     */
+    public void loadXML(List<Param> i_XMLNames)
+    {
+        this.loadXML(i_XMLNames ,null);
+    }
+    
+    
+    
+    /**
+     * 加载配置文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-21
+     * @version     v1.0
+     *
+     * @param i_XMLNames      配置文件的集合
+     * @param i_XmlRootPath
+     */
+    public void loadXML(List<Param> i_XMLNames ,String i_XmlRootPath)
+    {
+        this.init(i_XMLNames ,i_XmlRootPath);
+    }
+    
+    
+    
+    /**
+     * 涉密配置，安全的加载配置文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-21
+     * @version     v1.0
+     *
+     * @param i_Des          涉密配置的加密方式
+     * @param i_XMLName      涉密配置的显示名称，主要用于日志的输出
+     * @param i_XML          涉密配置的文件对象
+     */
+    public void loadXMLSafe(Des i_Des ,String i_XMLName ,URL i_XML)
+    {
+        this.loadXMLSafe(i_Des ,i_XMLName ,i_XML ,null);
+    }
+    
+    
+    
+    /**
+     * 涉密配置，安全的加载配置文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-21
+     * @version     v1.0
+     *
+     * @param i_Des          涉密配置的加密方式
+     * @param i_XMLName      涉密配置的显示名称，主要用于日志的输出
+     * @param i_XML          涉密配置的文件对象
+     * @param i_XmlRootPath
+     */
+    public synchronized void loadXMLSafe(Des i_Des ,String i_XMLName ,URL i_XML ,String i_XmlRootPath)
+    {
+        if ( i_Des == null || i_XML == null )
+        {
+            return;
+        }
+        
+        File v_TempFile = null;
+        
+        try
+        {
+            FileHelp v_FileHelp = new FileHelp();
+            String   v_Content  = v_FileHelp.getContent(i_XML ,"UTF-8");
+            String   v_XML      = Help.getClassHomePath() + Date.getNowTime().getFullMilli_ID() + ".xml";
+            
+            v_TempFile = new File(v_XML);
+            v_FileHelp.create(v_XML ,i_Des.decrypt(v_Content) ,"UTF-8");
+            XJava.parserXml(v_TempFile.toURI().toURL() ,Help.NVL(i_XmlRootPath ,this.xmlClassPath));
+            
+            this.log(i_XMLName ,LogType.$Finish);
+        }
+        catch (Exception exce)
+        {
+            this.log(i_XMLName ,LogType.$Error);
+            exce.printStackTrace();
+        }
+        finally
+        {
+            if ( v_TempFile != null && v_TempFile.exists() )
+            {
+                v_TempFile.delete();
+            }
+        }
+    }
+    
+    
+    
+    /**
+     * 涉密配置，安全的加载配置文件（批量）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-21
+     * @version     v1.0
+     *
+     * @param i_Des          涉密配置的加密方式
+     * @param i_XMLs         涉密配置的文件集合
+     *                       ap.key    涉密配置的显示名称，主要用于日志的输出
+     *                       Map.value  涉密配置的文件对象
+     * @param i_XmlRootPath
+     */
+    public void loadXMLSafe(Des i_Des ,Map<String ,URL> i_XMLs)
+    {
+        loadXMLSafe(i_Des ,i_XMLs ,null);
+    }
+    
+    
+    
+    /**
+     * 涉密配置，安全的加载配置文件（批量）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-21
+     * @version     v1.0
+     *
+     * @param i_Des          涉密配置的加密方式
+     * @param i_XMLs         涉密配置的文件集合
+     *                       ap.key    涉密配置的显示名称，主要用于日志的输出
+     *                       Map.value  涉密配置的文件对象
+     * @param i_XmlRootPath
+     */
+    public void loadXMLSafe(Des i_Des ,Map<String ,URL> i_XMLs ,String i_XmlRootPath)
+    {
+        if ( i_Des == null || Help.isNull(i_XMLs) )
+        {
+            return;
+        }
+        
+        for (Map.Entry<String ,URL> v_Item : i_XMLs.entrySet())
+        {
+            loadXMLSafe(i_Des ,v_Item.getKey() ,v_Item.getValue() ,i_XmlRootPath);
+        }
+    }
+    
+    
+    
+    /**
+     * 加载目录中的配置文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-21
+     * @version     v1.0
+     *
+     * @param i_DirectoryName  支持目录名称，将对其下所有（包含子目录）配置文件进行加载
+     * @param i_XmlRootPath
+     */
+    public void loadDirectory(String i_DirectoryName)
+    {
+        this.loadDirectory(i_DirectoryName ,null);
+    }
+    
+    
+    
+    /**
+     * 加载目录中的配置文件
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-08-21
+     * @version     v1.0
+     *
+     * @param i_DirectoryName  支持目录名称，将对其下所有（包含子目录）配置文件进行加载
+     * @param i_XmlRootPath
+     */
+    public void loadDirectory(String i_DirectoryName ,String i_XmlRootPath)
+    {
+        List<Param> v_Params = new ArrayList<Param>();
+        v_Params.add(new Param(null ,i_DirectoryName));
+        this.init(v_Params ,i_XmlRootPath);
     }
     
     
@@ -246,7 +515,7 @@ public class AppInitConfig
                             else
                             {
                                 v_OK++;
-                                log(v_Param ,LogType.$Empty);
+                                log(v_Param.getValue() ,LogType.$Empty);
                             }
                         }
                         else
@@ -269,13 +538,13 @@ public class AppInitConfig
                                 
                                 if ( this.isLog )
                                 {
-                                    log(v_Param ,LogType.$Loading);
+                                    log(v_Param.getValue() ,LogType.$Finish);
                                 }
                             }
                             catch (Exception exce)
                             {
                                 // 异常时，继续加载后面的配置文件  2019-02-27 Add
-                                log(v_Param ,LogType.$Error);
+                                log(v_Param.getValue() ,LogType.$Error);
                                 exce.printStackTrace();
                             }
                         }
@@ -304,13 +573,13 @@ public class AppInitConfig
                             
                             if ( this.isLog )
                             {
-                                log(v_Param ,LogType.$Loading);
+                                log(v_Param.getValue() ,LogType.$Finish);
                             }
                         }
                         catch (Exception exce)
                         {
                             // 异常时，继续加载后面的配置文件  2019-02-27 Add
-                            log(v_Param ,LogType.$Error);
+                            log(v_Param.getValue() ,LogType.$Error);
                             exce.printStackTrace();
                         }
                     }
@@ -327,11 +596,7 @@ public class AppInitConfig
         {
             if ( v_OK < v_Count )
             {
-                log(v_Param ,LogType.$Error);
-            }
-            else if ( v_OK == v_Count )
-            {
-                log(v_Param ,LogType.$Finish);
+                log("Total " + v_Count + " files is " + (v_Count - v_OK) ,LogType.$Error);
             }
         }
     }
@@ -345,7 +610,6 @@ public class AppInitConfig
      *   1. 支持Java包路径，如 com.xxx.yyy
      *   2. 支持Java类名称，如 java.lang.Integer
      *   3. 支持XML文件名称，如 abc.xml
-     *   4. 支持目录名称，将对其下所有（包含子目录）配置文件进行加载
      * 
      * @param i_PackageName
      */
@@ -569,26 +833,26 @@ public class AppInitConfig
     /**
      * 打印日志，重写后有更多定制精彩
      * 
-     * @param i_Param
+     * @param i_Name
      * @param i_LogType
      */
-    public void log(Param i_Param ,LogType i_LogType)
+    public void log(String i_Name ,LogType i_LogType)
     {
         if ( LogType.$Loading == i_LogType )
         {
-            System.out.println("Loading " + i_Param.getValue());
+            System.out.println("Loading    " + i_Name);
         }
         else if ( LogType.$Finish == i_LogType )
         {
-            System.out.println("Load " + i_Param.getValue() + " finish.");
+            System.out.println("Loading ok " + i_Name);
         }
         else if ( LogType.$Empty == i_LogType )
         {
-            System.out.println("Load " + i_Param.getValue() + " finish, but it is empty.");
+            System.out.println("Loading ok " + i_Name + ", but it is empty.");
         }
         else
         {
-            System.out.println("Loading " + i_Param.getValue() + " error.");
+            System.out.println("Loading    " + i_Name + " error.");
         }
     }
     
