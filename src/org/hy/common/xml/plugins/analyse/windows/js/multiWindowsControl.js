@@ -31,6 +31,21 @@ function getMWindowControlBarHeight()
 
 
 /**
+ * 隐藏控制栏
+ *
+ * ZhengWei(HY) Add 2019-07-11
+ */
+function hideMWindowControlBar()
+{
+	d3.select(".controlBar").style("height" ,"10px");
+	d3.select(".controlBarBackground").style("display" ,"none");
+	
+	clearnMWindowsMenus(1);
+}
+
+
+
+/**
  * 显示控制栏
  *
  * ZhengWei(HY) Add 2019-07-11
@@ -39,21 +54,6 @@ function showMWindowControlBar()
 {
 	d3.select(".controlBar").style("height" ,"auto");
 	d3.select(".controlBarBackground").style("display" ,"flex");
-}
-
-
-
-/**
- * 隐藏控制栏
- *
- * ZhengWei(HY) Add 2019-07-11
- */
-function hideMWindowControlBar()
-{
-	d3.select(".controlBar").style("height" ,"3px");
-	d3.select(".controlBarBackground").style("display" ,"none");
-	
-	clearnMWindowsMenus(1);
 }
 
 
@@ -93,15 +93,16 @@ d3.select("#defaultLayoutsBtn").on("click.d3" ,function()
 d3.select("#editMWindowsBtn").on("click" ,function()
 {
 	v_IsSettingMW = true;
+	v_IsFullMW    = false;
 	var v_Color10 = d3.scaleOrdinal(d3.schemeCategory10);
 	
-	d3.select("#editMWindowsBtn")
+	d3.selectAll(".MWindowMenusBtns")
 	.attr("aria-disabled" ,"true")
 	.style("opacity" ,1)
 	.transition().duration(300)
 	.style("opacity" ,0);
 	
-	d3.select("#editMWindowsBtn")
+	d3.selectAll(".MWindowMenusBtns")
 	.transition().delay(300)
 	.style("display" ,"none");
 	
@@ -159,6 +160,42 @@ d3.select("#editMWindowsBtn").on("click" ,function()
 
 
 /**
+ * 打开全屏显示控制模式
+ *
+ * ZhengWei(HY) Add 2019-08-22
+ */
+function openFullControlBar()
+{
+	v_IsFullMW = true;
+	hideMWindowControlBar();
+	
+	
+	var v_MWindowBodyControl = d3.select("#MWindowBody_Control").style("z-index" ,99999902);
+	d3.select("#MWindowBody").selectAll(".MWindowContent")
+	.style("opacity" ,1)
+	.transition().duration(300)
+	.style("opacity" ,0.5);
+	
+	d3.select("#MWindowBody_Control").selectAll(".MWindowContent").html("");
+	
+	setAllMWindowHV(0);
+}
+
+
+
+/**
+ * 全屏显示按钮的点击事件
+ *
+ * ZhengWei(HY) Add 2019-08-22
+ */
+d3.select("#fullMWindowsBtn").on("click" ,function()
+{
+	openFullControlBar();
+});
+
+
+
+/**
  * 取消多屏窗口按钮的点击事件
  *
  * ZhengWei(HY) Add 2019-07-11
@@ -167,7 +204,7 @@ d3.select("#cancelMWindowsBtn").on("click" ,function()
 {
 	v_IsSettingMW = false;
 	hideMWindowControlBar();
-	d3.select("#editMWindowsBtn")      .attr("aria-disabled" ,"false").style("opacity" ,1).style("display" ,"inline");
+	d3.selectAll(".MWindowMenusBtns")  .attr("aria-disabled" ,"false").style("opacity" ,1).style("display" ,"inline");
 	d3.selectAll(".MWindowSettingBtns").attr("aria-disabled" ,"true") .style("display" ,"none");
 	
 	var v_MWindowBodyControl = d3.select("#MWindowBody_Control").style("z-index" ,99999900);
@@ -322,7 +359,7 @@ d3.select("#saveMWindowsBtn").on("click" ,function()
 {
 	v_IsSettingMW = false;
 	hideMWindowControlBar();
-	d3.select("#editMWindowsBtn")      .attr("aria-disabled" ,"false").style("opacity" ,1).style("display" ,"inline");
+	d3.selectAll(".MWindowMenusBtns")  .attr("aria-disabled" ,"false").style("opacity" ,1).style("display" ,"inline");
 	d3.selectAll(".MWindowSettingBtns").attr("aria-disabled" ,"true") .style("display" ,"none");
 	
 

@@ -30,7 +30,8 @@
 	
 	<div class="controlBar">
 		<div class="controlBarBackground">
-			<button type="button" class="btn btn-danger  btn-sm"                    id="editMWindowsBtn">设计多屏同显</button>
+			<button type="button" class="btn btn-danger  btn-sm MWindowMenusBtns"   id="editMWindowsBtn">设计多屏同显</button>
+			<button type="button" class="btn btn-primary btn-sm MWindowMenusBtns"   id="fullMWindowsBtn">全屏显示</button>
 			<button type="button" class="btn btn-primary btn-sm MWindowSettingBtns" id="menuMWindowsBtn">菜单</button>
 			<label class="MWindowSettingBtns">&nbsp;</label>
 			
@@ -172,6 +173,16 @@
 	</div>
 	
 	
+	<div id="fullMWindowDialog">
+		<iframe src="" width="100%" height="100%" scrolling="no" frameborder="no" border="0" marginwidth="0" marginheight="0" allowtransparency="yes"></iframe>
+		<div class="fullMWindowDialogClose">
+			<button type="button" class="close" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+	</div>
+	
+	
 	<div id="addMWindowDialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 	  <div class="modal-dialog modal-dialog-centered" role="document">
 	    <div class="modal-content">
@@ -230,6 +241,7 @@
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/multiWindowsControl.js"></script>
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/multiWindowsCommit.js"></script>
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.EditMWindow.js"></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.FullMWindow.js"></script>
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.LayoutXMWindow.js"></script>
 
 </body>

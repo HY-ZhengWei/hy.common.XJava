@@ -3,6 +3,7 @@ var v_ContentIDClick = "";                   /* 当前点击选择的内容组�
 var v_ContentIDNull  = "";                   /* 当前点击选择的预留空白组件的ID */
 var v_ContentIDMove  = "";                   /* 鼠标移动选择的内容组件的ID */
 var v_IsSettingMW    = false;                /* 是否在设置多窗口模式 */
+var v_IsFullMW       = false;                /* 是否在设置全屏显示模式 */
 var v_HVSize         = 0;                    /* 横向、纵向分割栏的高度或宽度 */
 var v_MWindowTop     = 0;
 var v_MWindowBottom  = 0;
@@ -75,7 +76,7 @@ var v_MWindowHDrag   = d3.drag()
 
 var v_MWindowVDrag = d3.drag()
 .on("start" ,function()
-{ 
+{
 	var v_V     = d3.select(this);
 	var v_Left  = d3.select("#" + v_V.attr("data-left")); 
 	var v_Right = d3.select("#" + v_V.attr("data-right"));
@@ -680,6 +681,25 @@ function registerMWindowVEvents()
 
 
 /**
+ * 退出全屏控制模式
+ *
+ * ZhengWei(HY) Add 2019-08-22
+ */
+function exitFullControl()
+{
+	v_IsFullMW = false;
+	
+	d3.select("#MWindowBody_Control").style("z-index" ,99999900);
+	
+	d3.select("#MWindowBody").selectAll(".MWindowContent")
+	.style("opacity" ,0.5)
+	.transition().duration(500)
+	.style("opacity" ,1);
+}
+
+
+
+/**
  * 注册“控制层”组件的事件
  * 
  * i_MWControl  控制层组件
@@ -689,10 +709,22 @@ function registerMWindowVEvents()
 function registerMWControlEvents(i_MWControl)
 {
 	i_MWControl
+	.on("contextmenu" ,function()
+	{
+		exitFullControl();
+	})
 	.on("click" ,function()
 	{
 		v_ContentIDClick = d3.select(this).attr("id").replace("_Control" ,"");
-		showEditMWindowDialog();
+		if ( v_IsFullMW )
+		{
+			exitFullControl();
+			showFullMWindowDialog();
+		}
+		else
+		{
+			showEditMWindowDialog();
+		}
 		clearnMWindowsMenus(1);
 	})
 	.on("mouseover" ,function()
@@ -704,6 +736,12 @@ function registerMWControlEvents(i_MWControl)
 			d3.select(this)
 			.style("opacity"          ,0.5)
 			.style("background-color" ,"red");
+		}
+		else if ( v_IsFullMW )
+		{
+			d3.select(this)
+			.style("opacity"          ,0.5)
+			.style("background-color" ,"green");
 		}
 	})
 	.on("mouseout" ,function()

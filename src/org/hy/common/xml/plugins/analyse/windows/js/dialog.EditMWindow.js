@@ -23,7 +23,7 @@ $("#editMWindowDialog [data-toggle='tooltip']").tooltip();
  */
 function showEditMWindowDialog()
 {
-	var v_EditMW     = d3.select("#" + v_ContentIDClick)
+	var v_EditMW     = d3.select("#" + v_ContentIDClick);
 	var v_Width      = v_EditMW.style("width");
 	var v_Height     = v_EditMW.style("height");
 	var v_LockWidth  = v_EditMW.attr("data-lockWidth");
