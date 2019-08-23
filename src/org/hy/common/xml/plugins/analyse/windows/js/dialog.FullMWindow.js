@@ -24,6 +24,8 @@ function fullShowing()
 		d3.select("#fullMWindowDialog").select("iframe").attr("src" ,d3.select("#" + v_ContentIDClick).attr("data-url"));
 		d3.select(".fullMWindowDialogClose").style("display" ,"inline");
 		v_Timer.stop();
+		
+		disallowGoBack();
 	}
 }
 
@@ -50,6 +52,8 @@ function fullHiding()
 		
 		v_SizeToSmall = 100;
 		v_Timer.stop(); 
+		
+		enableGoBack();
 	}
 }
 
@@ -107,3 +111,46 @@ d3.select(".fullMWindowDialogClose")
 {
 	d3.select(this).classed("fullMWindowDialogCloseSelected" ,false);
 });
+
+
+
+
+/**
+ * 启用浏览器的后退
+ * 
+ * ZhengWei(HY) Add 2019-08-23
+ */
+function enableGoBack() 
+{
+    window.removeEventListener('popstate' ,noGoBack);
+}
+
+
+
+/**
+ * 停用后退
+ * 
+ * ZhengWei(HY) Add 2019-08-23
+ */
+function noGoBack() 
+{
+    history.pushState(null, null, document.URL);
+}
+
+
+
+/**
+ * 禁用浏览器的后退
+ * 
+ * ZhengWei(HY) Add 2019-08-23
+ */
+function disallowGoBack() 
+{
+	noGoBack();
+	window.addEventListener('popstate' ,noGoBack);
+}
+
+
+
+
+
