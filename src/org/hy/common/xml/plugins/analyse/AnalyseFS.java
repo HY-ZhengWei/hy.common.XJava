@@ -317,7 +317,7 @@ public class AnalyseFS extends Analyse
             else if ( v_FReport.getClusterHave().size() == v_SCount )
             {
                 v_RKey.put(":PromptClusterHave" ,"");
-                v_RKey.put(":ClusterHave"       ,v_FReport.isClusterSameSize() ? "全有" : "<font color='orange'>有差异</font>");
+                v_RKey.put(":ClusterHave"       ,v_FReport.isClusterSameSize() || v_FReport.isDirectory() ? "全有" : "<font color='orange'>有差异</font>");
                 v_RKey.put(":HIP"               ,"");
             }
             else
