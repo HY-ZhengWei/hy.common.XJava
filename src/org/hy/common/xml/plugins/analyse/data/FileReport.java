@@ -21,6 +21,7 @@ import org.hy.common.xml.SerializableDef;
  * @author      ZhengWei(HY)
  * @createDate  2018-03-11
  * @version     v1.0
+ *              v2.0  2019-08-26  添加：集群中的文件是否大小都相同
  */
 public class FileReport extends SerializableDef
 {
@@ -49,28 +50,37 @@ public class FileReport extends SerializableDef
     /** 大小 */
     private long         fileSize;
     
+    /** 集群中的文件是否大小都相同 */
+    private boolean      clusterSameSize;
+    
     /** 集群均有 */
     private List<String> clusterHave;
+    
+    /** 哪些集群没有 */
+    private List<String> clusterNoHave;
     
     
     
     public FileReport()
     {
-        this.hostName    = "";
-        this.clusterHave = new ArrayList<String>();
+        this.hostName        = "";
+        this.clusterSameSize = true;
+        this.clusterHave     = new ArrayList<String>();
     }
     
     
     
     public FileReport(String i_FatherPath ,File i_File)
     {
-        this.hostName    = "";
-        this.filePath    = i_FatherPath;
-        this.fileName    = i_File.getName();
-        this.fileSize    = i_File.length();
-        this.isDirectory = i_File.isDirectory();
-        this.lastTime    = new Date(i_File.lastModified()).getFull();
-        this.clusterHave = new ArrayList<String>();
+        this.hostName        = "";
+        this.filePath        = i_FatherPath;
+        this.fileName        = i_File.getName();
+        this.fileSize        = i_File.length();
+        this.isDirectory     = i_File.isDirectory();
+        this.lastTime        = new Date(i_File.lastModified()).getFull();
+        this.clusterSameSize = true;
+        this.clusterHave     = new ArrayList<String>();
+        this.clusterNoHave   = new ArrayList<String>();
         
         if ( this.isDirectory )
         {
@@ -259,6 +269,28 @@ public class FileReport extends SerializableDef
         this.clusterHave = clusterHave;
     }
 
+    
+    
+    /**
+     * 获取：哪些集群没有
+     */
+    public List<String> getClusterNoHave()
+    {
+        return clusterNoHave;
+    }
+
+    
+    
+    /**
+     * 设置：哪些集群没有
+     * 
+     * @param clusterNoHave 
+     */
+    public void setClusterNoHave(List<String> clusterNoHave)
+    {
+        this.clusterNoHave = clusterNoHave;
+    }
+
 
 
     /**
@@ -279,6 +311,28 @@ public class FileReport extends SerializableDef
     public void setFileType(String fileType)
     {
         this.fileType = fileType;
+    }
+
+
+    
+    /**
+     * 获取：集群中的文件是否大小都相同
+     */
+    public boolean isClusterSameSize()
+    {
+        return clusterSameSize;
+    }
+
+
+    
+    /**
+     * 设置：集群中的文件是否大小都相同
+     * 
+     * @param clusterSameSize 
+     */
+    public void setClusterSameSize(boolean clusterSameSize)
+    {
+        this.clusterSameSize = clusterSameSize;
     }
     
 }

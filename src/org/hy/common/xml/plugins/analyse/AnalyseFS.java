@@ -2,6 +2,7 @@ package org.hy.common.xml.plugins.analyse;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,9 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
  *              v5.0  2018-09-28  添加：集群计算文件或目录的大小。
  *              v6.0  2018-10-08  添加：集群或本机执行命令文件的功能。
  *              v7.0  2018-12-20  添加：集群查看操作系统的当前时间
+ *              v8.0  2019-08-26  添加：判定哪些服务没有部署文件
+ *                                添加：判定集群同名文件的大小是否均相同
+ *                                添加：返回失败服务IP的同时，也返回成功克隆文件的服务IP。
  */
 @Xjava
 public class AnalyseFS extends Analyse
@@ -65,6 +69,8 @@ public class AnalyseFS extends Analyse
      * @author      ZhengWei(HY)
      * @createDate  2018-03-11
      * @version     v1.0
+     *              v2.0  2019-08-26 添加：判定哪些服务没有部署文件
+     *                               添加：判定集群同名文件的大小是否均相同
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?FS=Y&FP=xxx
@@ -115,24 +121,58 @@ public class AnalyseFS extends Analyse
                                 for (Map.Entry<String ,FileReport> v_FR : v_TempTotal.entrySet())
                                 {
                                     FileReport v_FReport = v_Total.get(v_FR.getKey());
+                                    FileReport v_FRTemp  = v_FR.getValue();
                                     
                                     if ( v_FReport != null )
                                     {
                                         // 最后修改时间为：集群中的最后修改时间，才能保证多次刷新页面时，修改时间不会随机游走
-                                        if ( v_FR.getValue().getLastTime().compareTo(v_FReport.getLastTime()) >= 1 )
+                                        if ( v_FRTemp.getLastTime().compareTo(v_FReport.getLastTime()) >= 1 )
                                         {
-                                            v_FReport.setLastTime(v_FR.getValue().getLastTime());
+                                            v_FReport.setLastTime(v_FRTemp.getLastTime());
                                         }
+                                        
+                                        // 判定文件大小是否均相同
+                                        if ( v_FRTemp.getFileSize() != v_FReport.getFileSize() )
+                                        {
+                                            v_FReport.setClusterSameSize(false);
+                                        }
+                                        
                                         v_FReport.getClusterHave().add(v_Item.getKey().getHostName());
                                     }
                                     else
                                     {
-                                        v_FR.getValue().getClusterHave().add(v_Item.getKey().getHostName());
-                                        v_Total.put(v_FR.getKey() ,v_FR.getValue());
+                                        v_FRTemp.getClusterHave().add(v_Item.getKey().getHostName());
+                                        v_FRTemp.setClusterSameSize(true);
+                                        v_Total.put(v_FR.getKey() ,v_FRTemp);
                                     }
                                 }
                             }
                         }
+                    }
+                }
+                
+                // 判定哪些服务没有部署文件 2019-08-24
+                for (FileReport v_FR : v_Total.values())
+                {
+                    if ( !Help.isNull(v_FR.getClusterHave()) )
+                    {
+                        Map<String ,?> v_Haves = Help.toMap(v_FR.getClusterHave() ,(Map<String ,?>)null);
+                        if ( Help.isNull(v_FR.getClusterNoHave()) )
+                        {
+                            v_FR.setClusterNoHave(new ArrayList<String>());
+                        }
+                        
+                        for (ClientSocket v_Server : v_Servers)
+                        {
+                            if ( !v_Haves.containsKey(v_Server.getHostName()) )
+                            {
+                                v_FR.getClusterNoHave().add(v_Server.getHostName());
+                            }
+                        }
+                        
+                        Help.toSort(v_FR.getClusterNoHave());
+                        v_Haves.clear();
+                        v_Haves = null;
                     }
                 }
             }
@@ -277,7 +317,7 @@ public class AnalyseFS extends Analyse
             else if ( v_FReport.getClusterHave().size() == v_SCount )
             {
                 v_RKey.put(":PromptClusterHave" ,"");
-                v_RKey.put(":ClusterHave"       ,"全有");
+                v_RKey.put(":ClusterHave"       ,v_FReport.isClusterSameSize() ? "全有" : "<font color='orange'>有差异</font>");
                 v_RKey.put(":HIP"               ,"");
             }
             else
@@ -293,8 +333,10 @@ public class AnalyseFS extends Analyse
                 }
                 
                 Help.toSort(v_FReport.getClusterHave());
-                v_RKey.put(":PromptClusterHave" ,"资源存在的服务：\n\n" + StringHelp.toString(v_FReport.getClusterHave() ,"" ,"\n"));
-                v_RKey.put(":HIP"               ,StringHelp.toString(v_FReport.getClusterHave() ,""));
+                v_RKey.put(":PromptClusterHave" ,"资源存在的服务 ("   + v_FReport.getClusterHave().size()   + "台)：\n" + StringHelp.toString(v_FReport.getClusterHave()   ,"" ,"\n")
+                                               + "\n\n不存在的服务 (" + v_FReport.getClusterNoHave().size() + "台):\n"  + StringHelp.toString(v_FReport.getClusterNoHave() ,"" ,"\n"));
+                v_RKey.put(":HIP"  ,StringHelp.toString(v_FReport.getClusterHave() ,""));
+                v_RKey.put(":NoIP" ,StringHelp.toString(v_FReport.getClusterNoHave() ,""));
             }
             
             v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
@@ -631,6 +673,7 @@ public class AnalyseFS extends Analyse
      * @author      ZhengWei(HY)
      * @createDate  2018-03-14
      * @version     v1.0
+     *              v2.0  2019-08-26  添加：返回失败服务IP的同时，也返回成功克隆文件的服务IP。
      *
      * @param i_FilePath  路径
      * @param i_FileName  名称
@@ -654,6 +697,8 @@ public class AnalyseFS extends Analyse
             {
                 v_CloudLock = new File(v_File.toString() + $CloudLock); 
                 v_FileHelp.create(v_CloudLock.toString() ,Date.getNowTime().getFullMilli() ,"UTF-8");
+                List<String> v_FailIP = null;
+                List<String> v_SuccIP = null;
                 
                 if ( v_File.isDirectory() )
                 {
@@ -667,7 +712,8 @@ public class AnalyseFS extends Analyse
                     v_FileHelp.addReadListener(v_CloneListener);
                     v_FileHelp.getContentByte(v_SaveFile);
                     
-                    if ( Help.isNull(v_CloneListener.getHip()) )
+                    v_FailIP = v_CloneListener.getFailIP();
+                    if ( Help.isNull(v_FailIP) )
                     {
                         // 删除临时的打包文件
                         v_SaveFile.delete();
@@ -687,7 +733,16 @@ public class AnalyseFS extends Analyse
                     }
                     else
                     {
-                        return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_CloneListener.getHip() + "'}" ,"'" ,"\"");
+                        v_SuccIP = v_CloneListener.getSucceedfulIP();
+                        Help.toSort(v_FailIP);
+                        Help.toSort(v_SuccIP);
+                        
+                        return StringHelp.replaceAll("{'retCode':'1','retHIP':'"              + StringHelp.toString(v_FailIP ,"") 
+                                                                + "','retHIPSize':'"          + v_FailIP.size() 
+                                                                + "','retSucceedfulIP':'"     + StringHelp.toString(v_SuccIP ,"") 
+                                                                + "','retSucceedfulIPSize':'" + v_SuccIP.size() 
+                                                                + "'}" 
+                                                    ,"'" ,"\"");
                     }
                 }
                 else
@@ -696,9 +751,19 @@ public class AnalyseFS extends Analyse
                     v_FileHelp.addReadListener(v_CloneListener);
                     v_FileHelp.getContentByte(v_File);
                     
-                    if ( !Help.isNull(v_CloneListener.getHip()) )
+                    v_FailIP = v_CloneListener.getFailIP();
+                    if ( !Help.isNull(v_FailIP) )
                     {
-                        return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_CloneListener.getHip() + "'}" ,"'" ,"\"");
+                        v_SuccIP = v_CloneListener.getSucceedfulIP();
+                        Help.toSort(v_FailIP);
+                        Help.toSort(v_SuccIP);
+                        
+                        return StringHelp.replaceAll("{'retCode':'1','retHIP':'"              + StringHelp.toString(v_FailIP ,"") 
+                                                                + "','retHIPSize':'"          + v_FailIP.size() 
+                                                                + "','retSucceedfulIP':'"     + StringHelp.toString(v_SuccIP ,"") 
+                                                                + "','retSucceedfulIPSize':'" + v_SuccIP.size() 
+                                                                + "'}" 
+                                                    ,"'" ,"\"");
                     }
                 }
                 
@@ -716,10 +781,10 @@ public class AnalyseFS extends Analyse
                 }
             }
             
-            return StringHelp.replaceAll("{'retCode':'1','retHIP':''}" ,"'" ,"\"");
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'','retHIPSize':'','retSucceedfulIP':'','retSucceedfulIPSize':''}" ,"'" ,"\"");
         }
         
-        return StringHelp.replaceAll("{'retCode':'2'}" ,"'" ,"\"");
+        return StringHelp.replaceAll("{'retCode':'2','retHIP':'','retSucceedfulIP':''}" ,"'" ,"\"");
     }
     
     
@@ -1942,27 +2007,34 @@ public class AnalyseFS extends Analyse
     class CloneListener implements FileReadListener
     {
         
-        private String             savePath;
+        private String              savePath;
         
-        private FileDataPacket     dataPacket;
+        private FileDataPacket      dataPacket;
         
-        private List<ClientSocket> servers;
+        private List<ClientSocket>  servers;
         
-        private String             hip;
+        /** 克隆成功的服务IP */
+        private Map<String ,String> succeedfulIP;
         
-        private boolean            isClone;
+        /** 克隆异常的服务IP */
+        private Map<String ,String> failIP;
+        
+        private boolean             isClone;
         
         
         
         public CloneListener(String i_SavePath ,File i_File ,int i_BufferSize ,String i_HIP)
         {
-            this.hip        = "";
-            this.savePath   = i_SavePath;
-            this.isClone    = false;
-            this.dataPacket = new FileDataPacket();
-            this.dataPacket.setName(     i_File.getName());
-            this.dataPacket.setDataCount((int)Math.ceil(Help.division(i_File.length() , i_BufferSize)));
+            long v_Size       = i_File.length();
+            this.succeedfulIP = new HashMap<String ,String>();
+            this.failIP       = new HashMap<String ,String>();
+            this.savePath     = i_SavePath;
+            this.isClone      = false;
+            this.dataPacket   = new FileDataPacket();
+            this.dataPacket.setName(i_File.getName());
+            this.dataPacket.setDataCount((int)Math.ceil(Help.division(v_Size , i_BufferSize)));
             this.dataPacket.setDataNo(0);
+            this.dataPacket.setSize(v_Size);
             
             this.servers = Cluster.getClusters();
             removeHIP(this.servers ,i_HIP ,true);
@@ -1971,11 +2043,21 @@ public class AnalyseFS extends Analyse
         
         
         /**
-         * 获取：执行异常的服务IP
+         * 获取：克隆成功的服务IP
          */
-        public String getHip()
+        public List<String> getSucceedfulIP()
         {
-            return hip;
+            return Help.toListKeys(succeedfulIP);
+        }
+        
+        
+        
+        /**
+         * 获取：克隆异常的服务IP
+         */
+        public List<String> getFailIP()
+        {
+            return Help.toListKeys(failIP);
         }
         
 
@@ -2010,6 +2092,22 @@ public class AnalyseFS extends Analyse
             this.dataPacket.setDataNo(this.dataPacket.getDataNo() + 1);
             this.dataPacket.setDataByte(i_Event.getDataByte());
             
+            // 对已之前失败的服务，不再继续后面的克隆动作，这是为了性能。2019-08-26
+            if ( !Help.isNull(this.failIP) )
+            {
+                for (String v_HostName : this.failIP.keySet())
+                {
+                    for (int i=this.servers.size() - 1; i>=0; i--)
+                    {
+                        if ( v_HostName.equals(this.servers.get(i).getHostName()) )
+                        {
+                            this.servers.remove(i);
+                            break;
+                        }
+                    }
+                }
+            }
+            
             int    v_ExecRet  = 0;
             String v_HostName = "";
             
@@ -2031,6 +2129,7 @@ public class AnalyseFS extends Analyse
                             if ( v_UploadValue == FileHelp.$Upload_Finish )
                             {
                                 v_ExecRet++;
+                                this.succeedfulIP.put(v_HostName ,v_HostName);
                             }
                             else if ( v_UploadValue == FileHelp.$Upload_GoOn )
                             {
@@ -2038,36 +2137,25 @@ public class AnalyseFS extends Analyse
                             }
                             else 
                             {
-                                if ( !Help.isNull(hip) )
-                                {
-                                    hip += ",";
-                                }
-                                hip += v_HostName;
+                                this.failIP.put(v_HostName ,v_HostName);
                             }
                         }
                     }
                     else
                     {
-                        if ( !Help.isNull(hip) )
-                        {
-                            hip += ",";
-                        }
-                        hip += v_HostName;
+                        this.failIP.put(v_HostName ,v_HostName);
                     }
                 }
             }
             catch (Exception exce)
             {
-                if ( !Help.isNull(hip) )
-                {
-                    hip += ",";
-                }
-                hip += v_HostName + ":" + exce.getMessage();
-                
+                this.failIP.put(v_HostName ,v_HostName);
                 exce.printStackTrace();
             }
             
-            return v_ExecRet == this.servers.size();
+            // 当有任一服务成功克隆时，后续的克隆动作还是继续要做的。
+            // 只有当所有服务均异常时，才停止后续的克隆动作。
+            return v_ExecRet > 0;
         }
         
         
