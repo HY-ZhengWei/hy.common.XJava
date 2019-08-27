@@ -44,6 +44,7 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
  *              v8.0  2019-08-26  添加：判定哪些服务没有部署文件
  *                                添加：判定集群同名文件的大小是否均相同
  *                                添加：返回失败服务IP的同时，也返回成功克隆文件的服务IP。
+ *                                添加：“全体计算”功能，包括对集群目录大小的计算。
  */
 @Xjava
 public class AnalyseFS extends Analyse
@@ -56,9 +57,9 @@ public class AnalyseFS extends Analyse
     public static final String    $CloudLock = ".cloudlock";
     
     /** 允许对比查看文件内容的文件类型 */
-    public static final String [] $DiffTypes = new String[]{".xml" ,".txt" ,".json"    ,".properties" 
-                                                           ,".log" ,".out" ,".mf"      ,".jsp"  
-                                                           ,".js"  ,".css" ,".html"    ,".htm" 
+    public static final String [] $DiffTypes = new String[]{".xml" ,".txt" ,".json"    ,".ini"  ,".inf" ,".properties"
+                                                           ,".log" ,".out" ,".mf"      ,".md"
+                                                           ,".js"  ,".jsp" ,".css"     ,".htm" ,".html" ,".ftl" ,".svg" ,".map"
                                                            ,".sh"  ,".bat" ,".profile" ,".policy"};
     
     
@@ -210,7 +211,7 @@ public class AnalyseFS extends Analyse
         v_RKey.put(":No"                ,String.valueOf(++v_Index));
         v_RKey.put(":LastTime"          ,"-");
         v_RKey.put(":FileType"          ,"文件夹");
-        v_RKey.put(":FileSize"          ,"");
+        v_RKey.put(":FileSize"          ,"<a href='#' onclick='calcAllFileSize()'>全体计算</a>");
         v_RKey.put(":PromptClusterHave" ,"");
         v_RKey.put(":ClusterHave"       ,"-");
         v_RKey.put(":HIP"               ,"");
@@ -240,6 +241,7 @@ public class AnalyseFS extends Analyse
             Help.toSort(v_FReports ,"directory Desc" ,"fileNameToUpper" ,"lastTime Desc");
         }
         
+        List<String> v_FileNoNames = new ArrayList<String>();
         for (FileReport v_FReport : v_FReports)
         {
             v_RKey = new HashMap<String ,String>();
@@ -250,6 +252,9 @@ public class AnalyseFS extends Analyse
             
             StringBuilder v_Operate    = new StringBuilder();
             String        v_FileNoName = v_Index + ":" + v_FReport.getFileName();
+            
+            v_FileNoNames.add(v_FileNoName);
+            
             if ( v_FReport.isDirectory() )
             {
                 v_RKey.put(":FileName" ,"<a href='" + v_AUrl + "&FP=" + v_FReport.getFullName() + "'>" + v_FReport.getFileName() + "</a>");
@@ -261,7 +266,7 @@ public class AnalyseFS extends Analyse
             }
             else
             {
-                v_RKey.put(":FileSize" ,"<a href='#' onclick='calcFileSizeCluster(\"" + v_FileNoName + "\")'>" + StringHelp.getComputeUnit(v_FReport.getFileSize()) + "</a>");
+                v_RKey.put(":FileSize" ,"<a href='#' onclick='calcFileSizeCluster(\"" + v_FileNoName + "\" ,true)'>" + StringHelp.getComputeUnit(v_FReport.getFileSize()) + "</a>");
                 
                 v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='cloneFile(\"").append(v_FileNoName).append("\")'>集群克隆</a>");
                 
@@ -329,7 +334,7 @@ public class AnalyseFS extends Analyse
                 }
                 else
                 {
-                    v_RKey.put(":ClusterHave" ,"<font color='red'>他机有</font>");
+                    v_RKey.put(":ClusterHave" ,"<font color='red'>他服务有</font>");
                 }
                 
                 Help.toSort(v_FReport.getClusterHave());
@@ -367,14 +372,16 @@ public class AnalyseFS extends Analyse
         v_Goto += "<a href='#' onclick='getSystemTimeCluster()' style='color:#AA66CC'>集群时间</a>";
         
         return StringHelp.replaceAll(this.getTemplateShowFiles()
-                                    ,new String[]{":GotoTitle" ,":Title"          ,":HttpBasePath" ,":FPath" ,":Sort"    ,":cluster"             ,":SelectHIP"        ,":SelectLocalIP"        ,":Content"}
-                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,(i_Cluster ? "Y" : "") ,makeSelectHIP(null) ,makeSelectLocalIP(null) ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle" ,":Title"            ,":HttpBasePath" ,":FPath" ,":Sort"    ,":cluster"             ,":SelectHIP"        ,":SelectLocalIP"         ,":AllFileNoNames"                      ,":Content"}
+                                    ,new String[]{v_Goto       ,"Web文件资源管理器" ,i_BasePath      ,v_FPath  ,i_SortType ,(i_Cluster ? "Y" : "") ,makeSelectHIP(null) ,makeSelectLocalIP(null) ,StringHelp.toString(v_FileNoNames ,"") ,v_Buffer.toString()});
     }
     
     
     
     /**
      * 对比文件内容
+     * 
+     * 注：当本服务的文件不存在时，文件内容为空。
      * 
      * @author      ZhengWei(HY)
      * @createDate  2018-04-12
@@ -383,25 +390,23 @@ public class AnalyseFS extends Analyse
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_FPath           文件目录路径
      * @param  i_FName           文件名称
-     * @param  i_HIP             云服务器IP（前缀加有一个叹号!），如 !127.0.0.1
+     * @param  i_HIP             对比云服务器IP（前缀加有一个叹号!），如 !127.0.0.1。
+     *                           当为空时，只显示本地文件的内容。
      */
     public String diffFile(String i_BasePath ,String i_FPath ,String i_FName ,String i_HIP)
     {
-        String   v_FPath    = toWebHome(i_FPath);
-        File     v_File     = new File(toTruePath(i_FPath) + Help.getSysPathSeparator() + i_FName);
-        FileHelp v_FileHelp = new FileHelp();
-        String   v_HIP      = "";
-        
-        if ( !v_File.exists() || !v_File.isFile() )
-        {
-            return "文件不存在或不是一个文件！";
-        }
-        
-        String v_TextContent01 = "";
-        String v_TextContent02 = null;
+        String   v_FPath         = toWebHome(i_FPath);
+        File     v_File          = new File(toTruePath(i_FPath) + Help.getSysPathSeparator() + i_FName);
+        FileHelp v_FileHelp      = new FileHelp();
+        String   v_HIP           = "";
+        String   v_TextContent01 = "";
+        String   v_TextContent02 = "";
         try
         {
-            v_TextContent01 = v_FileHelp.getContent(v_File ,"UTF-8" ,true);
+            if ( v_File.exists() && v_File.isFile() )
+            {
+                v_TextContent01 = v_FileHelp.getContent(v_File ,"UTF-8" ,true);
+            }
             
             if ( !Help.isNull(i_HIP) )
             {
@@ -1538,7 +1543,8 @@ public class AnalyseFS extends Analyse
                     v_Size = v_File.length();
                 }
                 
-                return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size) 
+                return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size ,4) 
+                                           + "','fileByteSize':'" + v_Size
                                            + "','lastTime':'" + new Date(v_File.lastModified()).getFull() + "'}" ,"'" ,"\"");
             }
             catch (Exception exce)
@@ -1572,7 +1578,9 @@ public class AnalyseFS extends Analyse
         String              v_HIP     = "";
         int                 v_ExecRet = 0;
         List<ClientSocket>  v_Servers = Cluster.getClusters();
-        Map<String ,String> v_Sizes   = new HashMap<String ,String>();  
+        Map<String ,String> v_Sizes   = new HashMap<String ,String>(); 
+        String              v_FSize   = null;
+        Boolean             v_IsSame  = true;
         
         removeHIP(v_Servers ,i_HIP ,false);
         
@@ -1595,8 +1603,19 @@ public class AnalyseFS extends Analyse
                         {
                             v_ExecRet++;
                             String v_FileSize = StringHelp.getString(v_RetValue ,"'fileSize':'" ,"'");
+                            String v_ByteSize = StringHelp.getString(v_RetValue ,"'fileByteSize':'" ,"'");
                             String v_LastTime = StringHelp.getString(v_RetValue ,"'lastTime':'" ,"'");
+                            
                             v_Sizes.put(v_Item.getKey().getHostName() ,v_FileSize + "," + v_LastTime);
+                            
+                            if ( v_FSize == null )
+                            {
+                                v_FSize = Help.NVL(v_ByteSize ,v_FileSize);
+                            }
+                            else if ( !v_FSize.equals(Help.NVL(v_ByteSize ,v_FileSize)) )
+                            {
+                                v_IsSame = false;
+                            }
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'" ,"'retCode':'2'") )
                         {
@@ -1640,13 +1659,19 @@ public class AnalyseFS extends Analyse
                         .append(v_Values[1])
                         .append("</td></tr>");
             }
-            v_Buffer.append("</table>'");
+            v_Buffer.append("</table>");
             
-            return StringHelp.replaceAll("{'retCode':'0'," + v_Buffer.toString() + "}" ,"'" ,"\"");
+            return StringHelp.replaceAll("{'retCode':'0'," + v_Buffer.toString()
+                                       + "','clusterInfo':'" + (v_ExecRet==v_Servers.size() && v_IsSame ? "全有" : "有差异")
+                                       + "'}" ,"'" ,"\"");
         }
         else
         {
-            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+            File v_File = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
+            
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP 
+                                       + "','clusterInfo':'" + (v_File.exists() ? "本服务有" : "他服务有")
+                                       + "'}" ,"'" ,"\"");
         }
     }
     

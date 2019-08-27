@@ -106,17 +106,7 @@ body {
 	            <div class="userInfoModify_Operate_Other"></div>
      	    </div> 
    		
-    		:Content 
-    		
-    		<div class="userInfoModify_clearTag1">
-	            <div class="userInfoModify_labeTag2"></div>
-	            <div class="userInfoModify_FileName_Other"></div>
-	            <div class="userInfoModify_LastTime_Other"></div>
-	            <div class="userInfoModify_FileType_Other"></div>
-	            <div class="userInfoModify_FileSize_Other"></div>
-	            <div class="userInfoModify_ClusterHave_Other"></div>
-	            <div class="userInfoModify_Operate_Other"></div>
-     	    </div> 
+    		:Content
    		</div>
    		
 
@@ -479,6 +469,7 @@ function getSystemTimeCluster()
 			     ,"SYSTEM-TIME-C"
 			     ,function (i_Ret)
 			     {
+			    	v_Loading.dialog("close");
 					if ( i_Ret.retCode == "0" )
 					{
 						f_ShowMsg("消息" ,"各服务器的当前系统时间为：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
@@ -520,33 +511,77 @@ function calcFileSize(i_File)
 					}
 			     });
 	
-	calcFileSizeCluster(i_File);
+	calcFileSizeCluster(i_File ,true);
 }
 
 
 
-function calcFileSizeCluster(i_File)
+function calcFileSizeCluster(i_File ,i_IsMsg)
 {
 	var v_FileNo   = i_File.split(":")[0];
 	var v_FileName = i_File.split(":")[1];
 	var v_HIP      = $("#HIP_" + v_FileNo).val();
+	var v_Loading  = null;
 	
-	var v_Loading = f_ShowLoading("消息" ,"正在计算中，请耐心等待。" ,v_Height_Msg);
+	if ( i_IsMsg )
+	{
+		v_Loading = f_ShowLoading("消息" ,"正在计算中，请耐心等待。" ,v_Height_Msg);
+	}
+	
+	$("#HCHave_" + v_FileNo).html("<font color='red'>计算中</font>");
+	
 	executeAction(v_FileName 
 			     ,v_HIP
 			     ,""
 			     ,"CALC-SIZE-C"
 			     ,function (i_Ret)
 			     {
+					if ( i_IsMsg )
+					{
+						v_Loading.dialog("close");
+					}
+					
 					if ( i_Ret.retCode == "0" )
 					{
-						f_ShowMsg("消息" ,"各服务器上的文件大小：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
+						if ( i_Ret.clusterInfo == "有差异" )
+						{
+							$("#HCHave_" + v_FileNo).html("<font color='orange'>" + i_Ret.clusterInfo + "</font>");
+						}
+						else if ( i_Ret.clusterInfo == "本服务有" || i_Ret.clusterInfo == "他服务有" )
+						{							$("#HCHave_" + v_FileNo).html("<font color='red'>" + i_Ret.clusterInfo + "</font>");
+						}
+						else
+						{
+							$("#HCHave_" + v_FileNo).html(i_Ret.clusterInfo);
+						}
+						
+						if ( i_IsMsg )
+						{
+							f_ShowMsg("消息" ,"各服务器上的文件大小：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
+						}
 					}
 					else if ( i_Ret.retCode == "1" )
 					{
-						f_ShowMsg("消息" ,"以下服务器未能成功计算文件大小！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
+						$("#HCHave_" + v_FileNo).html("<font color='red'>异常</font>");
+						
+						if ( i_IsMsg )
+						{
+							f_ShowMsg("消息" ,"以下服务器未能成功计算文件大小！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
+						}
 					}
 			     });
+}
+
+
+
+function calcAllFileSize()
+{
+	var v_FileNoNames = ':AllFileNoNames'.split(",");
+	
+	for (var i=0; i<v_FileNoNames.length; i++)
+	{
+		calcFileSizeCluster(v_FileNoNames[i] ,false);
+	}
 }
 
 
@@ -1097,6 +1132,18 @@ else
 {
 	$("#Title_FileName").html("↓" + $("#Title_FileName").html());
 }
+
+
+
+$(".userInfoModify_clearTag1")
+.mouseover(function()
+{
+	$(this).children("div").css("background-color" ,"#D5DDF6");	
+})
+.mouseout(function()
+{
+	$(this).children("div").css("background-color" ,"white");	
+});
 </script>
 
 </body>
