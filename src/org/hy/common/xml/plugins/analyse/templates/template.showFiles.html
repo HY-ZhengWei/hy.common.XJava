@@ -88,7 +88,7 @@ body {
 	          <div class="userInfoModify_LastTime_Title"><a id="Title_LastTime" href="#" style='color:#AA66CC'>修改时间</a></div>
 	          <div class="userInfoModify_FileType_Title"><a id="Title_FileType" href="#" style='color:#AA66CC'>类型</a></div>
 	          <div class="userInfoModify_FileSize_Title"><a id="Title_FileSize" href="#" style='color:#AA66CC'>大小</a></div>
-	          <div class="userInfoModify_ClusterHave_Title">集群均有</div>
+	          <div class="userInfoModify_ClusterHave_Title">集群情况</div>
 	          <div class="userInfoModify_Operate_Title">操作</div>
 	      </div> 
 		 
@@ -159,7 +159,7 @@ function cloneFileAction(i_FileName ,i_HIP)
 					v_Loading.dialog("close");
 					if ( i_Ret.retCode == "0" )
 					{
-						f_Goto();
+						f_ShowMsg("消息" ,"成功克隆资源 <b>" + i_FileName + "</b>。" ,v_Height_Msg);
 					}
 					else if ( i_Ret.retCode == "1" )
 					{
@@ -237,7 +237,7 @@ function cloneFile(i_File)
 			             + "<br><br>:SelectHIP"
 			             + "<br><br>:SelectLocalIP<br><br>"
 			             + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>")
-			             + "<br><br>以下是没有资源的服务"
+			             + "<br><br>以下是没有资源的服务<br>"
 			             + f_ReplaceAll(v_NoIP ,"," ,"<br>");
 		}
 		
@@ -357,7 +357,7 @@ function executeCommandAction(i_FileName ,i_HIP ,i_IsCluster)
 					}
 					else if ( i_Ret.retCode == "2" )
 					{
-						f_ShowMsg("消息" ,"本机未能成功执行！文件不存在或者不是文件。" ,v_Height_Msg);
+						f_ShowMsg("消息" ,"本服务未能成功执行！文件不存在或者不是文件。" ,v_Height_Msg);
 					}
 			     });
 }
@@ -387,7 +387,7 @@ function executeCommand(i_File)
 		             + "<br><br>:SelectHIP"
 		             + "<br><br>:SelectLocalIP<br><br>"
 		             + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>")
-		             + "<br><br>以下是没有资源的服务"
+		             + "<br><br>以下是没有资源的服务<br>"
 			         + f_ReplaceAll(v_NoIP ,"," ,"<br>");
 	}
 	
@@ -483,7 +483,7 @@ function getSystemTimeCluster()
 
 
 
-function calcFileSize(i_File)
+function calcFileSize(i_File ,i_IsMsg)
 {
 	var v_FileNo   = i_File.split(":")[0];
 	var v_FileName = i_File.split(":")[1];
@@ -498,20 +498,23 @@ function calcFileSize(i_File)
 			     {
 					if ( i_Ret.retCode == "0" )
 					{
-						$("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\")' title='重新计算'>" + i_Ret.fileSize + "</a>");
+						$("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\" ,true)' title='重新计算'>" + i_Ret.fileSize + "</a>");
 					}
 					else if ( i_Ret.retCode == "1" )
 					{
-						$("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\")' title='重新计算'>重新计算</a>");
+						$("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\" ,true)' title='重新计算'>重新计算</a>");
 					}
 					else if ( i_Ret.retCode == "2" )
 					{
-						$("#HFSize_" + v_FileNo).html("");
-						f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
+						$("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\" ,true)' title='重新计算'><font color='red'>本服务无</font></a>");
+						if ( i_IsMsg )
+						{
+							f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
+						}
 					}
 			     });
 	
-	calcFileSizeCluster(i_File ,true);
+	calcFileSizeCluster(i_File ,i_IsMsg);
 }
 
 
@@ -528,7 +531,7 @@ function calcFileSizeCluster(i_File ,i_IsMsg)
 		v_Loading = f_ShowLoading("消息" ,"正在计算中，请耐心等待。" ,v_Height_Msg);
 	}
 	
-	$("#HCHave_" + v_FileNo).html("<font color='red'>计算中</font>");
+	$("#HCHave_" + v_FileNo).html("<font color='blue'>计算中</font>");
 	
 	executeAction(v_FileName 
 			     ,v_HIP
@@ -543,21 +546,25 @@ function calcFileSizeCluster(i_File ,i_IsMsg)
 					
 					if ( i_Ret.retCode == "0" )
 					{
-						if ( i_Ret.clusterInfo == "有差异" )
+						if ( i_Ret.clusterInfo == "全部相同" )
 						{
-							$("#HCHave_" + v_FileNo).html("<font color='orange'>" + i_Ret.clusterInfo + "</font>");
+							$("#HCHave_" + v_FileNo).html(i_Ret.clusterInfo);
 						}
-						else if ( i_Ret.clusterInfo == "本服务有" || i_Ret.clusterInfo == "他服务有" )
-						{							$("#HCHave_" + v_FileNo).html("<font color='red'>" + i_Ret.clusterInfo + "</font>");
+						else if ( i_Ret.clusterInfo == "有差异" || i_Ret.clusterInfo == "异常" )
+						{
+							$("#HCHave_" + v_FileNo).html("<font color='red'>" + i_Ret.clusterInfo + "</font>");
+						}
+						else if ( i_Ret.clusterInfo == "集群相同" || i_Ret.clusterInfo == "仅本服务有" )
+						{							$("#HCHave_" + v_FileNo).html("<font color='orange'>" + i_Ret.clusterInfo + "</font>");
 						}
 						else
 						{
-							$("#HCHave_" + v_FileNo).html(i_Ret.clusterInfo);
+							$("#HCHave_" + v_FileNo).html("<font color='red'>" + i_Ret.clusterInfo + "</font>");
 						}
 						
 						if ( i_IsMsg )
 						{
-							f_ShowMsg("消息" ,"各服务器上的文件大小：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
+							f_ShowMsg("消息" ,"各服务器上的文件大小 (" + i_Ret.clusterSize + "台)：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
 						}
 					}
 					else if ( i_Ret.retCode == "1" )
@@ -580,7 +587,7 @@ function calcAllFileSize()
 	
 	for (var i=0; i<v_FileNoNames.length; i++)
 	{
-		calcFileSizeCluster(v_FileNoNames[i] ,false);
+		calcFileSize(v_FileNoNames[i] ,false);
 	}
 }
 
@@ -661,7 +668,7 @@ function zipFile(i_File)
 			v_Height     = v_Height_HIP;
 			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，确定压缩吗？<br><br>" 
 			             + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>")
-			             + "<br><br>以下是没有资源的服务"
+			             + "<br><br>以下是没有资源的服务<br>"
 			             + f_ReplaceAll(v_NoIP ,"," ,"<br>");
 		}
 		
@@ -779,7 +786,7 @@ function unZipFile(i_File)
 			v_Height     = v_Height_HIP;
 			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，解压会覆盖，确定解压吗？<br><br>" 
 			             + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>")
-			             + "<br><br>以下是没有资源的服务"
+			             + "<br><br>以下是没有资源的服务<br>"
 			             + f_ReplaceAll(v_NoIP ,"," ,"<br>");
 		}
 		
@@ -963,7 +970,7 @@ function reloadAction(i_FileName ,i_IsCluster)
 					v_Loading.dialog("close");
 					if ( i_Ret.retCode == "0" )
 					{
-						f_Goto();
+						f_ShowMsg("消息" ,"成功加载配置 <b>" + i_FileName + "</b>。" ,v_Height_Msg);
 					}
 					else if ( i_Ret.retCode == "1" )
 					{

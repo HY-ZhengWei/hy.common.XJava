@@ -258,7 +258,7 @@ public class AnalyseFS extends Analyse
             if ( v_FReport.isDirectory() )
             {
                 v_RKey.put(":FileName" ,"<a href='" + v_AUrl + "&FP=" + v_FReport.getFullName() + "'>" + v_FReport.getFileName() + "</a>");
-                v_RKey.put(":FileSize" ,"<a href='#' onclick='calcFileSize(\"" + v_FileNoName + "\")'>计算</a>");
+                v_RKey.put(":FileSize" ,"<a href='#' onclick='calcFileSize(\"" + v_FileNoName + "\" ,true)'>计算</a>");
                 
                 v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='cloneFile(\"").append(v_FileNoName).append("\")'>集群克隆</a>");
                 v_Operate.append(StringHelp.lpad("" ,4 ,"&nbsp;")).append("<a href='#' onclick='zipFile(\"").append(v_FileNoName).append("\")'>压缩</a>");
@@ -319,22 +319,33 @@ public class AnalyseFS extends Analyse
                 v_RKey.put(":ClusterHave"       ,"-");
                 v_RKey.put(":HIP"               ,"");
             }
-            else if ( v_FReport.getClusterHave().size() == v_SCount )
+            else if ( v_FReport.getClusterHave().size() == v_SCount && (v_FReport.isDirectory() || v_FReport.isClusterSameSize()))
             {
                 v_RKey.put(":PromptClusterHave" ,"");
-                v_RKey.put(":ClusterHave"       ,v_FReport.isClusterSameSize() || v_FReport.isDirectory() ? "全有" : "<font color='orange'>有差异</font>");
+                v_RKey.put(":ClusterHave"       ,"全有");
                 v_RKey.put(":HIP"               ,"");
             }
             else
             {
-                File v_File = new File(v_FReport.getFullName());
-                if ( v_File.exists() )
+                if ( v_FReport.getClusterHave().size() > 0 )
                 {
-                    v_RKey.put(":ClusterHave" ,"<font color='red'>本服务有</font>");
+                    v_RKey.put(":ClusterHave" ,"<font color='red'>有差异</font>");
+                }
+                else if ( v_FReport.getClusterNoHave().size() > 0 && v_FReport.getClusterNoHave().size() < v_SCount )
+                {
+                    v_RKey.put(":ClusterHave" ,"<font color='red'>有差异</font>");
                 }
                 else
                 {
-                    v_RKey.put(":ClusterHave" ,"<font color='red'>他服务有</font>");
+                    File v_File = new File(v_FReport.getFullName());
+                    if ( v_File.exists() )
+                    {
+                        v_RKey.put(":ClusterHave" ,"<font color='red'>本服务有</font>");
+                    }
+                    else
+                    {
+                        v_RKey.put(":ClusterHave" ,"<font color='red'>他服务有</font>");
+                    }
                 }
                 
                 Help.toSort(v_FReport.getClusterHave());
@@ -733,6 +744,8 @@ public class AnalyseFS extends Analyse
                         }
                         else
                         {
+                            // 集群删除
+                            this.delFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP); 
                             return StringHelp.replaceAll(v_UnZipRet ,"'" ,"\"");
                         }
                     }
@@ -1073,9 +1086,9 @@ public class AnalyseFS extends Analyse
      */
     public String delFileByCluster(String i_FilePath ,String i_FileName ,String i_HIP)
     {
-        String             v_HIP     = "";
         int                v_ExecRet = 0;
         List<ClientSocket> v_Servers = Cluster.getClusters();
+        List<String>       v_FailIP  = new ArrayList<String>();
         
         removeHIP(v_Servers ,i_HIP ,false);
         
@@ -1100,11 +1113,7 @@ public class AnalyseFS extends Analyse
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
                         {
-                            if ( !Help.isNull(v_HIP) )
-                            {
-                                v_HIP += ",";
-                            }
-                            v_HIP += v_Item.getKey().getHostName();
+                            v_FailIP.add(v_Item.getKey().getHostName());
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                         {
@@ -1114,11 +1123,7 @@ public class AnalyseFS extends Analyse
                 }
                 else
                 {
-                    if ( !Help.isNull(v_HIP) )
-                    {
-                        v_HIP += ",";
-                    }
-                    v_HIP += v_Item.getKey().getHostName();
+                    v_FailIP.add(v_Item.getKey().getHostName());
                 }
             }
         }
@@ -1129,7 +1134,7 @@ public class AnalyseFS extends Analyse
         }
         else
         {
-            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + StringHelp.toString(v_FailIP ,"") + "','retHIPSize':'" + v_FailIP.size() + "','retSucceedfulIP':'','retSucceedfulIPSize':'0'}" ,"'" ,"\"");
         }
     }
     
@@ -1331,9 +1336,9 @@ public class AnalyseFS extends Analyse
      */
     public String unZipFileByCluster(String i_FilePath ,String i_FileName ,String i_HIP)
     {
-        String             v_HIP     = "";
         int                v_ExecRet = 0;
         List<ClientSocket> v_Servers = Cluster.getClusters();
+        List<String>       v_FailIP  = new ArrayList<String>();
         
         removeHIP(v_Servers ,i_HIP ,false);
         
@@ -1358,11 +1363,7 @@ public class AnalyseFS extends Analyse
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
                         {
-                            if ( !Help.isNull(v_HIP) )
-                            {
-                                v_HIP += ",";
-                            }
-                            v_HIP += v_Item.getKey().getHostName();
+                            v_FailIP.add(v_Item.getKey().getHostName());
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                         {
@@ -1373,11 +1374,7 @@ public class AnalyseFS extends Analyse
                 }
                 else
                 {
-                    if ( !Help.isNull(v_HIP) )
-                    {
-                        v_HIP += ",";
-                    }
-                    v_HIP += v_Item.getKey().getHostName();
+                    v_FailIP.add(v_Item.getKey().getHostName());
                 }
             }
         }
@@ -1388,7 +1385,7 @@ public class AnalyseFS extends Analyse
         }
         else
         {
-            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + StringHelp.toString(v_FailIP ,"") + "','retHIPSize':'" + v_FailIP.size() + "','retSucceedfulIP':'','retSucceedfulIPSize':'0'}" ,"'" ,"\"");
         }
     }
     
@@ -1543,9 +1540,9 @@ public class AnalyseFS extends Analyse
                     v_Size = v_File.length();
                 }
                 
-                return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size ,4) 
-                                           + "','fileByteSize':'" + v_Size
-                                           + "','lastTime':'" + new Date(v_File.lastModified()).getFull() + "'}" ,"'" ,"\"");
+                return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size ,2) 
+                                           + "','fileByteSize':'"          + v_Size
+                                           + "','lastTime':'"              + new Date(v_File.lastModified()).getFull() + "'}" ,"'" ,"\"");
             }
             catch (Exception exce)
             {
@@ -1577,73 +1574,105 @@ public class AnalyseFS extends Analyse
     {
         String              v_HIP     = "";
         int                 v_ExecRet = 0;
+        int                 v_Error   = 0;
         List<ClientSocket>  v_Servers = Cluster.getClusters();
+        int                 v_SCount  = v_Servers.size();
         Map<String ,String> v_Sizes   = new HashMap<String ,String>(); 
         String              v_FSize   = null;
-        Boolean             v_IsSame  = true;
+        String              v_FBSize  = null;
+        boolean             v_IsSame  = true;
         
-        removeHIP(v_Servers ,i_HIP ,false);
-        
-        if ( !Help.isNull(v_Servers) )
+        try
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"calcFileSize" ,new Object[]{i_FilePath ,i_FileName} ,true ,"计算大小" + i_FileName);
+            removeHIP(v_Servers ,i_HIP ,false);
             
-            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            if ( !Help.isNull(v_Servers) )
             {
-                CommunicationResponse v_ResponseData = v_Item.getValue();
+                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"calcFileSize" ,new Object[]{i_FilePath ,i_FileName} ,true ,"计算大小" + i_FileName);
                 
-                if ( v_ResponseData.getResult() == 0 )
+                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
-                    if ( v_ResponseData.getData() != null )
-                    {
-                        String v_RetValue = v_ResponseData.getData().toString();
-                        v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
-                        
-                        if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
-                        {
-                            v_ExecRet++;
-                            String v_FileSize = StringHelp.getString(v_RetValue ,"'fileSize':'" ,"'");
-                            String v_ByteSize = StringHelp.getString(v_RetValue ,"'fileByteSize':'" ,"'");
-                            String v_LastTime = StringHelp.getString(v_RetValue ,"'lastTime':'" ,"'");
-                            
-                            v_Sizes.put(v_Item.getKey().getHostName() ,v_FileSize + "," + v_LastTime);
-                            
-                            if ( v_FSize == null )
-                            {
-                                v_FSize = Help.NVL(v_ByteSize ,v_FileSize);
-                            }
-                            else if ( !v_FSize.equals(Help.NVL(v_ByteSize ,v_FileSize)) )
-                            {
-                                v_IsSame = false;
-                            }
-                        }
-                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'" ,"'retCode':'2'") )
-                        {
-                            v_Sizes.put(v_Item.getKey().getHostName() ,"异常");
-                            
-                            if ( !Help.isNull(v_HIP) )
-                            {
-                                v_HIP += ",";
-                            }
-                            v_HIP += v_Item.getKey().getHostName();
-                        }
-                    }
-                }
-                else
-                {
-                    v_Sizes.put(v_Item.getKey().getHostName() ,"异常");
+                    CommunicationResponse v_ResponseData = v_Item.getValue();
                     
-                    if ( !Help.isNull(v_HIP) )
+                    if ( v_ResponseData.getResult() == 0 )
                     {
-                        v_HIP += ",";
+                        if ( v_ResponseData.getData() != null )
+                        {
+                            String v_RetValue = v_ResponseData.getData().toString();
+                            v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                            
+                            if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                            {
+                                v_ExecRet++;
+                                String v_FileSize  = StringHelp.getString(v_RetValue ,"'fileSize':'" ,"'");
+                                String v_ByteSize  = StringHelp.getString(v_RetValue ,"'fileByteSize':'" ,"'");
+                                String v_LastTime  = StringHelp.getString(v_RetValue ,"'lastTime':'" ,"'");
+                                
+                                if ( !Help.isNull(v_ByteSize) )
+                                {
+                                    if ( v_FBSize == null )
+                                    {
+                                        v_FBSize = v_ByteSize;
+                                    }
+                                    else if ( !v_FBSize.equals(v_ByteSize) )
+                                    {
+                                        v_IsSame = false;
+                                    }
+                                }
+                                else
+                                {
+                                    if ( v_FSize == null )
+                                    {
+                                        v_FSize = v_FileSize;
+                                    }
+                                    else if ( !v_FSize.equals(v_FileSize) )
+                                    {
+                                        v_IsSame = false;
+                                    }
+                                }
+                                
+                                if ( !Help.isNull(v_ByteSize) )
+                                {
+                                    v_ByteSize = StringHelp.getComputeUnit(Long.parseLong(v_ByteSize) ,4);
+                                }
+                                v_Sizes.put(v_Item.getKey().getHostName() ,Help.NVL(v_ByteSize ,v_FileSize) + "," + v_LastTime);
+                            }
+                            else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
+                            {
+                                v_Error++;
+                                v_Sizes.put(v_Item.getKey().getHostName() ,"异常");
+                                
+                                if ( !Help.isNull(v_HIP) )
+                                {
+                                    v_HIP += ",";
+                                }
+                                v_HIP += v_Item.getKey().getHostName();
+                            }
+                            else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
+                            {
+                                v_Sizes.put(v_Item.getKey().getHostName() ,"不存在");
+                                
+                                if ( !Help.isNull(v_HIP) )
+                                {
+                                    v_HIP += ",";
+                                }
+                                v_HIP += v_Item.getKey().getHostName();
+                            }
+                        }
                     }
-                    v_HIP += v_Item.getKey().getHostName();
+                    else
+                    {
+                        v_Sizes.put(v_Item.getKey().getHostName() ,"异常");
+                        
+                        if ( !Help.isNull(v_HIP) )
+                        {
+                            v_HIP += ",";
+                        }
+                        v_HIP += v_Item.getKey().getHostName();
+                    }
                 }
             }
-        }
-        
-        if ( v_ExecRet >= 1 )
-        {
+            
             v_Sizes = Help.toSort(v_Sizes);
             StringBuilder v_Buffer = new StringBuilder();
             
@@ -1661,16 +1690,64 @@ public class AnalyseFS extends Analyse
             }
             v_Buffer.append("</table>");
             
+            File   v_File        = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
+            String v_ClusterInfo = "";
+            if ( v_ExecRet >= 1 )
+            {
+                if ( v_ExecRet != v_SCount || !v_IsSame )
+                {
+                    v_ClusterInfo = "有差异";
+                }
+                else if ( !v_File.exists() )
+                {
+                    v_ClusterInfo = "集群相同";
+                }
+                else
+                {
+                    boolean v_IsLocalSame = false;  // 集群全有，并相同时，判定是否与本服务相同
+                    long    v_MyFileSize  = 0;
+                    
+                    if ( v_File.isDirectory() )
+                    {
+                        FileHelp v_FileHelp = new FileHelp();
+                        v_MyFileSize = v_FileHelp.calcSize(v_File);
+                    }
+                    else
+                    {
+                        v_MyFileSize = v_File.length();
+                    }
+                    
+                    if ( Help.isNull(v_FBSize) )
+                    {
+                        v_IsLocalSame = v_FSize.equals(StringHelp.getComputeUnit(v_MyFileSize));
+                    }
+                    else
+                    {
+                        v_IsLocalSame = v_FBSize.equals("" + v_MyFileSize);
+                    }
+                    
+                    v_ClusterInfo = (v_IsLocalSame ? "全部相同" : "集群相同");
+                }
+            }
+            else if ( v_Error >= 1 )
+            {
+                v_ClusterInfo = "异常";
+            }
+            else
+            {
+                v_ClusterInfo = "仅本服务有";
+            }
+            
             return StringHelp.replaceAll("{'retCode':'0'," + v_Buffer.toString()
-                                       + "','clusterInfo':'" + (v_ExecRet==v_Servers.size() && v_IsSame ? "全有" : "有差异")
+                                       + "','clusterInfo':'" + v_ClusterInfo
+                                       + "','clusterSize':'" + v_Sizes.size()
                                        + "'}" ,"'" ,"\"");
         }
-        else
+        catch (Exception exce)
         {
-            File v_File = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
-            
-            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP 
-                                       + "','clusterInfo':'" + (v_File.exists() ? "本服务有" : "他服务有")
+            exce.printStackTrace();
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "','clusterInfo':'异常'"
+                                       + ",'clusterSize':'" + v_Sizes.size()
                                        + "'}" ,"'" ,"\"");
         }
     }

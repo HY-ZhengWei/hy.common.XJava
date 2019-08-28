@@ -40,7 +40,7 @@ public class Cluster
      */
     public static long getClusterTimeout()
     {
-        return Long.parseLong(Help.NVL(Help.NVL(XJava.getParam("ClusterTimeout") ,new Param()).getValue() ,"30000"));
+        return Long.parseLong(Help.NVL(Help.NVL(XJava.getParam("ClusterTimeout") ,new Param()).getValue() ,"60000"));
     }
     
     
@@ -58,6 +58,7 @@ public class Cluster
     {
         String []          v_ClusterServers = Help.NVL(Help.NVL(XJava.getParam("ClusterServers") ,new Param()).getValue()).split(",");
         List<ClientSocket> v_Clusters       = new ArrayList<ClientSocket>();
+        int                v_Timeout        = (int)getClusterTimeout();
         
         if ( !Help.isNull(v_ClusterServers) )
         {
@@ -67,7 +68,11 @@ public class Cluster
                 {
                     String [] v_HostPort = (v_Server.trim() + ":1721").split(":");
                     
-                    v_Clusters.add(new ClientSocket(v_HostPort[0] ,Integer.parseInt(v_HostPort[1])));
+                    ClientSocket v_Clent = new ClientSocket(v_HostPort[0] ,Integer.parseInt(v_HostPort[1]));
+                    
+                    v_Clent.setTimeout(v_Timeout);
+                    
+                    v_Clusters.add(v_Clent);
                 }
             }
         }
