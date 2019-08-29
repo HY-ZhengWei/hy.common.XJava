@@ -728,12 +728,12 @@ public class AnalyseFS extends Analyse
                     v_FileHelp.addReadListener(v_CloneListener);
                     v_FileHelp.getContentByte(v_SaveFile);
                     
+                    // 删除临时的打包文件
+                    v_SaveFile.delete();
+                    
                     v_FailIP = v_CloneListener.getFailIP();
                     if ( Help.isNull(v_FailIP) )
                     {
-                        // 删除临时的打包文件
-                        v_SaveFile.delete();
-                        
                         // 集群解压
                         String v_UnZipRet = this.unZipFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP); 
                         v_UnZipRet = StringHelp.replaceAll(v_UnZipRet ,"\"" ,"'");
@@ -745,12 +745,15 @@ public class AnalyseFS extends Analyse
                         else
                         {
                             // 集群删除
-                            this.delFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP); 
+                            this.delFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP);
                             return StringHelp.replaceAll(v_UnZipRet ,"'" ,"\"");
                         }
                     }
                     else
                     {
+                        // 集群删除
+                        this.delFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP);
+                        
                         v_SuccIP = v_CloneListener.getSucceedfulIP();
                         Help.toSort(v_FailIP);
                         Help.toSort(v_SuccIP);
@@ -1572,19 +1575,23 @@ public class AnalyseFS extends Analyse
      */
     public String calcFileSizeCluster(String i_FilePath ,String i_FileName ,String i_HIP)
     {
-        String              v_HIP     = "";
-        int                 v_ExecRet = 0;
-        int                 v_Error   = 0;
-        List<ClientSocket>  v_Servers = Cluster.getClusters();
-        int                 v_SCount  = v_Servers.size();
-        Map<String ,String> v_Sizes   = new HashMap<String ,String>(); 
-        String              v_FSize   = null;
-        String              v_FBSize  = null;
-        boolean             v_IsSame  = true;
+        int                 v_ExecRet     = 0;
+        int                 v_Error       = 0;
+        List<ClientSocket>  v_Servers     = Cluster.getClusters();
+        int                 v_SCount      = v_Servers.size();
+        Map<String ,String> v_Sizes       = new HashMap<String ,String>(); 
+        String              v_FSize       = null;
+        String              v_FBSize      = null;
+        boolean             v_IsSame      = true;
+        StringBuilder       v_Buffer      = new StringBuilder();
+        String              v_ClusterInfo = "";
+        String              v_RetCode     = "0";
         
         try
         {
-            removeHIP(v_Servers ,i_HIP ,false);
+            // 不启用下面的功能，因为克隆完成后，页面再向之前会整体刷新一次。
+            // 如果克隆前有部分服务器不存在，即i_HIP有值。克隆后两次调用此方法，会因i_HIP有值造成误报的问题。
+            // removeHIP(v_Servers ,i_HIP ,false);
             
             if ( !Help.isNull(v_Servers) )
             {
@@ -1640,60 +1647,25 @@ public class AnalyseFS extends Analyse
                             else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
                             {
                                 v_Error++;
-                                v_Sizes.put(v_Item.getKey().getHostName() ,"异常");
-                                
-                                if ( !Help.isNull(v_HIP) )
-                                {
-                                    v_HIP += ",";
-                                }
-                                v_HIP += v_Item.getKey().getHostName();
+                                v_Sizes.put(v_Item.getKey().getHostName() ,"异常,");
                             }
                             else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                             {
-                                v_Sizes.put(v_Item.getKey().getHostName() ,"不存在");
-                                
-                                if ( !Help.isNull(v_HIP) )
-                                {
-                                    v_HIP += ",";
-                                }
-                                v_HIP += v_Item.getKey().getHostName();
+                                v_Sizes.put(v_Item.getKey().getHostName() ,"不存在,");
                             }
                         }
                     }
                     else
                     {
-                        v_Sizes.put(v_Item.getKey().getHostName() ,"异常");
-                        
-                        if ( !Help.isNull(v_HIP) )
-                        {
-                            v_HIP += ",";
-                        }
-                        v_HIP += v_Item.getKey().getHostName();
+                        v_Error++;
+                        v_Sizes.put(v_Item.getKey().getHostName() ,"异常,");
                     }
                 }
             }
             
-            v_Sizes = Help.toSort(v_Sizes);
-            StringBuilder v_Buffer = new StringBuilder();
-            
-            v_Buffer.append("'datas':'<table>");
-            for (Map.Entry<String ,String> v_Item : v_Sizes.entrySet())
-            {
-                String [] v_Values = (v_Item.getValue() + ", ").split(",");
-                v_Buffer.append("<tr><td>")
-                        .append(v_Item.getKey())
-                        .append("</td><td>&nbsp;&nbsp;&nbsp;&nbsp;")
-                        .append(v_Values[0])
-                        .append("</td><td>&nbsp;&nbsp;&nbsp;&nbsp;")
-                        .append(v_Values[1])
-                        .append("</td></tr>");
-            }
-            v_Buffer.append("</table>");
-            
-            File   v_File        = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
-            String v_ClusterInfo = "";
             if ( v_ExecRet >= 1 )
             {
+                File v_File = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
                 if ( v_ExecRet != v_SCount || !v_IsSame )
                 {
                     v_ClusterInfo = "有差异";
@@ -1737,19 +1709,33 @@ public class AnalyseFS extends Analyse
             {
                 v_ClusterInfo = "仅本服务有";
             }
-            
-            return StringHelp.replaceAll("{'retCode':'0'," + v_Buffer.toString()
-                                       + "','clusterInfo':'" + v_ClusterInfo
-                                       + "','clusterSize':'" + v_Sizes.size()
-                                       + "'}" ,"'" ,"\"");
         }
         catch (Exception exce)
         {
             exce.printStackTrace();
-            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "','clusterInfo':'异常'"
-                                       + ",'clusterSize':'" + v_Sizes.size()
-                                       + "'}" ,"'" ,"\"");
+            v_RetCode     = "1";
+            v_ClusterInfo = "异常";
         }
+        
+        v_Sizes = Help.toSort(v_Sizes);
+        v_Buffer.append("'datas':'<table>");
+        for (Map.Entry<String ,String> v_Item : v_Sizes.entrySet())
+        {
+            String [] v_Values = (v_Item.getValue() + ", ").split(",");
+            v_Buffer.append("<tr><td>")
+                    .append(v_Item.getKey())
+                    .append("</td><td>&nbsp;&nbsp;&nbsp;&nbsp;")
+                    .append(v_Values[0])
+                    .append("</td><td>&nbsp;&nbsp;&nbsp;&nbsp;")
+                    .append(v_Values[1])
+                    .append("</td></tr>");
+        }
+        v_Buffer.append("</table>");
+        
+        return StringHelp.replaceAll("{'retCode':'" + v_RetCode + "'," + v_Buffer.toString()
+                                   + "','clusterInfo':'" + v_ClusterInfo
+                                   + "','clusterSize':'" + v_Sizes.size()
+                                   + "'}" ,"'" ,"\"");
     }
     
     

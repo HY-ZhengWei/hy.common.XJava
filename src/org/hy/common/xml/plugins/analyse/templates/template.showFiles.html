@@ -507,10 +507,6 @@ function calcFileSize(i_File ,i_IsMsg)
 					else if ( i_Ret.retCode == "2" )
 					{
 						$("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\" ,true)' title='重新计算'><font color='red'>本服务无</font></a>");
-						if ( i_IsMsg )
-						{
-							f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
-						}
 					}
 			     });
 	
@@ -573,9 +569,20 @@ function calcFileSizeCluster(i_File ,i_IsMsg)
 						
 						if ( i_IsMsg )
 						{
-							f_ShowMsg("消息" ,"以下服务器未能成功计算文件大小！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
+							f_ShowMsg("消息" ,"各服务器上的文件大小 (" + i_Ret.clusterSize + "台)：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
 						}
 					}
+					
+					var v_Title = i_Ret.datas;
+					v_Title = f_ReplaceAll(v_Title ,"<table>"  ,"");
+					v_Title = f_ReplaceAll(v_Title ,"</table>" ,"");
+					v_Title = f_ReplaceAll(v_Title ,"<tr>"     ,"");
+					v_Title = f_ReplaceAll(v_Title ,"</tr>"    ,"\n");
+					v_Title = f_ReplaceAll(v_Title ,"<td>"     ,"");
+					v_Title = f_ReplaceAll(v_Title ,"</td>"    ,"\t");
+					v_Title = f_ReplaceAll(v_Title ,"&nbsp;"   ," ");
+					
+					$("#HCPrompt_" + v_FileNo).attr("title" , v_Title);
 			     });
 }
 
