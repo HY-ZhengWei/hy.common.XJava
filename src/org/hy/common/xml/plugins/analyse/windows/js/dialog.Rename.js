@@ -1,22 +1,4 @@
 /**
- * App图标重命名 
- *
- * ZhengWei(HY) Add 2019-06-20
- */
-d3.select("#rename").on("click" ,function()
-{
-	hideAppMenu();
-	
-	if ( v_ContextG != null && v_ContextData != null )
-	{
-		$('#renameText').val(v_ContextData.appName);
-		$('#renameDialog').modal('show');
-	}
-});
-
-
-
-/**
  * App图标重命名的确定按钮的事件
  *
  * ZhengWei(HY) Add 2019-06-20

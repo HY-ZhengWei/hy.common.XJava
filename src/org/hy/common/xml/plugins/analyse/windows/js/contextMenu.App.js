@@ -1,3 +1,7 @@
+var v_AppMenus = null;
+
+
+
 /**
  * 鼠标右击App图标，显示右击菜单
  *
@@ -11,39 +15,58 @@ function appOnContextmenu(i_G ,i_Data)
 	hideAppDesktopMenu();
 	hideColorPicker();
 	hideWindowStartMenus(1);
+	hideAppMenu();
 	
-	if ( i_Data != null )
+	if ( i_Data != null && i_G != null )
 	{
-		d3.select("#copyApp-LI")         .classed("ui-state-disabled" ,false);
-		d3.select("#delApp-LI")          .classed("ui-state-disabled" ,false);
-		d3.select("#resizeMin-LI")       .classed("ui-state-disabled" ,(i_Data.sizeType == "min"));
-		d3.select("#resizeMiddle-LI")    .classed("ui-state-disabled" ,(i_Data.sizeType == "middle"));
-		d3.select("#resizeLongWidth-LI") .classed("ui-state-disabled" ,(i_Data.sizeType == "longWidth"));
-		d3.select("#resizeLongHeight-LI").classed("ui-state-disabled" ,(i_Data.sizeType == "longHeight"));
-		d3.select("#resizeMax-LI")       .classed("ui-state-disabled" ,(i_Data.sizeType == "max"));
-		d3.select("#rename-LI")          .classed("ui-state-disabled" ,false);
-		d3.select("#attribute-LI")       .classed("ui-state-disabled" ,false);
+		var v_MySize = v_Sizes[i_Data.sizeType];
+		var v_XY     = getGXY(i_G);
+		
+		for (var i=0; i<v_AppMenusSizeConfig.length; i++)
+		{
+			v_AppMenusSizeConfig[i].valid = true;
+		}
+		
+		if ( i_Data.sizeType == "max" )
+		{
+			v_XY[0] = Number(v_XY[0]) - 9;
+			v_XY[1] = Number(v_XY[1]) - 6;
+			v_AppMenusSizeConfig[1].valid = false;
+		}
+		else if ( i_Data.sizeType == "longWidth" )
+		{
+			v_XY[0] = Number(v_XY[0]) - 9;
+			v_XY[1] = Number(v_XY[1]) - 64;
+			v_AppMenusSizeConfig[2].valid = false;
+		}
+		else if ( i_Data.sizeType == "longHeight" )
+		{
+			v_XY[0] = Number(v_XY[0]) - 64;
+			v_XY[1] = Number(v_XY[1]) - 9;
+			v_AppMenusSizeConfig[3].valid = false;
+		}
+		else if ( i_Data.sizeType == "middle" )
+		{
+			v_XY[0] = Number(v_XY[0]) - 64;
+			v_XY[1] = Number(v_XY[1]) - 64;
+			v_AppMenusSizeConfig[4].valid = false;
+		}
+		else if ( i_Data.sizeType == "min" )
+		{
+			v_XY[0] = Number(v_XY[0]) - 92;
+			v_XY[1] = Number(v_XY[1]) - 92;
+			v_AppMenusSizeConfig[5].valid = false;
+		}
+		
+		
+		v_AppMenus = v_SVG.append("g");
+		createSmartContextMenu(v_AppMenus ,30 ,v_AppMenusConfig);
+		v_AppMenus.attr("transform", "translate(" + v_XY[0] + "," + v_XY[1] + ")");
+		
+		v_ContextMenu = true;
+		v_ContextG    = i_G;
+		v_ContextData = i_Data;
 	}
-	else
-	{
-		d3.select("#copyApp-LI")         .classed("ui-state-disabled" ,true);
-		d3.select("#delApp-LI")          .classed("ui-state-disabled" ,true);
-		d3.select("#resizeMin-LI")       .classed("ui-state-disabled" ,true);
-		d3.select("#resizeMiddle-LI")    .classed("ui-state-disabled" ,true);
-		d3.select("#resizeLongWidth-LI") .classed("ui-state-disabled" ,true);
-		d3.select("#resizeLongHeight-LI").classed("ui-state-disabled" ,true);
-		d3.select("#resizeMax-LI")       .classed("ui-state-disabled" ,true);
-		d3.select("#rename-LI")          .classed("ui-state-disabled" ,true);
-		d3.select("#attribute-LI")       .classed("ui-state-disabled" ,true);
-	}
-	
-	$("#appMenuBar").css("left" ,(d3.event.pageX) + "px");  
-	$("#appMenuBar").css("top"  ,(d3.event.pageY) + "px");
-	$("#appMenuBar").css("opacity" ,100);
-	
-	v_ContextMenu = true;
-	v_ContextG    = i_G;
-	v_ContextData = i_Data;
 }
 
 
@@ -51,14 +74,16 @@ function appOnContextmenu(i_G ,i_Data)
 /**
  * 隐藏App图标的右击菜单
  *
- * ZhengWei(HY) Add 2019-06-20
+ * ZhengWei(HY) Add 2019-09-02
  */
 function hideAppMenu()
 {
-	$("#appMenuBar").css("left" ,"-99999px");     
-	$("#appMenuBar").css("top"  ,"-99999px");
-	$("#appMenuBar").css("opacity" ,0);
-	
+	if ( v_AppMenus != null )
+	{
+		v_AppMenus.attr("transform", "translate(-99999,-99999)");
+		disposeSmartContextMenu(v_AppMenus);
+		v_AppMenus.remove();  /* 每次删除后重新创建的原因：为了保证永远在最上层 */
+	}
 	v_ContextMenu = false;
 }
 
@@ -67,9 +92,9 @@ function hideAppMenu()
 /**
  * 复制App图标
  *
- * ZhengWei(HY) Add 2019-06-21
+ * ZhengWei(HY) Add 2019-09-02
  */
-d3.select("#copyApp").on("click" ,function()
+function menuOnClickCopyApp()
 {
 	hideAppMenu();
 	
@@ -104,16 +129,16 @@ d3.select("#copyApp").on("click" ,function()
 		
 		commitWindowAppCreate(v_NewData);
 	}
-});
+}
 
 
 
 /**
  * 删除App图标
  *
- * ZhengWei(HY) Add 2019-06-21
+ * ZhengWei(HY) Add 2019-09-02
  */
-d3.select("#delApp").on("click" ,function()
+function menuOnClickDelApp()
 {
 	hideAppMenu();
 	
@@ -122,16 +147,16 @@ d3.select("#delApp").on("click" ,function()
 		$('#delAppTextDiv').html("确认删除 " + v_ContextData.appName + " ？");
 		$('#delAppDialog').modal('show');
 	}
-});
+}
 
 
 
 /**
  * App图标改颜色
  *
- * ZhengWei(HY) Add 2019-06-20
+ * ZhengWei(HY) Add 2019-09-02
  */
-d3.select("#reColor").on("click" ,function()
+function menuOnClickReColor()
 {
 	hideAppMenu();
 	
@@ -145,16 +170,52 @@ d3.select("#reColor").on("click" ,function()
 			commitWindowAppXXColorSize(v_ContextData);
 		});
 	}
-});
+}
+
+
+
+/**
+ * 显示App图标改变大小的聪明右击菜单 
+ *
+ * ZhengWei(HY) Add 2019-09-02
+ */
+function menuOnClickShowSize()
+{
+	v_ContextMenu = false;
+	disposeSmartContextMenu(v_AppMenus);
+	setTimeout(function()                /* 延时处理的原因：点击也会同时触发桌面的点击事件 */
+	{
+		createSmartContextMenu(v_AppMenus ,30 ,v_AppMenusSizeConfig);
+		v_ContextMenu = true;
+	} ,100);
+}
+
+
+
+/**
+ * App图标改变大小的聪明右击菜单的返回
+ *
+ * ZhengWei(HY) Add 2019-09-02
+ */
+function menuOnClickSizeGoBack()
+{
+	v_ContextMenu = false;
+	disposeSmartContextMenu(v_AppMenus);
+	setTimeout(function()                /* 延时处理的原因：点击也会同时触发桌面的点击事件 */
+	{
+		createSmartContextMenu(v_AppMenus ,30 ,v_AppMenusConfig);
+		v_ContextMenu = true;
+	} ,100);
+}
 
 
 
 /**
  * App图标改变大小 
  *
- * ZhengWei(HY) Add 2019-06-20
+ * ZhengWei(HY) Add 2019-09-02
  */
-d3.select("#resizeMin").on("click" ,function()
+function menuOnClickResizeMin()
 {
 	hideAppMenu();
 	
@@ -162,16 +223,16 @@ d3.select("#resizeMin").on("click" ,function()
 	{
 		changeAppSize(v_ContextG ,v_ContextData ,"min");
 	}
-});
+}
 
 
 
 /**
  * App图标改变大小 
  *
- * ZhengWei(HY) Add 2019-06-20
+ * ZhengWei(HY) Add 2019-09-02
  */
-d3.select("#resizeMiddle").on("click" ,function()
+function menuOnClickResizeMiddle()
 {
 	hideAppMenu();
 	
@@ -179,16 +240,16 @@ d3.select("#resizeMiddle").on("click" ,function()
 	{
 		changeAppSize(v_ContextG ,v_ContextData ,"middle");
 	}
-});
+}
 
 
 
 /**
  * App图标改变大小 
  *
- * ZhengWei(HY) Add 2019-06-20
+ * ZhengWei(HY) Add 2019-09-02
  */
-d3.select("#resizeLongWidth").on("click" ,function()
+function menuOnClickResizeLongWidth()
 {
 	hideAppMenu();
 	
@@ -196,16 +257,16 @@ d3.select("#resizeLongWidth").on("click" ,function()
 	{
 		changeAppSize(v_ContextG ,v_ContextData ,"longWidth");
 	}
-});
+}
 
 
 
 /**
  * App图标改变大小 
  *
- * ZhengWei(HY) Add 2019-06-20
+ * ZhengWei(HY) Add 2019-09-02
  */
-d3.select("#resizeLongHeight").on("click" ,function()
+function menuOnClickResizeLongHeight()
 {
 	hideAppMenu();
 	
@@ -213,16 +274,16 @@ d3.select("#resizeLongHeight").on("click" ,function()
 	{
 		changeAppSize(v_ContextG ,v_ContextData ,"longHeight");
 	}
-});
+}
 
 
 
 /**
  * App图标改变大小 
  *
- * ZhengWei(HY) Add 2019-06-20
+ * ZhengWei(HY) Add 2019-09-02
  */
-d3.select("#resizeMax").on("click" ,function()
+function menuOnClickResizeMax()
 {
 	hideAppMenu();
 	
@@ -230,17 +291,53 @@ d3.select("#resizeMax").on("click" ,function()
 	{
 		changeAppSize(v_ContextG ,v_ContextData ,"max");
 	}
-});
+}
+
+
+
+/**
+ * App图标重命名 
+ *
+ * ZhengWei(HY) Add 2019-09-02
+ */
+function menuOnClickRename()
+{
+	hideAppMenu();
+	
+	if ( v_ContextG != null && v_ContextData != null )
+	{
+		$('#renameText').val(v_ContextData.appName);
+		$('#renameDialog').modal('show');
+	}
+}
 
 
 
 /**
  * App的属性
  *
- * ZhengWei(HY) Add 2019-06-24
+ * ZhengWei(HY) Add 2019-09-02
  */
-d3.select("#attribute").on("click" ,function()
+function menuOnClickEditApp()
 {
 	hideAppMenu();
 	showEditAppDialog();
-});
+}
+
+
+
+var v_AppMenusConfig      = [{fontSize:16 ,onClick:menuOnClickEditApp  ,name:"编辑"} 
+                            ,{fontSize:14 ,onClick:menuOnClickRename   ,name:"重命名"} 
+                            ,{fontSize:14 ,onClick:menuOnClickReColor  ,name:"颜色"} 
+                            ,{fontSize:14 ,onClick:menuOnClickCopyApp  ,name:"复制"} 
+                            ,{fontSize:14 ,onClick:menuOnClickDelApp   ,name:"删除"}
+                            ,{fontSize:14 ,onClick:menuOnClickShowSize ,name:"大小"}];
+
+var v_AppMenusSizeConfig = [{fontSize:16 ,onClick:menuOnClickSizeGoBack       ,name:"返回"} 
+                           ,{fontSize:14 ,onClick:menuOnClickResizeMax        ,name:"大"} 
+                           ,{fontSize:14 ,onClick:menuOnClickResizeLongWidth  ,name:"宽"} 
+                           ,{fontSize:14 ,onClick:menuOnClickResizeLongHeight ,name:"高"} 
+                           ,{fontSize:14 ,onClick:menuOnClickResizeMiddle     ,name:"中"}
+                           ,{fontSize:14 ,onClick:menuOnClickResizeMin        ,name:"小"}];
+
+hideAppMenu();

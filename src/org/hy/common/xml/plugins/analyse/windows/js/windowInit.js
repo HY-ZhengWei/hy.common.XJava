@@ -13,9 +13,9 @@ var v_SVG = d3.select("body").select("svg")
 	{
 		hideAppMenu();
 		hideAppDesktopMenu();
+		hideColorPicker();
 	}
 	
-	hideColorPicker();
 	hideWindowStartMenus(1);
 })
 .on("contextmenu" ,function()
