@@ -28,6 +28,7 @@ import org.xml.sax.InputSource;
 import org.hy.common.ClassInfo;
 import org.hy.common.ClassReflect;
 import org.hy.common.Date;
+import org.hy.common.Des;
 import org.hy.common.ExpireMap;
 import org.hy.common.FieldReflect;
 import org.hy.common.Help;
@@ -42,6 +43,7 @@ import org.hy.common.TreeMap;
 import org.hy.common.TreeNode;
 import org.hy.common.XJavaID;
 import org.hy.common.app.Param;
+import org.hy.common.file.FileHelp;
 import org.hy.common.xml.annotation.XRequest;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.XTypeAnno;
@@ -83,6 +85,7 @@ import org.hy.common.xml.plugins.XSQLGroup;
  *              v1.11 2018-01-29  添加：对部分异常日志，添加更详细的说明。
  *              v1.12 2018-03-09  添加：将配置在XML配置文件中的ID值，自动赋值给Java实例对象。须实现接口 org.hy.common.XJavaID 才有效。
  *              v1.13 2018-05-04  添加：支持Setter方法重载情况下的XML解析赋值。
+ *              v1.14 2019-09-04  添加：支持XML配置中特定的属性加密，并且当为明文时，程序启后将自动重写为密文保存在配置中。建议人：邹德福
  */
 public final class XJava
 {
@@ -175,6 +178,14 @@ public final class XJava
      */
     private final static String                    $XML_OBJECT_NEWOBJECT         = "new";
     
+    /**
+     * 加密关键字。对涉密属性进行加密。
+     * 
+     * 当配置文件为明文时，自动变成密文。
+     * 当配置文件为官方时，解密后再赋值给对象的属性。
+     */
+    private final static String                    $XML_OBJECT_ENCRYPT           = "encrypt";
+    
     /** 
      * 真值才解释XJava。
      * 
@@ -259,6 +270,9 @@ public final class XJava
     
     /** 须替换的关键字。与$XML_Replace_Keys同义，但集合元素多一个$XML_CLASSPATH */
     private Map<String ,String>        replaces;
+    
+    /** 本次解析的加密信息。用完立即释放 */
+    private List<XJavaEncrypt>         encrypts;
 	
 	
     
@@ -302,6 +316,29 @@ public final class XJava
 		
 		return v_ParserXmlToJava.parserXml();
 	}
+	
+	
+	
+	/**
+	 * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
+	 * 
+	 * @author      ZhengWei(HY)
+	 * @createDate  2019-09-04
+	 * @version     v1.0
+	 *
+	 * @param i_XmlURL             XML配置文件的路径。可实现重写的相关功能
+	 * @param i_XMLString
+	 * @param i_ClassPath
+	 * @param i_TreeNodeRootKey
+	 * @return
+	 * @throws Exception
+	 */
+    public static Object parserXml(URL i_XmlURL ,String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey) throws Exception
+    {
+        XJava v_ParserXmlToJava = new XJava(i_XmlURL ,i_XMLString ,i_ClassPath ,i_TreeNodeRootKey);
+        
+        return v_ParserXmlToJava.parserXml();
+    }
 	
 	
 	
@@ -1291,12 +1328,42 @@ public final class XJava
 		this.xmlString       = null;
         this.packageNames    = null;
         
+        this.encrypts        = new ArrayList<XJavaEncrypt>();
         this.replaces        = new LinkedHashMap<String ,String>($XML_Replace_Keys);
         this.replaces.put($XML_CLASSPATH ,this.xmlClassPath);
 	}
 	
 	
 	
+	/**
+	 * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
+	 *
+	 * @author      ZhengWei(HY)
+	 * @createDate  2019-09-04
+	 * @version     v1.0
+	 *
+	 * @param i_XmlURL             XML配置文件的路径。可实现重写的相关功能
+	 * @param i_XMLString
+	 * @param i_ClassPath
+	 * @param i_TreeNodeRootKey
+	 */
+    private XJava(URL i_XmlURL ,String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey)
+    {
+        this(new ListMap<String ,String>() ,i_XMLString ,i_ClassPath ,i_TreeNodeRootKey);
+        this.xmlURL = i_XmlURL;
+    }
+    
+	
+	
+    /**
+     * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
+     * 
+     * @param i_XMLString
+     * @param i_ClassPath
+     * @param i_TreeNodeRootKey
+     * @return
+     * @throws Exception 
+     */
 	private XJava(String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey)
 	{
 		this(new ListMap<String ,String>() ,i_XMLString ,i_ClassPath ,i_TreeNodeRootKey);
@@ -1315,6 +1382,7 @@ public final class XJava
 		this.xmlString       = i_XMLString;
         this.packageNames    = null;
         
+        this.encrypts        = new ArrayList<XJavaEncrypt>();
         this.replaces        = new LinkedHashMap<String ,String>($XML_Replace_Keys);
         this.replaces.put($XML_CLASSPATH ,this.xmlClassPath);
 	}
@@ -1332,6 +1400,7 @@ public final class XJava
         this.xmlString       = null;
         this.packageNames    = Help.NVL(i_PackageNames ,new ArrayList<String>());
         
+        this.encrypts        = new ArrayList<XJavaEncrypt>();
         this.replaces        = new LinkedHashMap<String ,String>($XML_Replace_Keys);
     }
     
@@ -1964,7 +2033,7 @@ public final class XJava
 	    		}
 	    		else
 	    		{
-	    			// 没有import元素就不解释数据。直到有import元素为止，才丛import元素之后的位置开始解释
+	    			// 没有import元素就不解释数据。直到有import元素为止，丛import元素之后的位置开始解释
 	    			if ( this.imports.size() >= 1 )
 	    			{
 	    				if ( this.imports.containsKey(v_Node.getNodeName()) )
@@ -1986,6 +2055,7 @@ public final class XJava
 	    					
 	    					this.setInstance(v_Class ,v_Instance ,v_Node ,new TreeNode<XJavaObject>(this.treeNodeRootKey));
 	    					
+	    					overWriteXml();
 	    					
 	    					return v_Instance;
 	    				}
@@ -1995,6 +2065,63 @@ public final class XJava
     	}
     	
     	return null;
+	}
+	
+	
+	
+	/**
+	 * 重写XML。重写的原因主要是因为有对属性值的加密。
+	 * 
+	 * @author      ZhengWei(HY)
+	 * @createDate  2019-09-04
+	 * @version     v1.0
+	 *
+	 */
+	private void overWriteXml()
+	{
+	    try
+	    {
+    	    if ( this.xmlURL != null && !Help.isNull(this.encrypts) )
+            {
+                FileHelp      v_FileHelp = new FileHelp();
+                String        v_Content  = v_FileHelp.getContent(this.xmlURL ,"UTF-8" ,true);
+                String []     v_Rows     = v_Content.split("\r\n");
+                int           v_Index    = 0;
+                
+                for (int v_RI=0; v_RI<v_Rows.length; v_RI++)
+                {
+                    String v_Row = v_Rows[v_RI];
+                    
+                    if ( v_Row.indexOf($XML_OBJECT_ENCRYPT) >= 0 )
+                    {
+                        XJavaEncrypt v_XJE = this.encrypts.get(v_Index);
+                        String       v_Old = "<" + v_XJE.getNodeName() + " " + $XML_OBJECT_ENCRYPT + "=\"" + v_XJE.getEncrypt() + "\">" +                             v_XJE.getValue()        + "</" + v_XJE.getNodeName() + ">";
+                        String       v_New = "<" + v_XJE.getNodeName() + " " + $XML_OBJECT_ENCRYPT + "=\"" + v_XJE.getEncrypt() + "\">" + $XML_OBJECT_ENCRYPT + ":" + v_XJE.getValueEncrypt() + "</" + v_XJE.getNodeName() + ">";
+                        
+                        if ( v_Row.indexOf(v_Old) >= 0 )
+                        {
+                            v_Rows[v_RI] = StringHelp.replaceFirst(v_Row ,v_Old ,v_New);
+                            v_Index++;
+                            
+                            if ( v_Index >= this.encrypts.size() )
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if ( v_Index > 0 )
+                {
+                    v_FileHelp.setOverWrite(true);
+                    v_FileHelp.create(this.xmlURL ,v_Rows ,"UTF-8");
+                }
+            }
+	    }
+	    catch (Exception exce)
+	    {
+	        exce.printStackTrace();
+	    }
 	}
 	
 	
@@ -2070,6 +2197,56 @@ public final class XJava
         }
         
         return false;
+    }
+    
+    
+    
+    /**
+     * 加密属性值
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-09-04
+     * @version     v1.0
+     *
+     * @param i_SuperNode      父节点对象
+     * @param i_Node           本节点对象
+     * @param i_NodeValue      节点的数值
+     * @return
+     */
+    private Object encrypt(Node i_SuperNode ,Node i_Node ,Object i_NodeValue)
+    {
+        if ( i_NodeValue == null || Help.isNull(i_NodeValue.toString()) )
+        {
+            return i_NodeValue;
+        }
+        
+        String v_Encrypt = getNodeAttribute(i_Node ,$XML_OBJECT_ENCRYPT);
+        if ( Help.isNull(v_Encrypt) )
+        {
+            return i_NodeValue;
+        }
+        
+        String v_ID    = getNodeAttribute(i_SuperNode ,$XML_OBJECT_ID);
+        Des    v_Des   = new Des(Help.NVL(v_ID) + "-" + i_Node.getNodeName() + "-" + Help.NVL(v_Encrypt));
+        String v_Value = i_NodeValue.toString();
+        
+        if ( v_Value.startsWith($XML_OBJECT_ENCRYPT + ":") )
+        {
+            return v_Des.decrypt(v_Value.substring($XML_OBJECT_ENCRYPT.length() + 1));
+        }
+        else
+        {
+            XJavaEncrypt v_XJE = new XJavaEncrypt();
+            
+            v_XJE.setNodeName(    i_Node.getNodeName());
+            v_XJE.setSuperID(     v_ID);
+            v_XJE.setEncrypt(     v_Encrypt);
+            v_XJE.setValue(       v_Value);
+            v_XJE.setValueEncrypt(v_Des.encrypt(v_Value));
+            
+            this.encrypts.add(v_XJE);
+            return i_NodeValue;
+        }
     }
 	
 	
@@ -2477,6 +2654,7 @@ public final class XJava
 							if ( String.class == v_AttrClass )
 							{
 								String v_NodeValue = getNodeTextContent(v_Node);
+								v_NodeValue = (String)this.encrypt(i_SuperNode ,v_Node ,v_NodeValue);
 								v_AttrInstance = v_AttrClass.getConstructor(String.class).newInstance(StringHelp.replaceAll(v_NodeValue ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath));
 							}
 							else
@@ -2561,7 +2739,7 @@ public final class XJava
 							v_ParamValue = v_AttrInstance;
 						}
 						// 按树目录结构，获取子树目录中 XJava 解释过的所有实例化对象信息
-						else if ( v_SubmitMap.size() >= 1 )
+						else if ( !Help.isNull(v_SubmitMap) )
 						{
 							v_ParamValue = v_SubmitMap;
 						}
@@ -2597,6 +2775,7 @@ public final class XJava
 							}
 						}
 						
+						Object v_EncryptValue = this.encrypt(i_SuperNode ,v_Node ,v_ParamValue);
 						if ( Help.isNull(v_SetMethods) )
 						{
 						    // 对无Setter方法的成员属性赋值  ZhengWei(HY) Add 2017-11-24
@@ -2606,7 +2785,7 @@ public final class XJava
 						    {
 						        try
 						        {
-						            FieldReflect.set(v_Field ,io_SuperInstance ,v_ParamValue ,this.replaces);
+						            FieldReflect.set(v_Field ,io_SuperInstance ,v_EncryptValue ,this.replaces);
 						        }
 						        catch (Exception exce)
 	                            {
@@ -2662,7 +2841,7 @@ public final class XJava
 						    
 							try
 							{
-							    MethodReflect.invokeSet(v_SetMethod ,io_SuperInstance ,v_ParamValue ,this.replaces);
+							    MethodReflect.invokeSet(v_SetMethod ,io_SuperInstance ,v_EncryptValue ,this.replaces);
 							}
 							catch (Exception exce)
 							{

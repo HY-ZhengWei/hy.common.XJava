@@ -94,7 +94,7 @@ public abstract class BaseInterface
             
             if ( this.rtype == 1 )
             {
-                XJava.parserXml(v_FileHelp.getContent(this.getXD() ,this.getCharEncoding()) ,this.getClassPath() ,this.getNamingSpace());
+                XJava.parserXml(this.getXDUrl() ,v_FileHelp.getContent(this.getXD() ,this.getCharEncoding()) ,this.getClassPath() ,this.getNamingSpace());
             }
             else
             {
@@ -142,6 +142,30 @@ public abstract class BaseInterface
             return this.getXClass().getResourceAsStream(this.getXClass().getSimpleName() + v_EName + "d");
         }
 	}
+    
+    
+    
+    /**
+     * 获取XD文件的URL
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-09-04
+     * @version     v1.0
+     *
+     * @return
+     */
+    protected URL getXDUrl()
+    {
+        String v_EName = ".x";
+        if ( this.rtype == 1 )
+        {
+            return this.getXClass().getResource(this.getXClass().getSimpleName() + v_EName + "ml");
+        }
+        else
+        {
+            return this.getXClass().getResource(this.getXClass().getSimpleName() + v_EName + "d");
+        }
+    }
 	
 	
 	

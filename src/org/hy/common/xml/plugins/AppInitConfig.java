@@ -525,11 +525,11 @@ public class AppInitConfig
                                 if ( !Help.isNull(i_XmlRootPath) )
                                 {
                                     // ZhengWei(HY) Edit 2017-10-27 i_XmlRootPath处原先的传值为：""
-                                    XJava.parserXml(v_FileHelp.getContent(v_FFullName                                      ,this.enCode) ,i_XmlRootPath          ,v_XmlName);
+                                    XJava.parserXml(new File(v_FFullName).toURI().toURL()    ,v_FileHelp.getContent(v_FFullName                                      ,this.enCode) ,i_XmlRootPath          ,v_XmlName);
                                 }
                                 else
                                 {
-                                    XJava.parserXml(v_FileHelp.getContent(this.getClass().getResourceAsStream(v_FFullName) ,this.enCode) ,this.xjavaXmlClassPath ,v_XmlName);
+                                    XJava.parserXml(this.getClass().getResource(v_FFullName) ,v_FileHelp.getContent(this.getClass().getResourceAsStream(v_FFullName) ,this.enCode) ,this.xjavaXmlClassPath ,v_XmlName);
                                 }
                                 
                                 v_OK++;

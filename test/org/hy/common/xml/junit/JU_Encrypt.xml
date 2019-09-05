@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="xconfig"         class="java.util.ArrayList" />
+	<import name="xparam"          class="java.util.Hashtable" />
+	<import name="item"            class="org.hy.common.app.Param" />
+	
+	
+	
+	<!-- 系统配置参数信息 -->
+	<xconfig>
+		
+	    <xparam id="SYSParam" key="name">
+	    
+	        <item id="我的秘密01">
+	            <name>测试明文加密</name>
+				<value encrypt="org.hy.common.StringHelp">123456</value>
+				<comment>明文密码是123456</comment>
+	        </item>
+	        
+	        
+	        <item id="我的秘密02">
+	            <name>测试密文解密</name>
+				<value encrypt="org.hy.common.StringHelp">encrypt:ni4If3t2i+I=</value>
+				<comment>明文密码是123456</comment>
+	        </item>
+	        
+		</xparam>
+		
+	</xconfig>
+	
+</config>
