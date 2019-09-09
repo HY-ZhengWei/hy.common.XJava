@@ -10,6 +10,7 @@
 	padding-top: 1px;
 	padding-bottom: 1px;
 	z-index: 8000000;
+	opacity: 0.8;
 }
 
 .windowTask {

@@ -163,3 +163,29 @@ function commitWindowAppOpenCount(i_OpenApp)
 		{
 		});
 }
+
+
+
+/**
+ * 提交桌面的配置信息
+ * 
+ * @param i_DesktopBG
+ * @returns
+ * 
+ * ZhengWei(HY) Add 2019-09-06
+ */
+function commitDesktopBG(i_DesktopBG)
+{
+	if ( !v_IsCommit )
+	{
+		return;
+	}
+	
+	i_DesktopBG.userID = v_UserID;
+	
+	$.post("desktopBG.page"
+		   ,i_DesktopBG
+		   ,function(data)
+		   {
+		   });
+}

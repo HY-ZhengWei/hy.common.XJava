@@ -62,6 +62,20 @@ d3.select("#recovery").on("click" ,function()
 
 
 /**
+ * 桌面背景
+ *
+ * ZhengWei(HY) Add 2019-09-06
+ */
+d3.select("#desktopBG").on("click" ,function()
+{
+	hideAppDesktopMenu();
+	
+	showDesktopBGDialog();
+});
+
+
+
+/**
  * 隐藏桌面的右击菜单
  *
  * ZhengWei(HY) Add 2019-06-20
