@@ -189,3 +189,27 @@ function commitDesktopBG(i_DesktopBG)
 		   {
 		   });
 }
+
+
+
+/**
+ * 用户退出
+ * 
+ * @returns
+ * 
+ * ZhengWei(HY) Add 2019-09-09
+ */
+function commitLogout()
+{
+	if ( !v_IsCommit )
+	{
+		return;
+	}
+	
+	$.post("../login/logout.page"
+	,{}
+	,function(data)
+	{
+		window.location.href = "../home/index.page";
+	});
+}

@@ -45,6 +45,7 @@
 	margin: 0px;
 	display: flex;
 	flex-direction: row;
+	align-items: center;
 }
 
 .windowStartMenuIcon {
@@ -63,4 +64,71 @@
 .windowStartMenuNextLevel {
 	font-size: 12px; 
 	color: white;
+}
+
+.windowStartMenuLine {
+	border-bottom: 1px solid white;
+	width: 210px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+
+
+
+
+.windowStartMenuAccount {
+	width: 210px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	padding-left: 2px;
+	background-color: dimgray;
+	border: 1px solid dimgray;
+	margin: 0px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.windowStartMenuAccountIcon {
+	width: 45px;
+	height: 45px;
+	border: 0px;
+}
+
+.windowStartMenuAccountName {
+	color: white;
+	font-size: 16px;
+	margin-left: 8px; 
+	flex-grow: 1;
+}
+
+
+
+
+
+.windowStartMenuExit {
+	width: 210px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	padding-left: 2px;
+	background-color: dimgray;
+	border: 1px solid dimgray;
+	margin: 0px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.windowStartMenuExitIcon {
+	width: 32px;
+	height: 32px;
+	border: 0px;
+}
+
+.windowStartMenuExitName {
+	color: white;
+	font-size: 16px;
+	margin-left: 8px; 
+	flex-grow: 1;
 }

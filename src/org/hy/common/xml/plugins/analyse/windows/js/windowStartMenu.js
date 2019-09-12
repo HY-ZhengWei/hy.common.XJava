@@ -1,5 +1,6 @@
 var v_WindowStartMenuBGColor  = d3.select(".windowStartMenuBar").style("background-color"); /* 开始菜单的背景色 */         
 var v_MenuHeight              = 24 + 2 + 2 + 1;                                             /* 菜单的高度 */
+var v_MenuHeightLogout        = (v_UserID == "" ? 0 : 48);                                  /* 退出菜单的高度 */
 var v_WindowTasksBarHeight    = getWindowTasksBarHeight();                                  /* 任务栏的高度 */
 var v_WindowStartMenuMaxLevel = d3.selectAll(".windowStartMenuBar").size();                 /* 允许有多少层菜单 */
 var v_AppData                 = null;                                                       /* 当前点击选择的App数据 */
@@ -148,8 +149,13 @@ function createWindowStartMenus(i_StartMenus ,i_Bottom)
 				v_AfterCount = v_AfterCount;
 			}
 			
-			var v_Bottom = i_Bottom - v_WindowTasksBarHeight;
-			v_Bottom = v_Bottom + (v_AfterCount - d.childMenus.length) * v_MenuHeight + v_WindowTasksBarHeight + 1;
+			var v_Bottom = i_Bottom;
+			if ( v_Level == 1 )
+			{
+				v_Bottom += v_MenuHeightLogout;
+			}
+			
+			v_Bottom = v_Bottom + (v_AfterCount - d.childMenus.length) * v_MenuHeight - 3;
 			
 			if ( v_Bottom < v_WindowTasksBarHeight )
 			{
@@ -171,6 +177,67 @@ function createWindowStartMenus(i_StartMenus ,i_Bottom)
 		var v_MyDiv = d3.select(this);
 		createWindowStartMenu(d ,v_MyDiv);
 	});
+	
+	
+	/** 账户信息 */
+	var v_AccountBar = d3.select(".windowStartMenuAccount");
+	if ( !v_AccountBar.empty() )
+	{
+		v_AccountBar
+		.on("mouseover" ,function()
+		{
+			d3.select(this).style("border" ,"1px solid white");
+		})
+		.on("mouseout" ,function()
+		{
+			d3.select(this).style("border" ,"1px solid " + v_WindowStartMenuBGColor);
+		})
+		.on("click" ,function(d ,i)
+		{
+			
+		});
+		
+		
+		/** 退出菜单已存在时删除 */
+		var v_LogoutBar = d3.select(".windowStartMenuExit");
+		if ( !v_LogoutBar.empty() )
+		{
+			v_LogoutBar.remove();
+			d3.select("#windowStartMenuLineExit").remove();
+		}
+		
+		
+		/** 退出菜单的创建 */
+		var v_WSMLevelA = d3.select(".windowStartMenuBarLevel_1");
+		v_WSMLevelA.append("div")
+		.attr("id"    ,"windowStartMenuLineExit")
+		.attr("class" ,"windowStartMenuLine");
+		
+		v_LogoutBar = v_WSMLevelA.append("div")
+		.attr("class" ,"windowStartMenuExit")
+		.on("mouseover" ,function()
+		{
+			d3.select(this).style("border" ,"1px solid white");
+		})
+		.on("mouseout" ,function()
+		{
+			d3.select(this).style("border" ,"1px solid " + v_WindowStartMenuBGColor);
+		})
+		.on("click" ,function(d ,i)
+		{
+			clearnWindowStartMenus(1);
+			clearnWindowStartMenuSelected(1);
+			showLogoutDialog();
+		});
+		
+		v_LogoutBar.append("img")
+		.attr("class" ,"windowStartMenuExitIcon")
+		.attr("src" ,"images/exit.png");
+		
+		v_LogoutBar.append("label")
+		.attr("class" ,"windowStartMenuExitName")
+		.html("退出");
+	}
 }
 
 
