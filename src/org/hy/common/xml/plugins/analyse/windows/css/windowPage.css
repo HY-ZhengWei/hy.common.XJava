@@ -16,10 +16,10 @@
 
 .windowPageBodyControl {
 	position: absolute;
-	top: 30px;
+	top: 0px;
 	left: 0px;
 	width: 100%;
-	height: calc(100% - 30px);
+	height: 100%;
 	display: none;
 }
 

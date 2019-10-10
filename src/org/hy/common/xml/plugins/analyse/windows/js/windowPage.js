@@ -1,5 +1,19 @@
-var v_WindowPageMinWidth  = 260;                                /* 窗口改变大小时，允许最小宽度 */
-var v_WindowPageMinHeight = 30;                                 /* 窗口改变大小时，允许最小高度 */
+var v_WindowPageMinWidth    = 260;                                /* 窗口改变大小时，允许最小宽度 */
+var v_WindowPageMinHeight   = 30;                                 /* 窗口改变大小时，允许最小高度 */
+var v_WindowPageTitleHeight = getWindowPageTitleHeight();         /* 窗口标题的高度 */
+
+
+
+
+/**
+ * 获取窗口标题栏的高度
+ * 
+ * ZhengWei(HY) Add 2019-10-10
+ */
+function getWindowPageTitleHeight()
+{
+	return parseInt(d3.select("#windowPageTemplate").select(".windowPageHead").style("height").replace("px" ,"")) + 2;
+}
 
 
 
@@ -70,6 +84,7 @@ var v_WindowReSizeDrag_SE = d3.drag()
 	if ( d3.event.y >= v_WindowPageMinHeight )
 	{
 		v_WindowPage.style("height", d3.event.y + "px");
+		v_WindowPage.select(".windowPageBody").style("height" ,(d3.event.y - v_WindowPageTitleHeight) + "px");
 	}
 })
 .on("end" ,function()
@@ -98,6 +113,7 @@ var v_WindowReSizeDrag_S = d3.drag()
 	if ( d3.event.y >= v_WindowPageMinHeight )
 	{
 		v_WindowPage.style("height", d3.event.y + "px");
+		v_WindowPage.select(".windowPageBody").style("height" ,(d3.event.y - v_WindowPageTitleHeight) + "px");
 	}
 })
 .on("end" ,function()
@@ -525,6 +541,7 @@ function windowPageToMax(i_WindowPage)
 	.style("height"  ,(document.body.clientHeight - 40) + "px")
 	.style("display" ,"inline");
 	
+	i_WindowPage.select(".windowPageBody")         .style("height" ,(document.body.clientHeight - 40 - v_WindowPageTitleHeight) + "px");
 	i_WindowPage.select(".windowPageControlNormal").style("display" ,"inline");
 	i_WindowPage.select(".windowPageControlMax")   .style("display" ,"none");
 }
@@ -553,7 +570,7 @@ function windowPageToNormal(i_WindowPage)
 			v_Top  = "15%";
 		}
 		v_Width  = "70%";
-		v_Height = "70%";
+		v_Height = parseFloat(document.body.clientHeight * 0.7);
 	}
 	else
 	{
@@ -571,7 +588,16 @@ function windowPageToNormal(i_WindowPage)
 		}
 		if ( v_Height == null || v_Height == "" )
 		{
-			v_Height = "70%";
+			v_Height = parseFloat(document.body.clientHeight * 0.7);
+		}
+		/* 处理百分比的情况 */
+		else if ( v_Height.indexOf("%") > 0 )
+		{
+			v_Height = document.body.clientHeight * parseFloat(v_Height.replace('%' ,'')) / 100;
+		}
+		else
+		{
+			v_Height = parseFloat(v_Height.replace("px" ,""));
 		}
 	}
 	
@@ -579,9 +605,10 @@ function windowPageToNormal(i_WindowPage)
 	.style("left"    ,v_Left)
 	.style("top"     ,v_Top)
 	.style("width"   ,v_Width)
-	.style("height"  ,v_Height)
+	.style("height"  ,v_Height + "px")
 	.style("display" ,"inline");
 	
+	i_WindowPage.select(".windowPageBody")         .style("height" ,(v_Height - v_WindowPageTitleHeight) + "px");
 	i_WindowPage.select(".windowPageControlNormal").style("display" ,"none");
 	i_WindowPage.select(".windowPageControlMax")   .style("display" ,"inline");
 }
