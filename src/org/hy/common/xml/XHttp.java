@@ -1598,7 +1598,41 @@ public final class XHttp
     /**
      * 类似于跳过 "继续浏览此网站(不推荐)" 这样的提醒 
      */
-    private static class TrustAnyTrustManager implements X509TrustManager
+    public static class TrustAnyHostnameVerifier implements HostnameVerifier
+    {
+        public boolean verify(String hostname ,SSLSession session)
+        {
+            return true;
+        }
+    }
+    
+    
+    
+    /**
+     * 获取 SSLContext 对象
+     * 
+     * @throws KeyManagementException 
+     * @throws NoSuchAlgorithmException 
+     */
+    public synchronized static SSLContext getSSLContext() throws KeyManagementException, NoSuchAlgorithmException
+    {
+        if ( $SSLContext == null )
+        {
+            $SSLContext = SSLContext.getInstance("SSL");
+            $SSLContext.init(null 
+                            ,new TrustManager[] {new TrustAnyTrustManager()} 
+                            ,new java.security.SecureRandom());
+        }
+        
+        return $SSLContext;
+    }
+    
+    
+    
+    /**
+     * 类似于跳过 "继续浏览此网站(不推荐)" 这样的提醒 
+     */
+    public static class TrustAnyTrustManager implements X509TrustManager
     {
 
         public void checkClientTrusted(X509Certificate [] chain ,String authType) throws CertificateException
@@ -1617,40 +1651,6 @@ public final class XHttp
         {
             return new X509Certificate[] {};
         }
-    }
-
-    
-    
-    /**
-     * 类似于跳过 "继续浏览此网站(不推荐)" 这样的提醒 
-     */
-    private static class TrustAnyHostnameVerifier implements HostnameVerifier
-    {
-        public boolean verify(String hostname ,SSLSession session)
-        {
-            return true;
-        }
-    }
-    
-    
-    
-    /**
-     * 获取 SSLContext 对象
-     * 
-     * @throws KeyManagementException 
-     * @throws NoSuchAlgorithmException 
-     */
-    private synchronized static SSLContext getSSLContext() throws KeyManagementException, NoSuchAlgorithmException
-    {
-        if ( $SSLContext == null )
-        {
-            $SSLContext = SSLContext.getInstance("SSL");
-            $SSLContext.init(null 
-                            ,new TrustManager[] {new TrustAnyTrustManager()} 
-                            ,new java.security.SecureRandom());
-        }
-        
-        return $SSLContext;
     }
     
 }

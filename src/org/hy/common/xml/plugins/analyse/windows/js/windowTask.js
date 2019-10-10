@@ -155,5 +155,6 @@ d3.select(".windowTaskStartMenu")
 	{
 		clearnWindowStartMenus(1);
 		createWindowStartMenus(v_StartMenus ,v_WindowTasksBarHeight);
+		createWindowStartMenuAccount();
 	}
 });

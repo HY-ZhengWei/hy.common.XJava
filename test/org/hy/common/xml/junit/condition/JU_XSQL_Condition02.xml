@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<import name="sqls"            class="java.util.ArrayList" />
+	<import name="sql"             class="org.hy.common.xml.XSQL" />
+
+
+
+	<sqls>
+
+        <sql id="XSQL_User_Condition_002">
+
+            <content>
+                <![CDATA[
+					SELECT
+					    id
+					FROM overduePrepareMaterialRealTimeData
+					WHERE 1 = 1
+						<[ AND (:prepareMaterialDate) ]>
+					ORDER BY planstarttime,planNo
+				]]>
+            </content>
+            
+            <condition>
+                <name>prepareMaterialDate</name>
+                <if>:prepareMaterialDate == '1'</if>
+                <true>'1' != '满足' AND '1' != '2'</true>
+				<if>:prepareMaterialDate == '0'</if>
+				<true>prepareMaterialDate IS NOT NULL OR ISNULL(LTRIM(RTRIM(prepareMaterialState)) , '') = '满足'</true>
+            </condition>
+            
+        </sql>
+
+	</sqls>
+	
+</config>

@@ -1,4 +1,4 @@
-package org.hy.common.xml.junit;
+package org.hy.common.xml.junit.condition;
 
 import java.util.HashMap;
 import java.util.Map;

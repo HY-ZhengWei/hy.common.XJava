@@ -177,8 +177,58 @@ function createWindowStartMenus(i_StartMenus ,i_Bottom)
 		var v_MyDiv = d3.select(this);
 		createWindowStartMenu(d ,v_MyDiv);
 	});
+}
+
+
+
+/**
+ * 创建菜单
+ *
+ * i_Data    某一菜单的数据
+ * i_Div     某一菜单所在Div组件
+ *
+ * ZhengWei(HY) Add 2019-07-03
+ */
+function createWindowStartMenu(i_Data ,i_Div)
+{
+	if ( i_Data.icon == null || i_Data.icon == "" )
+	{
+		i_Div.append("img")
+		.attr("class" ,"windowStartMenuIcon")
+		.style("visibility" ,"hidden");
+	}
+	else
+	{
+		i_Div.append("img")
+		.attr("class" ,"windowStartMenuIcon")
+		.attr("src" ,i_Data.icon);
+	}
 	
+	i_Div.append("lable")
+	.attr("class" ,"windowStartMenuName")
+	.html(i_Data.appName); 
 	
+	if ( i_Data.childMenus != null && i_Data.childMenus.length >= 1 )
+	{
+		i_Div.append("lable")
+		.attr("class" ,"windowStartMenuNextLevel")
+		.html("〉");
+	}
+	else
+	{
+		i_Div.call(v_CreateAppDrag);
+	}
+}
+
+
+
+/**
+ * 创建开始菜单中的账号菜单及退出菜单
+ *
+ * ZhengWei(HY) Add 2019-10-09
+ */
+function createWindowStartMenuAccount()
+{
 	/** 账户信息 */
 	var v_AccountBar = d3.select(".windowStartMenuAccount");
 	if ( !v_AccountBar.empty() )
@@ -237,47 +287,6 @@ function createWindowStartMenus(i_StartMenus ,i_Bottom)
 		v_LogoutBar.append("label")
 		.attr("class" ,"windowStartMenuExitName")
 		.html("退出");
-	}
-}
-
-
-
-/**
- * 创建菜单
- *
- * i_Data    某一菜单的数据
- * i_Div     某一菜单所在Div组件
- *
- * ZhengWei(HY) Add 2019-07-03
- */
-function createWindowStartMenu(i_Data ,i_Div)
-{
-	if ( i_Data.icon == null || i_Data.icon == "" )
-	{
-		i_Div.append("img")
-		.attr("class" ,"windowStartMenuIcon")
-		.style("visibility" ,"hidden");
-	}
-	else
-	{
-		i_Div.append("img")
-		.attr("class" ,"windowStartMenuIcon")
-		.attr("src" ,i_Data.icon);
-	}
-	
-	i_Div.append("lable")
-	.attr("class" ,"windowStartMenuName")
-	.html(i_Data.appName); 
-	
-	if ( i_Data.childMenus != null && i_Data.childMenus.length >= 1 )
-	{
-		i_Div.append("lable")
-		.attr("class" ,"windowStartMenuNextLevel")
-		.html("〉");
-	}
-	else
-	{
-		i_Div.call(v_CreateAppDrag);
 	}
 }
 
