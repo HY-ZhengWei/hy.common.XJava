@@ -77,6 +77,26 @@ public class AnalysesServlet extends HttpServlet
             {
                 i_Response.setContentType("image/png");
             }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".svg") )
+            {
+                i_Response.setContentType("text/xml;charset=UTF-8");
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".eot") )
+            {
+                i_Response.setContentType("application/vnd.ms-fontobject");
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".ttf") )
+            {
+                i_Response.setContentType("application/x-font-ttf");
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".woff2") )
+            {
+                i_Response.setContentType("application/x-font-woff2");
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".woff") )
+            {
+                i_Response.setContentType("application/x-font-woff");
+            }
             
             i_Response.getWriter().println(this.analyse.getTemplateContent(v_RequestURL.split("analyses/windows/")[1] ,"org.hy.common.xml.plugins.analyse.windows"));
         }

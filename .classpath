@@ -15,7 +15,7 @@
 	<classpathentry kind="lib" path="lib/asm-5.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-2.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/xwork-core-2.3.34.jar"/>
-	<classpathentry kind="lib" path="lib/jersey-common-2.26.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-common-2.26.jar" sourcepath="C:/Users/ZhengWei/.m2/org/glassfish/jersey/core/jersey-common/2.26/jersey-common-2.26-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-server-2.26.jar"/>
 	<classpathentry kind="lib" path="lib/javax.ws.rs-api-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/javax.inject-2.3.0-b05.jar"/>

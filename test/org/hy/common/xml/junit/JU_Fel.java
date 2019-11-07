@@ -47,6 +47,18 @@ public class JU_Fel
     
     
     @Test
+    public void test_Length()
+    {
+        FelEngine           v_Fel            = new FelEngineImpl();
+        FelContext          v_FelContext     = v_Fel.getContext();
+        
+        v_FelContext.set("A" ,"ABCDEFG");
+        System.out.println(v_Fel.eval("A.length() >= 0"));
+    }
+    
+    
+    
+    @Test
     public void test_Fel_Pool()
     {
         this.test_Fel_QueuePool();
