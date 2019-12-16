@@ -20,6 +20,7 @@ $("#editMWindowDialog [data-toggle='tooltip']").tooltip();
  * i_Url  访问地址
  *
  * ZhengWei(HY) Add 2019-07-11
+ * ZhengWei(HY) Add 2019-12-16  定时刷新
  */
 function showEditMWindowDialog()
 {
@@ -28,12 +29,16 @@ function showEditMWindowDialog()
 	var v_Height     = v_EditMW.style("height");
 	var v_LockWidth  = v_EditMW.attr("data-lockWidth");
 	var v_LockHeight = v_EditMW.attr("data-lockHeight");
+	var v_OpenTimer  = v_EditMW.attr("data-openTimer");
+	var v_Timer      = v_EditMW.attr("data-timer");
 	
 	$('#editMWindowUrlText')   .val(v_EditMW.attr("data-url"));
 	$('#editMWindowWidthText') .val(v_Width);
 	$('#editMWindowHeightText').val(v_Height);
 	$('#editLockWidth') .prop("checked" ,(v_LockWidth  != null && v_LockWidth  == "1"));
 	$('#editLockHeight').prop("checked" ,(v_LockHeight != null && v_LockHeight == "1"));
+	$('#editOpenTimer') .prop("checked" ,(v_OpenTimer && v_OpenTimer  != null && v_OpenTimer  == "1"));
+	$('#editMWindowTimerText').val(v_Timer ? v_Timer : '');
 	
 	$('#editMWindowDialog').modal('show');
 }
@@ -44,6 +49,7 @@ function showEditMWindowDialog()
  * 编辑多屏同屏的Url访问地址的确定按钮的事件
  *
  * ZhengWei(HY) Add 2019-07-11
+ * ZhengWei(HY) Add 2019-12-16  定时刷新
  */
 d3.select("#editMWindowBtn").on("click" ,function()
 {
@@ -172,16 +178,22 @@ d3.select("#editMWindowBtn").on("click" ,function()
 	
 	var v_IsLockWidth  = $("#editLockWidth") .prop('checked');
 	var v_IsLockHeight = $("#editLockHeight").prop('checked');
+	var v_IsOpenTimer  = $("#editOpenTimer") .prop('checked');
+	var v_Timer        = $('#editMWindowTimerText').val();
 	
 	v_MWContent
 	.attr("data-url"        ,v_NewUrl)
 	.attr("data-lockWidth"  ,v_IsLockWidth  ? "1" : "0")
-	.attr("data-lockHeight" ,v_IsLockHeight ? "1" : "0");
+	.attr("data-lockHeight" ,v_IsLockHeight ? "1" : "0")
+	.attr("data-openTimer"  ,v_IsOpenTimer  ? "1" : "0")
+	.attr("data-timer"      ,v_Timer);
 	
 	v_MWControl
 	.attr("data-url"        ,v_NewUrl)
 	.attr("data-lockWidth"  ,v_IsLockWidth  ? "1" : "0")
-	.attr("data-lockHeight" ,v_IsLockHeight ? "1" : "0");
+	.attr("data-lockHeight" ,v_IsLockHeight ? "1" : "0")
+	.attr("data-openTimer"  ,v_IsOpenTimer  ? "1" : "0")
+	.attr("data-timer"      ,v_Timer);
 	
 	if ( "ROW" == v_SuperLayoutType )
 	{

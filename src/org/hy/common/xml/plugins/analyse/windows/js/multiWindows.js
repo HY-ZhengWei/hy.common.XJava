@@ -190,6 +190,7 @@ function showAllContentSizeInfo()
  * i_MWContent   展示层组件
  *
  * ZhengWei(HY) Add 2019-07-12
+ * ZhengWei(HY) Add 2019-12-16  定时刷新
  */
 function loadMWindowContent(i_MWContent)
 {
@@ -213,6 +214,39 @@ function loadMWindowContent(i_MWContent)
 		{
 			v_MWContentIFrame.attr("src" ,i_MWContent.attr("data-url"));
 		}
+	}
+	
+	/* 定时刷新 */
+	var v_TimerID = i_MWContent.attr('data-timerID');
+	if ( v_TimerID && v_TimerID != '' )
+	{
+		clearInterval(v_TimerID);
+		i_MWContent.attr('data-timerID' ,'');
+	}
+	
+	if ( i_MWContent.attr("data-url") != '' )
+	{	
+		if ( i_MWContent.attr("data-openTimer") != '1' )
+		{
+			return;
+		}
+		if ( $.trim(i_MWContent.attr("data-timer")) == '' )
+		{
+			return;
+		}
+		var v_Timer = parseFloat(i_MWContent.attr('data-timer'));
+		if ( v_Timer <= 0 )
+		{
+			return;
+		}
+		
+		v_TimerID = setInterval(function () 
+		{
+			v_MWContentIFrame.attr("src" ,i_MWContent.attr("data-url"));
+		}
+		,v_Timer * 1000);
+		
+		i_MWContent.attr('data-timerID' ,v_TimerID);
 	}
 }
 

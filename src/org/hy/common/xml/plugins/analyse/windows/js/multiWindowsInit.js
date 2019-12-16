@@ -112,6 +112,8 @@ function getMWindowsConfigByChilds(i_SuperComponent ,io_SuperMWConfig)
 					,height:     v_MWComponent.css("height")
 					,lockWidth:  v_MWComponent.attr("data-lockWidth")
 					,lockHeight: v_MWComponent.attr("data-lockHeight")
+					,openTimer:  v_MWComponent.attr("data-openTimer")
+					,timer:      v_MWComponent.attr("data-timer")
 			}
 			
 			if ( v_Classed != "MWindowContent" )
