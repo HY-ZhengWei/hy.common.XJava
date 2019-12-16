@@ -131,6 +131,8 @@ d3.select("#editMWindowsBtn").on("click" ,function()
 			                                   ,lockWidth:  v_MWContent.attr("data-lockWidth")
 			                                   ,lockHeight: v_MWContent.attr("data-lockHeight")
 			                                   ,url:        v_MWContent.attr("data-url")
+			                                   ,openTimer:  v_MWContent.attr("data-openTimer")
+			                                   ,timer:      v_MWContent.attr("data-timer")
 			                                   ,classed:    ""};
 	});
 	d3.select("#MWindowBody").selectAll(".MWindowNull").each(function(d ,i)
@@ -142,6 +144,8 @@ d3.select("#editMWindowsBtn").on("click" ,function()
 			                                   ,lockWidth:  v_MWContent.attr("data-lockWidth")
 			                                   ,lockHeight: v_MWContent.attr("data-lockHeight")
 			                                   ,url:        ""
+			                                   ,openTimer:  v_MWContent.attr("data-openTimer")
+				                               ,timer:      v_MWContent.attr("data-timer")
 			                                   ,classed:    "MWindowNull"};
 	});
 	
@@ -226,11 +230,15 @@ d3.select("#cancelMWindowsBtn").on("click" ,function()
 			var v_MWControl = d3.select("#" + v_MWContent.attr("id") + "_Control");
 			var v_Data      = v_CacheDatas[v_MWContent.attr("id")];
 			
+			/* 不用在此清除临时设定的定时器，清除动作将在loadMWindowAll()方法中执行 */
+			
 			v_MWContent
 			.style("width"          ,v_Data.width)
 			.style("height"         ,v_Data.height)
 			.attr("data-lockWidth"  ,v_Data.lockWidth)
 			.attr("data-lockHeight" ,v_Data.lockHeight)
+			.attr("data-openTimer"  ,v_Data.openTimer)
+			.attr("data-timer"      ,v_Data.timer)
 			.attr("data-url"        ,v_Data.url);
 			
 			v_MWControl
@@ -238,6 +246,8 @@ d3.select("#cancelMWindowsBtn").on("click" ,function()
 			.style("height"         ,v_Data.height)
 			.attr("data-lockWidth"  ,v_Data.lockWidth)
 			.attr("data-lockHeight" ,v_Data.lockHeight)
+			.attr("data-openTimer"  ,v_Data.openTimer)
+			.attr("data-timer"      ,v_Data.timer)
 			.attr("data-url"        ,v_Data.url);
 			
 			/*

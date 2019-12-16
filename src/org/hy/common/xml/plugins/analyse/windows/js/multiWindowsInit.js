@@ -47,7 +47,9 @@ function initMWindowsConfigByChilds(i_SuperLayout ,i_SuperComponent ,i_MWConfig)
 		.style("width"          ,v_MWConfig.width)
 		.style("height"         ,v_MWConfig.height)
 		.attr("data-lockWidth"  ,v_MWConfig.lockWidth)
-		.attr("data-lockHeight" ,v_MWConfig.lockHeight);
+		.attr("data-lockHeight" ,v_MWConfig.lockHeight)
+		.attr("data-openTimer"  ,v_MWConfig.openTimer)
+		.attr("data-timer"      ,v_MWConfig.timer);
 		
 		if ( "MWindowContent" == v_MWConfig.classed )
 		{

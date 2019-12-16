@@ -230,19 +230,21 @@ function loadMWindowContent(i_MWContent)
 		{
 			return;
 		}
+		
 		if ( $.trim(i_MWContent.attr("data-timer")) == '' )
 		{
 			return;
 		}
+		
 		var v_Timer = parseFloat(i_MWContent.attr('data-timer'));
 		if ( v_Timer <= 0 )
 		{
 			return;
 		}
 		
-		v_TimerID = setInterval(function () 
+		v_TimerID = setInterval(function() 
 		{
-			v_MWContentIFrame.attr("src" ,i_MWContent.attr("data-url"));
+			i_MWContent.select("iframe").attr("src" ,i_MWContent.attr("data-url"));
 		}
 		,v_Timer * 1000);
 		
