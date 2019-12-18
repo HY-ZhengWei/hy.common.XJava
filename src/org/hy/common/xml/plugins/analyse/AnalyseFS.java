@@ -45,6 +45,7 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
  *                                添加：判定集群同名文件的大小是否均相同
  *                                添加：返回失败服务IP的同时，也返回成功克隆文件的服务IP。
  *                                添加：“全体计算”功能，包括对集群目录大小的计算。
+ *              v9.0  2019-12-18  添加：排除哪些文件或目录不显示、不对比、不计算大小等的排除功能
  */
 @Xjava
 public class AnalyseFS extends Analyse
@@ -61,6 +62,12 @@ public class AnalyseFS extends Analyse
                                                            ,".log" ,".out" ,".mf"      ,".md"
                                                            ,".js"  ,".jsp" ,".css"     ,".htm" ,".html" ,".ftl" ,".svg" ,".map"
                                                            ,".sh"  ,".bat" ,".profile" ,".policy"};
+    
+    /** 自动排除哪些文件？不显示、不对比、不计算大小等 */
+    public static final String    $ExcludeFiles   = "|_desktop.ini|._.ds_store|";
+    
+    /** 自动排除哪些目录？不显示、不对比、不计算大小等 */
+    public static final String    $ExcludeFolders = "|__macosx|.svn|";
     
     
     
@@ -628,6 +635,22 @@ public class AnalyseFS extends Analyse
             {
                 for (File v_File : v_Files)
                 {
+                    // 自动排除的文件
+                    if ( v_File.isFile() )
+                    {
+                        if ( $ExcludeFiles.indexOf("|" + v_File.getName().toLowerCase() + "|") >= 0 )
+                        {
+                            continue;
+                        }
+                    }
+                    // 自动排除的目录
+                    else if ( v_File.isDirectory() )
+                    {
+                        if ( $ExcludeFolders.indexOf("|" + v_File.getName().toLowerCase() + "|") >= 0 )
+                        {
+                            continue;
+                        }
+                    }
                     v_Ret.put(v_File.getName() ,new FileReport(i_FPath ,v_File));
                 }
             }
@@ -1536,11 +1559,15 @@ public class AnalyseFS extends Analyse
                 if ( v_File.isDirectory() )
                 {
                     FileHelp v_FileHelp = new FileHelp();
-                    v_Size = v_FileHelp.calcSize(v_File);
+                    v_Size = v_FileHelp.calcSize(v_File ,$ExcludeFiles ,$ExcludeFolders);
                 }
                 else 
                 {
-                    v_Size = v_File.length();
+                    // 自动排除的文件
+                    if ( $ExcludeFiles.indexOf("|" + v_File.getName() + "|") < 0 )
+                    {
+                        v_Size = v_File.length();
+                    }
                 }
                 
                 return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size ,2) 
