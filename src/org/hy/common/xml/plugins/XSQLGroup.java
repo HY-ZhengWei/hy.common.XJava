@@ -158,12 +158,16 @@ import org.hy.common.xml.XSQLData;
  *                                3.修正：executes(Object)方法中的对象类型的参数在内部转Map时，不再保留NULL值的属性。
  *                                        防止Oracle全大写字段名称与Java成员名称大小写不一致时，出现未正确填充占位符的问题。
  *                                        发现人：张德宏
+ *              v24.1 2019-12-25  1.修正：组内主动提交后输出日志中，影响操作记录里，不应累计查询数量。对此进行分类区分。发现人：张宇
  */
 public final class XSQLGroup implements XJavaID
 {
     
-    /** 执行SQL(Insert、Update、Delete、Query)影响行数的变量名前缀 */
+    /** 执行SQL(Insert、Update、Delete)影响行数的变量名前缀 */
     public  static final String      $Param_ExecCount   = "ExecCount_";
+    
+    /** 执行SQL(Query)影响行数的变量名前缀 */
+    public  static final String      $Param_QueryCount  = "QueryCount_";
     
     /** 用于执行Java节点：执行查询SQL的结果集索引下标的变量名称（变量值下标从零开始） */
     public  static final String      $Param_RowIndex    = "RowIndex_";
@@ -851,7 +855,7 @@ public final class XSQLGroup implements XJavaID
                         // put返回查询结果集
                         this.putReturnID(v_Ret ,v_Node ,v_XSQLData.getDatas());
                         v_ExecRet = true;
-                        v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_XSQLData.getRowCount());
+                        v_Ret.getExecSumCount().put($Param_QueryCount + v_NodeIndex ,v_XSQLData.getRowCount());
                     }
                     else if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(v_Node.getType()) )
                     {
@@ -1137,7 +1141,7 @@ public final class XSQLGroup implements XJavaID
                             
                             if ( v_QueryRet != null )
                             {
-                                v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_QueryRet.size());
+                                v_Ret.getExecSumCount().put($Param_QueryCount + v_NodeIndex ,v_QueryRet.size());
                             }
                         }
                         else
@@ -1167,7 +1171,7 @@ public final class XSQLGroup implements XJavaID
                             }
                             
                             v_QueryRet = (List<Object>)v_XSQLData.getDatas();
-                            v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_XSQLData.getRowCount());
+                            v_Ret.getExecSumCount().put($Param_QueryCount + v_NodeIndex ,v_XSQLData.getRowCount());
                         }
                         
                         this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
@@ -1505,7 +1509,7 @@ public final class XSQLGroup implements XJavaID
                             v_XSQLData = v_Node.getSql().queryXSQLData(io_Params);
                         }
                         
-                        v_Ret.getExecSumCount().put($Param_ExecCount + v_NodeIndex ,v_XSQLData.getRowCount());
+                        v_Ret.getExecSumCount().put($Param_QueryCount + v_NodeIndex ,v_XSQLData.getRowCount());
                         this.logExecuteAfter(v_Node ,io_Params ,v_NodeIndex);
                     }
                     catch (Exception exce)
@@ -2294,7 +2298,7 @@ public final class XSQLGroup implements XJavaID
                     {
                         if ( this.isLog )
                         {
-                            System.out.print("-- " + Date.getNowTime().getFullMilli() + " Commit ...");
+                            System.out.print("-- " + Date.getNowTime().getFullMilli() + "Total Commit ...");
                         }
                         
                         v_XConn.setCommit(true);
@@ -2312,7 +2316,7 @@ public final class XSQLGroup implements XJavaID
             {
                 if ( i_ExecSumCount != null )
                 {
-                    System.out.println("  " + i_ExecSumCount.getSumValue() + " rows affected.");
+                    System.out.println("  " + i_ExecSumCount.getSumValueByLike($Param_ExecCount) + " rows affected.");
                 }
                 else
                 {

@@ -134,6 +134,7 @@ import org.hy.common.xml.event.BLobEvent;
  *                                优化：数据库记录翻译为Java对象的性能优化。 
  *              v16.1 2019-03-22  添加：queryXSQLData()等一系列方法。在返回查询结果的同时，也返回其它更多的信息。
  *              v17.0 2019-05-15  添加：Log4j2的日志输出。建议人：李浩、张宇
+ *              v18.0 2019-12-25  添加：预编译支持NULL值的写入。发现人：张宇
  */
 /*
  * 游标类型的说明
@@ -3972,71 +3973,153 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @author      ZhengWei(HY)
      * @createDate  2016-08-09
      * @version     v1.0
+     *              v2.0  2019-12-25  添加：i_ValueClass
      *
      * @param io_PStatement  预解释SQL的对象
      * @param i_ParamIndex   填充数值的位置。下标从1开始
      * @param i_Value        填充的数值
+     * @param i_ValueClass   填充数据的类型。可用于填充数据为NULL的判定情况
      * @throws SQLException
      * @throws InvocationTargetException 
      * @throws IllegalAccessException 
      * @throws IllegalArgumentException 
      */
-    private void preparedStatementSetValue(PreparedStatement io_PStatement ,int i_ParamIndex ,Object i_Value) throws SQLException, IllegalArgumentException, IllegalAccessException, InvocationTargetException
+    private void preparedStatementSetValue(PreparedStatement io_PStatement ,int i_ParamIndex ,Object i_Value ,Class<?> i_ValueClass) throws SQLException, IllegalArgumentException, IllegalAccessException, InvocationTargetException
     {
+        Class<?> v_Class = null;
         if ( i_Value == null )
         {
-            io_PStatement.setString(i_ParamIndex ,"");
-            return;
+            if ( i_ValueClass == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.VARCHAR);
+                return;
+            }
+            else
+            {
+                v_Class = i_ValueClass;
+            }
         }
-        
-        Class<?> v_Class = i_Value.getClass();
+        else
+        {
+            v_Class = i_Value.getClass();
+        }
         
         if ( v_Class == String.class )
         {
-            io_PStatement.setString(i_ParamIndex ,(String)i_Value);
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.VARCHAR);
+            }
+            else
+            {
+                io_PStatement.setString(i_ParamIndex ,(String)i_Value);
+            }
         }
         else if ( v_Class == Integer.class || v_Class == int.class)
         {
-            io_PStatement.setInt(i_ParamIndex ,((Integer)i_Value).intValue());
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.INTEGER);
+            }
+            else
+            {
+                io_PStatement.setInt(i_ParamIndex ,((Integer)i_Value).intValue());
+            }
         }
         else if ( v_Class == Double.class || v_Class == double.class )
         {
-            io_PStatement.setDouble(i_ParamIndex ,((Double)i_Value).doubleValue());
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.DECIMAL);
+            }
+            else
+            {
+                io_PStatement.setDouble(i_ParamIndex ,((Double)i_Value).doubleValue());
+            }
         }
         else if ( v_Class == Float.class || v_Class == float.class )
         {
-            io_PStatement.setFloat(i_ParamIndex ,((Float)i_Value).floatValue());
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.FLOAT);
+            }
+            else
+            {
+                io_PStatement.setFloat(i_ParamIndex ,((Float)i_Value).floatValue());
+            }
         }
         else if ( v_Class == Boolean.class || v_Class == boolean.class )
         {
-            io_PStatement.setBoolean(i_ParamIndex ,((Boolean)i_Value).booleanValue());
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.BOOLEAN);
+            }
+            else
+            {
+                io_PStatement.setBoolean(i_ParamIndex ,((Boolean)i_Value).booleanValue());
+            }
         }
         else if ( v_Class == Long.class || v_Class == long.class )
         {
-            io_PStatement.setLong(i_ParamIndex ,((Long)i_Value).longValue());
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.LONGVARCHAR);
+            }
+            else
+            {
+                io_PStatement.setLong(i_ParamIndex ,((Long)i_Value).longValue());
+            }
         }
         else if ( v_Class == Date.class )
         {
-            // getSQLDate()的精度只到天，未到时分秒，所以换成getSQLTimestamp()方法  ZhengWei(HY) Edit 2018-05-11
-            io_PStatement.setTimestamp(i_ParamIndex ,((Date)i_Value).getSQLTimestamp());
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.DATE);
+            }
+            else
+            {
+                // getSQLDate()的精度只到天，未到时分秒，所以换成getSQLTimestamp()方法  ZhengWei(HY) Edit 2018-05-11
+                io_PStatement.setTimestamp(i_ParamIndex ,((Date)i_Value).getSQLTimestamp());
+            }
         }
         else if ( v_Class == java.util.Date.class )
         {
-            // getSQLDate()的精度只到天，未到时分秒，所以换成getSQLTimestamp()方法  ZhengWei(HY) Edit 2018-05-11
-            io_PStatement.setTimestamp(i_ParamIndex ,(new Date((java.util.Date)i_Value)).getSQLTimestamp());
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.DATE);
+            }
+            else
+            {
+                // getSQLDate()的精度只到天，未到时分秒，所以换成getSQLTimestamp()方法  ZhengWei(HY) Edit 2018-05-11
+                io_PStatement.setTimestamp(i_ParamIndex ,(new Date((java.util.Date)i_Value)).getSQLTimestamp());
+            }
         }
         // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15 
         else if ( v_Class == Timestamp.class )
         {
-            io_PStatement.setTimestamp(i_ParamIndex ,(Timestamp)i_Value);
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.TIMESTAMP);
+            }
+            else
+            {
+                io_PStatement.setTimestamp(i_ParamIndex ,(Timestamp)i_Value);
+            }
         }
         else if ( v_Class == BigDecimal.class )
         {
-            io_PStatement.setBigDecimal(i_ParamIndex ,(BigDecimal)i_Value);
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.DECIMAL);
+            }
+            else
+            {
+                io_PStatement.setBigDecimal(i_ParamIndex ,(BigDecimal)i_Value);
+            }
         }
         else if ( v_Class == MethodReflect.class )
         {
-            this.preparedStatementSetValue(io_PStatement ,i_ParamIndex ,((MethodReflect)i_Value).invoke());
+            this.preparedStatementSetValue(io_PStatement ,i_ParamIndex ,((MethodReflect)i_Value).invoke() ,((MethodReflect)i_Value).getReturnType());
         }
         else if ( MethodReflect.isExtendImplement(v_Class ,Enum.class) )
         {
@@ -4089,19 +4172,47 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         }
         else if ( v_Class == Short.class || v_Class == short.class)
         {
-            io_PStatement.setShort(i_ParamIndex ,((Short)i_Value).shortValue());
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.TINYINT);
+            }
+            else
+            {
+                io_PStatement.setShort(i_ParamIndex ,((Short)i_Value).shortValue());
+            }
         }
         else if ( v_Class == Byte.class || v_Class == byte.class )
         {
-            io_PStatement.setShort(i_ParamIndex ,((Byte)i_Value).byteValue());
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.BINARY);
+            }
+            else
+            {
+                io_PStatement.setShort(i_ParamIndex ,((Byte)i_Value).byteValue());
+            }
         }
         else if ( v_Class == Character.class || v_Class == char.class )
         {
-            io_PStatement.setString(i_ParamIndex ,i_Value.toString());
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.CHAR);
+            }
+            else
+            {
+                io_PStatement.setString(i_ParamIndex ,i_Value.toString());
+            }
         }
         else
         {
-            io_PStatement.setString(i_ParamIndex ,i_Value.toString());
+            if ( i_Value == null )
+            {
+                io_PStatement.setNull(i_ParamIndex ,java.sql.Types.VARCHAR);
+            }
+            else
+            {
+                io_PStatement.setString(i_ParamIndex ,i_Value.toString());
+            }
         }
     }
     
@@ -4297,7 +4408,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                             {
                                 Object v_Value = MethodReflect.getMapValue((Map<String ,?>)v_Object ,v_PlaceHolder);
                                 
-                                this.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_Value);
+                                this.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_Value ,null);
                             }
                         }
                         else
@@ -4307,7 +4418,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                             {
                                 MethodReflect v_MethodReflect = new MethodReflect(v_Object ,v_PlaceHolder ,true ,MethodReflect.$NormType_Getter);
                                 
-                                this.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_MethodReflect.invoke());
+                                this.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_MethodReflect.invoke() ,v_MethodReflect.getReturnType());
                             }
                         }
                         
@@ -4351,7 +4462,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                             {
                                 Object v_Value = MethodReflect.getMapValue((Map<String ,?>)v_Object ,v_PlaceHolder);
                                 
-                                this.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_Value);
+                                this.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_Value ,null);
                             }
                         }
                         else
@@ -4361,7 +4472,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                             {
                                 MethodReflect v_MethodReflect = new MethodReflect(v_Object ,v_PlaceHolder ,true ,MethodReflect.$NormType_Getter);
                                 
-                                this.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_MethodReflect.invoke());
+                                this.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_MethodReflect.invoke() ,v_MethodReflect.getReturnType());
                             }
                         }
                         
