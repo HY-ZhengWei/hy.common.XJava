@@ -2,6 +2,7 @@ package org.hy.common.xml.log;
 
 import java.lang.reflect.Method;
 
+import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.StaticReflect;
 
@@ -21,6 +22,7 @@ import org.hy.common.StaticReflect;
  * @author      ZhengWei(HY)
  * @createDate  2019-05-27
  * @version     v1.0
+ *              v2.0  2020-01-06  添加：在没有任何Log4j版本时，可采用System.out.println()方法输出
  */
 public class Logger
 {
@@ -37,9 +39,19 @@ public class Logger
     
     private Method   debug;       // 指出细粒度信息事件对调试应用程序是非常有帮助的，主要用于开发过程中打印一些运行信息
     
+    /** 没有任何Log4j版本时，是否采用System.out.println()方法输出 */
+    private Class<?> logClass;  
+    
     
     
     public Logger(Class<?> i_Class)
+    {
+        this(i_Class ,false);
+    }
+    
+    
+    
+    public Logger(Class<?> i_Class ,boolean i_IsPrintln)
     {
         Class<?> v_LogClass   = null;
         Class<?> v_LogManager = null;
@@ -112,6 +124,10 @@ public class Logger
                 }
             }
         }
+        else if ( i_IsPrintln )
+        {
+            this.logClass = i_Class;
+        }
     }
     
     
@@ -137,6 +153,10 @@ public class Logger
             {
                 exce.printStackTrace();
             }
+        }
+        else if ( logClass != null )
+        {
+            this.println("fatal> " + i_Message);
         }
     }
     
@@ -164,6 +184,10 @@ public class Logger
                 exce.printStackTrace();
             }
         }
+        else if ( logClass != null )
+        {
+            this.println("error> " + i_Message);
+        }
     }
     
     
@@ -189,6 +213,10 @@ public class Logger
             {
                 exce.printStackTrace();
             }
+        }
+        else if ( logClass != null )
+        {
+            this.println("warn> " + i_Message);
         }
     }
     
@@ -216,6 +244,10 @@ public class Logger
                 exce.printStackTrace();
             }
         }
+        else if ( logClass != null )
+        {
+            this.println("info> " + i_Message);
+        }
     }
     
     
@@ -241,6 +273,33 @@ public class Logger
             {
                 exce.printStackTrace();
             }
+        }
+        else if ( logClass != null )
+        {
+            this.println("debug> " + i_Message);
+        }
+    }
+    
+    
+    
+    /**
+     * 采用System.out.println()方法输出
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-01-06
+     * @version     v1.0
+     *
+     * @param i_Message
+     */
+    public void println(final String i_Message)
+    {
+        if ( logClass != null )
+        {
+            System.out.println("-- " + Date.getNowTime().getFullMilli() + " [" + this.logClass.getName() + "] " + i_Message);
+        }
+        else
+        {
+            System.out.println("-- " + Date.getNowTime().getFullMilli() + " " + i_Message);
         }
     }
     

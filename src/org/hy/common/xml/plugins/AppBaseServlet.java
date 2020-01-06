@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.hy.common.StringHelp;
 import org.hy.common.file.FileHelp;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -57,6 +58,8 @@ public class AppBaseServlet extends HttpServlet
     
     private static final long serialVersionUID = -5189383556838396564L;
     
+    private static final Logger $Logger = new Logger(AppBaseServlet.class ,true);
+    
     
     
     protected void doGet(HttpServletRequest i_Request ,HttpServletResponse i_Response) throws ServletException ,IOException
@@ -68,11 +71,16 @@ public class AppBaseServlet extends HttpServlet
     
     public void doPost(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException 
     {
-        AppMessage<?> v_AppMsg = AppInterfaces.executeMessage(this ,this.getI(i_Request));
+        String v_RequestInfo = this.getI(i_Request);
+        $Logger.info(v_RequestInfo);
+        
+        AppMessage<?> v_AppMsg = AppInterfaces.executeMessage(this ,v_RequestInfo);
         
         if ( v_AppMsg != null )
         {
-            this.responseJson(i_Request ,i_Response ,v_AppMsg.toString());
+            String v_ResponseInfo = v_AppMsg.toString();
+            $Logger.info(v_ResponseInfo);
+            this.responseJson(i_Request ,i_Response ,v_ResponseInfo);
         }
     }
     
