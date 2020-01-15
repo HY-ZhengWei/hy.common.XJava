@@ -1,6 +1,7 @@
 package org.hy.common.xml;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -79,10 +80,24 @@ import net.minidev.json.parser.JSONParser;
  *                                        建议：当需要Map.value为NULL时，请在转换前设置此句this.setObjectClass(HashMap.class); 
  *                                             否则，NULL的Json字符串将转成""空字符串写入Hashtable中。
  *                                     2. 防止递归功能，添加允许递归次数。允许一定范围内的递归或重复数据。发现人：马龙。 
+ *              2020-01-15  V3.7  添加：当Java对象转Json字符串时，是否包含对成员方法的转换输出。
  *                                
  */
 public final class XJSON
 {
+    
+    /** 当Java对象转Json字符串时，排除哪些方法不输出 */
+    private static String [] $ExcludeMethodNames = {"getClass" 
+                                                   ,"hashCode" 
+                                                   ,"equals" 
+                                                   ,"clone" 
+                                                   ,"toString" 
+                                                   ,"notify" 
+                                                   ,"notifyAll" 
+                                                   ,"wait" 
+                                                   ,"finalize"
+                                                   ,"compareTo"
+                                                   ,"toString"};
     
     private XJSONObject rootJSON;
     
@@ -115,6 +130,12 @@ public final class XJSON
      */
     private boolean     isReturnNVL;
     
+    /**
+     * 当Java对象转Json字符串时，是否包含对成员方法的转换输出
+     * 默认为：false，不转换输出
+     */
+    private boolean     isJsonMethod;
+    
     /** Java转Json时，BigDecimal的显示格式。是否启用科学计数法（默认为：自然数字，而非科学计数法） */
     private boolean     isBigDecimalFormat; 
     
@@ -138,6 +159,7 @@ public final class XJSON
         this.firstCharIsUpper   = false;
         this.isAccuracy         = false;
         this.isReturnNVL        = true;
+        this.isJsonMethod       = false;
         this.isBigDecimalFormat = false;
         this.digit              = null;
         this.recursionCount     = 0;
@@ -1156,6 +1178,10 @@ public final class XJSON
     /**
      * 内部循环递归解释
      * 
+     * @author      ZhengWei(HY)
+     * @version     v1.0
+     *              v2.0  2020-01-15  添加：Json方式显示成员方法。格式如：public:(参数类型):返回类型
+     *
      * @param i_JSONName
      * @param i_Obj
      * @param i_JsonSuperObj
@@ -1471,6 +1497,10 @@ public final class XJSON
         }
         else
         {
+            if ( !Modifier.isPublic(i_Obj.getClass().getModifiers()) )
+            {
+                return v_Ret;
+            }
             if ( isRecursion(i_ParserObjects ,i_Obj) )
             {
                 return v_Ret;
@@ -1578,6 +1608,54 @@ public final class XJSON
                 }
             }
             
+            // Json方式显示成员方法  Add ZhengWei(HY) 2020-01-15
+            if ( this.isJsonMethod )
+            {
+                List<Method> v_Methods = MethodReflect.getMethodsExcludeStart(i_Obj.getClass() ,new String[]{"get" 
+                                                                                                            ,"set" 
+                                                                                                            ,"is" 
+                                                                                                            ,"gatProperty" 
+                                                                                                            ,"gatDoc"});
+                
+                if ( !Help.isNull(v_Methods) )
+                {
+                    Method [] v_MethodArr = v_Methods.toArray(new Method[]{});
+                    
+                    Arrays.sort(v_MethodArr ,MethodComparator.getInstance());
+                    
+                    for (int i=0; i<v_MethodArr.length; i++)
+                    {
+                        Method v_Method = v_MethodArr[i];
+                        
+                        if ( StringHelp.isEquals(v_Method.getName() ,$ExcludeMethodNames) )
+                        {
+                            continue;
+                        }
+                        
+                        StringBuilder v_Buffer = new StringBuilder();
+                        
+                        v_Buffer.append(v_Method.getName()).append("(");
+                        
+                        Class<?> [] v_ParamTypes = v_Method.getParameterTypes();
+                        if ( !Help.isNull(v_ParamTypes) )
+                        {
+                            for (int pi=0; pi<v_ParamTypes.length; pi++)
+                            {
+                                if ( pi >= 1 )
+                                {
+                                    v_Buffer.append(",");
+                                }
+                                v_Buffer.append(v_ParamTypes[pi].getSimpleName());
+                            }
+                        }
+                        
+                        v_Buffer.append("):").append(v_Method.getReturnType().getSimpleName());
+                        
+                        parser(v_Buffer.toString() ,"" ,v_ChildJsonObj ,i_ParserObjects);
+                        v_ChildCount++;
+                    }
+                }
+            }
             
             if ( v_ChildCount >= 1 )
             {
@@ -1750,6 +1828,30 @@ public final class XJSON
         this.isReturnNVL = isReturnNVL;
     }
     
+
+    
+    /**
+     * 获取：当Java对象转Json字符串时，是否包含对成员方法的转换输出
+     * 默认为：false，不转换输出
+     */
+    public boolean isJsonMethod()
+    {
+        return isJsonMethod;
+    }
+
+
+    
+    /**
+     * 设置：当Java对象转Json字符串时，是否包含对成员方法的转换输出
+     * 默认为：false，不转换输出
+     * 
+     * @param isJsonMethod 
+     */
+    public void setJsonMethod(boolean isJsonMethod)
+    {
+        this.isJsonMethod = isJsonMethod;
+    }
+
 
 
     /**

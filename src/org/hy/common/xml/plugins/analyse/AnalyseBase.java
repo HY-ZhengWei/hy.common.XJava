@@ -91,6 +91,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v17.0 2019-03-20  添加：XSQL及XSQL组的统计分析页面添加：读写行数
  *              v18.0 2019-05-29  添加：显示XSQL拥有的应用级触发器的个数
  *              v19.0 2019-07-05  添加：显示云桌面
+ *              v20.0 2020-01-15  添加：查看对象信息时，显示成员方法
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -1891,6 +1892,7 @@ public class AnalyseBase extends Analyse
      * @version     v1.0
      *              v2.0  2017-01-17  添加：集群顺次执行对象方法的功能
      *              v3.0  2017-01-20  添加：集群同时执行对象方法的功能（并发）
+     *              v4.0  2020-01-15  添加：对象成员方法的Json输出
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject
@@ -1929,6 +1931,7 @@ public class AnalyseBase extends Analyse
             XJSON  v_XJSON         = new XJSON();
             v_XJSON.setReturnNVL(true);
             v_XJSON.setAccuracy(true);
+            v_XJSON.setJsonMethod(true);
             
             // 功能1. 查看对象信息
             if ( Help.isNull(i_CallMethod) )
