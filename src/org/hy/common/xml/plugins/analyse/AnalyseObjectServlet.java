@@ -34,36 +34,37 @@ import org.hy.common.xml.XJava;
         <url-pattern>/analyses/analyseObject</url-pattern>
     </servlet-mapping>
  * 
- * 功能1：查看前缀匹配的对象列表         http://IP:Port/WebService/../analyseObject?xid=XJavaIDPrefix*
- * 功能2：查看对象信息                         http://IP:Port/WebService/../analyseObject?xid=XJavaID         
+ * 功能1：查看前缀匹配的对象列表                http://IP:Port/WebService/../analyseObject?xid=XJavaIDPrefix*
+ * 功能2：查看对象信息                          http://IP:Port/WebService/../analyseObject?xid=XJavaID         
  * 功能3：执行对象方法                          http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称
- * 功能4：集群顺次执行对象方法            http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称&cluster=Y
- * 功能5：集群同时执行对象方法            http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称&cluster=Y&sameTime=Y
+ * 功能4：执行对象方法的配置页面（带方法参数） http://IP:Port/WebService/../analyseObject?execute=Y
+ * 功能5：集群顺次执行对象方法                  http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称&cluster=Y
+ * 功能6：集群同时执行对象方法                  http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称&cluster=Y&sameTime=Y
  * 
- * 功能6：查看XJava配置文件列表         http://IP:Port/WebService/../analyseObject
- * 功能7：重新加载XJava配置文件         http://IP:Port/WebService/../analyseObject?xfile=xxx
- * 功能8：集群重新加载XJava配置文件  http://IP:Port/WebService/../analyseObject?xfile=xxx&cluster=Y
+ * 功能7：查看XJava配置文件列表                 http://IP:Port/WebService/../analyseObject
+ * 功能8：重新加载XJava配置文件                 http://IP:Port/WebService/../analyseObject?xfile=xxx
+ * 功能9：集群重新加载XJava配置文件             http://IP:Port/WebService/../analyseObject?xfile=xxx&cluster=Y
  * 
- * 功能9：查看集群服务列表                   http://IP:Port/WebService/../analyseObject?cluster=Y
+ * 功能10：查看集群服务列表                     http://IP:Port/WebService/../analyseObject?cluster=Y
  * 
- * 功能10：删除并重建数据库对象          http://IP:Port/WebService/../analyseObject?XSQLCreate=Y
- * 功能11：查看创建数据库对象列表       http://IP:Port/WebService/../analyseObject?XSQLCreateList=Y
+ * 功能11：删除并重建数据库对象                 http://IP:Port/WebService/../analyseObject?XSQLCreate=Y
+ * 功能12：查看创建数据库对象列表               http://IP:Port/WebService/../analyseObject?XSQLCreateList=Y
  * 
- * 功能12：本机线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y
- * 功能13：集群线程池运行情况             http://IP:Port/WebService/../analyseObject?ThreadPool=Y&cluster=Y
+ * 功能13：本机线程池运行情况                   http://IP:Port/WebService/../analyseObject?ThreadPool=Y
+ * 功能14：集群线程池运行情况                   http://IP:Port/WebService/../analyseObject?ThreadPool=Y&cluster=Y
  *
- * 功能14：定时灾备多活集群情况          http://IP:Port/WebService/../analyseObject?JobDisasterRecoverys=Y
- * 功能15：本机定时任务运行情况          http://IP:Port/WebService/../analyseObject?Job=Y
+ * 功能15：定时灾备多活集群情况                 http://IP:Port/WebService/../analyseObject?JobDisasterRecoverys=Y
+ * 功能16：本机定时任务运行情况                 http://IP:Port/WebService/../analyseObject?Job=Y
  * 
- * 功能16：本机数据库连接池信息          http://IP:Port/WebService/../analyseObject?DSG=Y
- * 功能17：集群数据库连接池信息          http://IP:Port/WebService/../analyseObject?DSG=Y&cluster=Y
+ * 功能17：本机数据库连接池信息                 http://IP:Port/WebService/../analyseObject?DSG=Y
+ * 功能18：集群数据库连接池信息                 http://IP:Port/WebService/../analyseObject?DSG=Y&cluster=Y
  * 
- * 功能18：Web文件资源管理器             http://IP:Port/WebService/../analyseObject?FS=Y
+ * 功能19：Web文件资源管理器                    http://IP:Port/WebService/../analyseObject?FS=Y
  * 
- * 功能19：查看XSQL组流程图               http://IP:Port/WebService/../analyseObject?XSGFlow=Y&xid=xxx
+ * 功能20：查看XSQL组流程图                     http://IP:Port/WebService/../analyseObject?XSGFlow=Y&xid=xxx
  * 
- * 功能20：查看XSQL与表的关系图           http://IP:Port/WebService/../analyseObject?dsgid=*
- * 功能21：查看表的关系图                 http://IP:Port/WebService/../analyseObject?&tableRef=Ydsgid=*
+ * 功能21：查看XSQL与表的关系图                 http://IP:Port/WebService/../analyseObject?dsgid=*
+ * 功能22：查看表的关系图                       http://IP:Port/WebService/../analyseObject?&tableRef=Ydsgid=*
  *
  * @author      ZhengWei(HY)
  * @createDate  2015-12-16
@@ -82,6 +83,7 @@ import org.hy.common.xml.XJava;
  *              v9.0  2019-02-26  添加：定时灾备多活集群情况
  *              v10.0 2019-06-11  添加：查看XSQL与表的关系图
  *              v11.0 2019-06-14  添加：查看表的关系图
+ *              v12.0 2020-01-21  添加：执行对象方法的配置页面（带方法参数）
  *              
  */
 public class AnalyseObjectServlet extends HttpServlet
@@ -153,6 +155,8 @@ public class AnalyseObjectServlet extends HttpServlet
         
         String v_XID        = i_Request.getParameter("xid");
         String v_Call       = i_Request.getParameter("call");
+        String v_CallParams = i_Request.getParameter("callParams");
+        String v_Execute    = i_Request.getParameter("execute");
         String v_XFile      = i_Request.getParameter("xfile");
         String v_Cluster    = i_Request.getParameter("cluster");
         String v_SameTime   = i_Request.getParameter("sameTime");
@@ -166,7 +170,11 @@ public class AnalyseObjectServlet extends HttpServlet
         String v_FS         = i_Request.getParameter("FS");
         String v_XSGFlow    = i_Request.getParameter("XSGFlow");
         
-        if ( Help.isNull(v_XID) )
+        if ( !Help.isNull(v_Execute) )
+        {
+            i_Response.getWriter().println(this.analyse.showExecuteMethod(v_BasePath ,i_Request.getRequestURL().toString() ,v_XID ,v_Call ,v_CallParams));
+        }
+        else if ( Help.isNull(v_XID) )
         {
             if ( !Help.isNull(v_FS) )
             {
@@ -306,7 +314,7 @@ public class AnalyseObjectServlet extends HttpServlet
         }
         else
         {
-            i_Response.getWriter().println(this.analyse.analyseObject(v_BasePath ,i_Request.getRequestURL().toString() ,v_XID ,v_Call ,"Y".equalsIgnoreCase(v_Cluster) ,"Y".equalsIgnoreCase(v_SameTime)));
+            i_Response.getWriter().println(this.analyse.analyseObject(v_BasePath ,i_Request.getRequestURL().toString() ,v_XID ,v_Call ,v_CallParams ,"Y".equalsIgnoreCase(v_Cluster) ,"Y".equalsIgnoreCase(v_SameTime)));
         }
     }
     

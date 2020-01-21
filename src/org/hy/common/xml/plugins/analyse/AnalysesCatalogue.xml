@@ -104,7 +104,7 @@
 	    		<appID>MD005</appID>
 	    		<superID>MD001</superID>
 	    		<appName>XSQL调试</appName>
-	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?xid=XSQL的ID标识&call=执行方法(query、execute、executeUpdate)]]></url>
+	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?execute=Y&xid=XSQL的ID标识&call=执行方法(query、execute、executeUpdate)]]></url>
 	    		<actionType>new</actionType>
 	    	</app>
 	    	
@@ -185,7 +185,7 @@
 	    		<appID>ME004</appID>
 	    		<superID>ME001</superID>
 	    		<appName>XSQL组调试</appName>
-	    		<url>:HttpBasePath/analyses/analyseObject?xid=XSQL组ID</url>
+	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?execute=Y&xid=XSQL组ID&call=executes]]></url>
 	    		<actionType>new</actionType>
 	    	</app>
 	    	
@@ -333,7 +333,7 @@
 	    		<appName>执行XJava对象</appName>
 	    		<icon>:HttpBasePath/windows/images/xjavaExecute.png</icon>
 	    		<backgroundColor>#ffc107</backgroundColor>
-	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?xid=对象XID&call=无参的方法名]]></url>
+	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?execute=Y]]></url>
 	    		<actionType>new</actionType>
 	    		<x>940</x>
 	    		<y>280</y>

@@ -36,6 +36,7 @@ import org.hy.common.xml.XSQLDBMetadata;
 import org.hy.common.xml.XSQLLog;
 import org.hy.common.xml.XSQLTriggerInfo;
 import org.hy.common.xml.annotation.Xjava;
+import org.hy.common.xml.log.Logger;
 import org.hy.common.xml.plugins.AppInitConfig;
 import org.hy.common.xml.plugins.XSQLGroup;
 import org.hy.common.xml.plugins.XSQLNode;
@@ -92,10 +93,13 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v18.0 2019-05-29  添加：显示XSQL拥有的应用级触发器的个数
  *              v19.0 2019-07-05  添加：显示云桌面
  *              v20.0 2020-01-15  添加：查看对象信息时，显示成员方法
+ *              v20.1 2020-01-21  添加：带参数执行方法
  */
 @Xjava
 public class AnalyseBase extends Analyse
 {
+    
+    private static final Logger $Logger = new Logger(AnalyseBase.class);
     
     /** 服务器启动时间 */
     private static Date $ServerStartTime = null;
@@ -1893,16 +1897,18 @@ public class AnalyseBase extends Analyse
      *              v2.0  2017-01-17  添加：集群顺次执行对象方法的功能
      *              v3.0  2017-01-20  添加：集群同时执行对象方法的功能（并发）
      *              v4.0  2020-01-15  添加：对象成员方法的Json输出
+     *                                添加：带参数执行方法
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject
      * @param  i_XJavaObjectID   对象标识ID 
      * @param  i_CallMethod      对象方法的全名称（可为空）
+     * @param  i_CallParams      对象方法的执行参数（可为空）
      * @param  i_Cluster         是否为集群
      * @param  i_SameTime        是否为同时执行（并发操作）
      * @return
      */
-    public String analyseObject(String i_BasePath ,String i_ObjectValuePath ,String i_XJavaObjectID ,String i_CallMethod ,boolean i_Cluster ,boolean i_SameTime)
+    public String analyseObject(String i_BasePath ,String i_ObjectValuePath ,String i_XJavaObjectID ,String i_CallMethod ,String i_CallParams ,boolean i_Cluster ,boolean i_SameTime)
     {
         if ( Help.isNull(i_XJavaObjectID) )
         {
@@ -1977,12 +1983,58 @@ public class AnalyseBase extends Analyse
             // 功能2. 执行对象方法 
             else
             {
-                Return<String> v_RetInfo = this.analyseObject_Execute(i_XJavaObjectID ,i_CallMethod ,i_Cluster ,i_SameTime);
+                List<Object> v_CallParams = new ArrayList<Object>();
+                XJSON        v_Json       = new XJSON();
+                
+                if ( !Help.isNull(i_CallParams) )
+                {
+                    String [] v_CallParamArr = i_CallParams.split("%%%");
+                    
+                    for (String v_Param : v_CallParamArr)
+                    {
+                        String [] v_ParamTV    = v_Param.split("@@@");
+                        Class<?>  v_ParamType  = Help.forName(v_ParamTV[0]);
+                        String    v_ParamValue = v_ParamTV.length >= 2 ? v_ParamTV[1] : "";
+                        Object    v_ParamObj   = null;
+                        
+                        if ( Help.isNull(v_ParamValue) )
+                        {
+                            v_ParamObj = Help.toObject(v_ParamType);
+                        }
+                        else if ( "NULL".equalsIgnoreCase(v_ParamValue) )
+                        {
+                            v_ParamObj = null;
+                        }
+                        else if ( !StringHelp.isStartsWith(v_ParamValue ,"java.lang." ,"java.util.Date" ,"org.hy.common.Date") )
+                        {
+                            v_ParamObj = v_Json.toJava(v_ParamValue ,v_ParamType);
+                        }
+                        else
+                        {
+                            v_ParamObj = Help.toObject(v_ParamType ,v_ParamValue);
+                        }
+                        
+                        v_CallParams.add(v_ParamObj);
+                    }
+                }
+                
+                v_Json.setReturnNVL(false);
+                v_Json.setAccuracy(true);
+                if ( Help.isNull(v_CallParams) )
+                {
+                    $Logger.info(Date.getNowTime().getFullMilli() + " Execute method is " + i_XJavaObjectID + "." + i_CallMethod + "().");
+                }
+                else
+                {
+                    $Logger.info(Date.getNowTime().getFullMilli() + " Execute method is " + i_XJavaObjectID + "." + i_CallMethod + "(" + v_Json.toJson(v_CallParams ,"params").toJSONString() + ")");
+                }
+                
+                Return<String> v_RetInfo = this.analyseObject_Execute(i_XJavaObjectID ,i_CallMethod ,v_CallParams.toArray() ,i_Cluster ,i_SameTime);
                 v_Content = v_RetInfo.paramStr;
                 
                 if ( !i_Cluster )
                 {
-                    List<Method> v_Methods = MethodReflect.getMethodsIgnoreCase(v_Object.getClass() ,i_CallMethod ,0);
+                    List<Method> v_Methods = MethodReflect.getMethodsIgnoreCase(v_Object.getClass() ,i_CallMethod ,v_CallParams.size());
                     return StringHelp.replaceAll(this.getTemplateShowObject() 
                                                 ,new String[]{":HttpBasePath" ,":TitleInfo"    ,":XJavaObjectID"                                           ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3" ,":OperateURL4" ,":OperateTitle4" ,":OperateURL5" ,":OperateTitle5"} 
                                                 ,new String[]{i_BasePath      ,"对象方法执行结果" ,i_XJavaObjectID + "." + v_Methods.get(0).getName() + "()"  ,v_Content  ,""});
@@ -2008,15 +2060,17 @@ public class AnalyseBase extends Analyse
      * @author      ZhengWei(HY)
      * @createDate  2017-01-17
      * @version     v1.0
+     *              v2.0  2020-01-16  添加：支持带参数的方法执行
      *
      * @param  i_XJavaObjectID   对象标识ID 
      * @param  i_CallMethod      对象方法的全名称（可为空）
+     * @param  i_CallParams      对象方法的参数对象（可为空）
      * @param  i_Cluster         是否为集群
      * @param  i_SameTime        是否为同时执行（并发操作）
      * @return
      */
     @SuppressWarnings("unchecked")
-    public Return<String> analyseObject_Execute(String i_XJavaObjectID ,String i_CallMethod ,boolean i_Cluster ,boolean i_SameTime)
+    public Return<String> analyseObject_Execute(String i_XJavaObjectID ,String i_CallMethod ,Object [] i_CallParams ,boolean i_Cluster ,boolean i_SameTime)
     {
         Return<String> v_RetInfo = new Return<String>();
         Object         v_Object  = XJava.getObject(i_XJavaObjectID);
@@ -2026,7 +2080,8 @@ public class AnalyseBase extends Analyse
             return v_RetInfo.paramStr("XID is not exists.");
         }
         
-        List<Method> v_Methods = MethodReflect.getMethodsIgnoreCase(v_Object.getClass() ,i_CallMethod ,0);
+        int          v_ParamCount = Help.isNull(i_CallParams) ? 0 : i_CallParams.length;
+        List<Method> v_Methods    = MethodReflect.getMethodsIgnoreCase(v_Object.getClass() ,i_CallMethod ,v_ParamCount);
         if ( Help.isNull(v_Methods) )
         {
             return v_RetInfo.paramStr("Can not find method [" + i_XJavaObjectID + "." + i_CallMethod + "()]!");
@@ -2053,7 +2108,15 @@ public class AnalyseBase extends Analyse
                     v_GXSQ.setLog(true);
                 }
                 
-                Object v_CallRet = v_Methods.get(0).invoke(v_Object);
+                Object v_CallRet = null;
+                if ( Help.isNull(i_CallParams) )
+                {
+                    v_CallRet = v_Methods.get(0).invoke(v_Object);
+                }
+                else
+                {
+                    v_CallRet = v_Methods.get(0).invoke(v_Object ,i_CallParams);
+                }
                 
                 if ( v_GXSQ != null )
                 {
@@ -2099,11 +2162,11 @@ public class AnalyseBase extends Analyse
             
             if ( i_SameTime )
             {
-                v_ClusterResponses = ClientSocketCluster.sendCommands(Cluster.getClusters() ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,false ,false} ,true ,"执行XJava对象");
+                v_ClusterResponses = ClientSocketCluster.sendCommands(Cluster.getClusters() ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,i_CallParams ,false ,false} ,true ,"执行XJava对象");
             }
             else
             {
-                v_ClusterResponses = ClientSocketCluster.sendCommands(Cluster.getClusters()                              ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,false ,false});
+                v_ClusterResponses = ClientSocketCluster.sendCommands(Cluster.getClusters()                              ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,i_CallParams ,false ,false});
             }
             
             v_Ret.append("总体用时：").append(Date.toTimeLen(Date.getNowTime().getTime() - v_StartTime)).append("<br><br>");
@@ -2145,6 +2208,89 @@ public class AnalyseBase extends Analyse
             
             return v_RetInfo.paramStr(v_Ret.toString());
         }
+    }
+    
+    
+    
+    /**
+     * 功能1. 显示带参数执行方法的配置页面
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-01-21
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?XSQLCreateList=Y
+     * @param  i_XJavaObjectID   XJava对象的XID值（可为空）
+     * @param  i_CallMethod      XJava对象的方法名称（可为空）
+     * @param  i_CallParams      对象方法的执行参数（可为空）
+     * @return
+     */
+    public String showExecuteMethod(String i_BasePath ,String i_ObjectValuePath ,String i_XJavaObjectID ,String i_CallMethod ,String i_CallParams)
+    {
+        String []   v_Param1 = new String[] {"java.lang.Void" ,""};
+        String []   v_Param2 = new String[] {"java.lang.Void" ,""};
+        String []   v_Param3 = new String[] {"java.lang.Void" ,""};
+        String []   v_Param4 = new String[] {"java.lang.Void" ,""};
+        String []   v_Param5 = new String[] {"java.lang.Void" ,""};
+        String [][] v_Params = new String[][] {v_Param1 ,v_Param2 ,v_Param3 ,v_Param4 ,v_Param5};
+        String      v_ShowNo = "5";
+        
+        if ( !Help.isNull(i_CallParams) )
+        {
+            String [] v_CallParamArr = i_CallParams.split("%%%");
+            
+            for (int i=0; i<v_CallParamArr.length; i++)
+            {
+                String [] v_ParamTV    = v_CallParamArr[i].split("@@@");
+                String    v_ParamType  = v_ParamTV.length >= 1 ? v_ParamTV[0] : "";
+                String    v_ParamValue = v_ParamTV.length >= 2 ? v_ParamTV[1] : "";
+                
+                v_Params[i][0] = v_ParamType;
+                v_Params[i][1] = v_ParamValue;
+            }
+        }
+        
+        for (int i=0; i<v_Params.length; i++)
+        {
+            if ( "java.lang.Void".equalsIgnoreCase(v_Params[i][0]) )
+            {
+                v_ShowNo = (i + 1) + "";
+                break;
+            }
+        }
+        
+        return StringHelp.replaceAll(this.getTemplateShowExecuteMethod()
+                                    ,new String[]{":HttpBasePath" 
+                                                 ,":xid"                    
+                                                 ,":call"                 
+                                                 ,":PType1"
+                                                 ,":PType2"
+                                                 ,":PType3"
+                                                 ,":PType4"
+                                                 ,":PType5"
+                                                 ,":PValue1"
+                                                 ,":PValue2"
+                                                 ,":PValue3"
+                                                 ,":PValue4"
+                                                 ,":PValue5"
+                                                 ,":ShowDefaultParamNo"
+                                                 }
+                                    ,new String[]{i_BasePath      
+                                                 ,Help.NVL(i_XJavaObjectID) 
+                                                 ,Help.NVL(i_CallMethod)
+                                                 ,v_Param1[0]
+                                                 ,v_Param2[0]
+                                                 ,v_Param3[0]
+                                                 ,v_Param4[0]
+                                                 ,v_Param5[0]
+                                                 ,v_Param1[1]
+                                                 ,v_Param2[1]
+                                                 ,v_Param3[1]
+                                                 ,v_Param4[1]
+                                                 ,v_Param5[1]
+                                                 ,v_ShowNo
+                                                 });
     }
     
     
@@ -3254,6 +3400,13 @@ public class AnalyseBase extends Analyse
     private String getTemplateShowXSQLTablesRef()
     {
         return this.getTemplateContent("template.showXSQLTablesRef.html");
+    }
+    
+    
+    
+    private String getTemplateShowExecuteMethod()
+    {
+        return this.getTemplateContent("template.execute.html");
     }
     
 }

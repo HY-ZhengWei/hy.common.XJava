@@ -1,0 +1,344 @@
+<html>
+<head>
+	<title>执行XJava对象方法</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href=":HttpBasePath/bootstrap-4.3.1-dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" type="text/css" href=":HttpBasePath/jquery/jquery-ui.min.css" />
+
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery-ui.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery.tablednd.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-4.3.1-dist/js/popper.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-4.3.1-dist/js/tooltip.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-4.3.1-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/bootstrap-4.3.1-dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/d3/d3.min.js"></script>
+	
+	<style type="text/css">
+	body { 
+		background-color: white; 
+		width: 100%;
+		display: flex;
+		flex-direction: col;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.contentBar {
+		width: 80%;
+		padding-top: 1em;
+	}
+	
+	.colTitle {
+		width: 9.5em; 
+		font-weight: bold;
+		color: white;
+		background-color: #4395FF;
+	}
+	
+	.paramType {
+		font-weight: bold;
+		color: #4395FF;
+	}
+	</style>
+</head>
+<body>
+
+	<div class="contentBar">
+		
+		<div class="input-group input-group-sm mb-3">
+	  		<div class="input-group-prepend">
+	    		<span class="input-group-text colTitle" id="basic-addon1">XID</span>
+	  		</div>
+	  		<input type="text" id="xid" value=":xid" class="form-control" placeholder="对象的实例ID" aria-label="对象的实例ID" data-toggle="popover" data-placement="bottom" data-content="请填写对象的实例ID" aria-describedby="basic-addon1">
+		</div>
+		
+		<div class="input-group input-group-sm mb-3">
+	  		<div class="input-group-prepend">
+	    		<span class="input-group-text colTitle" id="basic-addon1">Method name</span>
+	  		</div>
+	  		<input type="text" id="call" value=":call" class="form-control" placeholder="方法名称" aria-label="方法名称" data-toggle="popover" data-placement="bottom" data-content="请填写方法名称" aria-describedby="basic-addon1">
+		</div>
+		
+		<div class="input-group input-group-sm mb-3" id="paramBar1">
+			<div class="input-group-prepend">
+				<span class="input-group-text colTitle" id="basic-addon1">Method param 1</span>
+			</div>
+			<input type="text" value=":PType1" class="form-control paramTypeName" placeholder="参数类型（填写类型的全路径）" aria-label="（填写类型的全路径）" aria-describedby="basic-addon1">
+			<div class="input-group-append">
+			    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">类型选择</button>
+			    <div class="dropdown-menu"></div>
+			</div>
+			<div class="input-group input-group-sm">
+				<textarea class="form-control paramValue" placeholder="方法参数（Json格式）" aria-label="方法参数（Json格式）" aria-describedby="basic-addon1">:PValue1</textarea>
+			</div>
+		</div>
+		
+		<div class="input-group input-group-sm mb-3" id="paramBar2">
+			<div class="input-group-prepend">
+				<span class="input-group-text colTitle" id="basic-addon1">Method param 2</span>
+			</div>
+			<input type="text" value=":PType2" class="form-control paramTypeName" placeholder="参数类型（填写类型的全路径）" aria-label="（填写类型的全路径）" aria-describedby="basic-addon1">
+			<div class="input-group-append">
+			    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">类型选择</button>
+			    <div class="dropdown-menu"></div>
+			</div>
+			<div class="input-group input-group-sm">
+				<textarea class="form-control paramValue" placeholder="方法参数（Json格式）" aria-label="方法参数（Json格式）" aria-describedby="basic-addon1">:PValue2</textarea>
+			</div>
+		</div>
+		
+		<div class="input-group input-group-sm mb-3" id="paramBar3">
+			<div class="input-group-prepend">
+				<span class="input-group-text colTitle" id="basic-addon1">Method param 3</span>
+			</div>
+			<input type="text" value=":PType3" class="form-control paramTypeName" placeholder="参数类型（填写类型的全路径）" aria-label="（填写类型的全路径）" aria-describedby="basic-addon1">
+			<div class="input-group-append">
+			    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">类型选择</button>
+			    <div class="dropdown-menu"></div>
+			</div>
+			<div class="input-group input-group-sm">
+				<textarea class="form-control paramValue" placeholder="方法参数（Json格式）" aria-label="方法参数（Json格式）" aria-describedby="basic-addon1">:PValue3</textarea>
+			</div>
+		</div>
+		
+		<div class="input-group input-group-sm mb-3" id="paramBar4">
+			<div class="input-group-prepend">
+				<span class="input-group-text colTitle" id="basic-addon1">Method param 4</span>
+			</div>
+			<input type="text" value=":PType4" class="form-control paramTypeName" placeholder="参数类型（填写类型的全路径）" aria-label="（填写类型的全路径）" aria-describedby="basic-addon1">
+			<div class="input-group-append">
+			    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">类型选择</button>
+			    <div class="dropdown-menu"></div>
+			</div>
+			<div class="input-group input-group-sm">
+				<textarea class="form-control paramValue" placeholder="方法参数（Json格式）" aria-label="方法参数（Json格式）" aria-describedby="basic-addon1">:PValue4</textarea>
+			</div>
+		</div>
+		
+		<div class="input-group input-group-sm mb-3" id="paramBar5">
+			<div class="input-group-prepend">
+				<span class="input-group-text colTitle" id="basic-addon1">Method param 5</span>
+			</div>
+			<input type="text" value=":PType5" class="form-control paramTypeName" placeholder="参数类型（填写类型的全路径）" aria-label="（填写类型的全路径）" aria-describedby="basic-addon1">
+			<div class="input-group-append">
+			    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">类型选择</button>
+			    <div class="dropdown-menu"></div>
+			</div>
+			<div class="input-group input-group-sm"> 
+				<textarea class="form-control paramValue" placeholder="方法参数（Json格式）" aria-label="方法参数（Json格式）" aria-describedby="basic-addon1">:PValue5</textarea>
+			</div>
+		</div>
+		
+		<div class="input-group mb-3">
+			<button type="button" class="btn btn-primary form-control" id="executeXJava">执行方法</button>
+		</div>
+		
+		
+		<div id="contents" >
+	    	<div id="codeEditor"></div>
+			<input id="splitter"   type="hidden" />
+			<input id="buttons"    type="hidden" /> 
+			<input id="toTree"     type="hidden" />   
+			<input id="toCode"     type="hidden" />   
+			<input id="drag"       type="hidden" />  
+			<input id="treeEditor" type="hidden" />   
+  		</div>
+		
+	</div>
+	
+	
+	
+	<script type="text/javascript">
+	
+	var v_ParamCount = 5;
+	var v_ParamTypes = ["java.lang.Void"
+		               ,""
+		               ,"java.lang.String"
+		               ,"java.lang.Character"
+		               ,""
+		               ,"java.lang.Integer"
+		               ,"java.lang.Long"
+		               ,"java.lang.Float"
+		               ,"java.lang.Double"
+		               ,"java.lang.Short"
+		               ,"java.lang.Number"
+		               ,""
+		               ,"java.util.Date"
+		               ,"org.hy.common.Date"
+		               ,""
+		               ,"java.lang.Boolean"
+		               ,"java.lang.Byte"
+		               ,""
+		               ,"java.util.ArrayList"
+		               ,"java.util.HashMap"
+		               ,"java.lang.Class"
+		               ,"xx.xx.xx.自定义对象"];
+	
+	
+	
+	/**
+	 * 某项参数的参数类型选择列表项被点击选择时
+	 *
+     * @author      ZhengWei(HY)
+     * @createDate  2020-01-16
+     * @version     v1.0
+     *
+     * @param i_ParamNo         参数序号，下标从1开始
+     * @param i_ParamTypeIndex  参数类型的索引号，下标从0开始
+     * @return
+	 */
+	function paramTypeOnClick(i_ParamNo ,i_ParamTypeIndex)
+	{
+		var v_ParamTypeText = d3.select("#paramBar" + i_ParamNo).select(".paramTypeName");
+		if ( !v_ParamTypeText )
+		{
+			return;
+		}
+		
+		v_ParamTypeText.property("value" ,v_ParamTypes[i_ParamTypeIndex]);
+		
+		if ( i_ParamTypeIndex == 0 )
+		{
+			for (var i=i_ParamNo + 1; i<=v_ParamCount; i++)
+			{
+				d3.select("#paramBar" + i).style("opacity" ,"0");
+				d3.select("#paramBar" + i).select(".paramTypeName").property("value" ,"");
+			}
+		}
+		else if ( i_ParamNo < v_ParamCount )
+		{
+			d3.select("#paramBar" + (i_ParamNo + 1)).style("opacity" ,"1");
+		}
+	}
+	
+	
+	
+	/**
+	 * 创建某项参数的参数类型选择列表项
+	 *
+     * @author      ZhengWei(HY)
+     * @createDate  2020-01-16
+     * @version     v1.0
+     *
+     * @param i_ParamNo   参数序号，下标从1开始
+     * @return
+	 */
+	function makeParamTypeSelect(i_ParamNo)
+	{
+		var v_ParamTypeSelectBar = d3.select("#paramBar" + i_ParamNo).select(".dropdown-menu");
+		if ( !v_ParamTypeSelectBar )
+		{
+			return;
+		}
+		
+		for (var i=0; i<v_ParamTypes.length; i++)
+		{
+			var v_PType     = v_ParamTypes[i];
+			var v_PTypeKeys = v_PType.split(".");
+			var v_PTypeKey  = v_PTypeKeys[v_PTypeKeys.length - 1];
+			var v_PTypeKeyI = v_PType.indexOf("." + v_PTypeKey);
+			var v_PTypePage = "";
+			
+			if ( v_PTypeKeyI >= 0 )
+			{
+				v_PTypePage = v_PType.substr(0 ,v_PTypeKeyI + 1); 
+			}
+			
+			if ( v_PType == "" )
+			{
+				v_ParamTypeSelectBar.append("div")
+				.attr("class" ,"dropdown-divider")
+				.attr("role"  ,"separator");
+			}
+			else
+			{
+				v_ParamTypeSelectBar.append("a")
+				.attr("class" ,"dropdown-item")
+				.attr("data-paramTypeIndex" ,i)
+				.html(v_PTypePage + "<span class='paramType'>" + v_PTypeKey + "</<span>")
+				.on("click" ,function()
+				{
+					paramTypeOnClick(i_ParamNo ,d3.select(this).attr("data-paramTypeIndex"));
+				});
+			}
+		}
+	}
+	
+	
+	
+	/**
+	 * 执行方法的点击事件
+	 *
+     * @author      ZhengWei(HY)
+     * @createDate  2020-01-20
+     * @version     v1.0
+     *
+     * @return
+	 */
+	d3.select("#executeXJava").on("click" ,function()
+	{
+		if ( $("#xid").val() == "" )
+		{
+			$("#xid").popover('show');
+			$("#xid").focus();
+			return;
+		}
+		if ( $("#call").val() == "" )
+		{
+			$("#call").popover('show');
+			$("#call").focus();
+			return;
+		}
+		
+		var v_CallParams = "";
+		for (var i=1; i<=v_ParamCount; i++)
+		{
+			var v_ParamBar   = d3.select("#paramBar" + i);
+			var v_ParamType  = v_ParamBar.select(".paramTypeName").property("value");
+			var v_ParamValue = v_ParamBar.select(".paramValue")   .property("value");
+			
+			if ( v_ParamType == "" || v_ParamType.toLowerCase() == "java.lang.void" )
+			{
+				break;
+			}
+			
+			if ( v_CallParams != "" )
+			{
+				v_CallParams += "%%%";
+			}
+			v_CallParams += v_ParamType + "@@@" + v_ParamValue; 
+		}
+		
+		var v_URL = "analyseObject"
+		          + "?cluster=N"
+		          + "&sameTime=N"
+		          + "&xid=" + $("#xid").val()
+		          + "&call=" + $("#call").val()
+		          + "&callParams=" + encodeURI(v_CallParams);
+		window.open(v_URL ,"_blank");
+		
+	});
+	
+	
+	
+	/* 初始化页面 */
+	$(function()
+	{
+		for (var i=1; i<=v_ParamCount; i++)
+		{
+			makeParamTypeSelect(i);
+		}
+		$('.dropdown-toggle').dropdown();
+		
+		var v_ShowDefaultParamNo = :ShowDefaultParamNo;
+		if ( v_ShowDefaultParamNo < v_ParamCount )
+		{
+			paramTypeOnClick(v_ShowDefaultParamNo ,0);
+		}
+	});
+	
+	</script>
+	
+</body>
+</html>
