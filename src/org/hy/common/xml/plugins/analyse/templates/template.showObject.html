@@ -1,98 +1,87 @@
 <!DOCTYPE html>
 <html lang="zh-cn">
 <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
- 
 <title>:TitleInfo</title>
-<style type="text/css"> 
 
-.userInfoModify_logininfobody{ width:1020px;margin:0 auto;margin-top:10px;}
-.userInfoModify_logininfo{ width:970px;margin:0 auto;margin-left:30px;}
-.userInfoModify_logininfo1{ width:970px;margin:0 auto;margin-left:30px;}
-.userInfoModify_labeTag,.userInfoModify_inputTag,.userInfoModify_checkTag{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px;background-color:#D5DDF6;}
-.userInfoModify_labeTag1,.userInfoModify_inputTag1,.userInfoModify_checkTag1{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
-.userInfoModify_labeTag2,.userInfoModify_inputTag2,.userInfoModify_checkTag2{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;border:#97B0F8 solid 0px;}
-.userInfoModify_clearTag {clear:both;height:36px;margin-t	op:0px;} 
-.userInfoModify_clearTag1 {clear:both;height:36px;margin-top:0px;} 
-.userInfoModify_clearTag2 {clear:both;height:35px;margin-top:0px;} 
-.userInfoModify_labeTag { width:50px;text-align:center;border:#97B0F8 solid 1px;  } 
-.userInfoModify_inputTag{ width:200px; vertical-align:middle;text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
-.userInfoModify_checkTag{ width:710px; text-align:center;border:#97B0F8 solid 1px;} 
-.userInfoModify_labeTag1 { width:50px;text-align:center; border:#97B0F8 solid 1px; } 
-.userInfoModify_inputTag1{ width:200px; vertical-align:middle;text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
-.userInfoModify_checkTag1{ width:710px; text-align:left;border:#97B0F8 solid 1px;} 
-.cont_show{ width:680px; margin-left:10px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; }
+<style type="text/css">
+a { 
+	color: #669900; 
+	text-decoration: none; 
+	outline: none;
+}
 
-.userInfoModify_labeTag2 { width:50px;text-align:center;  } 
-.userInfoModify_inputTag2{ width:200px; vertical-align:middle;text-align:center;}  
-.userInfoModify_checkTag2{ width:710px; text-align:left;} 
-a{ color:#669900; text-decoration:none; outline:none;}
-a:hover{color:#99CC00;text-decoration:none;}
+a:hover {
+	color: #99CC00;
+	text-decoration: none;
+}
+
+.titleBar {
+	display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#jsoneditor {
+	width: 100%;
+	height: 750px;
+}
 </style>
+<link rel="stylesheet" type="text/css" href=":HttpBasePath/jsoneditor/jsoneditor.min.css" />
+<link rel="stylesheet" type="text/css" href=":HttpBasePath/jsoneditor/darktheme.css" />
+
 <script type="text/javascript" src=":HttpBasePath/jquery/jquery.min.js"></script> 
-<link rel="stylesheet" type="text/css" href=":HttpBasePath/jsoneditor-3.1.2/app-min.css"></link>
-<link rel="stylesheet" type="text/css" href=":HttpBasePath/jsoneditor-3.1.2/jsoneditor.min.css"></link>
-<script type="text/javascript" src=":HttpBasePath/jsoneditor-3.1.2/jsoneditor.min.js"></script>
-<script type="text/javascript" src=":HttpBasePath/jsoneditor-3.1.2/ace.js"></script>
-<script type="text/javascript" src=":HttpBasePath/jsoneditor-3.1.2/app-min.js"></script>
+<script type="text/javascript" charset="utf-8" src=":HttpBasePath/jsoneditor/jsoneditor.min.js"></script>
 
-<script type="text/javascript">
+<body>
 
-	function v_Tittle()
-	{
-		$(".poweredBy").html(":TitleInfo");
-	}
-    
-    
-</script>
-<body onload="v_Tittle();">
-
-<div id="auto" style="height: 95%;">
-<div>
-	<div id="title_info" class="pull-left" style="margin-top:-20px;">
-		 <input id="clear"         type="hidden" />
-		 <input id="menuOpenFile"  type="hidden" />
-		 <input id="menuOpenUrl"   type="hidden" />
-	     <input id="save"          type="hidden" />
+<div style="width:100%;">
+	<div class="titleBar">
+		<div>
 对象标识ID为： :XJavaObjectID &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=":OperateURL1">:OperateTitle1</a>
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=":OperateURL2">:OperateTitle2</a>
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=":OperateURL3">:OperateTitle3</a>
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=":OperateURL4">:OperateTitle4</a>
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=":OperateURL5">:OperateTitle5</a>
+                               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=":OperateURL2">:OperateTitle2</a>
+                               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=":OperateURL3">:OperateTitle3</a>
+                               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=":OperateURL4">:OperateTitle4</a>
+                               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=":OperateURL5">:OperateTitle5</a>
+		</div>
 	</div>
-	
+
+	<div id="jsoneditor"></div>
 </div>
-  <div id="contents" >
-    <div id="codeEditor"></div>
-	 <input id="splitter"   type="hidden" />
-	 <input id="buttons"    type="hidden" /> 
-	 <input id="toTree"     type="hidden" />   
-	 <input id="toCode"     type="hidden" />   
-     <input id="drag"       type="hidden" />  
-     <input id="treeEditor" type="hidden" />   
-    <script type="text/javascript"> 
-	var e = :Content;
-      app.load(e);
-      app.resize();
-    </script>
- 
-  </div>
-</div>
+
 
 <script type="text/javascript">
-$(function(){
-	$('.compact').tooltip({
-		placement:'right',
-		trigger:'hover'
+	
+	var v_JsonOption = {mode: 'tree'
+			           ,modes: ['code' ,'tree' ,'view']
+	                   };
+	var v_JsonEditor = null;
+	
+	
+	
+	function jsonEditorResize()
+	{
+		$("#jsoneditor").css("height" ,($(window).height() - 70) + "px");
+	}
+	
+	
+	
+	/* 初始化页面 */
+	$(function()
+	{
+		v_JsonEditor = new JSONEditor(document.getElementById('jsoneditor'), v_JsonOption);
+		v_JsonEditor.set(:Content);
+		
+		
+		$(window).resize(function() 
+		{
+			jsonEditorResize();
+		});
+		jsonEditorResize();
 	});
-	$('.format').tooltip({
-		placement:'right',
-		trigger:'hover'
-	});
-	$('a[data-toggle=tooltip]').mouseover(function() {
-	 	$(this).tooltip('show');
-	});
-});
-</script>
 
+</script>
 </body>
 </html>
