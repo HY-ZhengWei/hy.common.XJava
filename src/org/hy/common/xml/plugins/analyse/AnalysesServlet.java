@@ -63,6 +63,9 @@ public class AnalysesServlet extends HttpServlet
         String v_BasePath   = i_Request.getScheme() + "://" + i_Request.getServerName() + ":" + i_Request.getServerPort() + i_Request.getContextPath();
         String v_RequestURL = i_Request.getRequestURL().toString();
         
+        // System.out.println("-- getScheme()        =" + i_Request.getScheme());
+        // System.out.println("-- X-Forwarded-Scheme =" + i_Request.getHeader("X-Forwarded-Scheme"));
+        
         if ( v_RequestURL.indexOf("analyses/windows/") >= 0 )
         {
             if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".css") )

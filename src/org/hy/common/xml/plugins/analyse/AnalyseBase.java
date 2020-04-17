@@ -94,6 +94,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v19.0 2019-07-05  添加：显示云桌面
  *              v20.0 2020-01-15  添加：查看对象信息时，显示成员方法
  *              v20.1 2020-01-21  添加：带参数执行方法
+ *              v21.0 2020-04-17  添加：定时任务添加“云主机”IP的显示
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -2908,6 +2909,7 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":LastTime"     ,v_JReport.getLastTime());
             v_RKey.put(":NextTime"     ,v_JReport.getNextTime());
             v_RKey.put(":JobDesc"      ,v_JReport.getJobDesc());
+            v_RKey.put(":CloudServer"  ,Help.NVL(v_JReport.getCloudServer() ,"本机"));
             
             v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
         }
