@@ -180,6 +180,8 @@ public class XSQLNode implements XJavaID
      * 当检查不通过时，是否允许其后的XSQL节点执行。默认为：true
      * 
      * 当为 true 时，检查只影响自己的节点，不影响其它及其后XSQL节点的执行。
+     * 
+     * 注意:递归循环（自循环）时，建议为：noPassContinue = false
      */
     private boolean                      noPassContinue;
     
