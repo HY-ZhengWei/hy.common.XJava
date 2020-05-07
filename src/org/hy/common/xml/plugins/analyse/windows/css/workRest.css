@@ -1,0 +1,483 @@
+body {
+    
+}
+
+.workRestBody {
+    background-color: white;
+    display: flex;
+    flex-direction: column; 
+}
+
+.topBar_Fixed {
+    position: sticky;
+    top: 0px;
+    width: 100%;
+    display: flex;
+    flex-direction: column; 
+}
+
+.topBar {
+    display: flex;
+    flex-direction: row; 
+    align-items: center;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+    background-color: #4395FF;
+    color: white;
+}
+
+.loginButton {
+    background-color: #4395FF;
+    border-color: #4395FF;
+    margin: 0px;
+    padding: 0px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100px;
+}
+
+.loginButton::after { 
+    border: none;
+    margin: 0px;
+    padding: 0px;
+}
+
+.menusImg {
+    width: 50px;
+    height: 50px;
+}
+
+.menusLogin {
+    color: white;
+}
+
+.weekAndYear {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+    color: white;
+}
+
+.loginBar {
+    position: absolute;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.userinfo-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 20px;
+    border: 1rxp solid white;
+}
+
+.weekBar {
+    display: flex;
+    flex-direction: row;
+    color: white;
+    background-color: #4395FF;
+    justify-content: space-around;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+}
+
+.weekBar_Fixed {
+    position: sticky;
+    top: 0px;
+    width: 100%;
+}
+
+.dateBar {
+    display: flex;
+    flex-direction: column;
+    margin-top: 5px;
+    margin-bottom: 35px;
+}
+
+.monthBar {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid gainsboro;
+    padding-bottom: 20px;
+    font-weight: bold;
+}
+
+.daysBar {
+    display: flex;
+    flex-direction: column;
+}
+
+.daysRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    border: 0px solid red;
+}
+
+/** 默认的日期大小。如，Android手机 */
+.daysColumn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    border: 0px solid gray;
+}
+
+/** IPad的日期大小 height: 107px; */
+.daysColumnIPad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    border: 0px solid gray;
+}
+
+.daysColumnToday {
+    border-radius: 20%;
+    border: 1px solid #4395FF;
+}
+
+.daysColumnClick {
+    border-radius: 20%;
+    border: 1px dashed #4395FF;
+}
+
+.haveDayCount {
+    border: 0px solid black;
+    border-radius: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
+    margin: 0px;
+    background-color: orchid;
+    color: white;
+}
+
+.day {
+    font-weight: normal;
+}
+
+/* 日期上半部分选中 */
+.daysColumn50Top {
+    background: linear-gradient(#d8ecf9 50% ,transparent 50%);
+}
+
+/* 日期下半部分选中 */
+.daysColumn50Bottom {
+    background: linear-gradient(transparent 50% ,#d8ecf9 50%);
+}
+
+/* 日期全部选中 */
+.daysColumn100 {
+    background: #d8ecf9;
+}
+
+.menu {
+    position: fixed;
+    width: 90px;
+    height: 90px;
+    padding: 0px;
+    margin: 0px;
+    background-color: #4395FF;
+    border-radius: 50%;
+    border: 1px solid gainsboro; 
+    opacity: 0.8;
+    -webkit-box-shadow: gray 0px 0px 10px;
+    -moz-box-shadow: gray 0px 0px 10px;
+    box-shadow: gray 0px 0px 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.menuInfo {
+    color: white;
+}
+
+/** 帮助信息 */
+.helpMePage {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+}
+
+.helpMeTitle {
+    position: fixed;
+    top: 50px;
+    color: black;
+}
+
+.companyName {
+    position: fixed;
+    bottom: 50px;
+    color: gray;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.helpControlBar {
+    position: fixed;
+    bottom: 100px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: flex-start;
+}
+
+.helpIndexBar {
+    color: gray;
+    position: fixed;
+    bottom: 40px;
+}
+
+.helpControlButton {
+    color: white;
+}
+
+.helpBar {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.helpDayBar {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.helpDayBar_Left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.helpDay {
+    width: 130px;
+    height: 130px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.helpDayBorder {
+    border: 1px dashed gainsboro;
+}
+
+.helpPushUp {
+    width: 217px;
+    height: 350px;
+}
+
+.helpPushDown {
+    width: 240px;
+    height: 229px;
+}
+
+.helpArrowDown {
+    width: 109px;
+    height: 64px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.helpDayTitleBar {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.helpDayTitle01 {
+    color: gray;
+}
+
+.helpDayTitle02 {
+    color: black;
+    font-weight: bold;
+}
+
+.helpDayTitle03 {
+    color: gray;
+}
+
+.helpMenu {
+    width: 90px;
+    height: 90px;
+    padding: 0px;
+    margin: 0px;
+    background-color: #4395FF;
+    border-radius: 50%;
+    border: 1px solid gainsboro; 
+    opacity: 0.8;
+    -webkit-box-shadow: gray 0px 0px 10px;
+    -moz-box-shadow: gray 0px 0px 10px;
+    box-shadow: gray 0px 0px 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.helpWorkRestBtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 90px;
+    width: 90px;
+    border: 1px solid gainsboro;
+    border-radius: 50%;
+    color: white;
+}
+
+/* 工作标记的字体颜色 */
+.helpWork_Color {
+    background-color: orange;
+}
+
+/* 休息标记的字体颜色 */
+.helpRest_Color {
+    background-color: seagreen;
+}
+
+
+
+
+
+/* 正常班为上班的日期背景 */
+.daysColumnWork {
+    background: LavenderBlush;
+}
+
+/* 正常班为公休日的日期背景 */
+.daysColumnRest {
+    background: #edf6fc;
+}
+
+/* 置灰日期的颜色 */
+.disable_Color {
+    color: lightgray;
+}
+
+/* 工作标记的字体颜色 */
+.work_Color {
+    color: orangered;
+}
+
+/* 休息标记的字体颜色 */
+.rest_Color {
+    color: seagreen;
+}
+
+/* 星期6、星期天的颜色 */
+.restDayOfWeek_Color {
+    color: white;
+}
+
+/* 假日日期的描述颜色 */
+.holiday_Color {
+    color: #4395FF;
+}
+
+/* 农历日期的描述颜色 */
+.lunar_Color {
+    color: darkgray;
+}
+
+
+
+
+
+/* 日期点击的详细信息面板 */
+#dayInfoBar {
+    position: sticky;
+    left: 0px;
+    bottom: 0px;
+    width: calc(100% - 2px);
+    height: 0px;
+    background-color: rgba(52,73,94,0.5);
+    opacity: 0.5;
+    border: 1px solid ghostwhite;
+    border-radius: 10px;
+    visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 30px;
+    padding-bottom: 8px;
+}
+
+.dayInfoTitle {
+    position: absolute;
+    left: 5px;
+    top: 3px;
+    color: white;
+}
+
+.dayInfoBarClose {
+    position: absolute;
+    right: 5px;
+    top: 3px;
+}
+
+.dayInfoTaskBar {
+    width: calc(100% - 10px);
+    height: 40px;
+    border: 1px solid gray;
+    border-radius: 5px;
+    background-color: white;
+    color: white;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 5px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    cursor: pointer;
+}
+
+.dayInfoTaskIsTimeout {
+    background-color: red;
+    width: 10px;
+    height: 20px;
+    border-radius: 3px;
+}
+
+.dayInfoTaskMessage {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 5px;
+}

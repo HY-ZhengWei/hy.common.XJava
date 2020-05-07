@@ -20,7 +20,7 @@
 	    		<icon>:HttpBasePath/windows/images/xjavaXml.png</icon>
 	    		<backgroundColor>#FFA54F</backgroundColor>
 	    		<url>:HttpBasePath/analyses/analyseObject</url>
-	    		<x>830</x>
+	    		<x>610</x>
 	    		<y>170</y>
 	    		<desktopShow>true</desktopShow>
 	    		<sizeType>longWidth</sizeType>
@@ -33,7 +33,7 @@
 	    		<icon>:HttpBasePath/windows/images/webFolder.png</icon>
 	    		<backgroundColor>#b2a6f5</backgroundColor>
 	    		<url>:HttpBasePath/analyses/analyseObject?FS=Y</url>
-	    		<x>280</x>
+	    		<x>60</x>
 	    		<y>170</y>
 	    		<desktopShow>true</desktopShow>
 	    		<sizeType>max</sizeType>
@@ -46,7 +46,7 @@
 	    		<icon>:HttpBasePath/windows/images/cluster.png</icon>
 	    		<backgroundColor>#b0c4de</backgroundColor>
 	    		<url>:HttpBasePath/analyses/analyseObject?cluster=Y</url>
-	    		<x>280</x>
+	    		<x>60</x>
 	    		<y>390</y>
 	    		<desktopShow>true</desktopShow>
 	    		<sizeType>max</sizeType>
@@ -68,7 +68,7 @@
 	    		<icon>:HttpBasePath/windows/images/xsql.png</icon>
 	    		<backgroundColor>#90ee90</backgroundColor>
 	    		<url>:HttpBasePath/analyses/analyseDB</url>
-	    		<x>555</x>
+	    		<x>335</x>
 	    		<y>280</y>
 	    		<desktopShow>true</desktopShow>
 	    	</app>
@@ -81,7 +81,7 @@
 	    		<icon>:HttpBasePath/windows/images/xsqlRefTable.png</icon>
 	    		<backgroundColor>#f2bf5e</backgroundColor>
 	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?dsgid=*]]></url>
-	    		<x>555</x>
+	    		<x>335</x>
 	    		<y>390</y>
 	    		<desktopShow>true</desktopShow>
 	    	</app>
@@ -94,7 +94,7 @@
 	    		<icon>:HttpBasePath/windows/images/xsqlToTable.png</icon>
 	    		<backgroundColor>#38c3d9</backgroundColor>
 	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?tableRef=Y&dsgid=*]]></url>
-	    		<x>665</x>
+	    		<x>445</x>
 	    		<y>390</y>
 	    		<desktopShow>true</desktopShow>
 	    	</app>
@@ -124,7 +124,7 @@
 	    		<icon>:HttpBasePath/windows/images/exception.png</icon>
 	    		<backgroundColor>#DC3545</backgroundColor>
 	    		<url>:HttpBasePath/analyses/analyseObject?xid=$SQLBuswayError</url>
-	    		<x>555</x>
+	    		<x>335</x>
 	    		<y>500</y>
 	    		<desktopShow>true</desktopShow>
 	    	</app>
@@ -161,7 +161,7 @@
 	    		<icon>:HttpBasePath/windows/images/xsqlGroup.png</icon>
 	    		<backgroundColor>#3CB371</backgroundColor>
 	    		<url>:HttpBasePath/analyses/analyseDB?type=Group</url>
-	    		<x>665</x>
+	    		<x>445</x>
 	    		<y>280</y>
 	    		<desktopShow>true</desktopShow>
 	    	</app>
@@ -175,7 +175,7 @@
 	    		<backgroundColor>#4395FF</backgroundColor>
 	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?XSGFlow=Y&xid=XSQL组ID]]></url>
 	    		<actionType>new</actionType>
-	    		<x>665</x>
+	    		<x>445</x>
 	    		<y>500</y>
 	    		<desktopShow>true</desktopShow>
 	    	</app>
@@ -205,7 +205,7 @@
 	    		<icon>:HttpBasePath/windows/images/connectPool.png</icon>
 	    		<backgroundColor>#fa9b9b</backgroundColor>
 	    		<url>:HttpBasePath/analyses/analyseObject?DSG=Y</url>
-	    		<x>555</x>
+	    		<x>335</x>
 	    		<y>170</y>
 	    		<desktopShow>true</desktopShow>
 	    		<sizeType>longWidth</sizeType>
@@ -247,7 +247,7 @@
 	    		<icon>:HttpBasePath/windows/images/timerCluster.png</icon>
 	    		<backgroundColor>#dda0dd</backgroundColor>
 	    		<url>:HttpBasePath/analyses/analyseObject?JobDisasterRecoverys=Y</url>
-	    		<x>1215</x>
+	    		<x>995</x>
 	    		<y>280</y>
 	    		<desktopShow>true</desktopShow>
 	    	</app>
@@ -260,7 +260,7 @@
 	    		<icon>:HttpBasePath/windows/images/timer.png</icon>
 	    		<backgroundColor>#6C757D</backgroundColor>
 	    		<url>:HttpBasePath/analyses/analyseObject?Job=Y</url>
-	    		<x>1105</x>
+	    		<x>885</x>
 	    		<y>280</y>
 	    		<desktopShow>true</desktopShow>
 	    	</app>
@@ -274,7 +274,7 @@
 	    		<icon>:HttpBasePath/windows/images/tpool.png</icon>
 	    		<backgroundColor>#343A40</backgroundColor>
 	    		<url>:HttpBasePath/analyses/analyseObject?ThreadPool=Y</url>
-	    		<x>1105</x>
+	    		<x>885</x>
 	    		<y>170</y>
 	    		<desktopShow>true</desktopShow>
 	    		<sizeType>longWidth</sizeType>
@@ -321,7 +321,7 @@
 	    		<backgroundColor>#d1cfcb</backgroundColor>
 	    		<url>:HttpBasePath/analyses/analyseObject?xid=对象XID</url>
 	    		<actionType>new</actionType>
-	    		<x>830</x>
+	    		<x>610</x>
 	    		<y>280</y>
 	    		<desktopShow>true</desktopShow>
 	    	</app>
@@ -335,7 +335,7 @@
 	    		<backgroundColor>#ffc107</backgroundColor>
 	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?execute=Y]]></url>
 	    		<actionType>new</actionType>
-	    		<x>940</x>
+	    		<x>720</x>
 	    		<y>280</y>
 	    		<desktopShow>true</desktopShow>
 	    	</app>

@@ -253,6 +253,46 @@ public class AnalyseBase extends Analyse
     
     
     /**
+     * 功能1. 显示多屏同显
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-05-07
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject
+     * @return
+     */
+    public String showMultiWindows(String i_BasePath ,String i_ObjectValuePath)
+    {
+        return StringHelp.replaceAll(this.getTemplateShowMultiWindows()
+                                    ,new String[]{":Title"   ,":HttpBasePath" ,":HttpValuePath"}
+                                    ,new String[]{"积木大屏" ,i_BasePath      ,i_ObjectValuePath});
+    }
+    
+    
+    
+    /**
+     * 功能1. 显示工作日历
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-05-07
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject
+     * @return
+     */
+    public String showWorkRest(String i_BasePath ,String i_ObjectValuePath)
+    {
+        return StringHelp.replaceAll(this.getTemplateShowWorkRest()
+                                    ,new String[]{":Title"   ,":HttpBasePath" ,":HttpValuePath"}
+                                    ,new String[]{"工作日历" ,i_BasePath      ,i_ObjectValuePath});
+    }
+    
+    
+    
+    /**
      * 功能1. 显示大纲目录
      * 
      * @author      ZhengWei(HY)
@@ -3266,13 +3306,6 @@ public class AnalyseBase extends Analyse
     
     
     
-    private String getTemplateShowWindows()
-    {
-        return this.getTemplateContent("windows.html" ,"org.hy.common.xml.plugins.analyse.windows");
-    }
-    
-    
-    
     private String getTemplateShowObjectsContent()
     {
         return this.getTemplateContent("template.showObjectsContent.html");
@@ -3283,6 +3316,27 @@ public class AnalyseBase extends Analyse
     private String getTemplateShowObjectsContent2URL()
     {
         return this.getTemplateContent("template.showObjectsContent2URL.html");
+    }
+    
+    
+    
+    private String getTemplateShowWindows()
+    {
+        return this.getTemplateContent("windows.html" ,"org.hy.common.xml.plugins.analyse.windows");
+    }
+    
+    
+    
+    private String getTemplateShowMultiWindows()
+    {
+        return this.getTemplateContent("multiWindows.html" ,"org.hy.common.xml.plugins.analyse.windows");
+    }
+    
+    
+    
+    private String getTemplateShowWorkRest()
+    {
+        return this.getTemplateContent("workRest.html" ,"org.hy.common.xml.plugins.analyse.windows");
     }
     
     

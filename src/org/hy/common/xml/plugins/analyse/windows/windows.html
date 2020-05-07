@@ -12,6 +12,7 @@
 	<link rel="stylesheet" href=":HttpBasePath/analyses/windows/css/windowPage.css" />
 	<link rel="stylesheet" href=":HttpBasePath/analyses/windows/css/windowTask.css" />
 	<link rel="stylesheet" href=":HttpBasePath/analyses/windows/css/windowStartMenu.css" />
+    <link rel="stylesheet" href=":HttpBasePath/analyses/windows/css/windowRightBar.css" />
 
     <script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery.min.js"></script>
     <script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery-ui.min.js"></script>
@@ -587,6 +588,23 @@
 	</div>
 	
 	
+	<div id="windowRightBar">
+	   <iframe id="windowRightURL" src=":HttpBasePath/analyses/windows/workRest.html" width="100%" height="100%" frameborder="no" border="0" marginwidth="0" marginheight="0" allowtransparency="yes"></iframe>
+	   <div id="windowRightBarOpenClose" class="windowRightBarToOpen">&lt;</div>
+	</div>
+	
+	
+    <div id="windowRightChildBar">
+        <div class="windowRightChildTitleBar">
+            <div class="windowRightChildGoBack">&lt;</div>
+            <div class="windowRightChildTitle">标题</div>
+        </div>
+        
+        <iframe id="windowRightChildURL" src="" width="100%" height="100%" frameborder="no" border="0" marginwidth="0" marginheight="0" allowtransparency="yes"></iframe>
+        <div id="windowRightChildBarOpenClose" class="windowRightBarToOpen">&lt;</div>
+    </div>
+	
+	
 	
 	<script type="text/javascript">
 		d3.select("#newAppDialog") .call(v_HtmlDrag);
@@ -598,7 +616,8 @@
 		
 		var v_IsCommit          = false;
 		var v_UserID            = "";
-		var v_DefaultWindowIcon = ":HttpBasePath/windows/images/windowTask.png";     /* 默认窗口图标 */
+		var v_UserNo            = "";
+		var v_DefaultWindowIcon = "images/windowTask.png";     /* 默认窗口图标 */
 		var v_Colors            = {textColor:          "white"
 					              ,tooltipTextColor:   "black"
 				             	  ,tooltipBGColor:     "white"
@@ -622,8 +641,8 @@
 									theme: 'fas',                                                      /* 样式 */
 							        language: 'zh',                                                    /* 语言 */
 							        allowedFileExtensions: ['jpg','jpeg','png','gif','bmp','ico'],     /* 允许的文件类型 */
-						        maxFileCount: 1,                                                   /* 限制上传文的个数 */
-						        maxFileSize: 1024,                                                 /* 限制上传文件的最大大小。单位:KB */
+						            maxFileCount: 1,                                                   /* 限制上传文的个数 */
+						            maxFileSize: 1024,                                                 /* 限制上传文件的最大大小。单位:KB */
 							        minImageWidth: 32,                                                 /* 图片的最小宽度 */
 						            minImageHeight: 32,                                                /* 图片的最小高度 */
 						            deleteUrl: "windows/deleteAppIcon.page",                           /* 删除时的请求地址 */
@@ -658,6 +677,7 @@
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowTask.js"         ></script>
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowStartMenu.js"    ></script>
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowCommit.js"       ></script>
+	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/windowRightBar.js"     ></script>
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/contextMenu.App.js"    ></script>
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/contextMenu.Desktop.js"></script>
 	<script type="text/javascript" charset="utf-8" src=":HttpBasePath/analyses/windows/js/dialog.DesktopBG.js"   ></script>

@@ -66,7 +66,16 @@ public class AnalysesServlet extends HttpServlet
         // System.out.println("-- getScheme()        =" + i_Request.getScheme());
         // System.out.println("-- X-Forwarded-Scheme =" + i_Request.getHeader("X-Forwarded-Scheme"));
         
-        if ( v_RequestURL.indexOf("analyses/windows/") >= 0 )
+        
+        if ( v_RequestURL.indexOf("analyses/windows/multiWindows.html") >= 0 )
+        {
+            i_Response.getWriter().println(this.analyse.showMultiWindows(v_BasePath ,v_RequestURL));
+        }
+        else if ( v_RequestURL.indexOf("analyses/windows/workRest.html") >= 0 )
+        {
+            i_Response.getWriter().println(this.analyse.showWorkRest(v_BasePath ,v_RequestURL));
+        }
+        else if ( v_RequestURL.indexOf("analyses/windows/") >= 0 )
         {
             if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".css") )
             {

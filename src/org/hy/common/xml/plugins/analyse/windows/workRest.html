@@ -1,0 +1,111 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/vue/vue.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/d3/d3.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src=":HttpBasePath/d3/hy.common.d3.js"></script>
+    
+    <link rel="stylesheet" href=":HttpBasePath/d3/hy.common.fSize.css" />
+    <link rel="stylesheet" href=":HttpBasePath/analyses/windows/css/workRest.css" />
+    
+</head>
+<body oncontextmenu="return false">
+
+<div id="app" class='workRestBody'>
+    
+    <div class="topBar_Fixed">
+        <div class='topbar' :style='{backgroundColor: skin.colors[skin.colorIndex].color}'>
+            <label class='fSize2X'>{{todayMonth}}月</label>
+        
+            <div class='weekAndYear'>
+                <label class='fSize0X8'>{{todayYearGanZhi}}年 . {{todayYearName}} . {{todayLunar}}</label>
+                <label class='fSize0X8'>{{today}}号 . 第{{todayWeekNoOfYear}}周 . {{todayConstellation}}座</label>
+            </div>
+        </div>
+        
+        
+        <!-- 星期栏 -->
+        <div class='weekBar' :style='{backgroundColor: skin.colors[skin.colorIndex].color}'>
+            <label v-for='(weekName ,index) in weekNoToShortNames'>{{weekNoToShortNames[index]}}</label>
+        </div>
+    </div>
+    
+    
+    <!-- 一个月份的日历 -->
+    <div class='dateBar' v-for='(monthDays ,monthIndex) in days'>
+    
+        <div class='monthBar' id='yearMonth{{monthDays.year}}_{{monthDays.month}}'>
+            <label class='fSize1X'>{{monthDays.year}}年{{monthDays.month}}月</text>
+        </div>
+        
+        <div class='daysBar'>
+
+            <div class='daysRow' v-for='(weekDays ,weekIndex) in monthDays.days'>
+                <div v-for='(dayInfo ,dayIndex) in weekDays'
+                     class='daysColumn'
+                    :class='dayInfo.style'
+                    :data-year='monthDays.year'
+                    :data-month='monthDays.month'
+                    :data-day='dayInfo.day'
+                    :data-monthindex='monthIndex'
+                    :data-weekindex='weekIndex'
+                    :data-dayindex='dayIndex'
+                    v-on:click='dayOnClick'>
+                    
+                    <label class='fSize0X6' 
+                          :class='{"work_Color": dayInfo.isWork ,"rest_Color": !dayInfo.isWork}'>
+                          {{dayInfo.isWork ? '班' : (dayInfo.isRest ? '休' : '　')}}
+                    </label>
+                    <label class='fSize1X2 day' :class='{"disable_Color" : dayInfo.disable}'>{{dayInfo.day}}</label>
+                    <label class='fSize0X7'
+                          :class='{"lunar_Color": dayInfo.isLunar == 1 ,"holiday_Color": dayInfo.isLunar == 0}'>
+                          {{dayInfo.dynamic ? dayInfo.dynamic : dayInfo.disInfo ? dayInfo.disInfo : dayInfo.info[holidayIndex % dayInfo.info.length]}}
+                    </label>
+
+                    <template v-if='nowYear == monthDays.year && nowMonth == monthDays.month && nowDay == dayInfo.day'>
+                    <label class='fSize0X6 haveDayCount' v-if='countDown.maxDate != "" && (haveDayCount >= 0 || haveDayCount <= 0)'>{{haveDayCount >= 0 ? '剩' + haveDayCount : '超' + (haveDayCount * -1)}}天</label>
+                    <label class='fSize0X6 haveDayCount' v-else>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                    </template>
+                    
+                </div>
+                
+            </div>
+
+        </div>
+    
+    </div>
+    
+</div>
+
+
+<!-- 信息面板 -->
+<div id="dayInfoBar">
+    
+    <!-- 关闭信息面板按钮 -->
+    <div class="dayInfoBarClose">
+        <button type="button" class="close dayInfoBarCloseBtn" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    
+    <!-- 信息面板的标题 -->
+    <div class="dayInfoTitle"></div>
+    
+    <div class="dayInfoTaskBar">
+        <div class="dayInfoTaskIsTimeout"></div>
+        <div class="dayInfoTaskMessage">您有一份1亿元的订单等待处理</div>
+    </div>
+    
+</div>
+
+
+
+<script type="text/javascript" charset="utf-8" src="js/workRest.date.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/workRest.desktop.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/workRest.js"></script>
+    
+</body>
+</html>
