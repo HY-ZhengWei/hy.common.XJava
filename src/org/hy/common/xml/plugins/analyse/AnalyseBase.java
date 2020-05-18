@@ -2046,7 +2046,7 @@ public class AnalyseBase extends Analyse
                         {
                             v_ParamObj = null;
                         }
-                        else if ( !StringHelp.isStartsWith(v_ParamValue ,"java.lang." ,"java.util.Date" ,"org.hy.common.Date") )
+                        else if ( !StringHelp.isStartsWith(v_ParamTV[0] ,"java.lang." ,"java.util.Date" ,"org.hy.common.Date") )
                         {
                             v_ParamObj = v_Json.toJava(v_ParamValue ,v_ParamType);
                         }
