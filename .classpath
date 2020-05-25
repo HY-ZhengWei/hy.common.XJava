@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.base"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.db"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.file"/>
@@ -32,5 +31,22 @@
 	<classpathentry kind="lib" path="lib/log4j-core-2.11.2.jar"/>
 	<classpathentry kind="lib" path="lib/spring-beans-5.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/htmlcleaner-2.23.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/drools/drools-core-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/drools-core-dynamic-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/drools-core-reflective-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/drools-decisiontables-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/kie-api-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/kie-ci-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/kie-internal-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/kie-pmml-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/kie-soup-commons-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/kie-soup-maven-integration-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/kie-soup-maven-support-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/kie-soup-project-datamodel-api-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/kie-soup-project-datamodel-commons-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/mvel2-2.4.7.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/slf4j-api-1.7.26.jar"/>
+	<classpathentry kind="lib" path="lib/drools/drools-compiler-7.37.0.Final.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

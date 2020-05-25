@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="xconfig"         class="java.util.ArrayList" />
+    <import name="rules"           class="java.util.ArrayList" />
+    <import name="rule"            class="org.hy.common.xml.plugins.XRule" />
+    
+    
+    
+    <!-- Drools规则的配置信息 -->
+    <xconfig>
+        
+        <rules id="Rules">
+            
+            <rule id="Rule_01">
+                <comment>规则引擎演示</comment>
+                
+                <value>
+                <![CDATA[
+                package org.hy.common.xml.junit.drools;
+                 
+                import org.hy.common.xml.junit.drools.Message;
+                
+                global java.util.List list;
+                 
+                rule "Hello World"
+                    dialect "mvel"
+                    when
+                        m : Message( status == Message.HELLO, message : message )
+                    then
+                        System.out.println("Rule 01: " + message );
+                        modify ( m ) { message = "Goodbye cruel world" ,status = Message.GOODBYE };
+                end;
+                
+                rule "Good Bye"
+                    dialect "java"
+                    when
+                        Message( status == Message.GOODBYE, message : message )
+                    then
+                        System.out.println("Rule 02: " + message );
+                end;
+                ]]>
+                </value>
+            </rule>
+            
+        </rules>
+        
+    </xconfig>
+    
+</config>

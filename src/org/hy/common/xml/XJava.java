@@ -49,6 +49,7 @@ import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.XTypeAnno;
 import org.hy.common.xml.annotation.Xjava;
 import org.hy.common.xml.plugins.AppInterface;
+import org.hy.common.xml.plugins.XRule;
 import org.hy.common.xml.plugins.XSQLGroup;
 
 
@@ -441,6 +442,23 @@ public final class XJava
         XJava v_ParserAnnotationToJava = new XJava(i_PackageNames);
         
         v_ParserAnnotationToJava.parserAnnotations();
+    }
+    
+    
+    
+    /**
+     * 获取规则引擎。为了方便。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-05-25
+     * @version     v1.0
+     *
+     * @param i_ID
+     * @return
+     */
+    public static XRule getXRule(String i_ID)
+    {
+        return (XRule)getObject(i_ID);
     }
     
     
