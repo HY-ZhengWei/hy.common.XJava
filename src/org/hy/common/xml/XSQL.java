@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hy.common.app.Param;
 import org.hy.common.db.DBConditions;
@@ -30,6 +31,7 @@ import org.hy.common.db.DataSourceGroup;
 import org.hy.common.xml.event.BLobListener;
 import org.hy.common.xml.event.DefaultBLobEvent;
 import org.hy.common.xml.log.Logger;
+import org.hy.common.xml.plugins.XRule;
 
 import oracle.sql.BLOB;
 import oracle.sql.CLOB;
@@ -44,6 +46,9 @@ import org.hy.common.PartitionMap;
 import org.hy.common.Return;
 import org.hy.common.StaticReflect;
 import org.hy.common.StringHelp;
+import org.hy.common.TablePartition;
+import org.hy.common.TablePartitionRID;
+import org.hy.common.TablePartitionSet;
 import org.hy.common.XJavaID;
 import org.hy.common.xml.event.BLobEvent;
 
@@ -328,17 +333,23 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     /** 可自行定制的XSQL异常处理机制 */
     private XSQLError                      error;
-	
-	
-	
-	public XSQL()
-	{
-		this.dataSourceGroups   = new CycleNextList<DataSourceGroup>(1);
-		this.domain             = null;
-		this.content            = new DBSQL();
-		this.result             = new XSQLResult();
-		this.trigger            = null;
-		this.blobSafe           = false;
+    
+    /** 执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎 */
+    private XRule                          beforeRule;
+    
+    /** 执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。优先于XSQL触发器的执行。 */
+    private XRule                          afterRule;
+    
+    
+    
+    public XSQL()
+    {
+        this.dataSourceGroups   = new CycleNextList<DataSourceGroup>(1);
+        this.domain             = null;
+        this.content            = new DBSQL();
+        this.result             = new XSQLResult();
+        this.trigger            = null;
+        this.blobSafe           = false;
         this.type               = $Type_NormalSQL;
         this.create             = null;
         this.lobName            = null;
@@ -356,6 +367,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         this.executeTime        = null;
         this.comment            = null;
         this.error              = (XSQLError)XJava.getObject($XSQLErrors);
+        this.beforeRule         = null;
+        this.afterRule          = null;
 	}
 	
 	
@@ -1475,6 +1488,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
             
+            this.fireAfterRule(v_Ret);
+            
             return v_Ret;
         }
         catch (Exception exce)
@@ -1551,6 +1566,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             XSQLData v_Ret = this.result.getDatas(v_Resultset);
             Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
+            
+            this.fireAfterRule(v_Ret);
             
             return v_Ret;
         }
@@ -1857,6 +1874,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
             
+            this.fireAfterRule(v_Ret);
+            
             return v_Ret;
         }
         catch (Exception exce)
@@ -1936,6 +1955,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
             
+            this.fireAfterRule(v_Ret);
+            
             return v_Ret;
         }
         catch (Exception exce)
@@ -2014,6 +2035,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             XSQLData v_Ret = this.result.getDatas(v_Resultset ,i_FilterColNoArr);
             Date v_EndTime = Date.getNowTime();
             this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
+            
+            this.fireAfterRule(v_Ret);
             
             return v_Ret;
         }
@@ -7715,6 +7738,118 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     
+    /**
+     * 获取：执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎
+     */
+    public XRule getBeforeRule()
+    {
+        return beforeRule;
+    }
+
+
+    
+    /**
+     * 获取：执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。优先于XSQL触发器的执行。
+     */
+    public XRule getAfterRule()
+    {
+        return afterRule;
+    }
+
+
+    
+    /**
+     * 设置：执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎
+     * 
+     * @param beforeRule 
+     */
+    public void setBeforeRule(XRule beforeRule)
+    {
+        this.beforeRule = beforeRule;
+    }
+
+
+    
+    /**
+     * 设置：执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。优先于XSQL触发器的执行。
+     * 
+     * @param afterRule 
+     */
+    public void setAfterRule(XRule afterRule)
+    {
+        this.afterRule = afterRule;
+    }
+    
+    
+    
+    /**
+     * 触发执行后的规则引擎
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-05-26
+     * @version     v1.0
+     *
+     * @param i_XSQLData
+     */
+    private void fireAfterRule(XSQLData i_XSQLData)
+    {
+        if ( this.afterRule != null )
+        {
+            if ( i_XSQLData.getDatas() != null )
+            {
+                if ( i_XSQLData.getDatas() instanceof PartitionMap )
+                {
+                    PartitionMap<? ,?> v_Datas = (PartitionMap<? ,?>)i_XSQLData.getDatas();
+                    
+                    for (List<?> v_Item : v_Datas.values())
+                    {
+                        this.afterRule.execute(v_Item);
+                    }
+                }
+                else if ( i_XSQLData.getDatas() instanceof TablePartitionSet )
+                {
+                    TablePartitionSet<? ,?> v_Datas = (TablePartitionSet<? ,?>)i_XSQLData.getDatas();
+                    
+                    for (Set<?> v_Item : v_Datas.values())
+                    {
+                        this.afterRule.execute(v_Item);
+                    }
+                }
+                else if ( i_XSQLData.getDatas() instanceof TablePartitionRID )
+                {
+                    TablePartitionRID<? ,?> v_Datas = (TablePartitionRID<? ,?>)i_XSQLData.getDatas();
+                    
+                    for (Map<? ,?> v_Item : v_Datas.values())
+                    {
+                        this.afterRule.execute(v_Item.values());
+                    }
+                }
+                else if ( i_XSQLData.getDatas() instanceof List )
+                {
+                    this.afterRule.execute(((List<?>)i_XSQLData.getDatas()));
+                }
+                else if ( i_XSQLData.getDatas() instanceof Set )
+                {
+                    this.afterRule.execute(((Set<?>)i_XSQLData.getDatas()));
+                }
+                else if ( i_XSQLData.getDatas() instanceof Map )
+                {
+                    this.afterRule.execute(((Map<? ,?>)i_XSQLData.getDatas()).values());
+                }
+                else
+                {
+                    this.afterRule.execute(i_XSQLData.getDatas());
+                }
+            }
+            else
+            {
+                this.afterRule.execute(i_XSQLData);
+            }
+        }
+    }
+
+
+
     @Override
     public int hashCode()
     {

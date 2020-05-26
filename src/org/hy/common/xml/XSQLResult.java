@@ -39,6 +39,7 @@ import org.hy.common.StringHelp;
  *              v7.0  2018-06-01  添加：XSQLResultFillEvent.start()在整体开始填充之前触发，并且只触发一次。
  *              v8.0  2019-03-19  优化：删除整体统计信息（如总行数、列数、用时）三个成员属性，
  *                                      改成通过方法返回值返回。优化后，整个getDatas()方法不用加同步锁，性能大幅提升。
+ *              v9.0  2020-05-26  添加：判定表级对象、行级对象的Java类型是否为接口，接口是不能实例化，应预先抛出异常给出提醒。
  */
 public final class XSQLResult 
 {
@@ -2340,66 +2341,98 @@ public final class XSQLResult
 
 
 
+    /**
+     * 行级对象的Class类型
+     * 
+     * @return
+     */
     public Class<?> getRow()
-	{
-		return this.row;
-	}
-	
-	
-	
-	public void setRow(String i_Row)
-	{
-		if ( Help.isNull(i_Row) )
-		{
-			throw new NullPointerException("Row is null.");
-		}
-		
-		
-		Class<?> v_Class = this.getClass(i_Row.trim());
-		
-		if ( v_Class != null )
-		{
-			this.row          = v_Class;
-			this.isAgainParse = true;
-		}
-		else
-		{
-			throw new NullPointerException("Row Class[" + i_Row + "] is not exist.");
-		}
-	}
-	
-	
-	
-	public Class<?> getTable() 
-	{
-		return this.table;
-	}
-	
-	
-	
-	public void setTable(String i_Table)
-	{
-		if ( Help.isNull(i_Table) )
-		{
-			throw new NullPointerException("Table is null.");
-		}
-		
-		
-		Class<?> v_Class = this.getClass(i_Table.trim());
-		
-		if ( v_Class != null )
-		{
-			this.table        = v_Class;
-			this.isAgainParse = true;
-		}
-		else
-		{
-			throw new NullPointerException("Table Class[" + i_Table + "] is not exist.");
-		}
-	}
-	
-	
-	
+    {
+        return this.row;
+    }
+    
+    
+    
+    /**
+     * 行级对象的Class类型
+     * 
+     * @param i_Row
+     * @throws ClassNotFoundException
+     */
+    public void setRow(String i_Row) throws ClassNotFoundException
+    {
+        if ( Help.isNull(i_Row) )
+        {
+            throw new NullPointerException("Row is null.");
+        }
+        
+        
+        Class<?> v_Class = this.getClass(i_Row.trim());
+        
+        if ( v_Class != null )
+        {
+            if ( v_Class.isInterface() )
+            {
+                throw new ClassCastException("Row Class[" + i_Row + "] is Interface ,but it is not new Instance.");
+            }
+            
+            this.row          = v_Class;
+            this.isAgainParse = true;
+        }
+        else
+        {
+            throw new ClassNotFoundException("Row Class[" + i_Row + "] is not exist.");
+        }
+    }
+    
+    
+    
+    /**
+     * 表级对象的Class类型
+     * 
+     * @return
+     */
+    public Class<?> getTable() 
+    {
+        return this.table;
+    }
+    
+    
+    
+    /**
+     * 表级对象的Class类型
+     * 
+     * @param i_Table
+     * @throws ClassNotFoundException
+     */
+    public void setTable(String i_Table) throws ClassNotFoundException
+    {
+        if ( Help.isNull(i_Table) )
+        {
+            throw new NullPointerException("Table is null.");
+        }
+        
+        
+        Class<?> v_Class = this.getClass(i_Table.trim());
+        
+        if ( v_Class != null )
+        {
+            if ( v_Class.isInterface() )
+            {
+                throw new ClassCastException("Table Class[" + i_Table + "] is Interface ,but it is not new Instance.");
+            }
+            
+            this.table        = v_Class;
+            this.isAgainParse = true;
+        }
+        else
+        {
+            throw new ClassNotFoundException("Table Class[" + i_Table + "] is not exist.");
+        }
+    }
+    
+    
+    
     /**
      * 获取：字段名称的样式(默认为全部大写)
      */

@@ -1,0 +1,22 @@
+package org.hy.common.xml.junit.drools;
+                 
+import org.hy.common.xml.junit.drools.Message;
+
+global java.util.List list;
+ 
+rule "Hello World"
+    dialect "mvel"
+    when
+        m : Message( status == Message.HELLO, message : message )
+    then
+        System.out.println("Rule 01: " + message );
+        modify ( m ) { message = "Goodbye cruel world" ,status = Message.GOODBYE };
+end;
+
+rule "Good Bye"
+    dialect "java"
+    when
+        Message( status == Message.GOODBYE, message : message )
+    then
+        System.out.println("Rule 02: " + message );
+end;

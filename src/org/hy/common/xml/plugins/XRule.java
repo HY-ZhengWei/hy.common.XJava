@@ -39,6 +39,9 @@ public class XRule extends SerializableDef implements XJavaID
     /** 规则引擎的文本信息 */
     private String              ruleInfo;
     
+    /** 规则引擎的文件路径 */
+    private String              ruleFile;
+    
     /** 规则会话：无状态的 */
     private StatelessKieSession kieSession;
     
@@ -146,11 +149,35 @@ public class XRule extends SerializableDef implements XJavaID
      */
     public synchronized void initRule()
     {
-        if ( Help.isNull(this.ruleInfo) || !this.isNeedInit )
+        if ( (Help.isNull(this.ruleInfo) && Help.isNull(this.ruleFile)) || !this.isNeedInit )
         {
             return;
         }
         
+        if ( !Help.isNull(this.ruleInfo) )
+        {
+            this.initRuleInfo();
+        }
+        else if ( !Help.isNull(this.ruleFile) )
+        {
+            this.initRuleFile();
+        }
+        
+        this.isNeedInit = false;
+    }
+    
+    
+    
+    /**
+     * 初始化规则引擎（按文本内容）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-05-25
+     * @version     v1.0
+     *
+     */
+    private void initRuleInfo()
+    {
         KnowledgeBuilder v_KBuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
         v_KBuilder.add(ResourceFactory.newByteArrayResource(this.ruleInfo.getBytes()) ,ResourceType.DRL);
         
@@ -164,7 +191,33 @@ public class XRule extends SerializableDef implements XJavaID
         v_KBase.addPackages(v_KBuilder.getKnowledgePackages());
         
         this.kieSession = v_KBase.newStatelessKieSession();
-        this.isNeedInit = false;
+    }
+    
+    
+    
+    /**
+     * 初始化规则引擎（按文件）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-05-26
+     * @version     v1.0
+     *
+     */
+    private void initRuleFile()
+    {
+        KnowledgeBuilder v_KBuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
+        v_KBuilder.add(ResourceFactory.newClassPathResource(this.ruleFile ,"UTF-8") ,ResourceType.DRL);
+        
+        if ( v_KBuilder.hasErrors() )
+        {
+            $Logger.error(Date.getNowTime().getFullMilli() + " XRule Build Errors: " + Help.NVL(this.comment) + "\n" + this.ruleFile);
+            throw new RuntimeException("XRule Build Errors:\n" + v_KBuilder.getErrors());
+        }
+        
+        InternalKnowledgeBase v_KBase = KnowledgeBaseFactory.newKnowledgeBase();
+        v_KBase.addPackages(v_KBuilder.getKnowledgePackages());
+        
+        this.kieSession = v_KBase.newStatelessKieSession();
     }
 
 
@@ -197,6 +250,34 @@ public class XRule extends SerializableDef implements XJavaID
 
     
     
+    /**
+     * 获取：规则引擎的文件路径
+     */
+    public String getFile()
+    {
+        return ruleFile;
+    }
+
+
+    
+    /**
+     * 设置：规则引擎的文件路径
+     * 
+     * @param i_RuleFile 
+     */
+    public void setFile(String i_RuleFile)
+    {
+        this.ruleFile   = i_RuleFile;
+        this.isNeedInit = true;
+        
+        if ( !this.isLazyMode )
+        {
+            this.initRule();
+        }
+    }
+
+
+
     /**
      * 获取：规则会话：无状态的
      */

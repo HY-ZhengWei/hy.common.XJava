@@ -15,7 +15,7 @@
             
             <rule id="Rule_01">
                 <comment>规则引擎演示</comment>
-                
+                <lazyMode>false</lazyMode>
                 <value>
                 <![CDATA[
                 package org.hy.common.xml.junit.drools;
@@ -42,6 +42,14 @@
                 end;
                 ]]>
                 </value>
+            </rule>
+            
+            
+            
+            <rule id="Rule_02">
+                <comment>规则引擎演示（规则文件）</comment>
+                <lazyMode>true</lazyMode>
+                <file>org\hy\common\xml\junit\drools\HelloWorld.drl</file>
             </rule>
             
         </rules>
