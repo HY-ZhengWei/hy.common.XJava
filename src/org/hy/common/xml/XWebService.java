@@ -36,8 +36,10 @@ import org.hy.common.file.FileHelp;
  *   2. 当作为Server服务端时，相关方法以 receive \ return   命名。
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0  
  * @createDate  2013-07-05
+ * @version     v1.0  
+ *              v2.0  2020-06-02  修改：request()方法直接返回响应结果信息。
+ *                                      最终用户可通过getReceiveObj()方法，主动的将结果信息转换为对象。
  */
 public class XWebService
 {
@@ -75,9 +77,6 @@ public class XWebService
     
     /** 请求的XML字符串 */
     private String                     requestXML;
-    
-    /**  响应的XML字符串（模板级） */
-    private String                     responseXML;
     
     /**  
      * 响应的XML字符串的元数据信息。
@@ -222,9 +221,9 @@ public class XWebService
     /**
      * 请求访问
      */
-    public void request()
+    public String request()
     {
-        this.request(new Hashtable<String ,Object>());
+        return this.request(new Hashtable<String ,Object>());
     }
     
     
@@ -234,9 +233,9 @@ public class XWebService
      * 
      * @param i_Params
      */
-    public void request(XWebServiceParam i_Params)
+    public String request(XWebServiceParam i_Params)
     {
-        this.request(i_Params.getXWSParam());
+        return this.request(i_Params.getXWSParam());
     }
     
     
@@ -246,7 +245,7 @@ public class XWebService
      * 
      * @param i_Params
      */
-    public void request(Map<String ,Object> i_Params)
+    public String request(Map<String ,Object> i_Params)
     {
         if ( Help.isNull(this.charsetName) )
         {
@@ -262,12 +261,11 @@ public class XWebService
         }
         
         
-        HttpURLConnection v_HttpConn = null;
-        OutputStream      v_Out      = null;
-        String            v_Xml      = null;
-        byte []           v_XmlBytes = null;
-        
-        this.responseXML = "";
+        HttpURLConnection v_HttpConn    = null;
+        OutputStream      v_Out         = null;
+        String            v_Xml         = null;
+        byte []           v_XmlBytes    = null;
+        String            v_ResponseXML = "";
         
         try
         {
@@ -299,7 +297,7 @@ public class XWebService
             v_Out.close();
             
             
-            this.responseXML = StringHelp.xmlDeCode(new String(readResponseData(v_HttpConn.getInputStream()) ,this.charsetName));
+            v_ResponseXML = StringHelp.xmlDeCode(new String(readResponseData(v_HttpConn.getInputStream()) ,this.charsetName));
         }
         catch (Exception exce)
         {
@@ -336,6 +334,8 @@ public class XWebService
                 v_HttpConn = null;
             }
         }
+        
+        return v_ResponseXML;
     }
     
     
@@ -499,27 +499,13 @@ public class XWebService
     
     
     /**
-     * 获取响应信息
-     * 
-     * 调用 request() 方法后，此属性的值才有意义
-     * 
-     * @return
-     */
-    public String getResponseInfo()
-    {
-        return responseXML;
-    }
-    
-    
-    
-    /**
      * 获取响应信息，并按 XJava 方式转换成实例对象返回
      *
      * @return
      */
-    public Object getResponseObj()
+    public Object getResponseObj(String i_ResponseXML)
     {
-        return this.getResponseObj(this.responseRootName);
+        return this.getResponseObj(i_ResponseXML ,this.responseRootName);
     }
     
     
@@ -530,14 +516,14 @@ public class XWebService
      * @param i_RootSignName  响应原信息中的哪个节点(或标记)做为转换成实例对象的配置信息。可忽略大小写的匹配
      * @return
      */
-    public Object getResponseObj(String i_RootSignName)
+    public Object getResponseObj(String i_ResponseXML ,String i_RootSignName)
     {
         if ( Help.isNull(this.responseMetadata) )
         {
             return null;
         }
         
-        if ( Help.isNull(this.responseXML) )
+        if ( Help.isNull(i_ResponseXML) )
         {
             return null;
         }
@@ -548,11 +534,11 @@ public class XWebService
         v_XJava_XML.append("<").append($XJava_DatasSignName).append(">");
         if ( Help.isNull(i_RootSignName) )
         {
-            v_XJava_XML.append(this.responseXML);
+            v_XJava_XML.append(i_ResponseXML);
         }
         else
         {
-            v_XJava_XML.append(StringHelp.getXMLSignContent(this.responseXML ,i_RootSignName.trim()));
+            v_XJava_XML.append(StringHelp.getXMLSignContent(i_ResponseXML ,i_RootSignName.trim()));
         }
         v_XJava_XML.append("</").append($XJava_DatasSignName).append(">");
         v_XJava_XML.append("</").append($XJava_RootSignName).append(">");

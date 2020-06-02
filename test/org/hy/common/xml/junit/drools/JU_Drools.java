@@ -1,11 +1,15 @@
 package org.hy.common.xml.junit.drools;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hy.common.Date;
 import org.hy.common.Help;
+import org.hy.common.StringHelp;
 import org.hy.common.xml.XJava;
+import org.hy.common.xml.XSQL;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.Xjava;
 import org.hy.common.xml.plugins.XRule;
@@ -142,4 +146,71 @@ public class JU_Drools
         System.out.println("执行用时：" + Date.toTimeLen(v_End  .differ(v_Begin)));
         System.out.println("执行平均：" + Date.toTimeLen(v_End  .differ(v_Begin) /  v_Count));
     }
+    
+    
+    
+    /**
+     * 测试Map集合的使用
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-05-27
+     * @version     v1.0
+     *
+     */
+    @Test
+    public void test_Drools_Map()
+    {
+        Map<String ,Object> v_Datas = new HashMap<String ,Object>();
+        
+        for (int i=1; i<=10; i++)
+        {
+            v_Datas.put("key" + StringHelp.lpad(i ,2 ,"0") ,i);
+        }
+        
+        XRule v_XRule03 = XJava.getXRule("Rule_03");
+        XRule v_XRule04 = XJava.getXRule("Rule_04");
+        XRule v_XRule05 = XJava.getXRule("Rule_05");
+        
+        v_XRule03.execute(v_Datas);
+        v_XRule04.execute(v_Datas);
+        v_XRule05.execute(v_Datas);
+        
+        System.out.println("回现最终的Map");
+        Help.print(v_Datas);
+    }
+    
+    
+    
+    /**
+     * 包名称解释、引用类的测试
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-02
+     * @version     v1.0
+     *
+     */
+    @Test
+    public void test_Drools_Package_Imports()
+    {
+        XRule v_XRule04 = XJava.getXRule("Rule_04");
+        
+        System.out.println("PackageName = " + v_XRule04.getPackage());
+        System.out.println("Import");
+        Help.print(v_XRule04.getImports());
+        
+        
+        
+        XSQL v_XSQL = new XSQL();
+        
+        v_XSQL.setBeforeRule(v_XRule04);
+        
+        System.out.println("XSQL's rule PackageName = " + v_XSQL.getBeforeRule().getPackage());
+        System.out.println("XSQL's rule Import");
+        Help.print(v_XSQL.getBeforeRule().getImports());
+        
+        System.out.println("XSQL's rule vlaue");
+        System.out.println(v_XSQL.getBeforeRule().getValue());
+        v_XSQL.getBeforeRule().initRule();
+    }
+    
 }

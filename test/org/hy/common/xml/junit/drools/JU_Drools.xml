@@ -52,6 +52,76 @@
                 <file>org\hy\common\xml\junit\drools\HelloWorld.drl</file>
             </rule>
             
+            
+            
+            <rule id="Rule_03">
+                <comment>规则引擎演示（Map集合元素的获取及判定）</comment>
+                <value>
+                <![CDATA[
+                package org.hy.common.xml.junit.drools;
+                
+                import java.util.Map;
+                 
+                rule "Map集合元素的获取及判定"
+                    when
+                        $map : Map( this.get("key01") == 1 ) 
+                    then
+                        System.out.println("Map集合元素的获取及判定: " + $map.get("key01"));
+                end;
+                ]]>
+                </value>
+            </rule>
+            
+            
+            
+            <rule id="Rule_04">
+                <comment>规则引擎演示（Map集合的遍历）</comment>
+                <value>
+                <![CDATA[
+                package org.hy.common.xml.junit.drools;
+                
+                import java.util.Map;
+                import java.util.Set;
+                 
+                rule "Map集合的遍历"
+                    when
+                        $map : Map()
+                    then
+                        Set<Map.Entry> v_Entries = $map.entrySet();
+                        for(Map.Entry v_Entrie : v_Entries)
+                        {
+                             String  v_Key = (String)  v_Entrie.getKey();
+                             Integer v_Val = (Integer) v_Entrie.getValue();
+                             
+                             System.out.println("Map集合的遍历" + v_Key + ":" + v_Val);
+                        }
+                end;
+                ]]>
+                </value>
+            </rule>
+            
+            
+            
+            <rule id="Rule_05">
+                <comment>规则引擎演示（Map集合元素的修改及添加）</comment>
+                <value>
+                <![CDATA[
+                package org.hy.common.xml.junit.drools;
+                
+                import java.util.Map;
+                import org.hy.common.Date;
+                 
+                rule "Map集合元素的修改及添加"
+                    when
+                        $map : Map( this.get("key01") == 1 ) 
+                    then
+                        $map.put("key01" ,Date.getNowTime().getFullMilli());
+                        System.out.println("Map集合元素的修改及添加: " + $map.get("key01"));
+                end;
+                ]]>
+                </value>
+            </rule>
+            
         </rules>
         
     </xconfig>

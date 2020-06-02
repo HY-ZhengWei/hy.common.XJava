@@ -1,5 +1,10 @@
 package org.hy.common.xml.plugins;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.impl.KnowledgeBaseFactory;
 import org.hy.common.Date;
@@ -29,7 +34,13 @@ public class XRule extends SerializableDef implements XJavaID
 
     private static final long serialVersionUID = 1329720425183820778L;
     
-    private static final Logger $Logger = new Logger(XRule.class);
+    private static final Logger $Logger        = new Logger(XRule.class);
+    
+    /** 正则表达式识别：package xxx.xxx; 的包信息 */
+    private static final String $REGEX_Package = "[Pp][Aa][Cc][Kk][Aa][Gg][Ee]( )+\\w+\\.\\w+[\\w\\.]*;";
+    
+    /** 正则表达式识别：import xxx.xxx; 的引包信息 */
+    private static final String $REGEX_Import  = "[Ii][Mm][Pp][Oo][Rr][Tt]( )+\\w+\\.\\w+[\\w\\.]*;";
     
     
     
@@ -48,7 +59,7 @@ public class XRule extends SerializableDef implements XJavaID
     /** 注释。可用于日志的输出等帮助性的信息 */
     private String              comment;
     
-    /** 是否为“懒汉模式”，即只在需要时才加载。默认为：false（预先加载模式） */
+    /** 是否为“懒汉模式”，即只在需要时才加载。默认为：true（懒汉模式） */
     private boolean             isLazyMode;
     
     /** 是否需要初始化（内部使用） */
@@ -58,16 +69,16 @@ public class XRule extends SerializableDef implements XJavaID
     
     public XRule()
     {
-        this(false);
+        this(true);
     }
     
     
     
-    public XRule(boolean i_IsInit)
+    public XRule(boolean i_IsLazyMode)
     {
         this.ruleInfo   = null;
         this.kieSession = null;
-        this.isLazyMode = i_IsInit;
+        this.isLazyMode = i_IsLazyMode;
         this.isNeedInit = true;
     }
     
@@ -154,13 +165,14 @@ public class XRule extends SerializableDef implements XJavaID
             return;
         }
         
-        if ( !Help.isNull(this.ruleInfo) )
-        {
-            this.initRuleInfo();
-        }
-        else if ( !Help.isNull(this.ruleFile) )
+        /* 必须先文件优先，再判定文本 */
+        if ( !Help.isNull(this.ruleFile) )
         {
             this.initRuleFile();
+        }
+        else if ( !Help.isNull(this.ruleInfo) )
+        {
+            this.initRuleInfo();
         }
         
         this.isNeedInit = false;
@@ -218,6 +230,57 @@ public class XRule extends SerializableDef implements XJavaID
         v_KBase.addPackages(v_KBuilder.getKnowledgePackages());
         
         this.kieSession = v_KBase.newStatelessKieSession();
+        
+        
+    }
+    
+    
+    
+    /**
+     * 获取命名空间的“包”信息
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-02
+     * @version     v1.0
+     *
+     * @return  返回结果为：package org.hy.common.xml.junit.drools;  带最后面的分号
+     */
+    public String getPackage()
+    {
+        Pattern v_Pattern = Pattern.compile($REGEX_Package);
+        Matcher v_Matcher = v_Pattern.matcher(this.ruleInfo);
+        
+        if ( v_Matcher.find() )
+        {
+            return this.ruleInfo.substring(v_Matcher.start() ,v_Matcher.end());
+        }
+        
+        return null;
+    }
+    
+    
+    
+    /**
+     * 获取所有引用类的信息
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-02
+     * @version     v1.0
+     *
+     * @return  返回结果为：import java.util.List;  带最后面的分号
+     */
+    public List<String> getImports()
+    {
+        Pattern      v_Pattern = Pattern.compile($REGEX_Import);
+        Matcher      v_Matcher = v_Pattern.matcher(this.ruleInfo);
+        List<String> v_Imports = new ArrayList<String>();
+        
+        while ( v_Matcher.find() )
+        {
+            v_Imports.add(this.ruleInfo.substring(v_Matcher.start() ,v_Matcher.end()));
+        }
+        
+        return v_Imports;
     }
 
 

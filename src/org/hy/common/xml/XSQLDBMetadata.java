@@ -85,14 +85,34 @@ public class XSQLDBMetadata
      * @param i_XSQL
      * @return
      */
-    @SuppressWarnings("unchecked")
     public boolean isExists(XSQL i_XSQL)
     {
-        XSQL                v_XSQLMetdata = XJava.getXSQL("XSQL_DBMetadata_QueryByName_" + i_XSQL.getDataSourceGroup().getDbProductType());
+        return this.isExists(i_XSQL.getDataSourceGroup() ,i_XSQL.getCreateObjectName());
+    }
+    
+    
+    
+    /**
+     * 判定对象是否存在。
+     * 
+     * 此不作过多的验证，交给使用者来验证。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-02
+     * @version     v1.0
+     *
+     * @param i_DataSourceGroup  数据库连接池组
+     * @param i_DBObjectName     数据库对象名称
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public boolean isExists(DataSourceGroup i_DataSourceGroup ,String i_DBObjectName)
+    {
+        XSQL                v_XSQLMetdata = XJava.getXSQL("XSQL_DBMetadata_QueryByName_" + i_DataSourceGroup.getDbProductType());
         Map<String ,String> v_Params      = new HashMap<String ,String>();
         
-        v_XSQLMetdata.setDataSourceGroup(i_XSQL.getDataSourceGroup());
-        v_Params.put("objectName" ,i_XSQL.getCreateObjectName());
+        v_XSQLMetdata.setDataSourceGroup(i_DataSourceGroup);
+        v_Params.put("objectName" ,i_DBObjectName);
         
         List<Map<String ,Object>> v_Datas = (List<Map<String ,Object>>)v_XSQLMetdata.query(v_Params);
         

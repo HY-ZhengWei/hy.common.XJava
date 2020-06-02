@@ -46,9 +46,6 @@ import org.hy.common.PartitionMap;
 import org.hy.common.Return;
 import org.hy.common.StaticReflect;
 import org.hy.common.StringHelp;
-import org.hy.common.TablePartition;
-import org.hy.common.TablePartitionRID;
-import org.hy.common.TablePartitionSet;
 import org.hy.common.XJavaID;
 import org.hy.common.xml.event.BLobEvent;
 
@@ -140,6 +137,8 @@ import org.hy.common.xml.event.BLobEvent;
  *              v16.1 2019-03-22  添加：queryXSQLData()等一系列方法。在返回查询结果的同时，也返回其它更多的信息。
  *              v17.0 2019-05-15  添加：Log4j2的日志输出。建议人：李浩、张宇
  *              v18.0 2019-12-25  添加：预编译支持NULL值的写入。发现人：张宇
+ *              v19.0 2020-05-26  添加：执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎 
+ *                                添加：执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。
  */
 /*
  * 游标类型的说明
@@ -334,10 +333,24 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /** 可自行定制的XSQL异常处理机制 */
     private XSQLError                      error;
     
-    /** 执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎 */
+    /** 
+     * 执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎 
+     * 
+     * 优先级：触发的优先级高于“XSQL条件”
+     * 
+     * 注：无入参的不触发执行。
+     */
     private XRule                          beforeRule;
     
-    /** 执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。优先于XSQL触发器的执行。 */
+    /** 
+     * 执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。
+     * 
+     * 优先级：触发的优先级高于“XSQL应用级触发器”
+     * 
+     * 注1：无入参的不触发执行。
+     * 注2：只用于查询返回的XSQL。
+     * 注3：getCount() 等简单数据结构的也不触发执行。
+     */
     private XRule                          afterRule;
     
     
@@ -911,6 +924,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         
         try
         {
+            this.fireBeforeRule(i_Values);
             return this.queryXSQLData(this.content.getSQL(i_Values ,this.getDataSourceGroup()));
         }
         catch (NullPointerException exce)
@@ -981,6 +995,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         
         try
         {
+            this.fireBeforeRule(i_Values);
             return this.queryXSQLData(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_Conn);
         }
         catch (NullPointerException exce)
@@ -1051,6 +1066,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Values);
             return this.queryXSQLData(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_FilterColNames);
         }
         catch (NullPointerException exce)
@@ -1121,6 +1137,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Values);
             return this.queryXSQLData(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_FilterColNoArr);
         }
         catch (NullPointerException exce)
@@ -1189,6 +1206,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Obj);
             return this.queryXSQLData(this.content.getSQL(i_Obj ,this.getDataSourceGroup()));
         }
         catch (NullPointerException exce)
@@ -1259,6 +1277,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Obj);
             return this.queryXSQLData(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_Conn);
         }
         catch (NullPointerException exce)
@@ -1329,6 +1348,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Obj);
             return this.queryXSQLData(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_FilterColNames);
         }
         catch (NullPointerException exce)
@@ -1399,6 +1419,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Obj);
             return this.queryXSQLData(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_FilterColNoArr);
         }
         catch (NullPointerException exce)
@@ -1697,6 +1718,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Values);
             return this.queryXSQLData(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_StartRow ,i_PagePerSize);
         }
         catch (NullPointerException exce)
@@ -1773,6 +1795,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Obj);
             return this.queryXSQLData(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_StartRow ,i_PagePerSize);
         }
         catch (NullPointerException exce)
@@ -2075,6 +2098,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         
         try
         {
+            this.fireBeforeRule(i_Values);
             return this.queryBigData(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_XSQLBigData);
         }
         catch (NullPointerException exce)
@@ -2129,6 +2153,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         
         try
         {
+            this.fireBeforeRule(i_Values);
             return this.queryBigData(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_Conn ,i_XSQLBigData);
         }
         catch (NullPointerException exce)
@@ -2182,6 +2207,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Obj);
             return this.queryBigData(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_XSQLBigData);
         }
         catch (NullPointerException exce)
@@ -2236,6 +2262,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Obj);
             return this.queryBigData(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_Conn ,i_XSQLBigData);
         }
         catch (NullPointerException exce)
@@ -2506,6 +2533,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 		try
 		{
+		    this.fireBeforeRule(i_Values);
 		    return this.queryBigger(this.content.getSQL(i_Values ,this.getDataSourceGroup()));
 		}
 		catch (NullPointerException exce)
@@ -2554,6 +2582,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 		try
 		{
+		    this.fireBeforeRule(i_Values);
 		    return this.queryBigger(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_FilterColNames);
 		}
 		catch (NullPointerException exce)
@@ -2602,6 +2631,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 		try
 		{
+		    this.fireBeforeRule(i_Values);
 		    return this.queryBigger(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_FilterColNoArr);
 		}
 		catch (NullPointerException exce)
@@ -2649,6 +2679,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 		try
 		{
+		    this.fireBeforeRule(i_Obj);
 		    return this.queryBigger(this.content.getSQL(i_Obj ,this.getDataSourceGroup()));
 		}
 		catch (NullPointerException exce)
@@ -2697,6 +2728,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 		try
 		{
+		    this.fireBeforeRule(i_Obj);
 		    return this.queryBigger(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_FilterColNames);
 		}
 		catch (NullPointerException exce)
@@ -2745,6 +2777,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 		try
 		{
+		    this.fireBeforeRule(i_Obj);
 		    return this.queryBigger(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_FilterColNoArr);
 		}
 		catch (NullPointerException exce)
@@ -2987,6 +3020,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Values);
             return this.getSQLCount(this.content.getSQL(i_Values ,this.getDataSourceGroup()));
         }
         catch (NullPointerException exce)
@@ -3038,6 +3072,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Obj);
             return this.getSQLCount(this.content.getSQL(i_Obj ,this.getDataSourceGroup()));
         }
         catch (NullPointerException exce)
@@ -3412,6 +3447,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 		try
 		{
+		    this.fireBeforeRule(i_Values);
 		    int v_Ret = this.executeUpdate(this.content.getSQL(i_Values ,this.getDataSourceGroup()));
 		    
 		    return executeUpdate_AfterWriteLob(i_Values ,v_Ret);
@@ -3463,6 +3499,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 		try
 		{
+		    this.fireBeforeRule(i_Obj);
 		    int v_Ret = this.executeUpdate(this.content.getSQL(i_Obj ,this.getDataSourceGroup()));
 		    return executeUpdate_AfterWriteLob(i_Obj ,v_Ret);
 		}
@@ -3606,6 +3643,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Values);
             return this.executeUpdate(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_Conn);
         }
         catch (NullPointerException exce)
@@ -3654,6 +3692,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Obj);
             return this.executeUpdate(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_Conn);
         }
         catch (NullPointerException exce)
@@ -3750,6 +3789,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_ObjList);
             return this.executeUpdates_Inner(i_ObjList ,null);
         }
         catch (NullPointerException exce)
@@ -3807,6 +3847,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_ObjList);
             return this.executeUpdates_Inner(i_ObjList ,i_Conn);
         }
         catch (NullPointerException exce)
@@ -4273,6 +4314,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_ObjList);
             return executeUpdatesPrepared_Inner(i_ObjList ,null);
         }
         catch (NullPointerException exce)
@@ -4334,6 +4376,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         
         try
         {
+            this.fireBeforeRule(i_ObjList);
             return executeUpdatesPrepared_Inner(i_ObjList ,i_Conn);
         }
         catch (NullPointerException exce)
@@ -4931,6 +4974,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         
         try
         {
+            this.fireBeforeRule(i_Values);
             return this.executeUpdateCLobSQL(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_ClobTexts);
         }
         catch (NullPointerException exce)
@@ -4978,6 +5022,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         
         try
         {
+            this.fireBeforeRule(i_Obj);
             return this.executeUpdateCLobSQL(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_ClobTexts);
         }
         catch (NullPointerException exce)
@@ -5222,6 +5267,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		
 	    try
 	    {
+	        this.fireBeforeRule(i_Values);
 	        return this.executeUpdateBLob(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_File);
 	    }
 	    catch (NullPointerException exce)
@@ -5264,6 +5310,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		
 	    try
 	    {
+	        this.fireBeforeRule(i_Obj);
 	        return this.executeUpdateBLob(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_File);
 	    }
 	    catch (NullPointerException exce)
@@ -5530,6 +5577,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		
 	    try
 	    {
+	        this.fireBeforeRule(i_Values);
 	        return this.executeGetBLob(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,io_SaveFile);
 	    }
 	    catch (NullPointerException exce)
@@ -5567,6 +5615,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		
 	    try
 	    {
+	        this.fireBeforeRule(i_Obj);
 	        return this.executeGetBLob(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,io_SaveFile);
 	    }
 	    catch (NullPointerException exce)
@@ -5794,6 +5843,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 		try
 		{
+		    this.fireBeforeRule(i_Values);
 		    boolean v_Ret = this.execute(this.content.getSQL(i_Values ,this.getDataSourceGroup()));
 		    return this.executeUpdate_AfterWriteLob(i_Values ,v_Ret ? 1 : 0) >= 1;
 		}
@@ -5844,6 +5894,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 		
 		try
 		{
+		    this.fireBeforeRule(i_Obj);
 		    boolean v_Ret = this.execute(this.content.getSQL(i_Obj ,this.getDataSourceGroup()));
             return this.executeUpdate_AfterWriteLob(i_Obj ,v_Ret ? 1 : 0) >= 1;
 		}
@@ -6002,6 +6053,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Values);
             return this.execute(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_Conn);
         }
         catch (NullPointerException exce)
@@ -6050,6 +6102,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
         try
         {
+            this.fireBeforeRule(i_Obj);
             return this.execute(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_Conn);
         }
         catch (NullPointerException exce)
@@ -6941,20 +6994,30 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             this.callParamOutCount++;
         }
     }
-	
-	
-	
-	public XSQLResult getResult() 
-	{
-		return result;
-	}
-	
-	
-	
-	public void setResult(XSQLResult i_Result) 
-	{
-		this.result = i_Result;
-	}
+    
+    
+    
+    public XSQLResult getResult() 
+    {
+        return result;
+    }
+    
+    
+    
+    public void setResult(XSQLResult i_Result) 
+    {
+        this.result = i_Result;
+        
+        if ( this.beforeRule != null )
+        {
+            this.setBeforeRule(this.beforeRule);
+        }
+        
+        if ( this.afterRule != null )
+        {
+            this.setAfterRule(this.afterRule);
+        }
+    }
 	
 	
 	
@@ -7405,6 +7468,26 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         return false;
     } 
     
+    
+    
+    /**
+     * 判定对象是否存在。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-02
+     * @version     v1.0
+     *
+     * @param i_DBObjectName   数据库对象名称。可以是：表、视图、过程、函数、索引等
+     * @return
+     * @throws Exception
+     */
+    public boolean isExists(String i_DBObjectName) throws Exception
+    {
+        XSQLDBMetadata v_XSQLDBMetadata = new XSQLDBMetadata();
+        
+        return v_XSQLDBMetadata.isExists(this.getDataSourceGroup() ,i_DBObjectName);
+    }
+    
 
     
     /**
@@ -7740,6 +7823,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     /**
      * 获取：执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎
+     * 
+     * 优先级：触发的优先级高于“XSQL条件”
+     * 
+     * 注：无入参的不触发执行。
      */
     public XRule getBeforeRule()
     {
@@ -7749,7 +7836,13 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
     
     /**
-     * 获取：执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。优先于XSQL触发器的执行。
+     * 获取：执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。
+     * 
+     * 优先级：触发的优先级高于“XSQL应用级触发器”
+     * 
+     * 注1：无入参的不触发执行。
+     * 注2：只用于查询返回的XSQL。
+     * 注3：getCount() 等简单数据结构的也不触发执行。
      */
     public XRule getAfterRule()
     {
@@ -7761,29 +7854,126 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /**
      * 设置：执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎
      * 
-     * @param beforeRule 
+     * 优先级：触发的优先级高于“XSQL条件”
+     * 
+     * 注：无入参的不触发执行。
+     * 
+     * @param i_BeforeRule 
      */
-    public void setBeforeRule(XRule beforeRule)
+    public void setBeforeRule(XRule i_BeforeRule)
     {
-        this.beforeRule = beforeRule;
+        this.beforeRule = this.addPackageImports(i_BeforeRule);
     }
 
 
     
     /**
-     * 设置：执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。优先于XSQL触发器的执行。
+     * 设置：执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。
      * 
-     * @param afterRule 
+     * 优先级：触发的优先级高于“XSQL应用级触发器”
+     * 
+     * 注1：无入参的不触发执行。
+     * 注2：只用于查询返回的XSQL。
+     * 注3：getCount() 等简单数据结构的也不触发执行。
+     * 
+     * @param i_AfterRule 
      */
-    public void setAfterRule(XRule afterRule)
+    public void setAfterRule(XRule i_AfterRule)
     {
-        this.afterRule = afterRule;
+        this.afterRule = this.addPackageImports(i_AfterRule);
+    }
+    
+    
+    
+    /**
+     * 为规则解释器添加默认的包名称及引用类信息
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-02
+     * @version     v1.0
+     *
+     * @param io_XRule
+     * @return
+     */
+    private XRule addPackageImports(XRule io_XRule)
+    {
+        if ( io_XRule != null )
+        {
+            if ( !Help.isNull(io_XRule.getValue()) )
+            {
+                String       v_Package = Help.NVL(io_XRule.getPackage() ,"package org.hy.common.xml.plugins.rules;");
+                List<String> v_Imports = new ArrayList<String>();
+                
+                v_Imports.addAll(io_XRule.getImports());
+                v_Imports.add("import java.util.List;");
+                v_Imports.add("import java.util.Set;");
+                v_Imports.add("import java.util.Map;");
+                v_Imports.add("import org.hy.common.Date;");
+                
+                if ( this.result != null )
+                {
+                    if ( this.result.getTable() != null )
+                    {
+                        v_Imports.add("import " + this.result.getTable().getName() + ";");
+                    }
+                    if ( this.result.getRow() != null )
+                    {
+                        v_Imports.add("import " + this.result.getRow().getName() + ";");
+                    }
+                }
+                
+                v_Imports = Help.toDistinct(v_Imports);
+                StringBuilder v_Buffer = new StringBuilder();
+                
+                v_Buffer.append(v_Package);
+                for (String i_Item : v_Imports)
+                {
+                    v_Buffer.append(i_Item);
+                }
+                
+                v_Imports.add(v_Package);
+                v_Buffer.append(StringHelp.replaceAll(io_XRule.getValue() ,v_Imports.toArray(new String[] {}) ,new String[] {""}));
+                
+                io_XRule.setValue(v_Buffer.toString());
+            }
+        }
+        
+        return io_XRule;
+    }
+    
+    
+    
+    /**
+     * 触发执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎
+     * 
+     * 优先级：触发的优先级高于“XSQL条件”
+     * 
+     * 注：无入参的不触发执行。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-05-27
+     * @version     v1.0
+     *
+     * @param i_XSQLParams
+     */
+    private void fireBeforeRule(Object i_XSQLParams)
+    {
+        if ( this.beforeRule != null && i_XSQLParams != null )
+        {
+            this.beforeRule.execute(i_XSQLParams);
+        }
     }
     
     
     
     /**
      * 触发执行后的规则引擎
+     * 
+     * 优先级：触发的优先级高于“XSQL应用级触发器”
+     * 
+     * 注1：无入参的不触发执行。
+     * 注2：只用于查询返回的XSQL。
+     * 注3：getCount() 等简单数据结构的也不触发执行。
      * 
      * @author      ZhengWei(HY)
      * @createDate  2020-05-26
@@ -7797,34 +7987,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         {
             if ( i_XSQLData.getDatas() != null )
             {
-                if ( i_XSQLData.getDatas() instanceof PartitionMap )
-                {
-                    PartitionMap<? ,?> v_Datas = (PartitionMap<? ,?>)i_XSQLData.getDatas();
-                    
-                    for (List<?> v_Item : v_Datas.values())
-                    {
-                        this.afterRule.execute(v_Item);
-                    }
-                }
-                else if ( i_XSQLData.getDatas() instanceof TablePartitionSet )
-                {
-                    TablePartitionSet<? ,?> v_Datas = (TablePartitionSet<? ,?>)i_XSQLData.getDatas();
-                    
-                    for (Set<?> v_Item : v_Datas.values())
-                    {
-                        this.afterRule.execute(v_Item);
-                    }
-                }
-                else if ( i_XSQLData.getDatas() instanceof TablePartitionRID )
-                {
-                    TablePartitionRID<? ,?> v_Datas = (TablePartitionRID<? ,?>)i_XSQLData.getDatas();
-                    
-                    for (Map<? ,?> v_Item : v_Datas.values())
-                    {
-                        this.afterRule.execute(v_Item.values());
-                    }
-                }
-                else if ( i_XSQLData.getDatas() instanceof List )
+                if ( i_XSQLData.getDatas() instanceof List )
                 {
                     this.afterRule.execute(((List<?>)i_XSQLData.getDatas()));
                 }
@@ -7832,12 +7995,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 {
                     this.afterRule.execute(((Set<?>)i_XSQLData.getDatas()));
                 }
-                else if ( i_XSQLData.getDatas() instanceof Map )
-                {
-                    this.afterRule.execute(((Map<? ,?>)i_XSQLData.getDatas()).values());
-                }
                 else
                 {
+                    // Map 、PartitionMap 、TablePartitionRID 、TablePartitionSet 等对象均将整体对象传入规则引擎
                     this.afterRule.execute(i_XSQLData.getDatas());
                 }
             }
