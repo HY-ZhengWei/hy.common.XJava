@@ -10,7 +10,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.net"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.tpool"/>
 	<classpathentry kind="lib" path="lib/ojdbc14-10.2.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/accessors-smart-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/accessors-smart-1.1.jar" sourcepath="C:/Users/ZhengWei/.m2/net/minidev/accessors-smart/1.1/accessors-smart-1.1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/asm-5.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-2.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/xwork-core-2.3.34.jar"/>

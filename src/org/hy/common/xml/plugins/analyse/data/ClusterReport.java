@@ -79,6 +79,9 @@ public class ClusterReport extends SerializableDef
     /** 服务器情况（正常、异常） */
     private String serverStatus;
     
+    /** 运行时的JDK版本 */
+    private String javaVersion;
+    
     
     
     public ClusterReport()
@@ -97,6 +100,7 @@ public class ClusterReport extends SerializableDef
         this.startTime        = "";
         this.systemTime       = new Date().getFullMilli();
         this.serverStatus     = "";
+        this.javaVersion      = "";
     }
     
     
@@ -122,6 +126,7 @@ public class ClusterReport extends SerializableDef
         this.linuxDiskMaxRate = Help.round(this.calcDiskMaxRate() ,2);
         this.hostName         = "";
         this.serverStatus     = "";
+        this.javaVersion      = Help.getJavaVersion();
         
         if ( this.osType == 1 )
         {
@@ -886,6 +891,28 @@ public class ClusterReport extends SerializableDef
     public void setOsType(int osType)
     {
         this.osType = osType;
+    }
+
+
+    
+    /**
+     * 获取：运行时的JDK版本
+     */
+    public String getJavaVersion()
+    {
+        return javaVersion;
+    }
+
+    
+    
+    /**
+     * 设置：运行时的JDK版本
+     * 
+     * @param javaVersion 
+     */
+    public void setJavaVersion(String javaVersion)
+    {
+        this.javaVersion = javaVersion;
     }
     
 }

@@ -2660,6 +2660,7 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":ThreadCount"   ,v_CReport.getThreadCount() + "");
             v_RKey.put(":QueueCount"    ,v_CReport.getQueueCount()  + "");
             v_RKey.put(":ServerStatus"  ,v_CReport.getServerStatus());
+            v_RKey.put(":JavaVersion"   ,v_CReport.getJavaVersion());
             if ( "正常".equals(v_CReport.getServerStatus()) )
             {
                 if ( i_IsShowSysTime )
@@ -2707,6 +2708,7 @@ public class AnalyseBase extends Analyse
         v_RKey.put(":QueueCount"    ,v_Total.getQueueCount()  + "");
         v_RKey.put(":StartTime"     ,"-");
         v_RKey.put(":ServerStatus"  ,Help.NVL(v_Total.getServerStatus() ,"正常"));
+        v_RKey.put(":JavaVersion"   ,"-");
         
         v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
         

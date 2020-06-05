@@ -6,11 +6,11 @@
 <style type="text/css"> 
 html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
 .userInfoModify_logininfobody{ width:100%;height:100%;overflow-y:scroll;overflow-x:auto;}
-.userInfoModify_logininfo{ width:1250px;margin:0 auto;}
-.userInfoModify_logininfo1{ width:1250px;margin:0 auto; }
-.userInfoModify_labeTag,.userInfoModify_ServerName_Title,.userInfoModify_OsCPURate_Title,.userInfoModify_OsMemoryRate_Title,.userInfoModify_OsDiskMaxRate_Title,.userInfoModify_MaxMemory_Title,.userInfoModify_TotalMemory_Title,.userInfoModify_FreeMemory_Title,.userInfoModify_ThreadCount_Title,.userInfoModify_QueueCount_Title,.userInfoModify_StartTime_Title,.userInfoModify_ServerStatus_Title{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px; background-color:#D5DDF6;}
-.userInfoModify_labeTag1,.userInfoModify_ServerName,.userInfoModify_OsCPURate,.userInfoModify_OsMemoryRate,.userInfoModify_OsDiskMaxRate,.userInfoModify_MaxMemory,.userInfoModify_TotalMemory,.userInfoModify_FreeMemory,.userInfoModify_ThreadCount,.userInfoModify_QueueCount,.userInfoModify_StartTime,.userInfoModify_ServerStatus{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
-.userInfoModify_labeTag2,.userInfoModify_ServerName_Other,.userInfoModify_OsCPURate_Other,.userInfoModify_OsMemoryRate_Other,.userInfoModify_OsDiskMaxRate_Other,.userInfoModify_MaxMemory_Other,.userInfoModify_TotalMemory_Other,.userInfoModify_FreeMemory_Other,.userInfoModify_ThreadCount_Other,.userInfoModify_QueueCount_Other,.userInfoModify_StartTime_Other,.userInfoModify_ServerStatus_Other{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;border:#97B0F8 solid 0px;}
+.userInfoModify_logininfo{ width:1300px;margin:0 auto;}
+.userInfoModify_logininfo1{ width:1300px;margin:0 auto; }
+.userInfoModify_labeTag,.userInfoModify_ServerName_Title,.userInfoModify_OsCPURate_Title,.userInfoModify_OsMemoryRate_Title,.userInfoModify_OsDiskMaxRate_Title,.userInfoModify_JavaVersion_Title,.userInfoModify_MaxMemory_Title,.userInfoModify_TotalMemory_Title,.userInfoModify_FreeMemory_Title,.userInfoModify_ThreadCount_Title,.userInfoModify_QueueCount_Title,.userInfoModify_StartTime_Title,.userInfoModify_ServerStatus_Title{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px; background-color:#D5DDF6;}
+.userInfoModify_labeTag1,.userInfoModify_ServerName,.userInfoModify_OsCPURate,.userInfoModify_OsMemoryRate,.userInfoModify_OsDiskMaxRate,.userInfoModify_JavaVersion,.userInfoModify_MaxMemory,.userInfoModify_TotalMemory,.userInfoModify_FreeMemory,.userInfoModify_ThreadCount,.userInfoModify_QueueCount,.userInfoModify_StartTime,.userInfoModify_ServerStatus{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
+.userInfoModify_labeTag2,.userInfoModify_ServerName_Other,.userInfoModify_OsCPURate_Other,.userInfoModify_OsMemoryRate_Other,.userInfoModify_OsDiskMaxRate_Other,.userInfoModify_JavaVersion_Other,.userInfoModify_MaxMemory_Other,.userInfoModify_TotalMemory_Other,.userInfoModify_FreeMemory_Other,.userInfoModify_ThreadCount_Other,.userInfoModify_QueueCount_Other,.userInfoModify_StartTime_Other,.userInfoModify_ServerStatus_Other{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;border:#97B0F8 solid 0px;}
 
 .userInfoModify_clearTag {clear:both;height:36px;margin-top:0px;position:absolute;z-index:2008;} 
 .userInfoModify_clearTag1 {clear:both;height:36px;margin-top:0px;} 
@@ -19,32 +19,35 @@ html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
 .userInfoModify_OsCPURate_Title     { width:105px; text-align:center; border: #97B0F8 solid 1px;}
 .userInfoModify_OsMemoryRate_Title  { width:105px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
 .userInfoModify_OsDiskMaxRate_Title { width:105px; text-align:center; border: #97B0F8 solid 1px;} 
-.userInfoModify_MaxMemory_Title     { width:115px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
-.userInfoModify_TotalMemory_Title   { width:115px; text-align:center; border: #97B0F8 solid 1px;} 
-.userInfoModify_FreeMemory_Title    { width:115px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
-.userInfoModify_ThreadCount_Title   { width:95px;  text-align:center; border: #97B0F8 solid 1px;}
-.userInfoModify_QueueCount_Title    { width:95px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
-.userInfoModify_StartTime_Title     { width:135px; text-align:center; border: #97B0F8 solid 1px;}
-.userInfoModify_ServerStatus_Title  { width:65px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
+.userInfoModify_JavaVersion_Title   { width:75px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_MaxMemory_Title     { width:115px; text-align:center; border: #97B0F8 solid 1px;} 
+.userInfoModify_TotalMemory_Title   { width:115px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_FreeMemory_Title    { width:115px; text-align:center; border: #97B0F8 solid 1px;} 
+.userInfoModify_ThreadCount_Title   { width:95px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_QueueCount_Title    { width:95px;  text-align:center; border: #97B0F8 solid 1px;} 
+.userInfoModify_StartTime_Title     { width:135px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_ServerStatus_Title  { width:65px;  text-align:center; border: #97B0F8 solid 1px;} 
 
 .userInfoModify_labeTag1      { width:40px;text-align:center;border:#97B0F8 solid 1px;  } 
 .userInfoModify_ServerName    { width:110px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
 .userInfoModify_OsCPURate     { width:105px; text-align:center; border:#97B0F8 solid 1px;} 
 .userInfoModify_OsMemoryRate  { width:105px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
 .userInfoModify_OsDiskMaxRate { width:105px; text-align:center; border:#97B0F8 solid 1px;}
-.userInfoModify_MaxMemory     { width:115px; text-align:right;  border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
-.userInfoModify_TotalMemory   { width:115px; text-align:right;  border:#97B0F8 solid 1px;} 
-.userInfoModify_FreeMemory    { width:115px; text-align:right;  border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
-.userInfoModify_ThreadCount   { width:95px;  text-align:center; border:#97B0F8 solid 1px;} 
-.userInfoModify_QueueCount    { width:95px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
-.userInfoModify_StartTime     { width:135px; text-align:center; border:#97B0F8 solid 1px;} 
-.userInfoModify_ServerStatus  { width:65px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;} 
+.userInfoModify_JavaVersion   { width:75px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_MaxMemory     { width:115px; text-align:right;  border:#97B0F8 solid 1px;}
+.userInfoModify_TotalMemory   { width:115px; text-align:right;  border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_FreeMemory    { width:115px; text-align:right;  border:#97B0F8 solid 1px;}
+.userInfoModify_ThreadCount   { width:95px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_QueueCount    { width:95px;  text-align:center; border:#97B0F8 solid 1px;}
+.userInfoModify_StartTime     { width:135px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_ServerStatus  { width:65px;  text-align:center; border:#97B0F8 solid 1px;}
 
 .userInfoModify_labeTag2            { width:40px;  text-align:center;} 
 .userInfoModify_ServerName_Other    { width:110px; text-align:left;}
 .userInfoModify_OsCPURate_Other     { width:105px; text-align:left;}
 .userInfoModify_OsMemoryRate_Other  { width:105px; text-align:left;}
 .userInfoModify_OsDiskMaxRate_Other { width:105px; text-align:left;} 
+.userInfoModify_JavaVersion_Other   { width:75px;  text-align:left;} 
 .userInfoModify_MaxMemory_Other     { width:115px; text-align:left;} 
 .userInfoModify_TotalMemory_Other   { width:115px; text-align:left;}
 .userInfoModify_FreeMemory_Other    { width:115px; text-align:left;}
@@ -57,6 +60,7 @@ html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
 .cont_show_OsCPURate     { width:100px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_OsMemoryRate  { width:100px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_OsDiskMaxRate { width:100px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_JavaVersion   { width:70px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_MaxMemory     { width:110px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_TotalMemory   { width:110px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_FreeMemory    { width:110px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
@@ -74,60 +78,63 @@ a:hover{color:#99CC00;text-decoration:none;}
 
 </head>
 <body> 
-		
-	   <div class="userInfoModify_logininfobody" >
-	   	  <div class="userInfoModify_logininfo" /> 
-	      <div class="userInfoModify_clearTag">
-	            <div class="userInfoModify_labeTag">编号</div>
-	            <div class="userInfoModify_ServerName_Title">:Column01Title</div>
-	            <div class="userInfoModify_OsCPURate_Title">CPU占比%</div>
-	            <div class="userInfoModify_OsMemoryRate_Title">物理内存%</div>
-	            <div class="userInfoModify_OsDiskMaxRate_Title">磁盘Max%</div>
-	            <div class="userInfoModify_MaxMemory_Title">JVM内存上限</div>
-	            <div class="userInfoModify_TotalMemory_Title">JVM内存总量</div>
-	            <div class="userInfoModify_FreeMemory_Title">JVM空闲内存</div>
-	            <div class="userInfoModify_ThreadCount_Title">线程总量</div>
-	            <div class="userInfoModify_QueueCount_Title">队列任务</div>
-	            <div class="userInfoModify_StartTime_Title">:StartTimeTitle</div>
-	            <div class="userInfoModify_ServerStatus_Title">状态</div>
-	      </div> 
-		 
-	   </div> 
-	   
-   		<div id="info_fill" class="userInfoModify_logininfo1"> 
-   		
-   			<div class="userInfoModify_clearTag1">
-	            <div class="userInfoModify_labeTag2"></div>
-	            <div class="userInfoModify_ServerName_Other"></div>
-	            <div class="userInfoModify_OsCPURate_Other"></div>
-	            <div class="userInfoModify_OsMemoryRate_Other"></div>
-	            <div class="userInfoModify_OsDiskMaxRate_Other"></div>
-	            <div class="userInfoModify_MaxMemory_Other"></div>
-	            <div class="userInfoModify_TotalMemory_Other"></div>
-	            <div class="userInfoModify_FreeMemory_Other"></div>
-	            <div class="userInfoModify_ThreadCount_Other"></div>
-	            <div class="userInfoModify_QueueCount_Other"></div>
-	            <div class="userInfoModify_StartTime_Other"></div>
-	            <div class="userInfoModify_ServerStatus_Other"></div>
-     	    </div> 
-   		
-    		:Content 
-    		
-    		<div class="userInfoModify_clearTag1">
-	            <div class="userInfoModify_labeTag2"></div>
-	            <div class="userInfoModify_ServerName_Other"></div>
-	            <div class="userInfoModify_OsCPURate_Other"></div>
-	            <div class="userInfoModify_OsMemoryRate_Other"></div>
-	            <div class="userInfoModify_OsDiskMaxRate_Other"></div>
-	            <div class="userInfoModify_MaxMemory_Other"></div>
-	            <div class="userInfoModify_TotalMemory_Other"></div>
-	            <div class="userInfoModify_FreeMemory_Other"></div>
-	            <div class="userInfoModify_ThreadCount_Other"></div>
-	            <div class="userInfoModify_QueueCount_Other"></div>
-	            <div class="userInfoModify_StartTime_Other"></div>
-	            <div class="userInfoModify_ServerStatus_Other"></div>
-     	    </div> 
-   		</div>
-	   
+        
+       <div class="userInfoModify_logininfobody" >
+          <div class="userInfoModify_logininfo" /> 
+          <div class="userInfoModify_clearTag">
+                <div class="userInfoModify_labeTag">编号</div>
+                <div class="userInfoModify_ServerName_Title">:Column01Title</div>
+                <div class="userInfoModify_OsCPURate_Title">CPU占比%</div>
+                <div class="userInfoModify_OsMemoryRate_Title">物理内存%</div>
+                <div class="userInfoModify_OsDiskMaxRate_Title">磁盘Max%</div>
+                <div class="userInfoModify_JavaVersion_Title">JDK版本</div>
+                <div class="userInfoModify_MaxMemory_Title">JVM内存上限</div>
+                <div class="userInfoModify_TotalMemory_Title">JVM内存总量</div>
+                <div class="userInfoModify_FreeMemory_Title">JVM空闲内存</div>
+                <div class="userInfoModify_ThreadCount_Title">线程总量</div>
+                <div class="userInfoModify_QueueCount_Title">队列任务</div>
+                <div class="userInfoModify_StartTime_Title">:StartTimeTitle</div>
+                <div class="userInfoModify_ServerStatus_Title">状态</div>
+          </div> 
+         
+       </div> 
+       
+        <div id="info_fill" class="userInfoModify_logininfo1"> 
+        
+            <div class="userInfoModify_clearTag1">
+                <div class="userInfoModify_labeTag2"></div>
+                <div class="userInfoModify_ServerName_Other"></div>
+                <div class="userInfoModify_OsCPURate_Other"></div>
+                <div class="userInfoModify_OsMemoryRate_Other"></div>
+                <div class="userInfoModify_OsDiskMaxRate_Other"></div>
+                <div class="userInfoModify_JavaVersion_Other"></div>
+                <div class="userInfoModify_MaxMemory_Other"></div>
+                <div class="userInfoModify_TotalMemory_Other"></div>
+                <div class="userInfoModify_FreeMemory_Other"></div>
+                <div class="userInfoModify_ThreadCount_Other"></div>
+                <div class="userInfoModify_QueueCount_Other"></div>
+                <div class="userInfoModify_StartTime_Other"></div>
+                <div class="userInfoModify_ServerStatus_Other"></div>
+            </div> 
+        
+            :Content 
+            
+            <div class="userInfoModify_clearTag1">
+                <div class="userInfoModify_labeTag2"></div>
+                <div class="userInfoModify_ServerName_Other"></div>
+                <div class="userInfoModify_OsCPURate_Other"></div>
+                <div class="userInfoModify_OsMemoryRate_Other"></div>
+                <div class="userInfoModify_OsDiskMaxRate_Other"></div>
+                <div class="userInfoModify_JavaVersion_Other"></div>
+                <div class="userInfoModify_MaxMemory_Other"></div>
+                <div class="userInfoModify_TotalMemory_Other"></div>
+                <div class="userInfoModify_FreeMemory_Other"></div>
+                <div class="userInfoModify_ThreadCount_Other"></div>
+                <div class="userInfoModify_QueueCount_Other"></div>
+                <div class="userInfoModify_StartTime_Other"></div>
+                <div class="userInfoModify_ServerStatus_Other"></div>
+            </div> 
+        </div>
+       
 </body>
 </html>

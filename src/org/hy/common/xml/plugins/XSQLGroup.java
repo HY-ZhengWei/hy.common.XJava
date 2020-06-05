@@ -159,6 +159,7 @@ import org.hy.common.xml.XSQLData;
  *                                        防止Oracle全大写字段名称与Java成员名称大小写不一致时，出现未正确填充占位符的问题。
  *                                        发现人：张德宏
  *              v24.1 2019-12-25  1.修正：组内主动提交后输出日志中，影响操作记录里，不应累计查询数量。对此进行分类区分。发现人：张宇
+ *              v25.0 2020-06-02  1.添加：支持规则引擎，对执行入参、返回结果、XJava对象池中的数据使用规则引擎。
  */
 public final class XSQLGroup implements XJavaID
 {
@@ -941,6 +942,10 @@ public final class XSQLGroup implements XJavaID
                             v_ExecRet = v_Node.getSql().execute(io_Params);
                         }
                     }
+                    else if ( XSQLNode.$Type_Rule.equals(v_Node.getType()) )
+                    {
+                        v_ExecRet = v_Node.executeRule(io_Params ,v_Ret.getReturns());
+                    }
                     else 
                     {
                         v_ExecRet = v_Node.executeJava(new XSQLGroupControl(this ,io_DSGConns ,v_Ret.getExecSumCount()) ,io_Params ,v_Ret.getReturns());
@@ -1672,6 +1677,10 @@ public final class XSQLGroup implements XJavaID
                         {
                             v_ExecRet = v_Node.getSql().execute(io_Params);
                         }
+                    }
+                    else if ( XSQLNode.$Type_Rule.equals(v_Node.getType()) )
+                    {
+                        v_ExecRet = v_Node.executeRule(io_Params ,v_Ret.getReturns());
                     }
                     else 
                     {

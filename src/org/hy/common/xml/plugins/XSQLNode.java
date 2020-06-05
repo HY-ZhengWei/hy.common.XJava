@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.hy.common.CycleNextList;
 import org.hy.common.Help;
+import org.hy.common.MethodReflect;
 import org.hy.common.StringHelp;
 import org.hy.common.XJavaID;
 import org.hy.common.db.DBCondition;
@@ -44,7 +45,7 @@ import org.hy.common.xml.XSQL;
  *              v8.0  2017-05-05  1.添加：this.oneConnection 查询SQL数据库连接的占用模式。
  *              v9.0  2017-05-17  1.添加：this.returnQuery，针对 this.returnID 属性，定义返回查询结果集是 "返回结果集"？还是 "查询并返回"。
  *                                  提供一种好理解的数据结构(与this.queryReturnID属性返回的数据结构相比)。
- *                                  此建议来自于：向以前同学
+ *                                  此建议来自于：向以前
  *                                2.准备放弃this.queryReturnID属性，只少是不再建议使用此属性。
  *              v10.0 2017-05-23  1.添加：节点的执行条件this.condition中的占位符支持xx.yy.ww的面向对象的形式。此建议来自于：向以前同学
  *              v11.0 2017-12-22  1.添加：XSQL组执行的Java方法的入参参数中增加控制中心XSQLGroupControl，实现事务统一提交、回滚。
@@ -74,6 +75,7 @@ import org.hy.common.xml.XSQL;
  *              v15.0 2018-08-09  1.添加：clear属性。控制是否及时释放this.collectionID指定集合资源，释放内存。
  *              v15.1 2018-08-10  1.剥离：将节点是否允许执行的条件，剥离到org.hy.common.db.DBCondition类中共用。
  *              v16.0 2019-08-13  1.添加：$Type_ExecuteCommit类型，可实现执行后立即提交本次操作的节点。主要用于多线程的同时，也保证精准的XSQL统计。
+ *              v17.0 2020-06-02  1.添加：支持规则引擎，对执行入参、返回结果、XJava对象池中的数据使用规则引擎。
  */
 public class XSQLNode implements XJavaID
 {
@@ -121,6 +123,18 @@ public class XSQLNode implements XJavaID
      * 方法的定义模板 @see org.hy.common.xml.plugins.XSQLGroupExecuteJava
      */
     public static final String  $Type_ExecuteJava                = "ExecuteJava";
+    
+    /**
+     * 节点类型：执行规则引擎
+     * 
+     *   即执行xid 属性指定的规则引擎对象
+     *   相关针对性属性有：
+     *     1. xid
+     *     2. collectionID   可选的。为空时，默认表示对入参io_Params使用规则引擎；
+     *                       否则对 io_Params 或 XSQLGroupResult.getReturns() 或 XJava.getObject() 中存在的collectionID对象使用规则引擎
+     *                       当collectionID指定的对象为空时，最多不执行规则引擎，并不会抛错引起XSQLGroup的执行异常。
+     */
+    public static final String  $Type_Rule                       = "XRule";
     
     /**
      * 节点类型：XSQLGroup.execute()方法的入参中的Java集合对象，转换角色为数据库查询结果
@@ -1489,6 +1503,61 @@ public class XSQLNode implements XJavaID
         this.methodName   = methodName;
         this.xjavaIntance = null;
         this.xjavaMethod  = null;
+    }
+    
+    
+    
+    /**
+     * 执行规则引擎。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-02
+     * @version     v1.0
+     *
+     * @param io_Params    执行或查询参数。同XSQLGroup.executeGroup()方法的入参参数io_Params同义。
+     * @param io_Returns   通过returnID标记的，返回出去的多个查询结果集。同XSQLGroupResult.returns属性同义。
+     * @return             表示是否执行成功。当返回false时，其后的XSQLNode节点将不再执行。
+     */
+    public boolean executeRule(Map<String ,Object> io_Params ,Map<String ,Object> io_Returns)
+    {
+        if ( Help.isNull(this.xid) )
+        {
+            throw new NullPointerException("XSQLNode execute rule, xid is null.");
+        }
+        
+        XRule v_XRule = XJava.getXRule(this.xid);
+        if ( v_XRule == null )
+        {
+            throw new NullPointerException("XSQLNode execute rule ,xid[" + this.xid + "] is not exists");
+        }
+        
+        if ( Help.isNull(this.collectionID) )
+        {
+            return v_XRule.execute(io_Params);
+        }
+        else
+        {
+            Object v_MapValue = MethodReflect.getMapValue(io_Params ,this.collectionID);
+            
+            if ( v_MapValue == null )
+            {
+                // 支持从返回值数据集合中获取集合对象。即，支持动态缓存功能。
+                v_MapValue = MethodReflect.getMapValue(io_Returns ,this.collectionID);
+                
+                if ( v_MapValue == null )
+                {
+                    // 支持从XJava对象池中获取集合对象。即支持持久缓存功能。
+                    v_MapValue = XJava.getObject(this.collectionID);
+                    
+                    if ( v_MapValue == null )
+                    {
+                        return true;
+                    }
+                }
+            }
+            
+            return v_XRule.execute(v_MapValue);
+        }
     }
     
     
