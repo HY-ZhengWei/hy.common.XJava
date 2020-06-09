@@ -9,8 +9,10 @@ import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.impl.KnowledgeBaseFactory;
 import org.hy.common.Date;
 import org.hy.common.Help;
+import org.hy.common.Return;
 import org.hy.common.XJavaID;
 import org.hy.common.xml.SerializableDef;
+import org.hy.common.xml.XHttp;
 import org.hy.common.xml.log.Logger;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.StatelessKieSession;
@@ -24,6 +26,17 @@ import org.kie.internal.io.ResourceFactory;
 
 /**
  * 封装Drools规则引擎的执行类
+ * 
+ * 有三种方法注入规则
+ *    方法1：以规则文件的方式注入并生成规则引擎    （本地文件）
+ *    方法2：以规则文本的方式注入并生成规则引擎    （文本信息）
+ *    方法3：以规则远端请求的方式注入并生成规则引擎（远端请求）
+ *    
+ *    
+ * 当三种方法均注入规则时，解释的优先级为：
+ *     本地文件 > 文本信息 > 远端请求
+ *     
+ *     即，文本优先，远端请求最后解释
  *
  * @author      ZhengWei(HY)
  * @createDate  2020-05-25
@@ -52,6 +65,9 @@ public class XRule extends SerializableDef implements XJavaID
     
     /** 规则引擎的文件路径 */
     private String              ruleFile;
+    
+    /** 通过Http请求获取规则引擎的远程文本信息 */
+    private XHttp               ruleRemote;
     
     /** 规则会话：无状态的 */
     private StatelessKieSession kieSession;
@@ -165,7 +181,7 @@ public class XRule extends SerializableDef implements XJavaID
             return;
         }
         
-        /* 必须先文件优先，再判定文本 */
+        /* 必须文件优先，再判定文本 */
         if ( !Help.isNull(this.ruleFile) )
         {
             this.initRuleFile();
@@ -174,8 +190,47 @@ public class XRule extends SerializableDef implements XJavaID
         {
             this.initRuleInfo();
         }
+        else if ( null != this.ruleRemote )
+        {
+            this.initRuleRemote();
+        }
         
         this.isNeedInit = false;
+    }
+    
+    
+    
+    /**
+     * 初始化规则引擎（按远程Http请求）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-09
+     * @version     v1.0
+     *
+     */
+    private void initRuleRemote()
+    {
+        Return<?> v_Response = this.ruleRemote.request();
+        
+        if ( v_Response == null || !v_Response.booleanValue() || Help.isNull(v_Response.getParamStr()) )
+        {
+            $Logger.error(Date.getNowTime().getFullMilli() + " XRule Build Errors: " + Help.NVL(this.comment) + "\n" + this.ruleRemote.getUrl());
+            return;
+        }
+        
+        KnowledgeBuilder v_KBuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
+        v_KBuilder.add(ResourceFactory.newByteArrayResource(v_Response.getParamStr().getBytes()) ,ResourceType.DRL);
+        
+        if ( v_KBuilder.hasErrors() )
+        {
+            $Logger.error(Date.getNowTime().getFullMilli() + " XRule Build Errors: " + Help.NVL(this.comment) + "\n" + this.ruleRemote.getUrl() + "\n" + v_Response.getParamStr());
+            throw new RuntimeException("XRule Build Errors:\n" + v_KBuilder.getErrors());
+        }
+        
+        InternalKnowledgeBase v_KBase = KnowledgeBaseFactory.newKnowledgeBase();
+        v_KBase.addPackages(v_KBuilder.getKnowledgePackages());
+        
+        this.kieSession = v_KBase.newStatelessKieSession();
     }
     
     
@@ -230,8 +285,6 @@ public class XRule extends SerializableDef implements XJavaID
         v_KBase.addPackages(v_KBuilder.getKnowledgePackages());
         
         this.kieSession = v_KBase.newStatelessKieSession();
-        
-        
     }
     
     
@@ -331,6 +384,34 @@ public class XRule extends SerializableDef implements XJavaID
     public void setFile(String i_RuleFile)
     {
         this.ruleFile   = i_RuleFile;
+        this.isNeedInit = true;
+        
+        if ( !this.isLazyMode )
+        {
+            this.initRule();
+        }
+    }
+
+
+    
+    /**
+     * 获取：通过Http请求获取规则引擎的远程文本信息
+     */
+    public XHttp getRuleRemote()
+    {
+        return ruleRemote;
+    }
+
+
+    
+    /**
+     * 设置：通过Http请求获取规则引擎的远程文本信息
+     * 
+     * @param i_RuleRemote 
+     */
+    public void setRuleRemote(XHttp i_RuleRemote)
+    {
+        this.ruleRemote = i_RuleRemote;
         this.isNeedInit = true;
         
         if ( !this.isLazyMode )

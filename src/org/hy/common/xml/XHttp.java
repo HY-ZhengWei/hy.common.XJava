@@ -26,6 +26,7 @@ import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.Return;
 import org.hy.common.StringHelp;
+import org.hy.common.XJavaID;
 
 
 
@@ -49,9 +50,12 @@ import org.hy.common.StringHelp;
  *                                   而是通过请求方法request(...)返回值直接返回响应信息。
  *                                   这样最大好处是：不用再每次请求时创建一个XHttp的实例。
  *           V3.1  2018-11-15  添加1：新类型的转义方法 isEncode。
+ *           V4.0  2020-06-09  添加1：支持序列化接口、XJavaID接口
  */
-public final class XHttp 
+public final class XHttp extends SerializableDef implements XJavaID
 {  
+    private static final long serialVersionUID = 9198603998217342471L;
+
     /** 请求类型:get方式 */
     public static  final int    $Request_Type_Get  = 1;
     
@@ -65,6 +69,8 @@ public final class XHttp
     private static SSLContext   $SSLContext;
     
     
+    /** XJava对象池中的ID标识 */
+    private String                     xjavaID;
     
     /** 请求协议类型(http、https) */
     private String                     protocol;
@@ -1589,6 +1595,30 @@ public final class XHttp
         {
             this.proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(this.proxyHost ,this.proxyPort));
         }
+    }
+    
+    
+    
+    /**
+     * 设置XJava池中对象的ID标识。此方法不用用户调用设置值，是自动的。
+     * 
+     * @param i_XJavaID
+     */
+    public void setXJavaID(String i_XJavaID)
+    {
+        this.xjavaID = i_XJavaID;
+    }
+
+
+
+    /**
+     * 获取XJava池中对象的ID标识。
+     * 
+     * @return
+     */
+    public String getXJavaID()
+    {
+        return this.xjavaID;
     }
 
     

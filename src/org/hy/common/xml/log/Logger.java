@@ -1,5 +1,6 @@
 package org.hy.common.xml.log;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import org.hy.common.Date;
@@ -24,9 +25,11 @@ import org.hy.common.StaticReflect;
  * @version     v1.0
  *              v2.0  2020-01-06  添加：在没有任何Log4j版本时，可采用System.out.println()方法输出
  */
-public class Logger
+public class Logger implements Serializable
 {
         
+    private static final long serialVersionUID = -7766276386919918659L;
+
     private Object   log;
     
     private Method   fatal;       // 指出每个严重的错误事件将会导致应用程序的退出。这个级别比较高了。重大错误，这种级别你可以直接停止程序了。
@@ -44,6 +47,31 @@ public class Logger
     
     
     
+    public static Logger getLogger(Class<?> i_Class)
+    {
+        return getLogger(i_Class ,false);
+    }
+    
+    
+    
+    /**
+     * 构建日志类
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-09
+     * @version     v1.0
+     *
+     * @param i_Class
+     * @param i_IsPrintln  没有任何Log4j版本时，是否采用System.out.println()方法输出
+     * @return
+     */
+    public static Logger getLogger(Class<?> i_Class ,boolean i_IsPrintln)
+    {
+        return new Logger(i_Class ,i_IsPrintln);
+    }
+    
+    
+    
     public Logger(Class<?> i_Class)
     {
         this(i_Class ,false);
@@ -51,6 +79,16 @@ public class Logger
     
     
     
+    /**
+     * 构建日志类
+     *
+     * @author      ZhengWei(HY)
+     * @createDate  2019-05-27
+     * @version     v1.0
+     *
+     * @param i_Class
+     * @param i_IsPrintln   没有任何Log4j版本时，是否采用System.out.println()方法输出
+     */
     public Logger(Class<?> i_Class ,boolean i_IsPrintln)
     {
         Class<?> v_LogClass   = null;

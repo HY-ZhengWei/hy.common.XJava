@@ -5,6 +5,7 @@ import java.util.Map;
 import org.hy.common.Date;
 import org.hy.common.DualChannelPool;
 import org.hy.common.Help;
+import org.hy.common.PartitionMap;
 import org.hy.common.PianoKeyboardPool;
 import org.hy.common.QueuePool;
 import org.hy.common.StringHelp;
@@ -314,11 +315,11 @@ public class JU_Fel
     
     public void test002_Fel()
     {
-        String              v_Placeholders   = ":c01=='1' && :c02=='1'";
-        Map<String ,Object> v_PlaceholderMap = StringHelp.parsePlaceholders(v_Placeholders);
-        FelEngine           v_Fel            = new FelEngineImpl();
-        FelContext          v_FelContext     = v_Fel.getContext();
-        int                 v_Index          = 2;
+        String                        v_Placeholders   = ":c01=='1' && :c02=='1'";
+        PartitionMap<String ,Integer> v_PlaceholderMap = StringHelp.parsePlaceholders(v_Placeholders);
+        FelEngine                     v_Fel            = new FelEngineImpl();
+        FelContext                    v_FelContext     = v_Fel.getContext();
+        int                           v_Index          = 2;
         
         for (String v_Key : v_PlaceholderMap.keySet())
         {
