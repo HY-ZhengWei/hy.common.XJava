@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="src" path="logConfig"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.base"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.db"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.file"/>
@@ -26,9 +27,7 @@
 	<classpathentry kind="lib" path="lib/spring-core-5.0.7.RELEASE.jar" sourcepath="/Volumes/HY_HD_06/Develop_HD/apache-maven-localRepository/org/springframework/spring-core/5.0.7.RELEASE/spring-core-5.0.7.RELEASE-sources.jar"/>
 	<classpathentry kind="lib" path="lib/spring-web-5.0.7.RELEASE.jar" sourcepath="/Volumes/HY_HD_06/Develop_HD/apache-maven-localRepository/org/springframework/spring-web/5.0.7.RELEASE/spring-web-5.0.7.RELEASE-sources.jar"/>
 	<classpathentry kind="lib" path="lib/spring-webmvc-5.0.7.RELEASE.jar" sourcepath="/Volumes/HY_HD_06/Develop_HD/apache-maven-localRepository/org/springframework/spring-webmvc/5.0.7.RELEASE/spring-webmvc-5.0.7.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-api-2.11.2.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-core-2.11.2.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar" sourcepath="C:/Users/ZhengWei/.m2/log4j/log4j/1.2.8/log4j-1.2.8-sources.jar"/>
 	<classpathentry kind="lib" path="lib/spring-beans-5.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/htmlcleaner-2.23.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
