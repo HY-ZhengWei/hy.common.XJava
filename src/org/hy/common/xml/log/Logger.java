@@ -2,17 +2,20 @@ package org.hy.common.xml.log;
 
 import java.lang.reflect.Method;
 
+import org.hy.common.Counter;
 import org.hy.common.Date;
 import org.hy.common.Help;
+import org.hy.common.PartitionMap;
 import org.hy.common.StaticReflect;
 import org.hy.common.StringHelp;
+import org.hy.common.TablePartition;
 
 
 
 
 
 /**
- * 日志引擎
+ * 日志引擎。
  * 
  * 同时支持Log4j 1.x 和 Log4j 2.x 两个版本的功能。
  * 
@@ -33,80 +36,92 @@ import org.hy.common.StringHelp;
  *                                添加：支持SLF4J的日志类库。建议人：邹德福
  *              v4.0  2020-06-10  添加：Log4j出于性能考虑，公开了判定日志级别的方法。建议人：李浩
  *              v5.0  2020-06-11  优化：内存优化、执行性能的优化、代码优雅的优化
+ *              v5.1  2020-06-12  添加：日志集中管理机制；对外提供日志级别等更多方法。
  */
 public class Logger
 {
     
     /** 全局控制参数：是否启用SLF4J。目标对象实例化前的有效，日志对象实例化后，修改是没有任何效果的 */
-    public static boolean $IsEnabled_SLF4J = true;
+    public static boolean                       $IsEnabled_SLF4J = true;
     
     /** 全局控制参数：是否启用Log4J。目标对象实例化前的有效，日志对象实例化后，修改是没有任何效果的 */
-    public static boolean $IsEnabled_Log4J = true;
+    public static boolean                       $IsEnabled_Log4J = true;
     
     /** 全局控制参数：是否启用System.out.println输出日志。目标对象实例化前的有效，日志对象实例化后，修改是没有任何效果的 */
-    public static boolean $IsEnabled_Print = false;
+    public static boolean                       $IsEnabled_Print = false;
+    
     
     
     /** 常量：日志引擎的类型为：SLF4J */
-    public static final int $LogType_SLF4J = 1;
+    public static final int                     $LogType_SLF4J = 1;
     
     /** 常量：日志引擎的类型为：Log4J */
-    public static final int $LogType_Log4J = 2;
+    public static final int                     $LogType_Log4J = 2;
     
-    private static final String $FQCN = Logger.class.getName();
+    private static final String                 $FQCN = Logger.class.getName();
     
     
     
     /** 日志实现类库的类型（1：SLF4J  2：Log4J） */
-    private static int      $LogType    = -1;
+    private static int                          $LogType    = -1;
     
     /** 日志实现类库的版本 */
-    private static int      $LogVersion = -1;
+    private static int                          $LogVersion = -1;
     
-    private static Class<?> $LogClass;
+    private static Class<?>                     $LogClass;
     
-    private static Class<?> $LogManager;
+    private static Class<?>                     $LogManager;
     
     /** 指出每个严重的错误事件将会导致应用程序的退出。这个级别比较高了。重大错误，这种级别你可以直接停止程序了 */
-    private static Object   $LogLevelFatal;
+    private static Object                       $LogLevelFatal;
                           
     /** 指出虽然发生错误事件，但仍然不影响系统的继续运行。打印错误和异常信息，如果不想输出太多的日志，可以使用这个级别 */
-    private static Object   $LogLevelError;
+    private static Object                       $LogLevelError;
                           
     /** 表明会出现潜在错误的情形，有些信息不是错误信息，但是也要给程序员的一些提示。 */
-    private static Object   $LogLevelWarn;
+    private static Object                       $LogLevelWarn;
                           
     /** 消息在粗粒度级别上突出强调应用程序的运行过程。打印一些你感兴趣的或者重要的信息 */
-    private static Object   $LogLevelInfo;
+    private static Object                       $LogLevelInfo;
                           
     /** 指出细粒度信息事件对调试应用程序是非常有帮助的，主要用于开发过程中打印一些运行信息 */
-    private static Object   $LogLevelDebug;
-                          
-    /** 最低的日志级别 */
-    private static Object   $LogLevelTrace;
+    private static Object                       $LogLevelDebug;
+                                                
+    /** 最低的日志级别 */                       
+    private static Object                       $LogLevelTrace;
+                                                
+    private static Method                       $FatalIsEnabled;
+                                                
+    private static Method                       $ErrorIsEnabled;
+                                                
+    private static Method                       $WarnIsEnabled;
+                                                
+    private static Method                       $InfoIsEnabled;
+                                                
+    private static Method                       $DebugIsEnabled;
+                                                
+    private static Method                       $TraceIsEnabled;
+                                                
+    private static Method                       $LogMethod;
+                                                
+    private static Method                       $LogMethod_Log4j2Throwable;
     
-    private static Method   $FatalIsEnabled;
-    
-    private static Method   $ErrorIsEnabled;
-    
-    private static Method   $WarnIsEnabled;
-    
-    private static Method   $InfoIsEnabled;
-    
-    private static Method   $DebugIsEnabled;
-    
-    private static Method   $TraceIsEnabled;
-    
-    private static Method   $LogMethod;
-    
-    private static Method   $LogMethod_Log4j2Throwable;
+    /** 
+     * 全部日志处理类的集合。可用于日志分析
+     * 
+     * Map.key  为分区标示。为使用日志引擎的类名称
+     */
+    private static PartitionMap<String ,Logger> $Loggers = new TablePartition<String ,Logger>();
     
     
     
-    private Object   log;
+    private Object                              log;
     
     /** 没有任何Log4j版本时，是否采用System.out.println()方法输出 */
-    private Class<?> logClass;  
+    private Class<?>                            logClass;
+    
+    /** 无论是否对接Log4J、SLF4J，均进行日志统计。Key是：方法名称:代码行 */
+    private Counter<String>                     requestCount;
     
     
     
@@ -166,6 +181,102 @@ public class Logger
         $IsEnabled_SLF4J = false;
         $IsEnabled_Log4J = false;
         $IsEnabled_Print = true;
+    }
+    
+    
+    
+    /**
+     * 获取实际Log4J 1.x、2.x 或 SLF4J的日志级别对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-12
+     * @version     v1.0
+     *
+     * @return
+     */
+    public static Object getLevelFatal()
+    {
+        return $LogLevelFatal;
+    }
+    
+    
+    
+    /**
+     * 获取实际Log4J 1.x、2.x 或 SLF4J的日志级别对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-12
+     * @version     v1.0
+     *
+     * @return
+     */
+    public static Object getLevelError()
+    {
+        return $LogLevelError;
+    }
+    
+    
+    
+    /**
+     * 获取实际Log4J 1.x、2.x 或 SLF4J的日志级别对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-12
+     * @version     v1.0
+     *
+     * @return
+     */
+    public static Object getLevelWarn()
+    {
+        return $LogLevelWarn;
+    }
+    
+    
+    
+    /**
+     * 获取实际Log4J 1.x、2.x 或 SLF4J的日志级别对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-12
+     * @version     v1.0
+     *
+     * @return
+     */
+    public static Object getLevelnfo()
+    {
+        return $LogLevelInfo;
+    }
+    
+    
+    
+    /**
+     * 获取实际Log4J 1.x、2.x 或 SLF4J的日志级别对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-12
+     * @version     v1.0
+     *
+     * @return
+     */
+    public static Object getLevelDebug()
+    {
+        return $LogLevelDebug;
+    }
+    
+    
+    
+    /**
+     * 获取实际Log4J 1.x、2.x 或 SLF4J的日志级别对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-12
+     * @version     v1.0
+     *
+     * @return
+     */
+    public static Object getLevelTrace()
+    {
+        return $LogLevelTrace;
     }
     
     
@@ -289,7 +400,6 @@ public class Logger
     
     
     
-    
     /**
      * 构建日志类
      *
@@ -302,6 +412,9 @@ public class Logger
      */
     public Logger(String i_ClassName ,Boolean i_IsPrintln)
     {
+        this.requestCount = new Counter<String>();
+        this.addLogger();
+        
         initLogTypeVersion();
         
         if ( $LogManager != null )
@@ -732,6 +845,78 @@ public class Logger
     
     
     /**
+     * 全部日志处理类的集合。可用于日志分析
+     * 
+     * Map.key  为分区标示。为使用日志引擎的类名称
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-12
+     * @version     v1.0
+     *
+     * @return
+     */
+    public static PartitionMap<String ,Logger> getLoggers()
+    {
+        return $Loggers;
+    }
+    
+    
+    
+    /**
+     * 将自己添加到统一日志集中管理中。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-12
+     * @version     v1.0
+     *
+     */
+    private void addLogger()
+    {
+        StackTraceElement v_StackTrace = LogStackTrace.calcLocation($FQCN);
+        
+        if ( v_StackTrace != null ) 
+        {
+            $Loggers.putRow(v_StackTrace.getClassName() ,this);
+        }
+    }
+    
+    
+    
+    /**
+     * 日志统计。
+     * 
+     * 无论是否对接Log4J、SLF4J，均进行日志统计
+     * 
+     * Key是：方法名称:代码行
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-12
+     * @version     v1.0
+     *
+     */
+    private void request()
+    {
+        StackTraceElement v_StackTrace = LogStackTrace.calcLocation($FQCN);
+        
+        if ( v_StackTrace != null )
+        {
+            this.requestCount.put(v_StackTrace.getMethodName() + ":" + v_StackTrace.getLineNumber() ,1L);
+        }
+    }
+    
+    
+    
+    /**
+     * 获取：无论是否对接Log4J、SLF4J，均进行日志统计。Key是：方法名称:代码行
+     */
+    public Counter<String> getRequestCount()
+    {
+        return requestCount;
+    }
+
+
+
+    /**
      * Log4j出于性能考虑，公开了判定日志级别的方法
      * 
      * @author      ZhengWei(HY)
@@ -914,6 +1099,8 @@ public class Logger
      */
     public void log(final Object i_Marker ,final Object i_Level ,final String i_Message ,final Object [] i_Arguments ,final Throwable i_Throwable)
     {
+        this.request();
+        
         if ( this.log != null )
         {
             try
