@@ -65,6 +65,8 @@ import org.hy.common.xml.XJava;
  * 
  * 功能21：查看XSQL与表的关系图                 http://IP:Port/WebService/../analyseObject?dsgid=*
  * 功能22：查看表的关系图                       http://IP:Port/WebService/../analyseObject?&tableRef=Ydsgid=*
+ * 
+ * 功能23：查看日志引擎分析                     http://IP:Port/WebService/../analyseObject?logger=Y
  *
  * @author      ZhengWei(HY)
  * @createDate  2015-12-16
@@ -84,6 +86,7 @@ import org.hy.common.xml.XJava;
  *              v10.0 2019-06-11  添加：查看XSQL与表的关系图
  *              v11.0 2019-06-14  添加：查看表的关系图
  *              v12.0 2020-01-21  添加：执行对象方法的配置页面（带方法参数）
+ *              v13.0 2020-06-15  添加：查看日志引擎分析（按类名、按方法、按日志代码行）
  *              
  */
 public class AnalyseObjectServlet extends HttpServlet
@@ -169,6 +172,7 @@ public class AnalyseObjectServlet extends HttpServlet
         String v_DSGID      = i_Request.getParameter("dsgid");
         String v_FS         = i_Request.getParameter("FS");
         String v_XSGFlow    = i_Request.getParameter("XSGFlow");
+        String v_Logger     = i_Request.getParameter("logger");
         
         if ( !Help.isNull(v_Execute) )
         {
@@ -291,6 +295,13 @@ public class AnalyseObjectServlet extends HttpServlet
             else if ( !Help.isNull(v_Create) )
             {
                 i_Response.getWriter().println(this.analyse.analyseDBCreate(v_BasePath ,i_Request.getRequestURL().toString()));
+            }
+            else if ( !Help.isNull(v_Logger) )
+            {
+                String v_TotalType = Help.NVL(i_Request.getParameter("TT"));
+                String v_Sort      = Help.NVL(i_Request.getParameter("S"));
+                
+                i_Response.getWriter().println(this.analyse.analyseLogger(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_TotalType ,v_Sort));
             }
             else if ( Help.isNull(v_XFile) && "Y".equalsIgnoreCase(v_Cluster) )
             {

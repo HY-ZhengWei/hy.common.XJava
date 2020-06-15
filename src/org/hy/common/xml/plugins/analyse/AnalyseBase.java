@@ -43,6 +43,7 @@ import org.hy.common.xml.plugins.XSQLNode;
 import org.hy.common.xml.plugins.analyse.data.AnalyseDBTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseDSGTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseJobTotal;
+import org.hy.common.xml.plugins.analyse.data.AnalyseLoggerTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseThreadPoolTotal;
 import org.hy.common.xml.plugins.analyse.data.ClusterReport;
 import org.hy.common.xml.plugins.analyse.data.DataSourceGroupReport;
@@ -95,6 +96,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v20.0 2020-01-15  添加：查看对象信息时，显示成员方法
  *              v20.1 2020-01-21  添加：带参数执行方法
  *              v21.0 2020-04-17  添加：定时任务添加“云主机”IP的显示
+ *              v22.0 2020-06-13  添加：日志引擎的监控
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -3252,6 +3254,227 @@ public class AnalyseBase extends Analyse
     
     
     
+    /**
+     * 功能1：本机日志引擎的监控信息
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-13
+     * @version     v1.0
+     *
+     * @param  i_BasePath       服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ReLoadPath     重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject?logger=Y
+     * @param  i_Cluster        是否为集群
+     * @param  i_TotalType      统计类型(class、method、lineNumber)
+     * @param  i_SortType       排序类型(requectCount、lastTime、name、errorCount)
+     * @return
+     */
+    public String analyseLogger(String i_BasePath ,String i_ReLoadPath ,boolean i_Cluster ,String i_TotalType ,String i_SortType)
+    {
+        StringBuilder            v_Buffer  = new StringBuilder();
+        int                      v_Index   = 0;
+        String                   v_Content = this.getTemplateShowLoggerContent();
+        List<AnalyseLoggerTotal> v_Total   = new ArrayList<AnalyseLoggerTotal>();
+        
+        // 按“方法”分组统计。(默认分组方式)
+        if ( Help.isNull(i_TotalType) || "method".equalsIgnoreCase(i_TotalType) )
+        {
+            for (Map.Entry<String, List<Logger>> v_ClassForLoggers : Logger.getLoggers().entrySet())
+            {
+                for (Logger v_Logger : v_ClassForLoggers.getValue())
+                {
+                    Counter<String> v_MethodCounter        = new Counter<String>();
+                    Counter<String> v_MethodRequestCounter = new Counter<String>();
+                    Counter<String> v_MethodErrorCounter   = new Counter<String>();
+                    Max<String>     v_LastTimes            = new Max<String>();
+                    
+                    for (Map.Entry<String, Long> v_Method : v_Logger.getRequestCount().entrySet())
+                    {
+                        String [] v_MInfos     = v_Method.getKey().split(":");
+                        long      v_ErrorCount = 0; 
+                        
+                        if ( "error".equalsIgnoreCase(v_MInfos[0]) || "fatal".equalsIgnoreCase(v_MInfos[0]) )
+                        {
+                            v_ErrorCount = v_Method.getValue();
+                        }
+                        
+                        v_MethodCounter       .put(v_MInfos[1] ,1L);
+                        v_MethodRequestCounter.put(v_MInfos[1] ,v_Method.getValue());
+                        v_MethodErrorCounter  .put(v_MInfos[1] ,v_ErrorCount);
+                        v_LastTimes           .put(v_MInfos[1] ,v_Logger.getRequestTime().get(v_Method.getKey()));
+                    }
+                    
+                    for (Map.Entry<String, Long> v_Method : v_MethodRequestCounter.entrySet())
+                    {
+                        AnalyseLoggerTotal v_Data = new AnalyseLoggerTotal();
+                        
+                        v_Data.setClassName(      v_ClassForLoggers.getKey());
+                        v_Data.setMethodName(     v_Method.getKey());
+                        v_Data.setCount(          v_MethodCounter     .get(v_Method.getKey()));
+                        v_Data.setRequestCount(   v_Method            .getValue());
+                        v_Data.setErrorFatalCount(v_MethodErrorCounter.get(v_Method.getKey()));
+                        v_Data.setLastTime(       v_LastTimes         .get(v_Method.getKey()).longValue());
+                        
+                        v_Total.add(v_Data);
+                    }
+                }
+            }
+        }
+        // 按“类”分组统计
+        else if ( "class".equalsIgnoreCase(i_TotalType) )
+        {
+            for (Map.Entry<String, List<Logger>> v_ClassForLoggers : Logger.getLoggers().entrySet())
+            {
+                Counter<String> v_ClassCounter        = new Counter<String>();
+                Counter<String> v_ClassRequestCounter = new Counter<String>();
+                Counter<String> v_MethodErrorCounter  = new Counter<String>();
+                Max<String>     v_LastTimes           = new Max<String>();
+                
+                for (Logger v_Logger : v_ClassForLoggers.getValue())
+                {
+                    for (Map.Entry<String, Long> v_Method : v_Logger.getRequestCount().entrySet())
+                    {
+                        String [] v_MInfos     = v_Method.getKey().split(":");
+                        long      v_ErrorCount = 0; 
+                        
+                        if ( "error".equalsIgnoreCase(v_MInfos[0]) || "fatal".equalsIgnoreCase(v_MInfos[0]) )
+                        {
+                            v_ErrorCount = v_Method.getValue();
+                        }
+                        
+                        v_ClassCounter       .put(v_ClassForLoggers.getKey() ,1L);
+                        v_ClassRequestCounter.put(v_ClassForLoggers.getKey() ,v_Method.getValue());
+                        v_MethodErrorCounter .put(v_ClassForLoggers.getKey() ,v_ErrorCount);
+                        v_LastTimes          .put(v_ClassForLoggers.getKey() ,v_Logger.getRequestTime().get(v_Method.getKey()));
+                    }
+                }
+                
+                for (Map.Entry<String, Long> v_Class : v_ClassRequestCounter.entrySet())
+                {
+                    AnalyseLoggerTotal v_Data = new AnalyseLoggerTotal();
+                    
+                    v_Data.setClassName(      v_ClassForLoggers.getKey());
+                    v_Data.setCount(          v_ClassCounter.get(      v_Class.getKey()));
+                    v_Data.setRequestCount(                            v_Class.getValue());
+                    v_Data.setErrorFatalCount(v_MethodErrorCounter.get(v_Class.getKey()));
+                    v_Data.setLastTime(       v_LastTimes.get(         v_Class.getKey()).longValue());
+                    
+                    v_Total.add(v_Data);
+                }
+            }
+        }
+        // 按“日志输出代码行”统计
+        else 
+        {
+            for (Map.Entry<String, List<Logger>> v_ClassForLoggers : Logger.getLoggers().entrySet())
+            {
+                for (Logger v_Logger : v_ClassForLoggers.getValue())
+                {
+                    for (Map.Entry<String, Long> v_Method : v_Logger.getRequestCount().entrySet())
+                    {
+                        String [] v_MInfos     = v_Method.getKey().split(":");
+                        long      v_ErrorCount = 0; 
+                        
+                        if ( "error".equalsIgnoreCase(v_MInfos[0]) || "fatal".equalsIgnoreCase(v_MInfos[0]) )
+                        {
+                            v_ErrorCount = v_Method.getValue();
+                        }
+                        
+                        AnalyseLoggerTotal v_Data = new AnalyseLoggerTotal();
+                        
+                        v_Data.setClassName( v_ClassForLoggers.getKey());
+                        v_Data.setLevelName( v_MInfos[0]);
+                        v_Data.setMethodName(v_MInfos[1]);
+                        v_Data.setLineNumber(v_MInfos[2]);
+                        v_Data.setCount(1L);
+                        v_Data.setRequestCount(   v_Method.getValue());
+                        v_Data.setErrorFatalCount(v_ErrorCount);
+                        v_Data.setLastTime(v_Logger.getRequestTime().get(v_Method.getKey()));
+                        
+                        v_Total.add(v_Data);
+                    }
+                }
+            }
+        }
+        
+        // 排序类型(最后记录时间)
+        if ( Help.isNull(i_SortType) || "lastTime".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_Total ,"lastTime DESC" ,"requestCount DESC" ,"className" ,"methodName");
+        }
+        // 排序类型(日志执行量)
+        else if ( "requectCount".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_Total ,"requestCount DESC" ,"lastTime DESC" ,"className" ,"methodName");
+        }
+        // 排序类型(类名、方法名)
+        else if ( "name".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_Total ,"className" ,"methodName" ,"requestCount DESC" ,"lastTime DESC");
+        }
+        // 排序类型(Error级日志量)
+        else
+        {
+            Help.toSort(v_Total ,"ErrorFatalCount DESC" ,"className" ,"methodName" ,"requestCount DESC" ,"lastTime DESC");
+        }
+        
+        long v_NowTime = new Date().getMinutes(-2).getTime();
+        for (AnalyseLoggerTotal v_Report : v_Total)
+        {
+            Map<String ,String> v_RKey = new HashMap<String ,String>();
+            
+            v_RKey.put(":No"              ,String.valueOf(++v_Index));
+            v_RKey.put(":ClassName"       ,v_Report.getClassName());
+            v_RKey.put(":MethodName"      ,Help.NVL(v_Report.getMethodName() ,"-"));
+            v_RKey.put(":LineNumber"      ,Help.NVL(v_Report.getLineNumber() ,"-"));
+            v_RKey.put(":LogLevel"        ,Help.NVL(v_Report.getLevelName()  ,"-"));
+            v_RKey.put(":TotalCount"      ,"<span style='color:" + (v_Report.getCount()           > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getCount()           + "</span>");
+            v_RKey.put(":RequestCount"    ,"<span style='color:" + (v_Report.getRequestCount()    > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getRequestCount()    + "</span>");
+            v_RKey.put(":ErrorFatalCount" ,"<span style='color:" + (v_Report.getErrorFatalCount() > 0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_Report.getErrorFatalCount() + "</span>");
+            v_RKey.put(":LastTime"        ,v_Report.getLastTime() <= 0L ? "" : (v_Report.getLastTime() >= v_NowTime ? new Date(v_Report.getLastTime()).getFull() : "<span style='color:gray;'>" + new Date(v_Report.getLastTime()).getFull() + "</span>"));
+            
+            v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
+        }
+        
+        StringBuilder v_GotoTitle = new StringBuilder();
+        v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+        // 按“方法”分组统计。(默认分组方式)
+        if ( Help.isNull(i_TotalType) || "method".equalsIgnoreCase(i_TotalType) )
+        {
+            v_GotoTitle.append("<a href='analyseObject?logger=Y&S=" + i_SortType + "&TT=class'      style='color:#AA66CC'>类分组</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<font color='gray'>").append("方法分组</font>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='analyseObject?logger=Y&S=" + i_SortType + "&TT=lineNumber' style='color:#AA66CC'>日志明细</a>");
+        }
+        // 按“类”分组统计
+        else if ( "class".equalsIgnoreCase(i_TotalType) )
+        {
+            v_GotoTitle.append("<font color='gray'>").append("类分组</font>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='analyseObject?logger=Y&S=" + i_SortType + "&TT=method'     style='color:#AA66CC'>方法分组</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='analyseObject?logger=Y&S=" + i_SortType + "&TT=lineNumber' style='color:#AA66CC'>日志明细</a>");
+        }
+        // 按“日志输出代码行”统计
+        else
+        {
+            v_GotoTitle.append("<a href='analyseObject?logger=Y&S=" + i_SortType + "&TT=class'      style='color:#AA66CC'>类分组</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='analyseObject?logger=Y&S=" + i_SortType + "&TT=method'     style='color:#AA66CC'>方法分组</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<font color='gray'>").append("日志明细</font>");
+        }
+        
+        v_Total.clear();
+        v_Total = null;
+        
+        return StringHelp.replaceAll(this.getTemplateShowLogger()
+                                    ,new String[]{":GotoTitle"            ,":Title"        ,":HttpBasePath" ,":Sort"   ,":TotalType" ,":Content"}
+                                    ,new String[]{v_GotoTitle.toString()  ,"日志引擎分析" ,i_BasePath      ,i_SortType ,i_TotalType ,v_Buffer.toString()});
+    }
+    
+    
+    
     private String getTemplateLogon()
     {
         return this.getTemplateContent("template.login.html");
@@ -3465,6 +3688,20 @@ public class AnalyseBase extends Analyse
     private String getTemplateShowExecuteMethod()
     {
         return this.getTemplateContent("template.execute.html");
+    }
+    
+    
+    
+    private String getTemplateShowLogger()
+    {
+        return this.getTemplateContent("template.showLogger.html");
+    }
+    
+    
+    
+    private String getTemplateShowLoggerContent()
+    {
+        return this.getTemplateContent("template.showLoggerContent.html");
     }
     
 }

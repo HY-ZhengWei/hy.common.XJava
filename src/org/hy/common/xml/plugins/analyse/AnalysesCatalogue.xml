@@ -2,355 +2,368 @@
 
 <config>
 
-	<import name="xconfig"         class="java.util.ArrayList" />
-	<import name="xparam"          class="java.util.ArrayList" />
-	<import name="app"             class="org.hy.common.xml.plugins.analyse.data.WindowsApp" />
-	
-	
-	
-	<!-- 大纲目录 -->
-	<xconfig>
-		
-	    <xparam id="AnalysesCatalogue" this="AnalysesCatalogue">
+    <import name="xconfig"         class="java.util.ArrayList" />
+    <import name="xparam"          class="java.util.ArrayList" />
+    <import name="app"             class="org.hy.common.xml.plugins.analyse.data.WindowsApp" />
+    
+    
+    
+    <!-- 大纲目录 -->
+    <xconfig>
+        
+        <xparam id="AnalysesCatalogue" this="AnalysesCatalogue">
 
-	    	<app>
-	    		<level>1</level>
-	    		<appID>MA001</appID>
-	    		<appName>XJava配置文件</appName>
-	    		<icon>:HttpBasePath/windows/images/xjavaXml.png</icon>
-	    		<backgroundColor>#FFA54F</backgroundColor>
-	    		<url>:HttpBasePath/analyses/analyseObject</url>
-	    		<x>610</x>
-	    		<y>170</y>
-	    		<desktopShow>true</desktopShow>
-	    		<sizeType>longWidth</sizeType>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>1</level>
-	    		<appID>MB001</appID>
-	    		<appName>Web资源管理</appName>
-	    		<icon>:HttpBasePath/windows/images/webFolder.png</icon>
-	    		<backgroundColor>#b2a6f5</backgroundColor>
-	    		<url>:HttpBasePath/analyses/analyseObject?FS=Y</url>
-	    		<x>60</x>
-	    		<y>170</y>
-	    		<desktopShow>true</desktopShow>
-	    		<sizeType>max</sizeType>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>1</level>
-	    		<appID>MC001</appID>
-	    		<appName>集群监控</appName>
-	    		<icon>:HttpBasePath/windows/images/cluster.png</icon>
-	    		<backgroundColor>#b0c4de</backgroundColor>
-	    		<url>:HttpBasePath/analyses/analyseObject?cluster=Y</url>
-	    		<x>60</x>
-	    		<y>390</y>
-	    		<desktopShow>true</desktopShow>
-	    		<sizeType>max</sizeType>
-	    	</app>
-	    	
-	    	
-	    	
-	    	<app>
-	    		<level>1</level>
-	    		<appID>MD001</appID>
-	    		<appName>XSQL</appName>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MD002</appID>
-	    		<superID>MD001</superID>
-	    		<appName>XSQL分析</appName>
-	    		<icon>:HttpBasePath/windows/images/xsql.png</icon>
-	    		<backgroundColor>#90ee90</backgroundColor>
-	    		<url>:HttpBasePath/analyses/analyseDB</url>
-	    		<x>335</x>
-	    		<y>280</y>
-	    		<desktopShow>true</desktopShow>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MD003</appID>
-	    		<superID>MD001</superID>
-	    		<appName>XSQL关系图</appName>
-	    		<icon>:HttpBasePath/windows/images/xsqlRefTable.png</icon>
-	    		<backgroundColor>#f2bf5e</backgroundColor>
-	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?dsgid=*]]></url>
-	    		<x>335</x>
-	    		<y>390</y>
-	    		<desktopShow>true</desktopShow>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MD004</appID>
-	    		<superID>MD001</superID>
-	    		<appName>表关系图</appName>
-	    		<icon>:HttpBasePath/windows/images/xsqlToTable.png</icon>
-	    		<backgroundColor>#38c3d9</backgroundColor>
-	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?tableRef=Y&dsgid=*]]></url>
-	    		<x>445</x>
-	    		<y>390</y>
-	    		<desktopShow>true</desktopShow>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MD005</appID>
-	    		<superID>MD001</superID>
-	    		<appName>XSQL调试</appName>
-	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?execute=Y&xid=XSQL的ID标识&call=执行方法(query、execute、executeUpdate)]]></url>
-	    		<actionType>new</actionType>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MD006</appID>
-	    		<superID>MD001</superID>
-	    		<appName>XSQL执行日志</appName>
-	    		<url>:HttpBasePath/analyses/analyseObject?xid=$SQLBusway</url>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MD007</appID>
-	    		<superID>MD001</superID>
-	    		<appName>XSQL异常日志</appName>
-	    		<icon>:HttpBasePath/windows/images/exception.png</icon>
-	    		<backgroundColor>#DC3545</backgroundColor>
-	    		<url>:HttpBasePath/analyses/analyseObject?xid=$SQLBuswayError</url>
-	    		<x>335</x>
-	    		<y>500</y>
-	    		<desktopShow>true</desktopShow>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MD008</appID>
-	    		<superID>MD001</superID>
-	    		<appName>页面访问与XSQL</appName>
-	    		<url>:HttpBasePath/analyses/analyseObject?xid=XSQLFilter</url>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MD008</appID>
-	    		<superID>MD001</superID>
-	    		<appName>清空页面访问L</appName>
-	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?xid=XSQLFilter&call=clearLogs]]></url>
-	    	</app>
-	    	
-	    	
-	    	
-	    	<app>
-	    		<level>1</level>
-	    		<appID>ME001</appID>
-	    		<appName>XSQL组</appName>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>ME002</appID>
-	    		<superID>ME001</superID>
-	    		<appName>XSQL组分析</appName>
-	    		<icon>:HttpBasePath/windows/images/xsqlGroup.png</icon>
-	    		<backgroundColor>#3CB371</backgroundColor>
-	    		<url>:HttpBasePath/analyses/analyseDB?type=Group</url>
-	    		<x>445</x>
-	    		<y>280</y>
-	    		<desktopShow>true</desktopShow>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>ME003</appID>
-	    		<superID>ME001</superID>
-	    		<appName>XSQL组流程图</appName>
-	    		<icon>:HttpBasePath/windows/images/xsqlGroupFlow.png</icon>
-	    		<backgroundColor>#4395FF</backgroundColor>
-	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?XSGFlow=Y&xid=XSQL组ID]]></url>
-	    		<actionType>new</actionType>
-	    		<x>445</x>
-	    		<y>500</y>
-	    		<desktopShow>true</desktopShow>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>ME004</appID>
-	    		<superID>ME001</superID>
-	    		<appName>XSQL组调试</appName>
-	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?execute=Y&xid=XSQL组ID&call=executes]]></url>
-	    		<actionType>new</actionType>
-	    	</app>
-	    	
-	    	
-	    	
-	    	<app>
-	    		<level>1</level>
-	    		<appID>MF001</appID>
-	    		<appName>数据库</appName>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MF002</appID>
-	    		<superID>MF001</superID>
-	    		<appName>DB连接池监控</appName>
-	    		<icon>:HttpBasePath/windows/images/connectPool.png</icon>
-	    		<backgroundColor>#fa9b9b</backgroundColor>
-	    		<url>:HttpBasePath/analyses/analyseObject?DSG=Y</url>
-	    		<x>335</x>
-	    		<y>170</y>
-	    		<desktopShow>true</desktopShow>
-	    		<sizeType>longWidth</sizeType>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MF003</appID>
-	    		<superID>MF001</superID>
-	    		<appName>创建DB对象列表</appName>
-	    		<url>:HttpBasePath/analyses/analyseObject?XSQLCreateList=Y</url>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MF004</appID>
-	    		<superID>MF001</superID>
-	    		<appName>重建DB对象</appName>
-	    		<url>:HttpBasePath/analyses/analyseObject?XSQLCreate=Y</url>
-	    		<confirm><![CDATA[<font color='red'>危险！</font>数据库对象存在时，会先删除后再创建]]></confirm>
-	    	</app>
-	    	
-	    	
-	    	
-	    	<app>
-	    		<level>1</level>
-	    		<appID>MG001</appID>
-	    		<appName>定时任务</appName>
-	    		<icon></icon>
-	    		<backgroundColor></backgroundColor>
-	    		<url></url>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MG002</appID>
-	    		<superID>MG001</superID>
-	    		<appName>定时任务灾备</appName>
-	    		<icon>:HttpBasePath/windows/images/timerCluster.png</icon>
-	    		<backgroundColor>#dda0dd</backgroundColor>
-	    		<url>:HttpBasePath/analyses/analyseObject?JobDisasterRecoverys=Y</url>
-	    		<x>995</x>
-	    		<y>280</y>
-	    		<desktopShow>true</desktopShow>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MG003</appID>
-	    		<superID>MG001</superID>
-	    		<appName>定时任务监控</appName>
-	    		<icon>:HttpBasePath/windows/images/timer.png</icon>
-	    		<backgroundColor>#6C757D</backgroundColor>
-	    		<url>:HttpBasePath/analyses/analyseObject?Job=Y</url>
-	    		<x>885</x>
-	    		<y>280</y>
-	    		<desktopShow>true</desktopShow>
-	    	</app>
-	    	
-	    	
-	    	
-	    	<app>
-	    		<level>1</level>
-	    		<appID>MH001</appID>
-	    		<appName>线程池监控</appName>
-	    		<icon>:HttpBasePath/windows/images/tpool.png</icon>
-	    		<backgroundColor>#343A40</backgroundColor>
-	    		<url>:HttpBasePath/analyses/analyseObject?ThreadPool=Y</url>
-	    		<x>885</x>
-	    		<y>170</y>
-	    		<desktopShow>true</desktopShow>
-	    		<sizeType>longWidth</sizeType>
-	    	</app>
-	    	
-	    	
-	    	
-	    	<app>
-	    		<level>1</level>
-	    		<appID>MI001</appID>
-	    		<appName>XJava</appName>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MI002</appID>
-	    		<superID>MI001</superID>
-	    		<appName>系统参数</appName>
-	    		<url>:HttpBasePath/analyses/analyseObject?xid=SYSParam</url>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MI003</appID>
-	    		<superID>MI001</superID>
-	    		<appName>系统缓存</appName>
-	    		<url>:HttpBasePath/analyses/analyseObject?xid=$*</url>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MI004</appID>
-	    		<superID>MI001</superID>
-	    		<appName>XJava对象池</appName>
-	    		<url>:HttpBasePath/analyses/analyseObject?xid=*</url>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MI005</appID>
-	    		<superID>MI001</superID>
-	    		<appName>XJava对象信息</appName>
-	    		<icon>:HttpBasePath/windows/images/xjavaInfo.png</icon>
-	    		<backgroundColor>#d1cfcb</backgroundColor>
-	    		<url>:HttpBasePath/analyses/analyseObject?xid=对象XID</url>
-	    		<actionType>new</actionType>
-	    		<x>610</x>
-	    		<y>280</y>
-	    		<desktopShow>true</desktopShow>
-	    	</app>
-	    	
-	    	<app>
-	    		<level>2</level>
-	    		<appID>MI006</appID>
-	    		<superID>MI001</superID>
-	    		<appName>执行XJava对象</appName>
-	    		<icon>:HttpBasePath/windows/images/xjavaExecute.png</icon>
-	    		<backgroundColor>#ffc107</backgroundColor>
-	    		<url><![CDATA[:HttpBasePath/analyses/analyseObject?execute=Y]]></url>
-	    		<actionType>new</actionType>
-	    		<x>720</x>
-	    		<y>280</y>
-	    		<desktopShow>true</desktopShow>
-	    	</app>
-	    	
-	    	
-	    	
-	    	<app>
-	    		<level>1</level>
-	    		<appID>MJ001</appID>
-	    		<appName>单点登陆用户</appName>
-	    		<url>:HttpBasePath/analyses/analyseObject?xid=USID*</url>
-	    	</app>
+            <app>
+                <level>1</level>
+                <appID>MA001</appID>
+                <appName>XJava配置文件</appName>
+                <icon>:HttpBasePath/windows/images/xjavaXml.png</icon>
+                <backgroundColor>#FFA54F</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseObject</url>
+                <x>610</x>
+                <y>170</y>
+                <desktopShow>true</desktopShow>
+                <sizeType>longWidth</sizeType>
+            </app>
+            
+            <app>
+                <level>1</level>
+                <appID>MB001</appID>
+                <appName>Web资源管理</appName>
+                <icon>:HttpBasePath/windows/images/webFolder.png</icon>
+                <backgroundColor>#b2a6f5</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseObject?FS=Y</url>
+                <x>60</x>
+                <y>170</y>
+                <desktopShow>true</desktopShow>
+                <sizeType>max</sizeType>
+            </app>
+            
+            <app>
+                <level>1</level>
+                <appID>MC001</appID>
+                <appName>集群监控</appName>
+                <icon>:HttpBasePath/windows/images/cluster.png</icon>
+                <backgroundColor>#b0c4de</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseObject?cluster=Y</url>
+                <x>60</x>
+                <y>390</y>
+                <desktopShow>true</desktopShow>
+                <sizeType>max</sizeType>
+            </app>
+            
+            <app>
+                <level>1</level>
+                <appID>MK001</appID>
+                <appName>日志监控</appName>
+                <icon>:HttpBasePath/windows/images/logger.png</icon>
+                <backgroundColor>#c1dee0</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseObject?logger=Y</url>
+                <x>60</x>
+                <y>610</y>
+                <desktopShow>true</desktopShow>
+                <sizeType>longWidth</sizeType>
+            </app>
+            
+            
+            
+            <app>
+                <level>1</level>
+                <appID>MD001</appID>
+                <appName>XSQL</appName>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MD002</appID>
+                <superID>MD001</superID>
+                <appName>XSQL分析</appName>
+                <icon>:HttpBasePath/windows/images/xsql.png</icon>
+                <backgroundColor>#90ee90</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseDB</url>
+                <x>335</x>
+                <y>280</y>
+                <desktopShow>true</desktopShow>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MD003</appID>
+                <superID>MD001</superID>
+                <appName>XSQL关系图</appName>
+                <icon>:HttpBasePath/windows/images/xsqlRefTable.png</icon>
+                <backgroundColor>#f2bf5e</backgroundColor>
+                <url><![CDATA[:HttpBasePath/analyses/analyseObject?dsgid=*]]></url>
+                <x>335</x>
+                <y>390</y>
+                <desktopShow>true</desktopShow>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MD004</appID>
+                <superID>MD001</superID>
+                <appName>表关系图</appName>
+                <icon>:HttpBasePath/windows/images/xsqlToTable.png</icon>
+                <backgroundColor>#38c3d9</backgroundColor>
+                <url><![CDATA[:HttpBasePath/analyses/analyseObject?tableRef=Y&dsgid=*]]></url>
+                <x>445</x>
+                <y>390</y>
+                <desktopShow>true</desktopShow>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MD005</appID>
+                <superID>MD001</superID>
+                <appName>XSQL调试</appName>
+                <url><![CDATA[:HttpBasePath/analyses/analyseObject?execute=Y&xid=XSQL的ID标识&call=执行方法(query、execute、executeUpdate)]]></url>
+                <actionType>new</actionType>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MD006</appID>
+                <superID>MD001</superID>
+                <appName>XSQL执行日志</appName>
+                <url>:HttpBasePath/analyses/analyseObject?xid=$SQLBusway</url>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MD007</appID>
+                <superID>MD001</superID>
+                <appName>XSQL异常日志</appName>
+                <icon>:HttpBasePath/windows/images/exception.png</icon>
+                <backgroundColor>#DC3545</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseObject?xid=$SQLBuswayError</url>
+                <x>335</x>
+                <y>500</y>
+                <desktopShow>true</desktopShow>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MD008</appID>
+                <superID>MD001</superID>
+                <appName>页面访问与XSQL</appName>
+                <url>:HttpBasePath/analyses/analyseObject?xid=XSQLFilter</url>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MD008</appID>
+                <superID>MD001</superID>
+                <appName>清空页面访问L</appName>
+                <url><![CDATA[:HttpBasePath/analyses/analyseObject?xid=XSQLFilter&call=clearLogs]]></url>
+            </app>
+            
+            
+            
+            <app>
+                <level>1</level>
+                <appID>ME001</appID>
+                <appName>XSQL组</appName>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>ME002</appID>
+                <superID>ME001</superID>
+                <appName>XSQL组分析</appName>
+                <icon>:HttpBasePath/windows/images/xsqlGroup.png</icon>
+                <backgroundColor>#3CB371</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseDB?type=Group</url>
+                <x>445</x>
+                <y>280</y>
+                <desktopShow>true</desktopShow>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>ME003</appID>
+                <superID>ME001</superID>
+                <appName>XSQL组流程图</appName>
+                <icon>:HttpBasePath/windows/images/xsqlGroupFlow.png</icon>
+                <backgroundColor>#4395FF</backgroundColor>
+                <url><![CDATA[:HttpBasePath/analyses/analyseObject?XSGFlow=Y&xid=XSQL组ID]]></url>
+                <actionType>new</actionType>
+                <x>445</x>
+                <y>500</y>
+                <desktopShow>true</desktopShow>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>ME004</appID>
+                <superID>ME001</superID>
+                <appName>XSQL组调试</appName>
+                <url><![CDATA[:HttpBasePath/analyses/analyseObject?execute=Y&xid=XSQL组ID&call=executes]]></url>
+                <actionType>new</actionType>
+            </app>
+            
+            
+            
+            <app>
+                <level>1</level>
+                <appID>MF001</appID>
+                <appName>数据库</appName>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MF002</appID>
+                <superID>MF001</superID>
+                <appName>DB连接池监控</appName>
+                <icon>:HttpBasePath/windows/images/connectPool.png</icon>
+                <backgroundColor>#fa9b9b</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseObject?DSG=Y</url>
+                <x>335</x>
+                <y>170</y>
+                <desktopShow>true</desktopShow>
+                <sizeType>longWidth</sizeType>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MF003</appID>
+                <superID>MF001</superID>
+                <appName>创建DB对象列表</appName>
+                <url>:HttpBasePath/analyses/analyseObject?XSQLCreateList=Y</url>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MF004</appID>
+                <superID>MF001</superID>
+                <appName>重建DB对象</appName>
+                <url>:HttpBasePath/analyses/analyseObject?XSQLCreate=Y</url>
+                <confirm><![CDATA[<font color='red'>危险！</font>数据库对象存在时，会先删除后再创建]]></confirm>
+            </app>
+            
+            
+            
+            <app>
+                <level>1</level>
+                <appID>MG001</appID>
+                <appName>定时任务</appName>
+                <icon></icon>
+                <backgroundColor></backgroundColor>
+                <url></url>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MG002</appID>
+                <superID>MG001</superID>
+                <appName>定时任务灾备</appName>
+                <icon>:HttpBasePath/windows/images/timerCluster.png</icon>
+                <backgroundColor>#dda0dd</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseObject?JobDisasterRecoverys=Y</url>
+                <x>995</x>
+                <y>280</y>
+                <desktopShow>true</desktopShow>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MG003</appID>
+                <superID>MG001</superID>
+                <appName>定时任务监控</appName>
+                <icon>:HttpBasePath/windows/images/timer.png</icon>
+                <backgroundColor>#6C757D</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseObject?Job=Y</url>
+                <x>885</x>
+                <y>280</y>
+                <desktopShow>true</desktopShow>
+            </app>
+            
+            
+            
+            <app>
+                <level>1</level>
+                <appID>MH001</appID>
+                <appName>线程池监控</appName>
+                <icon>:HttpBasePath/windows/images/tpool.png</icon>
+                <backgroundColor>#343A40</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseObject?ThreadPool=Y</url>
+                <x>885</x>
+                <y>170</y>
+                <desktopShow>true</desktopShow>
+                <sizeType>longWidth</sizeType>
+            </app>
+            
+            
+            
+            <app>
+                <level>1</level>
+                <appID>MI001</appID>
+                <appName>XJava</appName>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MI002</appID>
+                <superID>MI001</superID>
+                <appName>系统参数</appName>
+                <url>:HttpBasePath/analyses/analyseObject?xid=SYSParam</url>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MI003</appID>
+                <superID>MI001</superID>
+                <appName>系统缓存</appName>
+                <url>:HttpBasePath/analyses/analyseObject?xid=$*</url>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MI004</appID>
+                <superID>MI001</superID>
+                <appName>XJava对象池</appName>
+                <url>:HttpBasePath/analyses/analyseObject?xid=*</url>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MI005</appID>
+                <superID>MI001</superID>
+                <appName>XJava对象信息</appName>
+                <icon>:HttpBasePath/windows/images/xjavaInfo.png</icon>
+                <backgroundColor>#d1cfcb</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseObject?xid=对象XID</url>
+                <actionType>new</actionType>
+                <x>610</x>
+                <y>280</y>
+                <desktopShow>true</desktopShow>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MI006</appID>
+                <superID>MI001</superID>
+                <appName>执行XJava对象</appName>
+                <icon>:HttpBasePath/windows/images/xjavaExecute.png</icon>
+                <backgroundColor>#ffc107</backgroundColor>
+                <url><![CDATA[:HttpBasePath/analyses/analyseObject?execute=Y]]></url>
+                <actionType>new</actionType>
+                <x>720</x>
+                <y>280</y>
+                <desktopShow>true</desktopShow>
+            </app>
+            
+            
+            
+            <app>
+                <level>1</level>
+                <appID>MJ001</appID>
+                <appName>单点登陆用户</appName>
+                <url>:HttpBasePath/analyses/analyseObject?xid=USID*</url>
+            </app>
 
-		</xparam>
-		
-	</xconfig>
-	
+        </xparam>
+        
+    </xconfig>
+    
 </config>

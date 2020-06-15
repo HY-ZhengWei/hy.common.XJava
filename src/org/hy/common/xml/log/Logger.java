@@ -1,6 +1,9 @@
 package org.hy.common.xml.log;
 
 import java.lang.reflect.Method;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 
 import org.hy.common.Counter;
 import org.hy.common.Date;
@@ -9,6 +12,7 @@ import org.hy.common.PartitionMap;
 import org.hy.common.StaticReflect;
 import org.hy.common.StringHelp;
 import org.hy.common.TablePartition;
+import org.hy.common.file.FileHelp;
 
 
 
@@ -37,6 +41,8 @@ import org.hy.common.TablePartition;
  *              v4.0  2020-06-10  添加：Log4j出于性能考虑，公开了判定日志级别的方法。建议人：李浩
  *              v5.0  2020-06-11  优化：内存优化、执行性能的优化、代码优雅的优化
  *              v5.1  2020-06-12  添加：日志集中管理机制；对外提供日志级别等更多方法。
+ *              v5.2  2020-06-15  添加：封装日志级别。原本不用封装日志级别，直接引用Log4J、SLF4J也是可以的。
+ *                                      主要用于解决不同日志类库的日志级别不一样的问题。如SLF4J有没有Fatal级。
  */
 public class Logger
 {
@@ -73,22 +79,22 @@ public class Logger
     private static Class<?>                     $LogManager;
     
     /** 指出每个严重的错误事件将会导致应用程序的退出。这个级别比较高了。重大错误，这种级别你可以直接停止程序了 */
-    private static Object                       $LogLevelFatal;
+    private static Level                        $LogLevelFatal;
                           
     /** 指出虽然发生错误事件，但仍然不影响系统的继续运行。打印错误和异常信息，如果不想输出太多的日志，可以使用这个级别 */
-    private static Object                       $LogLevelError;
+    private static Level                        $LogLevelError;
                           
     /** 表明会出现潜在错误的情形，有些信息不是错误信息，但是也要给程序员的一些提示。 */
-    private static Object                       $LogLevelWarn;
+    private static Level                        $LogLevelWarn;
                           
     /** 消息在粗粒度级别上突出强调应用程序的运行过程。打印一些你感兴趣的或者重要的信息 */
-    private static Object                       $LogLevelInfo;
+    private static Level                        $LogLevelInfo;
                           
     /** 指出细粒度信息事件对调试应用程序是非常有帮助的，主要用于开发过程中打印一些运行信息 */
-    private static Object                       $LogLevelDebug;
+    private static Level                        $LogLevelDebug;
                                                 
     /** 最低的日志级别 */                       
-    private static Object                       $LogLevelTrace;
+    private static Level                        $LogLevelTrace;
                                                 
     private static Method                       $FatalIsEnabled;
                                                 
@@ -120,8 +126,19 @@ public class Logger
     /** 没有任何Log4j版本时，是否采用System.out.println()方法输出 */
     private Class<?>                            logClass;
     
-    /** 无论是否对接Log4J、SLF4J，均进行日志统计。Key是：方法名称:代码行 */
+    /** 
+     * 无论是否对接Log4J、SLF4J，均进行日志统计。
+     * 
+     * Key的形式是：日志级别:方法名称:代码行 
+     */
     private Counter<String>                     requestCount;
+    
+    /** 
+     * 无论是否对接Log4J、SLF4J，均进行日志最后时间的记录。 
+     * 
+     * Key的形式是：日志级别:方法名称:代码行 
+     */
+    private Map<String ,Long>                   requestTime;
     
     
     
@@ -413,6 +430,7 @@ public class Logger
     public Logger(String i_ClassName ,Boolean i_IsPrintln)
     {
         this.requestCount = new Counter<String>();
+        this.requestTime  = new Hashtable<String ,Long>();
         this.addLogger();
         
         initLogTypeVersion();
@@ -492,6 +510,42 @@ public class Logger
     
     
     /**
+     * 显示启用的日志引擎
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-15
+     * @version     v1.0
+     *
+     */
+    public static void showLoggerInfo()
+    {
+        FileHelp      v_FileHelp = new FileHelp();
+        StringBuilder v_Buffer   = new StringBuilder();
+        
+        try
+        {
+            if ( $LogType == $LogType_SLF4J )
+            {
+                v_Buffer.append("Loading logger is SLF4J (").append(Date.getNowTime().getFullMilli()).append(")\n");
+                v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("SFL4J.txt") ,"UTF-8" ,true));
+            }
+            else if ( $LogType == $LogType_Log4J )
+            {
+                v_Buffer.append("Loading logger is Log4J " + $LogVersion + ".x (").append(Date.getNowTime().getFullMilli()).append(")\n");
+                v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("Log4J.txt") ,"UTF-8" ,true));
+            }
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+        }
+        
+        System.out.print(v_Buffer.toString());
+    }
+    
+    
+    
+    /**
      * 初始化日志的种类及版本信息
      * 
      * @author      ZhengWei(HY)
@@ -516,6 +570,8 @@ public class Logger
                 $LogManager   = Help.forName("org.slf4j.LoggerFactory");
                 $LogType      = $LogType_SLF4J;
                 $LogVersion   = 1;
+                
+                showLoggerInfo();
             }
             catch (Exception exce)
             {
@@ -535,6 +591,8 @@ public class Logger
                     $LogManager   = Help.forName("org.apache.logging.log4j.LogManager");
                     $LogType      = $LogType_Log4J;
                     $LogVersion   = 2;
+                    
+                    showLoggerInfo();
                 }
                 catch (Exception exce)
                 {
@@ -552,6 +610,8 @@ public class Logger
                     $LogClass     = Help.forName("org.apache.log4j.LogManager");
                     $LogType      = $LogType_Log4J;
                     $LogVersion   = 1;
+                    
+                    showLoggerInfo();
                 }
                 catch (Exception exce)
                 {
@@ -746,12 +806,12 @@ public class Logger
         
         if ( $LogVersion >= 0 )
         {
-            $LogLevelFatal = StaticReflect.getStaticValue("org.slf4j.event.EventConstants.ERROR_INT");
-            $LogLevelError = $LogLevelFatal;
-            $LogLevelWarn  = StaticReflect.getStaticValue("org.slf4j.event.EventConstants.WARN_INT");
-            $LogLevelInfo  = StaticReflect.getStaticValue("org.slf4j.event.EventConstants.INFO_INT");
-            $LogLevelDebug = StaticReflect.getStaticValue("org.slf4j.event.EventConstants.DEBUG_INT");
-            $LogLevelTrace = StaticReflect.getStaticValue("org.slf4j.event.EventConstants.TRACE_INT");
+            $LogLevelFatal = new Level(StaticReflect.getStaticValue("org.slf4j.event.EventConstants.ERROR_INT"));
+            $LogLevelError = new Level(StaticReflect.getStaticValue("org.slf4j.event.EventConstants.ERROR_INT"));  // 有意创建两个对象，方便日结级别名称的识别
+            $LogLevelWarn  = new Level(StaticReflect.getStaticValue("org.slf4j.event.EventConstants.WARN_INT"));
+            $LogLevelInfo  = new Level(StaticReflect.getStaticValue("org.slf4j.event.EventConstants.INFO_INT"));
+            $LogLevelDebug = new Level(StaticReflect.getStaticValue("org.slf4j.event.EventConstants.DEBUG_INT"));
+            $LogLevelTrace = new Level(StaticReflect.getStaticValue("org.slf4j.event.EventConstants.TRACE_INT"));
         }
     }
     
@@ -775,21 +835,21 @@ public class Logger
         
         if ( $LogVersion == 1 )
         {
-            $LogLevelFatal = StaticReflect.getStaticValue("org.apache.log4j.Level.FATAL");
-            $LogLevelError = StaticReflect.getStaticValue("org.apache.log4j.Level.ERROR");
-            $LogLevelWarn  = StaticReflect.getStaticValue("org.apache.log4j.Level.WARN");
-            $LogLevelInfo  = StaticReflect.getStaticValue("org.apache.log4j.Level.INFO");
-            $LogLevelDebug = StaticReflect.getStaticValue("org.apache.log4j.Level.DEBUG");
-            $LogLevelTrace = $LogLevelDebug;
+            $LogLevelFatal = new Level(StaticReflect.getStaticValue("org.apache.log4j.Level.FATAL"));
+            $LogLevelError = new Level(StaticReflect.getStaticValue("org.apache.log4j.Level.ERROR"));
+            $LogLevelWarn  = new Level(StaticReflect.getStaticValue("org.apache.log4j.Level.WARN"));
+            $LogLevelInfo  = new Level(StaticReflect.getStaticValue("org.apache.log4j.Level.INFO"));
+            $LogLevelDebug = new Level(StaticReflect.getStaticValue("org.apache.log4j.Level.DEBUG"));
+            $LogLevelTrace = new Level(StaticReflect.getStaticValue("org.apache.log4j.Level.DEBUG"));  // 有意创建两个对象，方便日结级别名称的识别
         }
         else
         {
-            $LogLevelFatal = StaticReflect.getStaticValue("org.apache.logging.log4j.Level.FATAL");
-            $LogLevelError = StaticReflect.getStaticValue("org.apache.logging.log4j.Level.ERROR");
-            $LogLevelWarn  = StaticReflect.getStaticValue("org.apache.logging.log4j.Level.WARN");
-            $LogLevelInfo  = StaticReflect.getStaticValue("org.apache.logging.log4j.Level.INFO");
-            $LogLevelDebug = StaticReflect.getStaticValue("org.apache.logging.log4j.Level.DEBUG");
-            $LogLevelTrace = StaticReflect.getStaticValue("org.apache.logging.log4j.Level.TRACE");
+            $LogLevelFatal = new Level(StaticReflect.getStaticValue("org.apache.logging.log4j.Level.FATAL"));
+            $LogLevelError = new Level(StaticReflect.getStaticValue("org.apache.logging.log4j.Level.ERROR"));
+            $LogLevelWarn  = new Level(StaticReflect.getStaticValue("org.apache.logging.log4j.Level.WARN"));
+            $LogLevelInfo  = new Level(StaticReflect.getStaticValue("org.apache.logging.log4j.Level.INFO"));
+            $LogLevelDebug = new Level(StaticReflect.getStaticValue("org.apache.logging.log4j.Level.DEBUG"));
+            $LogLevelTrace = new Level(StaticReflect.getStaticValue("org.apache.logging.log4j.Level.TRACE"));
         }
     }
     
@@ -863,6 +923,50 @@ public class Logger
     
     
     /**
+     * 重置全部日志引擎的统计数据
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-13
+     * @version     v1.0
+     *
+     */
+    public static void resets()
+    {
+        for (List<Logger> v_ClassForLoggers : $Loggers.values())
+        {
+            for (Logger v_Logger : v_ClassForLoggers)
+            {
+                v_Logger.reset();
+            }
+        }
+    }
+    
+    
+    
+    /**
+     * 重置统计数据
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-13
+     * @version     v1.0
+     *
+     */
+    public void reset()
+    {
+        for (String v_Key : this.requestCount.keySet())
+        {
+            this.requestCount.set(v_Key ,0L);
+        }
+        
+        for (String v_Key : this.requestTime.keySet())
+        {
+            this.requestTime.put(v_Key ,0L);
+        }
+    }
+    
+    
+    
+    /**
      * 将自己添加到统一日志集中管理中。
      * 
      * @author      ZhengWei(HY)
@@ -894,28 +998,44 @@ public class Logger
      * @version     v1.0
      *
      */
-    private void request()
+    private void request(String i_LevelName)
     {
         StackTraceElement v_StackTrace = LogStackTrace.calcLocation($FQCN);
         
         if ( v_StackTrace != null )
         {
-            this.requestCount.put(v_StackTrace.getMethodName() + ":" + v_StackTrace.getLineNumber() ,1L);
+            String v_Key = i_LevelName + ":" + v_StackTrace.getMethodName() + ":" + v_StackTrace.getLineNumber();
+            this.requestCount.put(v_Key ,1L);
+            this.requestTime .put(v_Key ,Date.getNowTime().getTime());
         }
     }
     
     
     
     /**
-     * 获取：无论是否对接Log4J、SLF4J，均进行日志统计。Key是：方法名称:代码行
+     * 获取：无论是否对接Log4J、SLF4J，均进行日志统计。
+     * 
+     * Key是：方法名称:代码行
      */
     public Counter<String> getRequestCount()
     {
         return requestCount;
     }
-
-
-
+    
+    
+    
+    /**
+     * 获取：无论是否对接Log4J、SLF4J，均进行日志最后时间的记录。 
+     * 
+     * Key的形式是：日志级别:方法名称:代码行
+     */
+    public Map<String ,Long> getRequestTime()
+    {
+        return requestTime;
+    }
+    
+    
+    
     /**
      * Log4j出于性能考虑，公开了判定日志级别的方法
      * 
@@ -1092,14 +1212,14 @@ public class Logger
      * @version     v1.0
      *
      * @param i_Marker     标记。请按Log4J、SLF4J的Marker类型传参
-     * @param i_Level      日志级别。请请按Log4J、SLF4J的日志级别传参
+     * @param i_Level      日志级别。请按Log4J、SLF4J的日志级别传参
      * @param i_Message    日志信息
      * @param i_Arguments  额外日志参数
      * @param i_Throwable  异常对象
      */
-    public void log(final Object i_Marker ,final Object i_Level ,final String i_Message ,final Object [] i_Arguments ,final Throwable i_Throwable)
+    public void log(final Object i_Marker ,final Level i_Level ,final String i_Message ,final Object [] i_Arguments ,final Throwable i_Throwable)
     {
-        this.request();
+        this.request(getLevelName(i_Level));
         
         if ( this.log != null )
         {
@@ -1109,23 +1229,23 @@ public class Logger
                 {
                     if ( $LogType == $LogType_SLF4J )
                     {
-                        $LogMethod.invoke(this.log ,i_Marker ,$FQCN ,i_Level ,i_Message ,i_Arguments ,i_Throwable);
+                        $LogMethod.invoke(this.log ,i_Marker ,$FQCN ,i_Level.getLevel() ,i_Message ,i_Arguments ,i_Throwable);
                     }
                     else if ( $LogType == $LogType_Log4J )
                     {
                         if ( $LogVersion == 1 )
                         {
-                            $LogMethod.invoke(this.log ,$FQCN ,i_Level ,i_Message + StringHelp.toString(i_Arguments) ,i_Throwable);
+                            $LogMethod.invoke(this.log ,$FQCN ,i_Level.getLevel() ,i_Message + StringHelp.toString(i_Arguments) ,i_Throwable);
                         }
                         else
                         {
                             if ( i_Throwable == null )
                             {
-                                $LogMethod.invoke(this.log ,$FQCN ,i_Level ,i_Marker ,i_Message ,i_Arguments);
+                                $LogMethod.invoke(this.log ,$FQCN ,i_Level.getLevel() ,i_Marker ,i_Message ,i_Arguments);
                             }
                             else
                             {
-                                $LogMethod_Log4j2Throwable.invoke(this.log ,$FQCN ,i_Level ,i_Marker ,i_Message + StringHelp.toString(i_Arguments) ,i_Throwable);
+                                $LogMethod_Log4j2Throwable.invoke(this.log ,$FQCN ,i_Level.getLevel() ,i_Marker ,i_Message + StringHelp.toString(i_Arguments) ,i_Throwable);
                             }
                         }
                     }
@@ -1140,23 +1260,23 @@ public class Logger
                     
                     if ( $LogType == $LogType_SLF4J )
                     {
-                        $LogMethod.invoke(this.log ,null ,$FQCN ,i_Level ,v_Message ,v_Arguments ,i_Throwable);
+                        $LogMethod.invoke(this.log ,null ,$FQCN ,i_Level.getLevel() ,v_Message ,v_Arguments ,i_Throwable);
                     }
                     else if ( $LogType == $LogType_Log4J )
                     {
                         if ( $LogVersion == 1 )
                         {
-                            $LogMethod.invoke(this.log ,$FQCN ,i_Level ,v_Message + StringHelp.toString(v_Arguments) ,i_Throwable);
+                            $LogMethod.invoke(this.log ,$FQCN ,i_Level.getLevel() ,v_Message + StringHelp.toString(v_Arguments) ,i_Throwable);
                         }
                         else
                         {
                             if ( i_Throwable == null )
                             {
-                                $LogMethod.invoke(this.log ,$FQCN ,i_Level ,null ,v_Message ,v_Arguments);
+                                $LogMethod.invoke(this.log ,$FQCN ,i_Level.getLevel() ,null ,v_Message ,v_Arguments);
                             }
                             else
                             {
-                                $LogMethod_Log4j2Throwable.invoke(this.log ,$FQCN ,i_Level ,null ,v_Message + StringHelp.toString(v_Arguments) ,i_Throwable);
+                                $LogMethod_Log4j2Throwable.invoke(this.log ,$FQCN ,i_Level.getLevel() ,null ,v_Message + StringHelp.toString(v_Arguments) ,i_Throwable);
                             }
                         }
                     }
