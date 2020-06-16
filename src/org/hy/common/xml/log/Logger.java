@@ -19,13 +19,15 @@ import org.hy.common.file.FileHelp;
 
 
 /**
- * 日志引擎。
+ * 日志引擎（日志门面）。松耦合的日志引擎，不强行引用任何第三方类库。
  * 
- * 同时支持Log4j 1.x 和 Log4j 2.x 两个版本的功能。
+ * 支持Log4j 1.x 和 Log4j 2.x 两个版本的功能。
  * 
- * 同时支持SLF4J日志引擎的类库。
+ * 支持SLF4J日志引擎的类库。
  * 
- * 同时支持没有任何 Log4j 引包的情况。
+ * 支持Logback的日志类库
+ * 
+ * 支持没有第三方（Log4J、SLF4J、Logback）引包的情况，使用System.out输出日志。
  * 
  * 
  * 注意1：当 Log4j 2.x 与 Log4j 1.x 两版本的引包均存在时，优先使用高版本 Log4j 2.x 。
@@ -43,18 +45,19 @@ import org.hy.common.file.FileHelp;
  *              v5.1  2020-06-12  添加：日志集中管理机制；对外提供日志级别等更多方法。
  *              v5.2  2020-06-15  添加：封装日志级别。原本不用封装日志级别，直接引用Log4J、SLF4J也是可以的。
  *                                      主要用于解决不同日志类库的日志级别不一样的问题。如SLF4J有没有Fatal级。
+ *              v5.3  2020-06-16  添加：区分SLF4J是引用Log4J，还是引用Logback。
  */
 public class Logger
 {
     
     /** 全局控制参数：是否启用SLF4J。目标对象实例化前的有效，日志对象实例化后，修改是没有任何效果的 */
-    public static boolean                       $IsEnabled_SLF4J = true;
+    private static boolean                      $IsEnabled_SLF4J = true;
     
     /** 全局控制参数：是否启用Log4J。目标对象实例化前的有效，日志对象实例化后，修改是没有任何效果的 */
-    public static boolean                       $IsEnabled_Log4J = true;
+    private static boolean                      $IsEnabled_Log4J = true;
     
     /** 全局控制参数：是否启用System.out.println输出日志。目标对象实例化前的有效，日志对象实例化后，修改是没有任何效果的 */
-    public static boolean                       $IsEnabled_Print = false;
+    private static boolean                      $IsEnabled_Print = false;
     
     
     
@@ -154,6 +157,26 @@ public class Logger
      *
      */
     public static void useSLF4J()
+    {
+        $IsEnabled_SLF4J = true;
+        $IsEnabled_Log4J = false;
+        $IsEnabled_Print = false;
+    }
+    
+    
+    
+    /**
+     * 使用SLF4J+Logback输出日志。
+     * 
+     * 目标对象实例化前的有效，日志对象实例化后，修改是没有任何效果的
+     * 对于Web项目，请在web.xml的第一个Listener中调用此方法
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-16
+     * @version     v1.0
+     *
+     */
+    public static void useLogback()
     {
         $IsEnabled_SLF4J = true;
         $IsEnabled_Log4J = false;
@@ -465,8 +488,8 @@ public class Logger
                     }
                     else if ( $LogType == $LogType_Log4J )
                     {
-                        initLog4JLevels();
                         intiLog4JMethod(this.log);
+                        initLog4JLevels();
                         
                         if ( $LogVersion == 1 )
                         {
@@ -515,9 +538,10 @@ public class Logger
      * @author      ZhengWei(HY)
      * @createDate  2020-06-15
      * @version     v1.0
-     *
+     * 
+     * @param i_Log     日志类库的具体的实现类
      */
-    public static void showLoggerInfo()
+    public static void showLoggerInfo(Object i_Log)
     {
         FileHelp      v_FileHelp = new FileHelp();
         StringBuilder v_Buffer   = new StringBuilder();
@@ -526,8 +550,17 @@ public class Logger
         {
             if ( $LogType == $LogType_SLF4J )
             {
-                v_Buffer.append("Loading logger is SLF4J (").append(Date.getNowTime().getFullMilli()).append(")\n");
-                v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("SFL4J.txt") ,"UTF-8" ,true));
+                String v_LoggerName = i_Log.getClass().getName();
+                if ( "ch.qos.logback.classic.Logger".equalsIgnoreCase(v_LoggerName) )
+                {
+                    v_Buffer.append("Loading logger is SLF4J & Logback (").append(Date.getNowTime().getFullMilli()).append(")\n");
+                    v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("SFL4J_Logback.txt") ,"UTF-8" ,true));
+                }
+                else if ( "org.apache.logging.slf4j.Log4jLogger".equalsIgnoreCase(v_LoggerName) )
+                {
+                    v_Buffer.append("Loading logger is SLF4J & Log4J (").append(Date.getNowTime().getFullMilli()).append(")\n");
+                    v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("SFL4J_Log4J.txt") ,"UTF-8" ,true));
+                }
             }
             else if ( $LogType == $LogType_Log4J )
             {
@@ -570,8 +603,6 @@ public class Logger
                 $LogManager   = Help.forName("org.slf4j.LoggerFactory");
                 $LogType      = $LogType_SLF4J;
                 $LogVersion   = 1;
-                
-                showLoggerInfo();
             }
             catch (Exception exce)
             {
@@ -591,8 +622,6 @@ public class Logger
                     $LogManager   = Help.forName("org.apache.logging.log4j.LogManager");
                     $LogType      = $LogType_Log4J;
                     $LogVersion   = 2;
-                    
-                    showLoggerInfo();
                 }
                 catch (Exception exce)
                 {
@@ -610,8 +639,6 @@ public class Logger
                     $LogClass     = Help.forName("org.apache.log4j.LogManager");
                     $LogType      = $LogType_Log4J;
                     $LogVersion   = 1;
-                    
-                    showLoggerInfo();
                 }
                 catch (Exception exce)
                 {
@@ -638,6 +665,8 @@ public class Logger
         {
             return;
         }
+        
+        showLoggerInfo(i_Log);
         
         Method [] v_Methods = i_Log.getClass().getMethods();
         
@@ -702,6 +731,8 @@ public class Logger
         {
             return;
         }
+        
+        showLoggerInfo(i_Log);
         
         Method [] v_Methods = i_Log.getClass().getMethods();
         
