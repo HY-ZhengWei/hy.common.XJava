@@ -63,7 +63,7 @@ a:hover{color:#99CC00;text-decoration:none;}
 </head>
 <body> 
         
-       <input type="hidden" id="cluster" name="cluster" value=":cluster" />
+       <input type="hidden" id="cluster" name="cluster" value=":Cluster" />
        <input type="hidden" id="S"       name="S"       value=":Sort" />
        <input type="hidden" id="TT"      name="TT"      value=":TotalType" />
         
@@ -126,6 +126,22 @@ $("#Title_ErrorFatalCount").click(function()
 $("#Title_LastTime").click(function()
 {
     $("#S").val("lastTime");
+    f_Goto();
+});
+
+
+
+$("#Title_Local_Remote").click(function()
+{
+    if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+    {
+        $("#cluster").val("N");
+    }
+    else
+    {
+        $("#cluster").val("Y");
+    }
+    
     f_Goto();
 });
 
