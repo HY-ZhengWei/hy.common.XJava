@@ -102,6 +102,8 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v22.1 2020-06-20  添加：日志引擎的监控，添加类名称的过滤功能。建议人：李浩
  *                                      日志引擎的监控，添加“业务用时”的统计。建议人：李浩
  *                                      日志引擎的监控，估算方法的运行状态，是否在运行中。方案：李浩
+ *                                      日志引擎的监控，定时刷新监控页面。建议人：李浩
+ *                                      
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -3272,6 +3274,7 @@ public class AnalyseBase extends Analyse
      * @param  i_TotalType        统计类型(class、method、lineNumber)
      * @param  i_SortType         排序类型(requectCount、lastTime、name、errorCount、execSumTime、execAvgTime)
      * @param  i_FilterClassName  名称的模糊过滤条件
+     * @param  i_Timer            定时刷新的时长（单位：毫秒）
      * @return
      */
     public String analyseLogger(String  i_BasePath 
@@ -3279,7 +3282,8 @@ public class AnalyseBase extends Analyse
                                ,boolean i_Cluster 
                                ,String  i_TotalType 
                                ,String  i_SortType 
-                               ,String  i_FilterClassName)
+                               ,String  i_FilterClassName
+                               ,String  i_Timer)
     {
         StringBuilder                     v_Buffer  = new StringBuilder();
         int                               v_Index   = 0;
@@ -3504,8 +3508,8 @@ public class AnalyseBase extends Analyse
         v_Errors = null;
         
         return StringHelp.replaceAll(this.getTemplateShowLogger()
-                                    ,new String[]{":GotoTitle"           ,":Goto_02_Title" ,":Title"        ,":HttpBasePath" ,":Sort"   ,":TotalType" ,":Cluster"              ,":FilterClassName"         ,":Content"}
-                                    ,new String[]{v_GotoTitle.toString() ,v_GotoTitle02    ,"日志引擎分析" ,i_BasePath      ,i_SortType ,i_TotalType ,(i_Cluster ? "Y" : "N") ,Help.NVL(i_FilterClassName) ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle"           ,":Goto_02_Title" ,":Title"        ,":HttpBasePath" ,":Sort"   ,":TotalType" ,":Cluster"              ,":Timer" ,":FilterClassName"         ,":Content"}
+                                    ,new String[]{v_GotoTitle.toString() ,v_GotoTitle02    ,"日志引擎分析" ,i_BasePath      ,i_SortType ,i_TotalType ,(i_Cluster ? "Y" : "N") ,i_Timer  ,Help.NVL(i_FilterClassName) ,v_Buffer.toString()});
     }
     
     

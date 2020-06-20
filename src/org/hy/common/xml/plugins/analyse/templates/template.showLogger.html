@@ -78,9 +78,18 @@ a:hover{color:#99CC00;text-decoration:none;}
     font-family:"宋体" Arial, Helvetica, sans-serif;
     width:256px;
 }
+
+#IsAutoRefresh {
+    font-size: 12px;
+    font-family: "宋体" Arial, Helvetica, sans-serif;
+}
 </style>
 
 <script type="text/javascript" src=":HttpBasePath/jquery/jquery.min.js"></script>
+<script type="text/javascript" src=":HttpBasePath/jquery/jquery-ui.min.js"></script>
+<script type="text/javascript" src=":HttpBasePath/d3/d3.min.js"></script>
+
+<link rel="stylesheet" href=":HttpBasePath/jquery/jquery-ui.min.css" />
 
 </head>
 <body> 
@@ -88,12 +97,14 @@ a:hover{color:#99CC00;text-decoration:none;}
     <input type="hidden" id="cluster" name="cluster" value=":Cluster" />
     <input type="hidden" id="S"       name="S"       value=":Sort" />
     <input type="hidden" id="TT"      name="TT"      value=":TotalType" />
+    <input type="hidden" id="Timer"   name="Timer"   value=":Timer" />
      
     <div class="userInfoModify_logininfobody" >
        <div class="userInfoModify_logininfo" /> 
        <div class="userInfoModify_clearTag">
              <div>
-               <input type="text" id="FilterClassName" name="FilterClassName" value=":FilterClassName" class="input-text" style="width:1542px;" title="类名称的模糊过滤条件（不区分大小写）" />
+               <input type="text" id="FilterClassName" name="FilterClassName" value=":FilterClassName" class="input-text" style="width:1418px;" title="类名称的模糊过滤条件（不区分大小写）" />
+               <button class="ui-button ui-widget ui-corner-all" id="IsAutoRefresh" style="width:120px; height:28px">开启自动刷新</button>
              </div>
        
              <div class="userInfoModify_labeTag">编号</div>
@@ -116,14 +127,45 @@ a:hover{color:#99CC00;text-decoration:none;}
 
 function f_Goto()
 {
+    var v_Timestamp = new Date(). getTime();
+    
     if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
     {
-        window.location.href = "analyseObject?logger=Y&S=" + $("#S").val() + "&TT=" + $("#TT").val() + "&cluster=Y&FCN=" + $("#FilterClassName").val();
+        window.location.href = "analyseObject?logger=Y&S=" + $("#S").val() + "&TT=" + $("#TT").val() + "&cluster=Y&FCN=" + $("#FilterClassName").val() + "&Timer=" + $("#Timer").val() + "&r=" + v_Timestamp;
     }
     else
     {
-        window.location.href = "analyseObject?logger=Y&S=" + $("#S").val() + "&TT=" + $("#TT").val() + "&FCN=" + $("#FilterClassName").val();
+        window.location.href = "analyseObject?logger=Y&S=" + $("#S").val() + "&TT=" + $("#TT").val() + "&FCN=" + $("#FilterClassName").val() + "&Timer=" + $("#Timer").val() + "&r=" + v_Timestamp;
     }
+}
+
+
+
+$("#IsAutoRefresh").click(function()
+{   
+    if ( $("#Timer").val() == "" )
+    {
+        $("#Timer").val("5000");
+        $("#IsAutoRefresh").html("暂停刷新");
+        setTimeout(f_Goto ,$("#Timer").val());
+    }
+    else
+    {
+        $("#Timer").val("");
+        $("#IsAutoRefresh").html("开启自动刷新");
+    }
+});
+
+
+
+if ( $("#Timer").val() == "" )
+{
+    $("#IsAutoRefresh").html("开启自动刷新");
+}
+else
+{
+   $("#IsAutoRefresh").html("暂停刷新");
+   setTimeout(f_Goto ,$("#Timer").val());
 }
 
 

@@ -301,8 +301,9 @@ public class AnalyseObjectServlet extends HttpServlet
                 String v_TotalType       = Help.NVL(i_Request.getParameter("TT"));
                 String v_Sort            = Help.NVL(i_Request.getParameter("S"));
                 String v_FilterClassName = Help.NVL(i_Request.getParameter("FCN"));
+                String v_Timer           = Help.NVL(i_Request.getParameter("Timer"));
                 
-                i_Response.getWriter().println(this.analyse.analyseLogger(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_TotalType ,v_Sort ,v_FilterClassName));
+                i_Response.getWriter().println(this.analyse.analyseLogger(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_TotalType ,v_Sort ,v_FilterClassName ,v_Timer));
             }
             else if ( Help.isNull(v_XFile) && "Y".equalsIgnoreCase(v_Cluster) )
             {
