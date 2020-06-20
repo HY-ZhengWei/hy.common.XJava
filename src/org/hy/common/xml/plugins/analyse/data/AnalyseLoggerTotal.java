@@ -7,6 +7,7 @@ import java.util.Map;
 import org.hy.common.Counter;
 import org.hy.common.Help;
 import org.hy.common.Max;
+import org.hy.common.Sum;
 import org.hy.common.xml.SerializableDef;
 import org.hy.common.xml.log.Logger;
 
@@ -87,11 +88,23 @@ public class AnalyseLoggerTotal extends SerializableDef
                         
                         v_Data.setClassName(      v_ClassForLoggers.getKey());
                         v_Data.setMethodName(     v_Method.getKey());
-                        v_Data.setCount(          v_MethodCounter     .get(v_Method.getKey()));
-                        v_Data.setRequestCount(   v_Method            .getValue());
-                        v_Data.setErrorFatalCount(v_MethodErrorCounter.get(v_Method.getKey()));
-                        v_Data.setLastTime(       v_LastTimes         .get(v_Method.getKey()).longValue());
+                        v_Data.setCount(          v_MethodCounter                 .get(v_Method.getKey()));
+                        v_Data.setRequestCount(   v_Method                        .getValue());
+                        v_Data.setErrorFatalCount(v_MethodErrorCounter            .get(v_Method.getKey()));
+                        v_Data.setLastTime(       v_LastTimes                     .get(v_Method.getKey()).longValue());
                         v_Data.setId(v_Data.getClassName() + v_Data.getMethodName());
+                        
+                        Long v_ExecSumTimes = v_Logger.getMethodExecSumTimes().get(v_Method.getKey());
+                        if ( v_ExecSumTimes != null )
+                        {
+                            v_Data.setExecSumTime(v_Logger.getMethodExecSumTimes().get(v_Method.getKey()));
+                            v_Data.setExecAvgTime(Help.division(v_Data.getExecSumTime() ,v_Data.getRequestCount()));
+                        }
+                        else
+                        {
+                            v_Data.setExecSumTime(-1L);
+                            v_Data.setExecAvgTime(-1D);
+                        }
                         
                         this.reports.put(v_Data.getId() ,v_Data);
                     }
@@ -107,6 +120,7 @@ public class AnalyseLoggerTotal extends SerializableDef
                 Counter<String> v_ClassRequestCounter = new Counter<String>();
                 Counter<String> v_MethodErrorCounter  = new Counter<String>();
                 Max<String>     v_LastTimes           = new Max<String>();
+                Sum<String>     v_ExecSumTimes        = new Sum<String>();
                 
                 for (Logger v_Logger : v_ClassForLoggers.getValue())
                 {
@@ -124,6 +138,7 @@ public class AnalyseLoggerTotal extends SerializableDef
                         v_ClassRequestCounter.put(v_ClassForLoggers.getKey() ,v_Method.getValue());
                         v_MethodErrorCounter .put(v_ClassForLoggers.getKey() ,v_ErrorCount);
                         v_LastTimes          .put(v_ClassForLoggers.getKey() ,v_Logger.getRequestTime().get(v_Method.getKey()));
+                        v_ExecSumTimes       .put(v_ClassForLoggers.getKey() ,v_Logger.getMethodExecSumTimes().getSumValue());
                     }
                 }
                 
@@ -137,6 +152,9 @@ public class AnalyseLoggerTotal extends SerializableDef
                     v_Data.setErrorFatalCount(v_MethodErrorCounter.get(v_Class.getKey()));
                     v_Data.setLastTime(       v_LastTimes.get(         v_Class.getKey()).longValue());
                     v_Data.setId(v_Data.getClassName());
+                    
+                    v_Data.setExecSumTime(v_ExecSumTimes.get(v_ClassForLoggers.getKey()).longValue());
+                    v_Data.setExecAvgTime(Help.division(v_Data.getExecSumTime() ,v_Data.getRequestCount()));
                     
                     this.reports.put(v_Data.getId() ,v_Data);
                 }
@@ -170,6 +188,9 @@ public class AnalyseLoggerTotal extends SerializableDef
                         v_Data.setErrorFatalCount(v_ErrorCount);
                         v_Data.setLastTime(v_Logger.getRequestTime().get(v_Method.getKey()));
                         v_Data.setId(v_Data.getClassName() + v_Data.getMethodName() + v_Data.getLineNumber());
+                        
+                        v_Data.setExecSumTime(-1L);
+                        v_Data.setExecAvgTime(-1D);
                         
                         this.reports.put(v_Data.getId() ,v_Data);
                     }

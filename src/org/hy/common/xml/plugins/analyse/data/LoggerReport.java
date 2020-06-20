@@ -45,6 +45,12 @@ public class LoggerReport extends SerializableDef
     /** 最后时间 */
     private long   lastTime;
     
+    /** 方法累计用时 */
+    private long   execSumTime;
+    
+    /** 方法平均用时 */
+    private double execAvgTime;
+    
     
     
     /**
@@ -224,6 +230,46 @@ public class LoggerReport extends SerializableDef
     public void setErrorFatalCount(long errorFatalCount)
     {
         this.errorFatalCount = errorFatalCount;
+    }
+
+    
+    /**
+     * 获取：方法累计用时
+     */
+    public long getExecSumTime()
+    {
+        return execSumTime;
+    }
+
+    
+    /**
+     * 设置：方法累计用时
+     * 
+     * @param execSumTime 
+     */
+    public void setExecSumTime(long execSumTime)
+    {
+        this.execSumTime = execSumTime;
+    }
+
+    
+    /**
+     * 获取：方法平均用时
+     */
+    public double getExecAvgTime()
+    {
+        return execAvgTime;
+    }
+
+    
+    /**
+     * 设置：方法平均用时
+     * 
+     * @param execAvgTime 
+     */
+    public void setExecAvgTime(double execAvgTime)
+    {
+        this.execAvgTime = execAvgTime;
     }
     
 }

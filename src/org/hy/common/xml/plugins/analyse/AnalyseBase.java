@@ -99,6 +99,8 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v21.0 2020-04-17  添加：定时任务添加“云主机”IP的显示
  *              v22.0 2020-06-13  添加：日志引擎的监控
  *                                添加：集群日志引擎的监控
+ *              v22.1 2020-06-20  添加：日志引擎的监控，添加类名称的过滤功能。建议人：李浩
+ *                                      日志引擎的监控，添加“业务用时”的统计。建议人：李浩
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -3263,14 +3265,20 @@ public class AnalyseBase extends Analyse
      * @createDate  2020-06-13
      * @version     v1.0
      *
-     * @param  i_BasePath       服务请求根路径。如：http://127.0.0.1:80/hy
-     * @param  i_ReLoadPath     重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject?logger=Y
-     * @param  i_Cluster        是否为集群
-     * @param  i_TotalType      统计类型(class、method、lineNumber)
-     * @param  i_SortType       排序类型(requectCount、lastTime、name、errorCount)
+     * @param  i_BasePath         服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ReLoadPath       重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject?logger=Y
+     * @param  i_Cluster          是否为集群
+     * @param  i_TotalType        统计类型(class、method、lineNumber)
+     * @param  i_SortType         排序类型(requectCount、lastTime、name、errorCount、execSumTime、execAvgTime)
+     * @param  i_FilterClassName  名称的模糊过滤条件
      * @return
      */
-    public String analyseLogger(String i_BasePath ,String i_ReLoadPath ,boolean i_Cluster ,String i_TotalType ,String i_SortType)
+    public String analyseLogger(String  i_BasePath 
+                               ,String  i_ReLoadPath 
+                               ,boolean i_Cluster 
+                               ,String  i_TotalType 
+                               ,String  i_SortType 
+                               ,String  i_FilterClassName)
     {
         StringBuilder      v_Buffer  = new StringBuilder();
         int                v_Index   = 0;
@@ -3298,7 +3306,7 @@ public class AnalyseBase extends Analyse
                     
                     if ( v_ResponseData.getResult() == 0 )
                     {
-                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseDSGTotal )
+                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseLoggerTotal )
                         {
                             AnalyseLoggerTotal v_TempTotal = (AnalyseLoggerTotal)v_ResponseData.getData();
                             
@@ -3328,6 +3336,19 @@ public class AnalyseBase extends Analyse
         
         List<LoggerReport> v_TotalList = Help.toList(v_Total.getReports());
         
+        // 类名称的模糊过滤条件（不区分大小写）
+        if ( !Help.isNull(i_FilterClassName) )
+        {
+            String v_FilterClassName = i_FilterClassName.trim().toLowerCase();
+            for (int i=v_TotalList.size() - 1; i>=0; i--)
+            {
+                if ( !StringHelp.isContains(v_TotalList.get(i).getClassName().toLowerCase() ,v_FilterClassName) )
+                {
+                    v_TotalList.remove(i);
+                }
+            }
+        }
+        
         // 排序类型(最后记录时间)
         if ( Help.isNull(i_SortType) || "lastTime".equalsIgnoreCase(i_SortType) )
         {
@@ -3344,12 +3365,26 @@ public class AnalyseBase extends Analyse
             Help.toSort(v_TotalList ,"className" ,"methodName" ,"requestCount DESC" ,"lastTime DESC");
         }
         // 排序类型(Error级日志量)
-        else
+        else if ( "errorCount".equalsIgnoreCase(i_SortType) )
         {
             Help.toSort(v_TotalList ,"ErrorFatalCount DESC" ,"className" ,"methodName" ,"requestCount DESC" ,"lastTime DESC");
         }
+        // 排序类型(业务累计用时)
+        else if ( "execSumTime".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"execSumTime DESC" ,"execAvgTime DESC" ,"requestCount DESC" ,"className" ,"methodName");
+        }
+        // 排序类型(业务平均用时)
+        else
+        {
+            Help.toSort(v_TotalList ,"execAvgTime DESC" ,"execSumTime DESC" ,"requestCount DESC" ,"className" ,"methodName");
+        }
         
-        long v_NowTime = new Date().getMinutes(-2).getTime();
+        long v_NowTime            = new Date().getMinutes(-2).getTime();
+        long v_SumTotalCount      = 0L;
+        long v_SumRequestCount    = 0L;
+        long v_SumErrorFatalCount = 0L;
+        long v_SumExecSumTime     = 0L;
         for (LoggerReport v_Report : v_TotalList)
         {
             Map<String ,String> v_RKey = new HashMap<String ,String>();
@@ -3359,13 +3394,39 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":MethodName"      ,Help.NVL(v_Report.getMethodName() ,"-"));
             v_RKey.put(":LineNumber"      ,Help.NVL(v_Report.getLineNumber() ,"-"));
             v_RKey.put(":LogLevel"        ,Help.NVL(v_Report.getLevelName()  ,"-"));
-            v_RKey.put(":TotalCount"      ,"<span style='color:" + (v_Report.getCount()           > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getCount()           + "</span>");
-            v_RKey.put(":RequestCount"    ,"<span style='color:" + (v_Report.getRequestCount()    > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getRequestCount()    + "</span>");
-            v_RKey.put(":ErrorFatalCount" ,"<span style='color:" + (v_Report.getErrorFatalCount() > 0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_Report.getErrorFatalCount() + "</span>");
+            v_RKey.put(":TotalCount"      ,"<span style='color:" + (v_Report.getCount()           >  0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getCount()           + "</span>");
+            v_RKey.put(":RequestCount"    ,"<span style='color:" + (v_Report.getRequestCount()    >  0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getRequestCount()    + "</span>");
+            v_RKey.put(":ErrorFatalCount" ,"<span style='color:" + (v_Report.getErrorFatalCount() >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_Report.getErrorFatalCount() + "</span>");
+            v_RKey.put(":ExecSumTime"     ,"<span style='color:" + (v_Report.getExecSumTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecSumTime() >= 0 ? Date.toTimeLen(v_Report.getExecSumTime()) : "-") + "</span>");
+            v_RKey.put(":ExecAvgTime"     ,"<span style='color:" + (v_Report.getExecAvgTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecAvgTime() >= 0 ? Help.round(v_Report.getExecAvgTime() ,2) : "-") + "</span>");
             v_RKey.put(":LastTime"        ,v_Report.getLastTime() <= 0L ? "" : (v_Report.getLastTime() >= v_NowTime ? new Date(v_Report.getLastTime()).getFull() : "<span style='color:gray;'>" + new Date(v_Report.getLastTime()).getFull() + "</span>"));
             
             v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
+            
+            v_SumTotalCount      += v_Report.getCount();
+            v_SumRequestCount    += v_Report.getRequestCount();
+            v_SumErrorFatalCount += v_Report.getErrorFatalCount();
+            v_SumExecSumTime     += v_Report.getExecSumTime();
         }
+        
+        
+        // 合计
+        Map<String ,String> v_RKey = new HashMap<String ,String>();
+        
+        v_RKey.put(":No"              ,String.valueOf(++v_Index));
+        v_RKey.put(":ClassName"       ,"合计");
+        v_RKey.put(":MethodName"      ,"-");
+        v_RKey.put(":LineNumber"      ,"-");
+        v_RKey.put(":LogLevel"        ,"-");
+        v_RKey.put(":TotalCount"      ,"<span style='color:" + (v_SumTotalCount      >  0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SumTotalCount      + "</span>");
+        v_RKey.put(":RequestCount"    ,"<span style='color:" + (v_SumRequestCount    >  0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SumRequestCount    + "</span>");
+        v_RKey.put(":ErrorFatalCount" ,"<span style='color:" + (v_SumErrorFatalCount >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_SumErrorFatalCount + "</span>");
+        v_RKey.put(":ExecSumTime"     ,"<span style='color:" + (v_SumExecSumTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Date.toTimeLen(v_SumExecSumTime) : "-") + "</span>");
+        v_RKey.put(":ExecAvgTime"     ,"<span style='color:" + (v_SumExecSumTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Help.round(Help.division(v_SumExecSumTime ,v_SumRequestCount) ,2) : "-") + "</span>");
+        v_RKey.put(":LastTime"        ,"-");
+        
+        v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
+        
         
         StringBuilder v_GotoTitle = new StringBuilder();
         v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
@@ -3400,13 +3461,17 @@ public class AnalyseBase extends Analyse
         }
         
         v_GotoTitle.append(")").append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+        
+        String v_GotoTitle02 = StringHelp.lpad("" ,4 ,"&nbsp;");
         if ( i_Cluster )
         {
             v_GotoTitle.append("<a href='#' id='Title_Local_Remote' style='color:#AA66CC'>查看本机</a>");
+            v_GotoTitle02   += "<a href='analyseObject?xid=AnalyseBase&call=analyseLogger_RestTotal&cluster=Y&sameTime=Y' style='color:#AA66CC'>集群重置</a>";
         }
         else
         {
             v_GotoTitle.append("<a href='#' id='Title_Local_Remote' style='color:#AA66CC'>查看集群</a>");
+            v_GotoTitle02   += "<a href='analyseObject?xid=AnalyseBase&call=analyseLogger_RestTotal' style='color:#AA66CC'>重置统计</a>";
         }
         
         v_Total.getReports().clear();
@@ -3415,8 +3480,8 @@ public class AnalyseBase extends Analyse
         v_TotalList = null;
         
         return StringHelp.replaceAll(this.getTemplateShowLogger()
-                                    ,new String[]{":GotoTitle"            ,":Title"        ,":HttpBasePath" ,":Sort"   ,":TotalType" ,":Cluster"              ,":Content"}
-                                    ,new String[]{v_GotoTitle.toString()  ,"日志引擎分析" ,i_BasePath      ,i_SortType ,i_TotalType ,(i_Cluster ? "Y" : "N")  ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle"           ,":Goto_02_Title" ,":Title"        ,":HttpBasePath" ,":Sort"   ,":TotalType" ,":Cluster"              ,":FilterClassName"         ,":Content"}
+                                    ,new String[]{v_GotoTitle.toString() ,v_GotoTitle02    ,"日志引擎分析" ,i_BasePath      ,i_SortType ,i_TotalType ,(i_Cluster ? "Y" : "N") ,Help.NVL(i_FilterClassName) ,v_Buffer.toString()});
     }
     
     
@@ -3434,6 +3499,22 @@ public class AnalyseBase extends Analyse
     public AnalyseLoggerTotal analyseLogger_Total(String i_TotalType)
     {
         return new AnalyseLoggerTotal(i_TotalType);
+    }
+    
+    
+    
+    /**
+     * 重置日志引擎的监控的统计数据 
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-20
+     * @version     v1.0
+     *
+     * @return
+     */
+    public void analyseLogger_RestTotal()
+    {
+        Logger.resets();
     }
     
     

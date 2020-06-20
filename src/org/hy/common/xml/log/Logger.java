@@ -1,9 +1,9 @@
 package org.hy.common.xml.log;
 
 import java.lang.reflect.Method;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.hy.common.Counter;
 import org.hy.common.Date;
@@ -46,6 +46,8 @@ import org.hy.common.file.FileHelp;
  *              v5.2  2020-06-15  添加：封装日志级别。原本不用封装日志级别，直接引用Log4J、SLF4J也是可以的。
  *                                      主要用于解决不同日志类库的日志级别不一样的问题。如SLF4J有没有Fatal级。
  *              v5.3  2020-06-16  添加：区分SLF4J是引用Log4J，还是引用Logback。
+ *              v6.0  2020-06-20  添加：通过方法内两次及以上的多次日志输出，尝试计算出方法执行用时。
+ *                                      建议人：李浩; 解决方案：程志华
  */
 public class Logger
 {
@@ -130,18 +132,58 @@ public class Logger
     private Class<?>                            logClass;
     
     /** 
-     * 无论是否对接Log4J、SLF4J，均进行日志统计。
+     * 统计日志执行次数
      * 
-     * Key的形式是：日志级别:方法名称:代码行 
+     * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
+     * 
+     *   Map.Key   是：日志级别:方法名称:代码行 
+     *   Map.Value 是：累计执行次数 
      */
     private Counter<String>                     requestCount;
     
     /** 
-     * 无论是否对接Log4J、SLF4J，均进行日志最后时间的记录。 
+     * 统计日志最后执行时间
      * 
-     * Key的形式是：日志级别:方法名称:代码行 
+     * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
+     * 
+     *   Map.Key   是：日志级别:方法名称:代码行 
+     *   Map.Value 是：最后执行时间
      */
     private Map<String ,Long>                   requestTime;
+    
+    /**
+     * 统计方法执行累计用时
+     * 
+     * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
+     *  
+     *   Map.Key   是：方法名称 + 线程号 
+     *   Map.Value 是：累计用时
+     */
+    private Counter<String>                     methodExecSumTime;
+    
+    /**
+     * 用于统计方法执行累计用时的方法最后执行行号，计算线程、方法、行号三者的关系。
+     * 
+     * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
+     *  
+     *   Map.Key   是：方法名称 + 线程号 
+     *   Map.Value 是：代码行号
+     * 
+     * 仅限内部使用
+     */
+    private Map<String ,Integer>                methodExecLines;
+    
+    /**
+     * 用于统计方法执行累计用时的方法最后执行时间
+     * 
+     * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
+     *  
+     *   Map.Key   是：方法名称 + 线程号
+     *   Map.Value 是：最后执行时间
+     *   
+     * 仅限内部使用
+     */
+    private Map<String ,Long>                   methodExecLastime;
     
     
     
@@ -452,8 +494,11 @@ public class Logger
      */
     public Logger(String i_ClassName ,Boolean i_IsPrintln)
     {
-        this.requestCount = new Counter<String>();
-        this.requestTime  = new Hashtable<String ,Long>();
+        this.requestCount      = new Counter<String>();
+        this.requestTime       = new ConcurrentHashMap<String ,Long>();
+        this.methodExecSumTime = new Counter<String>();
+        this.methodExecLines   = new ConcurrentHashMap<String ,Integer>();
+        this.methodExecLastime = new ConcurrentHashMap<String ,Long>();
         this.addLogger();
         
         initLogTypeVersion();
@@ -993,6 +1038,11 @@ public class Logger
         {
             this.requestTime.put(v_Key ,0L);
         }
+        
+        for (String v_Key : this.methodExecSumTime.keySet())
+        {
+            this.methodExecSumTime.set(v_Key ,0L);
+        }
     }
     
     
@@ -1038,15 +1088,37 @@ public class Logger
             String v_Key = i_LevelName + ":" + v_StackTrace.getMethodName() + ":" + v_StackTrace.getLineNumber();
             this.requestCount.put(v_Key ,1L);
             this.requestTime .put(v_Key ,Date.getNowTime().getTime());
+            
+            // 下面代码的功能是：通过方法内两次及以上的多次日志输出，尝试计算出方法执行用时
+            String  v_MethodThreadID = v_StackTrace.getMethodName() + Thread.currentThread().getId();
+            Integer v_LastLine       = this.methodExecLines.get(v_MethodThreadID);
+            long    v_NowTime        = Date.getNowTime().getTime();
+            
+            if ( v_LastLine != null && v_StackTrace.getLineNumber() >= v_LastLine )
+            {
+                Long v_LastTime = this.methodExecLastime.get(v_MethodThreadID);
+                
+                // 防止系统时间出现紊乱、回退等问题
+                if ( v_LastTime != null && v_LastTime.longValue() <= v_NowTime )
+                {
+                    this.methodExecSumTime.put(v_StackTrace.getMethodName() ,v_NowTime - v_LastTime.longValue());
+                }
+            }
+            
+            this.methodExecLines  .put(v_MethodThreadID ,v_StackTrace.getLineNumber());
+            this.methodExecLastime.put(v_MethodThreadID ,v_NowTime);
         }
     }
     
     
     
-    /**
-     * 获取：无论是否对接Log4J、SLF4J，均进行日志统计。
+    /** 
+     * 统计日志执行次数
      * 
-     * Key是：方法名称:代码行
+     * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
+     * 
+     *   Map.Key   是：日志级别:方法名称:代码行 
+     *   Map.Value 是：累计执行次数 
      */
     public Counter<String> getRequestCount()
     {
@@ -1055,14 +1127,32 @@ public class Logger
     
     
     
-    /**
-     * 获取：无论是否对接Log4J、SLF4J，均进行日志最后时间的记录。 
+    /** 
+     * 统计日志执行次数
      * 
-     * Key的形式是：日志级别:方法名称:代码行
+     * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
+     * 
+     *   Map.Key   是：日志级别:方法名称:代码行 
+     *   Map.Value 是：累计执行次数 
      */
     public Map<String ,Long> getRequestTime()
     {
         return requestTime;
+    }
+    
+    
+    
+    /**
+     * 统计方法执行累计用时
+     * 
+     * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
+     *  
+     *   Map.Key   是：方法名称 + 线程号 
+     *   Map.Value 是：累计用时
+     */
+    public Counter<String> getMethodExecSumTimes()
+    {
+        return methodExecSumTime;
     }
     
     
