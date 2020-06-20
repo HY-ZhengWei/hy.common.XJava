@@ -36,6 +36,9 @@ public class LoggerReport extends SerializableDef
     /** 日志代码量 */
     private long   count;
     
+    /** 日志代码量（不包含Error级、Fatal级的） */
+    private long   countNoError;
+    
     /** 日志执行量 */
     private long   requestCount;
     
@@ -270,6 +273,26 @@ public class LoggerReport extends SerializableDef
     public void setExecAvgTime(double execAvgTime)
     {
         this.execAvgTime = execAvgTime;
+    }
+
+    
+    /**
+     * 获取：日志代码量（不包含Error级、Fatal级的）
+     */
+    public long getCountNoError()
+    {
+        return countNoError;
+    }
+
+    
+    /**
+     * 设置：日志代码量（不包含Error级、Fatal级的）
+     * 
+     * @param countNoError 
+     */
+    public void setCountNoError(long countNoError)
+    {
+        this.countNoError = countNoError;
     }
     
 }

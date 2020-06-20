@@ -1094,7 +1094,7 @@ public class Logger
             Integer v_LastLine       = this.methodExecLines.get(v_MethodThreadID);
             long    v_NowTime        = Date.getNowTime().getTime();
             
-            if ( v_LastLine != null && v_StackTrace.getLineNumber() >= v_LastLine )
+            if ( v_LastLine != null && v_StackTrace.getLineNumber() > v_LastLine )
             {
                 Long v_LastTime = this.methodExecLastime.get(v_MethodThreadID);
                 

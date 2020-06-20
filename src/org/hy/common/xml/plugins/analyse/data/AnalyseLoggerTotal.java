@@ -62,6 +62,7 @@ public class AnalyseLoggerTotal extends SerializableDef
                 for (Logger v_Logger : v_ClassForLoggers.getValue())
                 {
                     Counter<String> v_MethodCounter        = new Counter<String>();
+                    Counter<String> v_MethodCounterNoError = new Counter<String>();
                     Counter<String> v_MethodRequestCounter = new Counter<String>();
                     Counter<String> v_MethodErrorCounter   = new Counter<String>();
                     Max<String>     v_LastTimes            = new Max<String>();
@@ -74,6 +75,11 @@ public class AnalyseLoggerTotal extends SerializableDef
                         if ( "error".equalsIgnoreCase(v_MInfos[0]) || "fatal".equalsIgnoreCase(v_MInfos[0]) )
                         {
                             v_ErrorCount = v_Method.getValue();
+                            v_MethodCounterNoError.put(v_MInfos[1] ,0L);
+                        }
+                        else
+                        {
+                            v_MethodCounterNoError.put(v_MInfos[1] ,1L);
                         }
                         
                         v_MethodCounter       .put(v_MInfos[1] ,1L);
@@ -89,6 +95,7 @@ public class AnalyseLoggerTotal extends SerializableDef
                         v_Data.setClassName(      v_ClassForLoggers.getKey());
                         v_Data.setMethodName(     v_Method.getKey());
                         v_Data.setCount(          v_MethodCounter                 .get(v_Method.getKey()));
+                        v_Data.setCountNoError(   v_MethodCounterNoError          .get(v_Method.getKey()));
                         v_Data.setRequestCount(   v_Method                        .getValue());
                         v_Data.setErrorFatalCount(v_MethodErrorCounter            .get(v_Method.getKey()));
                         v_Data.setLastTime(       v_LastTimes                     .get(v_Method.getKey()).longValue());
@@ -117,6 +124,7 @@ public class AnalyseLoggerTotal extends SerializableDef
             for (Map.Entry<String, List<Logger>> v_ClassForLoggers : Logger.getLoggers().entrySet())
             {
                 Counter<String> v_ClassCounter        = new Counter<String>();
+                Counter<String> v_ClassCounterNoError = new Counter<String>();
                 Counter<String> v_ClassRequestCounter = new Counter<String>();
                 Counter<String> v_MethodErrorCounter  = new Counter<String>();
                 Max<String>     v_LastTimes           = new Max<String>();
@@ -132,6 +140,11 @@ public class AnalyseLoggerTotal extends SerializableDef
                         if ( "error".equalsIgnoreCase(v_MInfos[0]) || "fatal".equalsIgnoreCase(v_MInfos[0]) )
                         {
                             v_ErrorCount = v_Method.getValue();
+                            v_ClassCounterNoError.put(v_ClassForLoggers.getKey() ,0L);
+                        }
+                        else
+                        {
+                            v_ClassCounterNoError.put(v_ClassForLoggers.getKey() ,1L);
                         }
                         
                         v_ClassCounter       .put(v_ClassForLoggers.getKey() ,1L);
@@ -148,6 +161,7 @@ public class AnalyseLoggerTotal extends SerializableDef
                     
                     v_Data.setClassName(      v_ClassForLoggers.getKey());
                     v_Data.setCount(          v_ClassCounter.get(      v_Class.getKey()));
+                    v_Data.setCountNoError(v_ClassCounterNoError.get(  v_Class.getKey()));
                     v_Data.setRequestCount(                            v_Class.getValue());
                     v_Data.setErrorFatalCount(v_MethodErrorCounter.get(v_Class.getKey()));
                     v_Data.setLastTime(       v_LastTimes.get(         v_Class.getKey()).longValue());
@@ -169,12 +183,17 @@ public class AnalyseLoggerTotal extends SerializableDef
                 {
                     for (Map.Entry<String, Long> v_Method : v_Logger.getRequestCount().entrySet())
                     {
-                        String [] v_MInfos     = v_Method.getKey().split(":");
-                        long      v_ErrorCount = 0; 
+                        String [] v_MInfos       = v_Method.getKey().split(":");
+                        long      v_ErrorCount   = 0L; 
+                        long      v_CountNoError = 0L;
                         
                         if ( "error".equalsIgnoreCase(v_MInfos[0]) || "fatal".equalsIgnoreCase(v_MInfos[0]) )
                         {
                             v_ErrorCount = v_Method.getValue();
+                        }
+                        else
+                        {
+                            v_CountNoError = 1L;
                         }
                         
                         LoggerReport v_Data = new LoggerReport();
@@ -184,6 +203,7 @@ public class AnalyseLoggerTotal extends SerializableDef
                         v_Data.setMethodName(v_MInfos[1]);
                         v_Data.setLineNumber(v_MInfos[2]);
                         v_Data.setCount(1L);
+                        v_Data.setCountNoError(v_CountNoError);
                         v_Data.setRequestCount(   v_Method.getValue());
                         v_Data.setErrorFatalCount(v_ErrorCount);
                         v_Data.setLastTime(v_Logger.getRequestTime().get(v_Method.getKey()));
