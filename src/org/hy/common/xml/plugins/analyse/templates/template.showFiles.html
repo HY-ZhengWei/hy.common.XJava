@@ -50,18 +50,18 @@ a{color:#669900; text-decoration:none; outline:none;}
 a:hover{color:#99CC00;text-decoration:none;}
 
 .input-text{ 
-	vertical-align:middle; 
-	height:22px; 
-	padding:2px; 
-	border:#7992bb solid 1px; 
-	color:#000000; 
-	font-family:"宋体" Arial, Helvetica, sans-serif;
-	width:256px;
+    vertical-align:middle; 
+    height:22px; 
+    padding:2px; 
+    border:#7992bb solid 1px; 
+    color:#000000; 
+    font-family:"宋体" Arial, Helvetica, sans-serif;
+    width:256px;
 }
 
 body {
-	font-family: "微软雅黑";
-	font-size: 12px;
+    font-family: "微软雅黑";
+    font-size: 12px;
 }
 </style>
 
@@ -72,49 +72,49 @@ body {
 
 </head>
 <body> 
-		
-	   <div class="userInfoModify_logininfobody" >
-	   	  <div class="userInfoModify_logininfo" /> 
-	   	  
-	      <div class="userInfoModify_clearTag">
-		      <div>
-		   	      <input type="text"   id="FP"      name="FP"      value=":FPath" class="input-text" style="width:1242px;" title="空时，返回主目录" />
-		   	  	  <input type="hidden" id="cluster" name="cluster" value=":cluster" />
-		   	  	  <input type="hidden" id="S"       name="S"       value=":Sort" />
-		   	  </div>
-		   	  
-			  <div class="userInfoModify_labeTag">编号</div>
-			  <div class="userInfoModify_FileName_Title"><a id="Title_FileName" href="#" style='color:#AA66CC'>名称</a>:GotoTitle</div>
-	          <div class="userInfoModify_LastTime_Title"><a id="Title_LastTime" href="#" style='color:#AA66CC'>修改时间</a></div>
-	          <div class="userInfoModify_FileType_Title"><a id="Title_FileType" href="#" style='color:#AA66CC'>类型</a></div>
-	          <div class="userInfoModify_FileSize_Title"><a id="Title_FileSize" href="#" style='color:#AA66CC'>大小</a></div>
-	          <div class="userInfoModify_ClusterHave_Title">集群情况</div>
-	          <div class="userInfoModify_Operate_Title">操作</div>
-	      </div> 
-		 
-	   </div> 
-	   
-   		<div id="info_fill" class="userInfoModify_logininfo1"> 
-   		
-   			<div class="userInfoModify_clearTag1">
-	            <div class="userInfoModify_labeTag2"></div>
-	            <div class="userInfoModify_FileName_Other"></div>
-	            <div class="userInfoModify_LastTime_Other"></div>
-	            <div class="userInfoModify_FileType_Other"></div>
-	            <div class="userInfoModify_FileSize_Other"></div>
-	            <div class="userInfoModify_ClusterHave_Other"></div>
-	            <div class="userInfoModify_Operate_Other"></div>
-     	    </div> 
-   		
-    		:Content
-   		</div>
-   		
+        
+       <div class="userInfoModify_logininfobody" >
+          <div class="userInfoModify_logininfo" /> 
+          
+          <div class="userInfoModify_clearTag">
+              <div>
+                  <input type="text"   id="FP"      name="FP"      value=":FPath" class="input-text" style="width:1242px;" placeholder="空时，返回主目录" />
+                  <input type="hidden" id="cluster" name="cluster" value=":cluster" />
+                  <input type="hidden" id="S"       name="S"       value=":Sort" />
+              </div>
+              
+              <div class="userInfoModify_labeTag">编号</div>
+              <div class="userInfoModify_FileName_Title"><a id="Title_FileName" href="#" style='color:#AA66CC'>名称</a>:GotoTitle</div>
+              <div class="userInfoModify_LastTime_Title"><a id="Title_LastTime" href="#" style='color:#AA66CC'>修改时间</a></div>
+              <div class="userInfoModify_FileType_Title"><a id="Title_FileType" href="#" style='color:#AA66CC'>类型</a></div>
+              <div class="userInfoModify_FileSize_Title"><a id="Title_FileSize" href="#" style='color:#AA66CC'>大小</a></div>
+              <div class="userInfoModify_ClusterHave_Title">集群情况</div>
+              <div class="userInfoModify_Operate_Title">操作</div>
+          </div> 
+         
+       </div> 
+       
+        <div id="info_fill" class="userInfoModify_logininfo1"> 
+        
+            <div class="userInfoModify_clearTag1">
+                <div class="userInfoModify_labeTag2"></div>
+                <div class="userInfoModify_FileName_Other"></div>
+                <div class="userInfoModify_LastTime_Other"></div>
+                <div class="userInfoModify_FileType_Other"></div>
+                <div class="userInfoModify_FileSize_Other"></div>
+                <div class="userInfoModify_ClusterHave_Other"></div>
+                <div class="userInfoModify_Operate_Other"></div>
+            </div> 
+        
+            :Content
+        </div>
+        
 
 
 <div id="Dialog-Default" style="display:none">
   <p>
-  	<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
-  	<span id="Dialog-Default-Msg" style="float:left; margin:0 7px 20px 0;"></span>
+    <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+    <span id="Dialog-Default-Msg" style="float:left; margin:0 7px 20px 0;"></span>
   </p>
 </div>
 
@@ -129,961 +129,962 @@ var v_Height_HIP = 600;
 
 function executeAction(i_FileName ,i_HIP ,i_LocalIPPort ,i_Action ,i_FunCallBack)
 {
-	$.post("analyseObject" 
-		  ,{
-		     FS:      'Y'
-		    ,cluster: $("#cluster").val()
-		    ,S:       $("#S").val()
-		    ,FP:      $("#FP").val()
-		    ,Action:  i_Action
-		    ,FN:      i_FileName
-		    ,HIP:     i_HIP
-		    ,LIP:     i_LocalIPPort
-		   }
-	      ,i_FunCallBack
-	      ,"json"
-	      );
+    $.post("analyseObject" 
+          ,{
+             FS:      'Y'
+            ,cluster: $("#cluster").val()
+            ,S:       $("#S").val()
+            ,FP:      $("#FP").val()
+            ,Action:  i_Action
+            ,FN:      i_FileName
+            ,HIP:     i_HIP
+            ,LIP:     i_LocalIPPort
+           }
+          ,i_FunCallBack
+          ,"json"
+          );
 }
 
 
 
 function cloneFileAction(i_FileName ,i_HIP)
 {
-	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
-	executeAction(i_FileName 
-			     ,i_HIP
-			     ,""
-			     ,"CLONE-C"
-			     ,function (i_Ret)
-			     {
-					v_Loading.dialog("close");
-					if ( i_Ret.retCode == "0" )
-					{
-						f_ShowMsg("消息" ,"成功克隆资源 <b>" + i_FileName + "</b>。" ,v_Height_Msg);
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						f_ShowMsg("消息" 
-								 ,"未能成功克隆文件的服务 ("     + i_Ret.retHIPSize          + "台)：<br>" + f_ReplaceAll(i_Ret.retHIP          ,"," ,"<br>") 
-								+ "<br><br>成功克隆文件的服务 (" + i_Ret.retSucceedfulIPSize + "台)：<br>" + f_ReplaceAll(i_Ret.retSucceedfulIP ,"," ,"<br>") 
-								 ,v_Height_HIP);
-					}
-					else if ( i_Ret.retCode == "2" )
-					{
-						f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
-					}
-			     });
+    var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
+    executeAction(i_FileName 
+                 ,i_HIP
+                 ,""
+                 ,"CLONE-C"
+                 ,function (i_Ret)
+                 {
+                    v_Loading.dialog("close");
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        f_ShowMsg("消息" ,"成功克隆资源 <b>" + i_FileName + "</b>。" ,v_Height_Msg);
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        f_ShowMsg("消息" 
+                                 ,"未能成功克隆文件的服务 ("     + i_Ret.retHIPSize          + "台)：<br>" + f_ReplaceAll(i_Ret.retHIP          ,"," ,"<br>") 
+                                + "<br><br>成功克隆文件的服务 (" + i_Ret.retSucceedfulIPSize + "台)：<br>" + f_ReplaceAll(i_Ret.retSucceedfulIP ,"," ,"<br>") 
+                                 ,v_Height_HIP);
+                    }
+                    else if ( i_Ret.retCode == "2" )
+                    {
+                        f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
+                    }
+                 });
 }
 
 
 
 function cloneDownloadAction(i_FileName ,i_HIP ,i_LocalIPPort)
 {
-	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
-	executeAction(i_FileName 
-			     ,i_HIP
-			     ,i_LocalIPPort
-			     ,"CLONE-DL"
-			     ,function (i_Ret)
-			     {
-					v_Loading.dialog("close");
-					if ( i_Ret.retCode == "0" )
-					{
-						f_Goto();
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						f_ShowMsg("消息" ,"未能成功克隆！" ,v_Height_Msg);
-					}
-					else if ( i_Ret.retCode == "2" )
-					{
-						f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
-					}
-					else if ( i_Ret.retCode == "3" )
-					{
-						f_ShowMsg("消息" ,"本服务与云服务通讯异常！" ,v_Height_Msg);
-					}
-					else if ( i_Ret.retCode == "4" )
-					{
-						f_ShowMsg("消息" ,"云服务IP地址不存在！" ,v_Height_Msg);
-					}
-			     });
+    var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
+    executeAction(i_FileName 
+                 ,i_HIP
+                 ,i_LocalIPPort
+                 ,"CLONE-DL"
+                 ,function (i_Ret)
+                 {
+                    v_Loading.dialog("close");
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        f_Goto();
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        f_ShowMsg("消息" ,"未能成功克隆！" ,v_Height_Msg);
+                    }
+                    else if ( i_Ret.retCode == "2" )
+                    {
+                        f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
+                    }
+                    else if ( i_Ret.retCode == "3" )
+                    {
+                        f_ShowMsg("消息" ,"本服务与云服务通讯异常！" ,v_Height_Msg);
+                    }
+                    else if ( i_Ret.retCode == "4" )
+                    {
+                        f_ShowMsg("消息" ,"云服务IP地址不存在！" ,v_Height_Msg);
+                    }
+                 });
 }
 
 
 
 function cloneFile(i_File)
 {
-	var v_FileNo   = i_File.split(":")[0];
-	var v_FileName = i_File.split(":")[1];
-	
-	if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
-	{
-		var v_Height     = 0;
-		var v_HIP        = $("#HIP_"  + v_FileNo).val();
-		var v_NoIP       = $("#NoIP_" + v_FileNo).val();
-		var v_HIP_Prompt = v_HIP;
-		if ( v_HIP_Prompt == "" )
-		{
-			v_Height     = v_Height_Msg + 80;
-			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，克隆将会覆盖，确定克隆吗？"
+    var v_FileNo   = i_File.split(":")[0];
+    var v_FileName = i_File.split(":")[1];
+    
+    if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+    {
+        var v_Height     = 0;
+        var v_HIP        = $("#HIP_"  + v_FileNo).val();
+        var v_NoIP       = $("#NoIP_" + v_FileNo).val();
+        var v_HIP_Prompt = v_HIP;
+        if ( v_HIP_Prompt == "" )
+        {
+            v_Height     = v_Height_Msg + 80;
+            v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，克隆将会覆盖，确定克隆吗？"
                          + "<br><br>:SelectHIP"
                          + "<br><br>:SelectLocalIP";
-		}
-		else
-		{
-			v_Height     = v_Height_HIP;
-			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，克隆将会覆盖，确定克隆吗？" 
-			             + "<br><br>:SelectHIP"
-			             + "<br><br>:SelectLocalIP<br><br>"
-			             + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>")
-			             + "<br><br>以下是没有资源的服务<br>"
-			             + f_ReplaceAll(v_NoIP ,"," ,"<br>");
-		}
-		
-		f_OpenDialog("Dialog-Default" 
-				    ,"确认克隆资源吗？" 
-				    ,v_HIP_Prompt
-				    ,v_Height
-				    ,{
-			        	"集群克隆": function() 
-			        	{
-			        		$(this).dialog("close");
-			        		cloneFileAction(v_FileName ,"");
-			          	},
-			          	"高效克隆": function() 
-			          	{
-			          		$(this).dialog("close");
-			          		cloneFileAction(v_FileName ,v_HIP);
-			          	},
-			          	"定向下载": function() 
-			        	{
-			          		if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
-		          			{
-				          		if ( $("#SelectLocalIP").val() != null && $("#SelectLocalIP").val() != "" )
-				          		{
-					        		$(this).dialog("close");
-					        		cloneDownloadAction(v_FileName ,"!" + $("#SelectHIP").val() ,"!" + $("#SelectLocalIP").val());
-				        		}
-				          		else
-			          			{
-				          			alert("请选择本服务器的通讯IP");
-			          			}
-		          			}
-			          		else
-		          			{
-		          				alert("请选择定向操作的服务器");
-		          			}
-			          	},
-			          	"取　　消": function() 
-			          	{
-			            	$(this).dialog("close");
-			          	}
-	        		 });
-	}
-	else
-	{
-		f_OpenDialog("Dialog-Default" 
-				    ,"确认克隆资源吗？" 
-				    ,"<b>" + v_FileName + "</b><br>克隆将会覆盖，确定克隆吗？" 
-				   + "<br><br>:SelectHIP"
-				   + "<br><br>:SelectLocalIP"
-				    ,v_Height_Msg + 80
-				    ,{
-			        	"集群克隆": function() 
-			        	{
-			        		$(this).dialog("close");
-			        		cloneFileAction(v_FileName ,"");
-			          	},
-			          	"定向克隆": function() 
-			        	{
-			          		if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
-			          		{
-				        		$(this).dialog("close");
-				        		cloneFileAction(v_FileName ,"!" + $("#SelectHIP").val());
-			        		}
-			          		else
-		          			{
-		          				alert("请选择定向操作的服务器");
-		          			}
-			          	},
-			          	"定向下载": function() 
-			        	{
-			          		if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
-		          			{
-				          		if ( $("#SelectLocalIP").val() != null && $("#SelectLocalIP").val() != "" )
-				          		{
-					        		$(this).dialog("close");
-					        		cloneDownloadAction(v_FileName ,"!" + $("#SelectHIP").val() ,"!" + $("#SelectLocalIP").val());
-				        		}
-				          		else
-			          			{
-				          			alert("请选择本服务器的通讯IP");
-			          			}
-		          			}
-			          		else
-		          			{
-		          				alert("请选择定向操作的服务器");
-		          			}
-			          	},
-			          	"取　　消": function() 
-			          	{
-			            	$(this).dialog("close");
-			          	}
-	        		 });
-	}
+        }
+        else
+        {
+            v_Height     = v_Height_HIP;
+            v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，克隆将会覆盖，确定克隆吗？" 
+                         + "<br><br>:SelectHIP"
+                         + "<br><br>:SelectLocalIP<br><br>"
+                         + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>")
+                         + "<br><br>以下是没有资源的服务<br>"
+                         + f_ReplaceAll(v_NoIP ,"," ,"<br>");
+        }
+        
+        f_OpenDialog("Dialog-Default" 
+                    ,"确认克隆资源吗？" 
+                    ,v_HIP_Prompt
+                    ,v_Height
+                    ,{
+                        "集群克隆": function() 
+                        {
+                            $(this).dialog("close");
+                            cloneFileAction(v_FileName ,"");
+                        },
+                        "高效克隆": function() 
+                        {
+                            $(this).dialog("close");
+                            cloneFileAction(v_FileName ,v_HIP);
+                        },
+                        "定向下载": function() 
+                        {
+                            if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
+                            {
+                                if ( $("#SelectLocalIP").val() != null && $("#SelectLocalIP").val() != "" )
+                                {
+                                    $(this).dialog("close");
+                                    cloneDownloadAction(v_FileName ,"!" + $("#SelectHIP").val() ,"!" + $("#SelectLocalIP").val());
+                                }
+                                else
+                                {
+                                    alert("请选择本服务器的通讯IP");
+                                }
+                            }
+                            else
+                            {
+                                alert("请选择定向操作的服务器");
+                            }
+                        },
+                        "取　　消": function() 
+                        {
+                            $(this).dialog("close");
+                        }
+                     });
+    }
+    else
+    {
+        f_OpenDialog("Dialog-Default" 
+                    ,"确认克隆资源吗？" 
+                    ,"<b>" + v_FileName + "</b><br>克隆将会覆盖，确定克隆吗？" 
+                   + "<br><br>:SelectHIP"
+                   + "<br><br>:SelectLocalIP"
+                    ,v_Height_Msg + 80
+                    ,{
+                        "集群克隆": function() 
+                        {
+                            $(this).dialog("close");
+                            cloneFileAction(v_FileName ,"");
+                        },
+                        "定向克隆": function() 
+                        {
+                            if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
+                            {
+                                $(this).dialog("close");
+                                cloneFileAction(v_FileName ,"!" + $("#SelectHIP").val());
+                            }
+                            else
+                            {
+                                alert("请选择定向操作的服务器");
+                            }
+                        },
+                        "定向下载": function() 
+                        {
+                            if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
+                            {
+                                if ( $("#SelectLocalIP").val() != null && $("#SelectLocalIP").val() != "" )
+                                {
+                                    $(this).dialog("close");
+                                    cloneDownloadAction(v_FileName ,"!" + $("#SelectHIP").val() ,"!" + $("#SelectLocalIP").val());
+                                }
+                                else
+                                {
+                                    alert("请选择本服务器的通讯IP");
+                                }
+                            }
+                            else
+                            {
+                                alert("请选择定向操作的服务器");
+                            }
+                        },
+                        "取　　消": function() 
+                        {
+                            $(this).dialog("close");
+                        }
+                     });
+    }
 }
 
 
 
 function executeCommandAction(i_FileName ,i_HIP ,i_IsCluster)
 {
-	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
-	var v_Action  = i_IsCluster ? "EXECUTE-COMMAND-C" : "EXECUTE-COMMAND";
-	executeAction(i_FileName 
-			     ,i_HIP
-			     ,""
-			     ,v_Action
-			     ,function (i_Ret)
-			     {
-					v_Loading.dialog("close");
-					if ( i_Ret.retCode == "0" )
-					{
-						f_Goto();
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						f_ShowMsg("消息" ,"远程未能成功执行！异常服务：" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
-					}
-					else if ( i_Ret.retCode == "2" )
-					{
-						f_ShowMsg("消息" ,"本服务未能成功执行！文件不存在或者不是文件。" ,v_Height_Msg);
-					}
-			     });
+    var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
+    var v_Action  = i_IsCluster ? "EXECUTE-COMMAND-C" : "EXECUTE-COMMAND";
+    executeAction(i_FileName 
+                 ,i_HIP
+                 ,""
+                 ,v_Action
+                 ,function (i_Ret)
+                 {
+                    v_Loading.dialog("close");
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        f_Goto();
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        f_ShowMsg("消息" ,"远程未能成功执行！异常服务：" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
+                    }
+                    else if ( i_Ret.retCode == "2" )
+                    {
+                        f_ShowMsg("消息" ,"本服务未能成功执行！文件不存在或者不是文件。" ,v_Height_Msg);
+                    }
+                 });
 }
 
 
 
 function executeCommand(i_File)
 {
-	var v_FileNo     = i_File.split(":")[0];
-	var v_FileName   = i_File.split(":")[1];
-	var v_Height     = 0;
-	var v_HIP        = $("#HIP_"  + v_FileNo).val();
-	var v_NoIP       = $("#NoIP_" + v_FileNo).val();
-	var v_HIP_Prompt = v_HIP;
-	
-	if ( v_HIP_Prompt == "" )
-	{
-		v_Height     = v_Height_Msg + 80;
-		v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，是否远程执行？"
+    var v_FileNo     = i_File.split(":")[0];
+    var v_FileName   = i_File.split(":")[1];
+    var v_Height     = 0;
+    var v_HIP        = $("#HIP_"  + v_FileNo).val();
+    var v_NoIP       = $("#NoIP_" + v_FileNo).val();
+    var v_HIP_Prompt = v_HIP;
+    
+    if ( v_HIP_Prompt == "" )
+    {
+        v_Height     = v_Height_Msg + 80;
+        v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，是否远程执行？"
                         + "<br><br>:SelectHIP"
                         + "<br><br>:SelectLocalIP";
-	}
-	else
-	{
-		v_Height     = v_Height_HIP;
-		v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，是否远程执行？" 
-		             + "<br><br>:SelectHIP"
-		             + "<br><br>:SelectLocalIP<br><br>"
-		             + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>")
-		             + "<br><br>以下是没有资源的服务<br>"
-			         + f_ReplaceAll(v_NoIP ,"," ,"<br>");
-	}
-	
-	if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
-	{
-		f_OpenDialog("Dialog-Default" 
-				    ,"确认远程执行？" 
-				    ,v_HIP_Prompt
-				    ,v_Height
-				    ,{
-			        	"集群执行": function() 
-			        	{
-			        		$(this).dialog("close");
-			        		executeCommandAction(v_FileName ,"" ,true);
-			          	},
-			          	"定向执行": function() 
-			        	{
-			          		if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
-			          		{
-				        		$(this).dialog("close");
-				        		executeCommandAction(v_FileName ,"!" + $("#SelectHIP").val() ,true);
-			        		}
-			          		else
-		          			{
-		          				alert("请选择定向操作的服务器");
-		          			}
-			          	},
-			          	"取　　消": function() 
-			          	{
-			            	$(this).dialog("close");
-			          	}
-	        		 });
-	}
-	else
-	{
-		f_OpenDialog("Dialog-Default" 
-			    ,"确认远程执行？" 
-			    ,v_HIP_Prompt
-			    ,v_Height
-			    ,{
-		        	"集群执行": function() 
-		        	{
-		        		$(this).dialog("close");
-		        		executeCommandAction(v_FileName ,"" ,true);
-		          	},
-		          	"定向执行": function() 
-		        	{
-		          		if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
-		          		{
-			        		$(this).dialog("close");
-			        		executeCommandAction(v_FileName ,"!" + $("#SelectHIP").val() ,true);
-		        		}
-		          		else
-	          			{
-	          				alert("请选择定向操作的服务器");
-	          			}
-		          	},
-		          	"本机执行": function() 
-		        	{
-		        		$(this).dialog("close");
-		        		executeCommandAction(v_FileName ,"" ,false);
-		          	},
-		          	"取　　消": function() 
-		          	{
-		            	$(this).dialog("close");
-		          	}
-        		 });
-	}
+    }
+    else
+    {
+        v_Height     = v_Height_HIP;
+        v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，是否远程执行？" 
+                     + "<br><br>:SelectHIP"
+                     + "<br><br>:SelectLocalIP<br><br>"
+                     + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>")
+                     + "<br><br>以下是没有资源的服务<br>"
+                     + f_ReplaceAll(v_NoIP ,"," ,"<br>");
+    }
+    
+    if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+    {
+        f_OpenDialog("Dialog-Default" 
+                    ,"确认远程执行？" 
+                    ,v_HIP_Prompt
+                    ,v_Height
+                    ,{
+                        "集群执行": function() 
+                        {
+                            $(this).dialog("close");
+                            executeCommandAction(v_FileName ,"" ,true);
+                        },
+                        "定向执行": function() 
+                        {
+                            if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
+                            {
+                                $(this).dialog("close");
+                                executeCommandAction(v_FileName ,"!" + $("#SelectHIP").val() ,true);
+                            }
+                            else
+                            {
+                                alert("请选择定向操作的服务器");
+                            }
+                        },
+                        "取　　消": function() 
+                        {
+                            $(this).dialog("close");
+                        }
+                     });
+    }
+    else
+    {
+        f_OpenDialog("Dialog-Default" 
+                ,"确认远程执行？" 
+                ,v_HIP_Prompt
+                ,v_Height
+                ,{
+                    "集群执行": function() 
+                    {
+                        $(this).dialog("close");
+                        executeCommandAction(v_FileName ,"" ,true);
+                    },
+                    "定向执行": function() 
+                    {
+                        if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
+                        {
+                            $(this).dialog("close");
+                            executeCommandAction(v_FileName ,"!" + $("#SelectHIP").val() ,true);
+                        }
+                        else
+                        {
+                            alert("请选择定向操作的服务器");
+                        }
+                    },
+                    "本机执行": function() 
+                    {
+                        $(this).dialog("close");
+                        executeCommandAction(v_FileName ,"" ,false);
+                    },
+                    "取　　消": function() 
+                    {
+                        $(this).dialog("close");
+                    }
+                 });
+    }
 }
 
 
 
 function getSystemTimeCluster()
 {
-	var v_Loading = f_ShowLoading("消息" ,"正在计算中，请耐心等待。" ,v_Height_Msg);
-	executeAction("-" 
-			     ,"-"
-			     ,"-"
-			     ,"SYSTEM-TIME-C"
-			     ,function (i_Ret)
-			     {
-			    	v_Loading.dialog("close");
-					if ( i_Ret.retCode == "0" )
-					{
-						f_ShowMsg("消息" ,"各服务器的当前系统时间为：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						f_ShowMsg("消息" ,"以下服务器未能成功获取当前系统时间！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
-					}
-			     });
+    var v_Loading = f_ShowLoading("消息" ,"正在计算中，请耐心等待。" ,v_Height_Msg);
+    executeAction("-" 
+                 ,"-"
+                 ,"-"
+                 ,"SYSTEM-TIME-C"
+                 ,function (i_Ret)
+                 {
+                    v_Loading.dialog("close");
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        f_ShowMsg("消息" ,"各服务器的当前系统时间为：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        f_ShowMsg("消息" ,"以下服务器未能成功获取当前系统时间！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
+                    }
+                 });
 }
 
 
 
 function calcFileSize(i_File ,i_IsMsg)
 {
-	var v_FileNo   = i_File.split(":")[0];
-	var v_FileName = i_File.split(":")[1];
-	
-	$("#HFSize_" + v_FileNo).html("计算中");
-	
-	executeAction(v_FileName 
-			     ,""
-			     ,""
-			     ,"CALC-SIZE"
-			     ,function (i_Ret)
-			     {
-					if ( i_Ret.retCode == "0" )
-					{
-						$("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\" ,true)' title='重新计算'>" + i_Ret.fileSize + "</a>");
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						$("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\" ,true)' title='重新计算'>重新计算</a>");
-					}
-					else if ( i_Ret.retCode == "2" )
-					{
-						$("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\" ,true)' title='重新计算'><font color='red'>本服务无</font></a>");
-					}
-			     });
-	
-	calcFileSizeCluster(i_File ,i_IsMsg);
+    var v_FileNo   = i_File.split(":")[0];
+    var v_FileName = i_File.split(":")[1];
+    
+    $("#HFSize_" + v_FileNo).html("计算中");
+    
+    executeAction(v_FileName 
+                 ,""
+                 ,""
+                 ,"CALC-SIZE"
+                 ,function (i_Ret)
+                 {
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        $("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\" ,true)' title='重新计算'>" + i_Ret.fileSize + "</a>");
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        $("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\" ,true)' title='重新计算'>重新计算</a>");
+                    }
+                    else if ( i_Ret.retCode == "2" )
+                    {
+                        $("#HFSize_" + v_FileNo).html("<a href='#' onclick='calcFileSize(\"" + i_File + "\" ,true)' title='重新计算'><font color='red'>本服务无</font></a>");
+                    }
+                 });
+    
+    calcFileSizeCluster(i_File ,i_IsMsg);
 }
 
 
 
 function calcFileSizeCluster(i_File ,i_IsMsg)
 {
-	var v_FileNo   = i_File.split(":")[0];
-	var v_FileName = i_File.split(":")[1];
-	var v_HIP      = $("#HIP_" + v_FileNo).val();
-	var v_Loading  = null;
-	
-	if ( i_IsMsg )
-	{
-		v_Loading = f_ShowLoading("消息" ,"正在计算中，请耐心等待。" ,v_Height_Msg);
-	}
-	
-	$("#HCHave_" + v_FileNo).html("<font color='blue'>计算中</font>");
-	
-	executeAction(v_FileName 
-			     ,v_HIP
-			     ,""
-			     ,"CALC-SIZE-C"
-			     ,function (i_Ret)
-			     {
-					if ( i_IsMsg )
-					{
-						v_Loading.dialog("close");
-					}
-					
-					if ( i_Ret.retCode == "0" )
-					{
-						if ( i_Ret.clusterInfo == "全部相同" )
-						{
-							$("#HCHave_" + v_FileNo).html(i_Ret.clusterInfo);
-						}
-						else if ( i_Ret.clusterInfo == "有差异" || i_Ret.clusterInfo == "异常" )
-						{
-							$("#HCHave_" + v_FileNo).html("<font color='red'>" + i_Ret.clusterInfo + "</font>");
-						}
-						else if ( i_Ret.clusterInfo == "集群相同" || i_Ret.clusterInfo == "仅本服务有" )
-						{							$("#HCHave_" + v_FileNo).html("<font color='orange'>" + i_Ret.clusterInfo + "</font>");
-						}
-						else
-						{
-							$("#HCHave_" + v_FileNo).html("<font color='red'>" + i_Ret.clusterInfo + "</font>");
-						}
-						
-						if ( i_IsMsg )
-						{
-							f_ShowMsg("消息" ,"各服务器上的文件大小 (" + i_Ret.clusterSize + "台)：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
-						}
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						$("#HCHave_" + v_FileNo).html("<font color='red'>异常</font>");
-						
-						if ( i_IsMsg )
-						{
-							f_ShowMsg("消息" ,"各服务器上的文件大小 (" + i_Ret.clusterSize + "台)：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
-						}
-					}
-					
-					var v_Title = i_Ret.datas;
-					v_Title = f_ReplaceAll(v_Title ,"<table>"  ,"");
-					v_Title = f_ReplaceAll(v_Title ,"</table>" ,"");
-					v_Title = f_ReplaceAll(v_Title ,"<tr>"     ,"");
-					v_Title = f_ReplaceAll(v_Title ,"</tr>"    ,"\n");
-					v_Title = f_ReplaceAll(v_Title ,"<td>"     ,"");
-					v_Title = f_ReplaceAll(v_Title ,"</td>"    ,"\t");
-					v_Title = f_ReplaceAll(v_Title ,"&nbsp;"   ," ");
-					
-					$("#HCPrompt_" + v_FileNo).attr("title" , v_Title);
-			     });
+    var v_FileNo   = i_File.split(":")[0];
+    var v_FileName = i_File.split(":")[1];
+    var v_HIP      = $("#HIP_" + v_FileNo).val();
+    var v_Loading  = null;
+    
+    if ( i_IsMsg )
+    {
+        v_Loading = f_ShowLoading("消息" ,"正在计算中，请耐心等待。" ,v_Height_Msg);
+    }
+    
+    $("#HCHave_" + v_FileNo).html("<font color='blue'>计算中</font>");
+    
+    executeAction(v_FileName 
+                 ,v_HIP
+                 ,""
+                 ,"CALC-SIZE-C"
+                 ,function (i_Ret)
+                 {
+                    if ( i_IsMsg )
+                    {
+                        v_Loading.dialog("close");
+                    }
+                    
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        if ( i_Ret.clusterInfo == "全部相同" )
+                        {
+                            $("#HCHave_" + v_FileNo).html(i_Ret.clusterInfo);
+                        }
+                        else if ( i_Ret.clusterInfo == "有差异" || i_Ret.clusterInfo == "异常" )
+                        {
+                            $("#HCHave_" + v_FileNo).html("<font color='red'>" + i_Ret.clusterInfo + "</font>");
+                        }
+                        else if ( i_Ret.clusterInfo == "集群相同" || i_Ret.clusterInfo == "仅本服务有" )
+                        {
+                            $("#HCHave_" + v_FileNo).html("<font color='orange'>" + i_Ret.clusterInfo + "</font>");
+                        }
+                        else
+                        {
+                            $("#HCHave_" + v_FileNo).html("<font color='red'>" + i_Ret.clusterInfo + "</font>");
+                        }
+                        
+                        if ( i_IsMsg )
+                        {
+                            f_ShowMsg("消息" ,"各服务器上的文件大小 (" + i_Ret.clusterSize + "台)：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
+                        }
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        $("#HCHave_" + v_FileNo).html("<font color='red'>异常</font>");
+                        
+                        if ( i_IsMsg )
+                        {
+                            f_ShowMsg("消息" ,"各服务器上的文件大小 (" + i_Ret.clusterSize + "台)：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
+                        }
+                    }
+                    
+                    var v_Title = i_Ret.datas;
+                    v_Title = f_ReplaceAll(v_Title ,"<table>"  ,"");
+                    v_Title = f_ReplaceAll(v_Title ,"</table>" ,"");
+                    v_Title = f_ReplaceAll(v_Title ,"<tr>"     ,"");
+                    v_Title = f_ReplaceAll(v_Title ,"</tr>"    ,"\n");
+                    v_Title = f_ReplaceAll(v_Title ,"<td>"     ,"");
+                    v_Title = f_ReplaceAll(v_Title ,"</td>"    ,"\t");
+                    v_Title = f_ReplaceAll(v_Title ,"&nbsp;"   ," ");
+                    
+                    $("#HCPrompt_" + v_FileNo).attr("title" , v_Title);
+                 });
 }
 
 
 
 function calcAllFileSize()
 {
-	var v_FileNoNames = ':AllFileNoNames'.split(",");
-	
-	for (var i=0; i<v_FileNoNames.length; i++)
-	{
-		calcFileSize(v_FileNoNames[i] ,false);
-	}
+    var v_FileNoNames = ':AllFileNoNames'.split(",");
+    
+    for (var i=0; i<v_FileNoNames.length; i++)
+    {
+        calcFileSize(v_FileNoNames[i] ,false);
+    }
 }
 
 
 
 function zipFileAction(i_FileName)
 {
-	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
-	executeAction(i_FileName 
-			     ,""
-			     ,""
-			     ,"ZIP"
-			     ,function (i_Ret)
-			     {
-					v_Loading.dialog("close");
-					if ( i_Ret.retCode == "0" )
-					{
-						f_Goto();
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						f_ShowMsg("消息" ,"未能成功压缩！" ,v_Height_Msg);
-					}
-					else if ( i_Ret.retCode == "2" )
-					{
-						f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
-					}
-					else if ( i_Ret.retCode == "3" )
-					{
-						f_ShowMsg("消息" ,"空目录无须压缩！" ,v_Height_Msg);
-					}
-			     });
+    var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
+    executeAction(i_FileName 
+                 ,""
+                 ,""
+                 ,"ZIP"
+                 ,function (i_Ret)
+                 {
+                    v_Loading.dialog("close");
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        f_Goto();
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        f_ShowMsg("消息" ,"未能成功压缩！" ,v_Height_Msg);
+                    }
+                    else if ( i_Ret.retCode == "2" )
+                    {
+                        f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
+                    }
+                    else if ( i_Ret.retCode == "3" )
+                    {
+                        f_ShowMsg("消息" ,"空目录无须压缩！" ,v_Height_Msg);
+                    }
+                 });
 }
 
 
 
 function zipFileByClusterAction(i_FileName ,i_HIP)
 {
-	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
-	executeAction(i_FileName 
-			     ,i_HIP
-			     ,""
-			     ,"ZIP-C"
-			     ,function (i_Ret)
-			     {
-					v_Loading.dialog("close");
-					if ( i_Ret.retCode == "0" )
-					{
-						f_Goto();
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						f_ShowMsg("消息" ,"以下服务器未能成功压缩！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
-					}
-			     });
+    var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
+    executeAction(i_FileName 
+                 ,i_HIP
+                 ,""
+                 ,"ZIP-C"
+                 ,function (i_Ret)
+                 {
+                    v_Loading.dialog("close");
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        f_Goto();
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        f_ShowMsg("消息" ,"以下服务器未能成功压缩！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
+                    }
+                 });
 }
 
 
 
 function zipFile(i_File)
 {
-	var v_FileNo   = i_File.split(":")[0];
-	var v_FileName = i_File.split(":")[1];
-	
-	if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
-	{
-		var v_Height     = 0;
-		var v_HIP        = $("#HIP_"  + v_FileNo).val();
-		var v_NoIP       = $("#NoIP_" + v_FileNo).val();
-		var v_HIP_Prompt = v_HIP;
-		if ( v_HIP_Prompt == "" )
-		{
-			v_Height     = v_Height_Msg;
-			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，确定压缩吗？"
-		}
-		else
-		{
-			v_Height     = v_Height_HIP;
-			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，确定压缩吗？<br><br>" 
-			             + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>")
-			             + "<br><br>以下是没有资源的服务<br>"
-			             + f_ReplaceAll(v_NoIP ,"," ,"<br>");
-		}
-		
-		f_OpenDialog("Dialog-Default" 
-				    ,"确认压缩资源吗？" 
-				    ,v_HIP_Prompt
-				    ,v_Height
-				    ,{
-			        	"本机压缩": function() 
-			        	{
-			        		$(this).dialog("close");
-			        		zipFileAction(v_FileName);
-			          	},
-			          	"集群压缩": function() 
-			          	{
-			          		$(this).dialog("close");
-			          		zipFileByClusterAction(v_FileName ,v_HIP);
-			          	},
-			          	"取　　消": function() 
-			          	{
-			            	$(this).dialog("close");
-			          	}
-	        		 });
-	}
-	else
-	{
-		f_OpenDialog("Dialog-Default" 
-				    ,"确认压缩资源吗？" 
-				    ,"<b>" + v_FileName + "</b><br>确定压缩吗？"
-				    ,v_Height_Msg
-				    ,{
-			        	"本机压缩": function() 
-			        	{
-			        		$(this).dialog("close");
-			        		zipFileAction(v_FileName);
-			          	},
-			          	"取　　消": function() 
-			          	{
-			            	$(this).dialog("close");
-			          	}
-	        		 });
-	}
+    var v_FileNo   = i_File.split(":")[0];
+    var v_FileName = i_File.split(":")[1];
+    
+    if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+    {
+        var v_Height     = 0;
+        var v_HIP        = $("#HIP_"  + v_FileNo).val();
+        var v_NoIP       = $("#NoIP_" + v_FileNo).val();
+        var v_HIP_Prompt = v_HIP;
+        if ( v_HIP_Prompt == "" )
+        {
+            v_Height     = v_Height_Msg;
+            v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，确定压缩吗？"
+        }
+        else
+        {
+            v_Height     = v_Height_HIP;
+            v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，确定压缩吗？<br><br>" 
+                         + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>")
+                         + "<br><br>以下是没有资源的服务<br>"
+                         + f_ReplaceAll(v_NoIP ,"," ,"<br>");
+        }
+        
+        f_OpenDialog("Dialog-Default" 
+                    ,"确认压缩资源吗？" 
+                    ,v_HIP_Prompt
+                    ,v_Height
+                    ,{
+                        "本机压缩": function() 
+                        {
+                            $(this).dialog("close");
+                            zipFileAction(v_FileName);
+                        },
+                        "集群压缩": function() 
+                        {
+                            $(this).dialog("close");
+                            zipFileByClusterAction(v_FileName ,v_HIP);
+                        },
+                        "取　　消": function() 
+                        {
+                            $(this).dialog("close");
+                        }
+                     });
+    }
+    else
+    {
+        f_OpenDialog("Dialog-Default" 
+                    ,"确认压缩资源吗？" 
+                    ,"<b>" + v_FileName + "</b><br>确定压缩吗？"
+                    ,v_Height_Msg
+                    ,{
+                        "本机压缩": function() 
+                        {
+                            $(this).dialog("close");
+                            zipFileAction(v_FileName);
+                        },
+                        "取　　消": function() 
+                        {
+                            $(this).dialog("close");
+                        }
+                     });
+    }
 }
 
 
 
 function unZipFileAction(i_FileName)
 {
-	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
-	executeAction(i_FileName 
-			     ,""
-			     ,""
-			     ,"UNZIP"
-			     ,function (i_Ret)
-			     {
-					v_Loading.dialog("close");
-					if ( i_Ret.retCode == "0" )
-					{
-						f_Goto();
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						f_ShowMsg("消息" ,"未能成功解压！" ,v_Height_Msg);
-					}
-					else if ( i_Ret.retCode == "2" )
-					{
-						f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
-					}
-			     });
+    var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
+    executeAction(i_FileName 
+                 ,""
+                 ,""
+                 ,"UNZIP"
+                 ,function (i_Ret)
+                 {
+                    v_Loading.dialog("close");
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        f_Goto();
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        f_ShowMsg("消息" ,"未能成功解压！" ,v_Height_Msg);
+                    }
+                    else if ( i_Ret.retCode == "2" )
+                    {
+                        f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
+                    }
+                 });
 }
 
 
 
 function unZipFileByClusterAction(i_FileName ,i_HIP)
 {
-	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
-	executeAction(i_FileName 
-			     ,i_HIP
-			     ,""
-			     ,"UNZIP-C"
-			     ,function (i_Ret)
-			     {
-					v_Loading.dialog("close");
-					if ( i_Ret.retCode == "0" )
-					{
-						f_Goto();
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						f_ShowMsg("消息" ,"以下服务器未能成功解压！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
-					}
-			     });
+    var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
+    executeAction(i_FileName 
+                 ,i_HIP
+                 ,""
+                 ,"UNZIP-C"
+                 ,function (i_Ret)
+                 {
+                    v_Loading.dialog("close");
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        f_Goto();
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        f_ShowMsg("消息" ,"以下服务器未能成功解压！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
+                    }
+                 });
 }
 
 
 
 function unZipFile(i_File)
 {
-	var v_FileNo   = i_File.split(":")[0];
-	var v_FileName = i_File.split(":")[1];
-	
-	if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
-	{
-		var v_Height     = 0;
-		var v_HIP        = $("#HIP_"  + v_FileNo).val();
-		var v_NoIP       = $("#NoIP_" + v_FileNo).val();
-		var v_HIP_Prompt = v_HIP;
-		if ( v_HIP_Prompt == "" )
-		{
-			v_Height     = v_Height_Msg;
-			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，解压会覆盖，确定解压吗？"
-		}
-		else
-		{
-			v_Height     = v_Height_HIP;
-			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，解压会覆盖，确定解压吗？<br><br>" 
-			             + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>")
-			             + "<br><br>以下是没有资源的服务<br>"
-			             + f_ReplaceAll(v_NoIP ,"," ,"<br>");
-		}
-		
-		f_OpenDialog("Dialog-Default" 
-				    ,"确认解压资源吗？" 
-				    ,v_HIP_Prompt
-				    ,v_Height
-				    ,{
-			        	"本机解压": function() 
-			        	{
-			        		$(this).dialog("close");
-			        		unZipFileAction(v_FileName);
-			          	},
-			          	"集群解压": function() 
-			          	{
-			          		$(this).dialog("close");
-			          		unZipFileByClusterAction(v_FileName ,v_HIP);
-			          	},
-			          	"取　　消": function() 
-			          	{
-			            	$(this).dialog("close");
-			          	}
-	        		 });
-	}
-	else
-	{
-		f_OpenDialog("Dialog-Default" 
-				    ,"确认解压资源吗？" 
-				    ,"<b>" + v_FileName + "</b><br>解压会覆盖，确定解压吗？"
-				    ,v_Height_Msg
-				    ,{
-			        	"本机解压": function() 
-			        	{
-			        		$(this).dialog("close");
-			        		unZipFileAction(v_FileName);
-			          	},
-			          	"取　　消": function() 
-			          	{
-			            	$(this).dialog("close");
-			          	}
-	        		 });
-	}
+    var v_FileNo   = i_File.split(":")[0];
+    var v_FileName = i_File.split(":")[1];
+    
+    if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+    {
+        var v_Height     = 0;
+        var v_HIP        = $("#HIP_"  + v_FileNo).val();
+        var v_NoIP       = $("#NoIP_" + v_FileNo).val();
+        var v_HIP_Prompt = v_HIP;
+        if ( v_HIP_Prompt == "" )
+        {
+            v_Height     = v_Height_Msg;
+            v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，解压会覆盖，确定解压吗？"
+        }
+        else
+        {
+            v_Height     = v_Height_HIP;
+            v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，解压会覆盖，确定解压吗？<br><br>" 
+                         + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>")
+                         + "<br><br>以下是没有资源的服务<br>"
+                         + f_ReplaceAll(v_NoIP ,"," ,"<br>");
+        }
+        
+        f_OpenDialog("Dialog-Default" 
+                    ,"确认解压资源吗？" 
+                    ,v_HIP_Prompt
+                    ,v_Height
+                    ,{
+                        "本机解压": function() 
+                        {
+                            $(this).dialog("close");
+                            unZipFileAction(v_FileName);
+                        },
+                        "集群解压": function() 
+                        {
+                            $(this).dialog("close");
+                            unZipFileByClusterAction(v_FileName ,v_HIP);
+                        },
+                        "取　　消": function() 
+                        {
+                            $(this).dialog("close");
+                        }
+                     });
+    }
+    else
+    {
+        f_OpenDialog("Dialog-Default" 
+                    ,"确认解压资源吗？" 
+                    ,"<b>" + v_FileName + "</b><br>解压会覆盖，确定解压吗？"
+                    ,v_Height_Msg
+                    ,{
+                        "本机解压": function() 
+                        {
+                            $(this).dialog("close");
+                            unZipFileAction(v_FileName);
+                        },
+                        "取　　消": function() 
+                        {
+                            $(this).dialog("close");
+                        }
+                     });
+    }
 }
 
 
 
 function delFileAction(i_FileName)
 {
-	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
-	executeAction(i_FileName 
-			     ,""
-			     ,""
-			     ,"DEL"
-			     ,function (i_Ret)
-			     {
-					v_Loading.dialog("close");
-					if ( i_Ret.retCode == "0" )
-					{
-						f_Goto();
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						f_ShowMsg("消息" ,"未能成功删除！" ,v_Height_Msg);
-					}
-					else if ( i_Ret.retCode == "2" )
-					{
-						f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
-					}
-			     });
+    var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
+    executeAction(i_FileName 
+                 ,""
+                 ,""
+                 ,"DEL"
+                 ,function (i_Ret)
+                 {
+                    v_Loading.dialog("close");
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        f_Goto();
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        f_ShowMsg("消息" ,"未能成功删除！" ,v_Height_Msg);
+                    }
+                    else if ( i_Ret.retCode == "2" )
+                    {
+                        f_ShowMsg("消息" ,"本服务不存在此资源！" ,v_Height_Msg);
+                    }
+                 });
 }
 
 
 
 function delFileByClusterAction(i_FileName ,i_HIP)
 {
-	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
-	executeAction(i_FileName 
-			     ,i_HIP
-			     ,""
-			     ,"DEL-C"
-			     ,function (i_Ret)
-			     {
-					v_Loading.dialog("close");
-					if ( i_Ret.retCode == "0" )
-					{
-						f_Goto();
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						f_ShowMsg("消息" ,"以下服务器未能成功删除！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
-					}
-			     });
+    var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
+    executeAction(i_FileName 
+                 ,i_HIP
+                 ,""
+                 ,"DEL-C"
+                 ,function (i_Ret)
+                 {
+                    v_Loading.dialog("close");
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        f_Goto();
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        f_ShowMsg("消息" ,"以下服务器未能成功删除！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
+                    }
+                 });
 }
 
 
 function delFile(i_File)
 {
-	var v_FileNo   = i_File.split(":")[0];
-	var v_FileName = i_File.split(":")[1];
-	
-	if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
-	{
-		var v_Height     = 0;
-		var v_HIP        = $("#HIP_" + v_FileNo).val();
-		var v_HIP_Prompt = v_HIP;
-		if ( v_HIP_Prompt == "" )
-		{
-			v_Height     = v_Height_Msg + 40;
-			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，删除将无法恢复。您确定吗？" + "<br><br>:SelectHIP";
-		}
-		else
-		{
-			v_Height     = v_Height_HIP;
-			v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，删除将无法恢复。您确定吗？<br><br>:SelectHIP<br><br>" + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>");
-		}
-		
-		f_OpenDialog("Dialog-Default" 
-				    ,"确认要删除资源吗？" 
-				    ,v_HIP_Prompt
-				    ,v_Height
-				    ,{
-			        	"本机删除": function() 
-			        	{
-			        		$(this).dialog("close");
-			        		delFileAction(v_FileName);
-			          	},
-			          	"集群删除": function() 
-			          	{
-			          		$(this).dialog("close");
-			          		delFileByClusterAction(v_FileName ,v_HIP);
-			          	},
-			          	"定向删除": function() 
-			        	{
-			          		if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
-			          		{
-				        		$(this).dialog("close");
-				        		delFileByClusterAction(v_FileName ,"!" + $("#SelectHIP").val());
-			        		}
-			          		else
-		          			{
-		          				alert("请选择定向操作的服务器");
-		          			}
-			          	},
-			          	"取　　消": function() 
-			          	{
-			            	$(this).dialog("close");
-			          	}
-	        		 });
-	}
-	else
-	{
-		f_OpenDialog("Dialog-Default" 
-				    ,"确认要删除资源吗？" 
-				    ,"<b>" + v_FileName + "</b><br>删除将无法恢复。您确定吗？"
-				    ,v_Height_Msg
-				    ,{
-			        	"本机删除": function() 
-			        	{
-			        		$(this).dialog("close");
-			        		delFileAction(v_FileName);
-			          	},
-			          	"取　　消": function() 
-			          	{
-			            	$(this).dialog("close");
-			          	}
-	        		 });
-	}
+    var v_FileNo   = i_File.split(":")[0];
+    var v_FileName = i_File.split(":")[1];
+    
+    if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+    {
+        var v_Height     = 0;
+        var v_HIP        = $("#HIP_" + v_FileNo).val();
+        var v_HIP_Prompt = v_HIP;
+        if ( v_HIP_Prompt == "" )
+        {
+            v_Height     = v_Height_Msg + 40;
+            v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于全部服务，删除将无法恢复。您确定吗？" + "<br><br>:SelectHIP";
+        }
+        else
+        {
+            v_Height     = v_Height_HIP;
+            v_HIP_Prompt = "<b>" + v_FileName + "</b><br>资源存在于以下服务，删除将无法恢复。您确定吗？<br><br>:SelectHIP<br><br>" + f_ReplaceAll(v_HIP_Prompt ,"," ,"<br>");
+        }
+        
+        f_OpenDialog("Dialog-Default" 
+                    ,"确认要删除资源吗？" 
+                    ,v_HIP_Prompt
+                    ,v_Height
+                    ,{
+                        "本机删除": function() 
+                        {
+                            $(this).dialog("close");
+                            delFileAction(v_FileName);
+                        },
+                        "集群删除": function() 
+                        {
+                            $(this).dialog("close");
+                            delFileByClusterAction(v_FileName ,v_HIP);
+                        },
+                        "定向删除": function() 
+                        {
+                            if ( $("#SelectHIP").val() != null && $("#SelectHIP").val() != "" )
+                            {
+                                $(this).dialog("close");
+                                delFileByClusterAction(v_FileName ,"!" + $("#SelectHIP").val());
+                            }
+                            else
+                            {
+                                alert("请选择定向操作的服务器");
+                            }
+                        },
+                        "取　　消": function() 
+                        {
+                            $(this).dialog("close");
+                        }
+                     });
+    }
+    else
+    {
+        f_OpenDialog("Dialog-Default" 
+                    ,"确认要删除资源吗？" 
+                    ,"<b>" + v_FileName + "</b><br>删除将无法恢复。您确定吗？"
+                    ,v_Height_Msg
+                    ,{
+                        "本机删除": function() 
+                        {
+                            $(this).dialog("close");
+                            delFileAction(v_FileName);
+                        },
+                        "取　　消": function() 
+                        {
+                            $(this).dialog("close");
+                        }
+                     });
+    }
 }
 
 
 
 function reloadAction(i_FileName ,i_IsCluster)
 {
-	var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
-	executeAction(i_FileName 
-			     ,i_IsCluster
-			     ,""
-			     ,"RELOAD"
-			     ,function (i_Ret)
-			     {
-					v_Loading.dialog("close");
-					if ( i_Ret.retCode == "0" )
-					{
-						f_ShowMsg("消息" ,"成功加载配置 <b>" + i_FileName + "</b>。" ,v_Height_Msg);
-					}
-					else if ( i_Ret.retCode == "1" )
-					{
-						f_ShowMsg("消息" ,"以下服务器未能成功加载配置！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
-					}
-					else if ( i_Ret.retCode == "2" )
-					{
-						f_ShowMsg("消息" ,"XJava不存在此xml配置资源！" ,v_Height_Msg);
-					}
-			     });
+    var v_Loading = f_ShowLoading("消息" ,"正在执行中，请耐心等待。" ,v_Height_Msg);
+    executeAction(i_FileName 
+                 ,i_IsCluster
+                 ,""
+                 ,"RELOAD"
+                 ,function (i_Ret)
+                 {
+                    v_Loading.dialog("close");
+                    if ( i_Ret.retCode == "0" )
+                    {
+                        f_ShowMsg("消息" ,"成功加载配置 <b>" + i_FileName + "</b>。" ,v_Height_Msg);
+                    }
+                    else if ( i_Ret.retCode == "1" )
+                    {
+                        f_ShowMsg("消息" ,"以下服务器未能成功加载配置！</b><br>" + f_ReplaceAll(i_Ret.retHIP ,"," ,"<br>") ,v_Height_HIP);
+                    }
+                    else if ( i_Ret.retCode == "2" )
+                    {
+                        f_ShowMsg("消息" ,"XJava不存在此xml配置资源！" ,v_Height_Msg);
+                    }
+                 });
 }
 
 
 
 function reload(i_File)
 {
-	var v_Prompt = "<b>" + i_File + "</b><br>资源将重新加载，您确定吗?";
-	
-	f_OpenDialog("Dialog-Default" 
-			    ,"确认重新加载资源吗？" 
-			    ,v_Prompt
-			    ,v_Height_Msg
-			    ,{
-		        	"本机加载": function()
-		        	{
-		        		$(this).dialog("close");
-		        		reloadAction(i_File ,"N");
-		          	},
-		          	"集群加载": function() 
-		          	{
-		          		$(this).dialog("close");
-		          		reloadAction(i_File ,"Y");
-		          	},
-		          	"取　　消": function() 
-		          	{
-		            	$(this).dialog("close");
-		          	}
-        		 });
+    var v_Prompt = "<b>" + i_File + "</b><br>资源将重新加载，您确定吗?";
+    
+    f_OpenDialog("Dialog-Default" 
+                ,"确认重新加载资源吗？" 
+                ,v_Prompt
+                ,v_Height_Msg
+                ,{
+                    "本机加载": function()
+                    {
+                        $(this).dialog("close");
+                        reloadAction(i_File ,"N");
+                    },
+                    "集群加载": function() 
+                    {
+                        $(this).dialog("close");
+                        reloadAction(i_File ,"Y");
+                    },
+                    "取　　消": function() 
+                    {
+                        $(this).dialog("close");
+                    }
+                 });
 }
 
 
 
 function f_ShowLoading(i_Title ,i_Msg ,i_Height)
 {
-	return f_OpenDialog("Dialog-Default"
-			    ,i_Title
-			    ,i_Msg
-			    ,i_Height
-			    ,{}
-			    );
+    return f_OpenDialog("Dialog-Default"
+                ,i_Title
+                ,i_Msg
+                ,i_Height
+                ,{}
+                );
 }
 
 
 
 function f_ShowMsg(i_Title ,i_Msg ,i_Height)
 {
-	return f_OpenDialog("Dialog-Default"
-			    ,i_Title
-			    ,i_Msg
-			    ,i_Height
-			    ,{
-			     	"确　　定": function() 
-			     	{
-			        	$(this).dialog("close");
-			     	}
-	    		 });
+    return f_OpenDialog("Dialog-Default"
+                ,i_Title
+                ,i_Msg
+                ,i_Height
+                ,{
+                    "确　　定": function() 
+                    {
+                        $(this).dialog("close");
+                    }
+                 });
 }
 
 
 
 function f_OpenDialog(i_DiaglogID ,i_Title ,i_Msg ,i_Height ,i_Buttons)
 {
-	$("#" + i_DiaglogID).attr("title" ,i_Title);
-	$("#" + i_DiaglogID + "-Msg").html(i_Msg);
-	$("#" + i_DiaglogID).dialog({
-	      resizable: false,
-	      height: i_Height,
-	      width: 500,
-	      modal: true,
-	      buttons: i_Buttons
-	});
-	
-	return $("#" + i_DiaglogID);
+    $("#" + i_DiaglogID).attr("title" ,i_Title);
+    $("#" + i_DiaglogID + "-Msg").html(i_Msg);
+    $("#" + i_DiaglogID).dialog({
+          resizable: false,
+          height: i_Height,
+          width: 500,
+          modal: true,
+          buttons: i_Buttons
+    });
+    
+    return $("#" + i_DiaglogID);
 }
 
 
 
 function f_ReplaceAll(i_Text ,i_Key ,i_ReplaceText)
 {
-	var v_RegExp = new RegExp(i_Key ,"g");
+    var v_RegExp = new RegExp(i_Key ,"g");
 
-	return i_Text.replace(v_RegExp ,i_ReplaceText);
+    return i_Text.replace(v_RegExp ,i_ReplaceText);
 }
 
 
 
 function f_Goto()
 {
-	if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
-	{
-		window.location.href = "analyseObject?FS=Y&cluster=Y&S=" + $("#S").val() + "&FP=" + $("#FP").val();
-	}
-	else
-	{
-		window.location.href = "analyseObject?FS=Y&S=" + $("#S").val() + "&FP=" + $("#FP").val();
-	}
+    if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+    {
+        window.location.href = "analyseObject?FS=Y&cluster=Y&S=" + $("#S").val() + "&FP=" + $("#FP").val();
+    }
+    else
+    {
+        window.location.href = "analyseObject?FS=Y&S=" + $("#S").val() + "&FP=" + $("#FP").val();
+    }
 }
 
 
@@ -1092,7 +1093,7 @@ $("#FP").bind("keypress" ,function(event)
 {  
     if ( event.keyCode == "13" )
     {
-    	f_Goto();
+        f_Goto();
     }
 });
 
@@ -1103,51 +1104,51 @@ $("#FP").select();
 
 $("#Title_FileName").click(function()
 {
-	$("#S").val("");
-	f_Goto();
+    $("#S").val("");
+    f_Goto();
 });
 
 
 
 $("#Title_LastTime").click(function()
 {
-	$("#S").val("1");
-	f_Goto();
+    $("#S").val("1");
+    f_Goto();
 });
 
 
 
 $("#Title_FileType").click(function()
 {
-	$("#S").val("2");
-	f_Goto();
+    $("#S").val("2");
+    f_Goto();
 });
 
 
 
 $("#Title_FileSize").click(function()
 {
-	$("#S").val("3");
-	f_Goto();
+    $("#S").val("3");
+    f_Goto();
 });
 
 
 
 if ( $("#S").val() == "1" )
 {
-	$("#Title_LastTime").html("↓" + $("#Title_LastTime").html());
+    $("#Title_LastTime").html("↓" + $("#Title_LastTime").html());
 }
 else if ( $("#S").val() == "2" )
 {
-	$("#Title_FileType").html("↓" + $("#Title_FileType").html());
+    $("#Title_FileType").html("↓" + $("#Title_FileType").html());
 }
 else if ( $("#S").val() == "3" )
 {
-	$("#Title_FileSize").html("↓" + $("#Title_FileSize").html());
+    $("#Title_FileSize").html("↓" + $("#Title_FileSize").html());
 }
 else
 {
-	$("#Title_FileName").html("↓" + $("#Title_FileName").html());
+    $("#Title_FileName").html("↓" + $("#Title_FileName").html());
 }
 
 
@@ -1155,11 +1156,11 @@ else
 $(".userInfoModify_clearTag1")
 .mouseover(function()
 {
-	$(this).children("div").css("background-color" ,"#D5DDF6");	
+    $(this).children("div").css("background-color" ,"#D5DDF6"); 
 })
 .mouseout(function()
 {
-	$(this).children("div").css("background-color" ,"white");	
+    $(this).children("div").css("background-color" ,"white");   
 });
 </script>
 
