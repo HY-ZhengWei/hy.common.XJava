@@ -103,6 +103,10 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *                                      日志引擎的监控，添加“业务用时”的统计。建议人：李浩
  *                                      日志引擎的监控，估算方法的运行状态，是否在运行中。方案：李浩
  *                                      日志引擎的监控，定时刷新监控页面。建议人：李浩
+ *              v22.2 2020-06-21  添加：集群监控的定时刷新
+ *                                      定时任务的定时刷新
+ *                                      XSQL监控的定时刷新
+ *                                      XSQL组监控的定时刷新
  *                                      
  */
 @Xjava
@@ -623,15 +627,17 @@ public class AnalyseBase extends Analyse
      * @author      ZhengWei(HY)
      * @createDate  2016-02-15
      * @version     v1.0
+     *              v2.0  2020-06-21  添加：定时刷新页面的功能
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
      * @param  i_Cluster         是否为集群
      * @param  i_SortType        排序类型
      * @param  i_IsAll           是否显示所有XSQL组对象（解决：当对象十分庞大时，页面显示缓慢）
+     * @param  i_Timer           定时刷新的时长（单位：毫秒）
      * @return
      */
-    public String analyseDBGroup(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType ,boolean i_IsAll)
+    public String analyseDBGroup(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType ,boolean i_IsAll ,String i_Timer)
     {
         StringBuilder       v_Buffer       = new StringBuilder();
         int                 v_Index        = 0;
@@ -838,8 +844,8 @@ public class AnalyseBase extends Analyse
         v_XSQLIDList = null;
         
         return StringHelp.replaceAll(this.getTemplateShowXSQLGroup()
-                                    ,new String[]{":NameTitle"    ,":GotoTitle" ,":Title"                    ,":HttpBasePath" ,":cluster"             ,":Sort"    ,":IsGroup" ,":scope" ,":Content"}
-                                    ,new String[]{"组合SQL访问标识" ,v_Goto       ,"数据库组合SQL访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"Y"   ,(i_IsAll?"Y":"N")  ,v_Buffer.toString()});
+                                    ,new String[]{":NameTitle"    ,":GotoTitle" ,":Title"                            ,":HttpBasePath" ,":cluster"             ,":Sort"    ,":IsGroup" ,":scope"          ,":Timer" ,":Content"}
+                                    ,new String[]{"组合SQL访问标识" ,v_Goto       ,"数据库组合SQL访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"Y"        ,(i_IsAll?"Y":"N") ,i_Timer  ,v_Buffer.toString()});
     }
     
     
@@ -852,15 +858,17 @@ public class AnalyseBase extends Analyse
      * @version     v1.0
      *              v2.0  2019-05-29  添加：显示XSQL拥有的应用级触发器的个数
      *                                删除：不再显示触发器的请求量、成功量、失败量。因为，触发器将独立成为一行统计数据来显示。
+     *              v3.0  2020-06-21  添加：定时刷新页面的功能
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
      * @param  i_Cluster         是否为集群
      * @param  i_SortType        排序类型
      * @param  i_IsAll           是否显示所有XSQL组对象（解决：当对象十分庞大时，页面显示缓慢）
+     * @param  i_Timer           定时刷新的时长（单位：毫秒）
      * @return
      */
-    public String analyseDB(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType ,boolean i_IsAll)
+    public String analyseDB(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType ,boolean i_IsAll ,String i_Timer)
     {
         Map<String ,Object> v_XSQLs           = XJava.getObjects(XSQL.class);
         StringBuilder       v_Buffer          = new StringBuilder();
@@ -1130,8 +1138,8 @@ public class AnalyseBase extends Analyse
         v_XSQLs = null;
         
         return StringHelp.replaceAll(this.getTemplateShowXSQL()
-                                    ,new String[]{":NameTitle" ,":GotoTitle" ,":Title"              ,":HttpBasePath" ,":cluster"            ,":Sort"     ,":IsGroup" ,":scope" ,":Content"}
-                                    ,new String[]{"SQL访问标识" ,v_Goto       ,"数据库访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"N"  ,(i_IsAll?"Y":"N") ,v_Buffer.toString()});
+                                    ,new String[]{":NameTitle" ,":GotoTitle" ,":Title"                   ,":HttpBasePath"  ,":cluster"            ,":Sort"    ,":IsGroup" ,":scope"          ,":Timer" ,":Content"}
+                                    ,new String[]{"SQL访问标识" ,v_Goto       ,"数据库访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"N"        ,(i_IsAll?"Y":"N") ,i_Timer ,v_Buffer.toString()});
     }
     
     
@@ -2547,13 +2555,15 @@ public class AnalyseBase extends Analyse
      * @author      ZhengWei(HY)
      * @createDate  2017-01-18
      * @version     v1.0
+     *              v2.0  2020-06-21  添加：定时刷新页面的功能
      *
      * @param  i_BasePath       服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ReLoadPath     重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject
      * @param  i_IsShowSysTime  是否显示服务的当前系统时间
+     * @param  i_Timer          定时刷新的时长（单位：毫秒）
      * @return
      */
-    public String analyseCluster(String i_BasePath ,String i_ReLoadPath ,boolean i_IsShowSysTime)
+    public String analyseCluster(String i_BasePath ,String i_ReLoadPath ,boolean i_IsShowSysTime ,String i_Timer)
     {
         List<ClientSocket>   v_Servers      = Cluster.getClusters();
         StringBuilder        v_Buffer       = new StringBuilder();
@@ -2738,8 +2748,8 @@ public class AnalyseBase extends Analyse
         }
         
         return StringHelp.replaceAll(this.getTemplateShowCluster()
-                                    ,new String[]{":Title"     ,":Column01Title" ,":StartTimeTitle" ,":HttpBasePath" ,":Content"}
-                                    ,new String[]{"集群服务列表" ,"集群服务"        ,v_StartTimeTitle  ,i_BasePath      ,v_Buffer.toString()});
+                                    ,new String[]{":Title"     ,":Column01Title" ,":StartTimeTitle" ,":HttpBasePath" ,":Timer" ,":Content"}
+                                    ,new String[]{"集群服务列表" ,"集群服务"        ,v_StartTimeTitle  ,i_BasePath  ,i_Timer  ,v_Buffer.toString()});
     }
     
     
@@ -2901,13 +2911,15 @@ public class AnalyseBase extends Analyse
      * @author      ZhengWei(HY)
      * @createDate  2018-02-28
      * @version     v1.0
+     *              v2.0  2020-06-21  添加：定时刷新页面的功能
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?Job=Y
      * @param  i_Cluster         是否为集群
+     * @param  i_Timer           定时刷新的时长（单位：毫秒）
      * @return
      */
-    public String analyseJob(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster)
+    public String analyseJob(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_Timer)
     {
         StringBuilder   v_Buffer  = new StringBuilder();
         int             v_Index   = 0;
@@ -2994,8 +3006,8 @@ public class AnalyseBase extends Analyse
         v_Total.setReports(null);
         
         return StringHelp.replaceAll(this.getTemplateShowJob()
-                                    ,new String[]{":GotoTitle" ,":Title"         ,":HttpBasePath" ,":Content"}
-                                    ,new String[]{v_GotoTitle  ,"定时任务运行情况" ,i_BasePath      ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle" ,":Title"         ,":HttpBasePath" ,":Timer" ,":Content"}
+                                    ,new String[]{v_GotoTitle  ,"定时任务运行情况" ,i_BasePath   ,i_Timer  ,v_Buffer.toString()});
     }
     
     

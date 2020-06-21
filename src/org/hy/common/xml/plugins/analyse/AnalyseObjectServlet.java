@@ -278,7 +278,8 @@ public class AnalyseObjectServlet extends HttpServlet
             }
             else if ( !Help.isNull(v_Job) )
             {
-                i_Response.getWriter().println(this.analyse.analyseJob(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
+                String v_Timer = Help.NVL(i_Request.getParameter("Timer"));
+                i_Response.getWriter().println(this.analyse.analyseJob(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_Timer));
             }
             else if ( !Help.isNull(v_JobDRs) )
             {
@@ -308,8 +309,9 @@ public class AnalyseObjectServlet extends HttpServlet
             else if ( Help.isNull(v_XFile) && "Y".equalsIgnoreCase(v_Cluster) )
             {
                 String v_SysTime = i_Request.getParameter("SysTime");
+                String v_Timer   = Help.NVL(i_Request.getParameter("Timer"));
                 
-                i_Response.getWriter().println(this.analyse.analyseCluster(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_SysTime)));
+                i_Response.getWriter().println(this.analyse.analyseCluster(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_SysTime) ,v_Timer));
             }
             else
             {

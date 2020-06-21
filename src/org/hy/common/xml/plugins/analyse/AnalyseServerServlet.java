@@ -42,6 +42,7 @@ import org.hy.common.Help;
  *                                添加：查看集群数据库组合SQL访问量的概要统计数据 
  *                                添加：查看集群查看XSQL对象执行错误的SQL语句
  *              v4.0  2019-03-20  添加：数据显示范围参数Scope，解决：当对象十分庞大时，页面显示缓慢的问题
+ *              v5.0  2020-06-20  添加：页面定时刷新功能
  */
 public class AnalyseServerServlet extends HttpServlet
 {
@@ -71,6 +72,7 @@ public class AnalyseServerServlet extends HttpServlet
         String v_Cluster = i_Request.getParameter("cluster");
         String v_Sort    = Help.NVL(i_Request.getParameter("S"));
         String v_Scope   = Help.NVL(i_Request.getParameter("scope"));
+        String v_Timer   = Help.NVL(i_Request.getParameter("Timer"));
         
         if ( !Help.isNull(v_XSQLXID) )
         {
@@ -78,11 +80,11 @@ public class AnalyseServerServlet extends HttpServlet
         }
         else if ( "GROUP".equalsIgnoreCase(v_Type) )
         {
-            i_Response.getWriter().println(this.analyse.analyseDBGroup (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_Sort ,"Y".equalsIgnoreCase(v_Scope)));
+            i_Response.getWriter().println(this.analyse.analyseDBGroup (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_Sort ,"Y".equalsIgnoreCase(v_Scope) ,v_Timer));
         }
         else
         {
-            i_Response.getWriter().println(this.analyse.analyseDB      (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_Sort ,"Y".equalsIgnoreCase(v_Scope)));
+            i_Response.getWriter().println(this.analyse.analyseDB      (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_Sort ,"Y".equalsIgnoreCase(v_Scope) ,v_Timer));
         }
     }
     

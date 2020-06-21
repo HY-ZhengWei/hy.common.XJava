@@ -4,9 +4,26 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>:Title</title>
 <style type="text/css"> 
-html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
-.userInfoModify_logininfobody{ width:100%;height:100%;overflow-y:scroll;overflow-x:auto;}
-.userInfoModify_logininfo{ width:1300px;margin:0 auto;}
+
+html,body {
+    margin: 0px;
+    width: 100%;
+}
+
+.userInfoModify_logininfobody { 
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.userInfoModify_logininfo { 
+    width: 1300px;
+    margin:0 auto;
+    position: fixed;
+    top: 0px;
+}
+
 .userInfoModify_logininfo1{ width:1300px;margin:0 auto; }
 .userInfoModify_labeTag,.userInfoModify_ServerName_Title,.userInfoModify_OsCPURate_Title,.userInfoModify_OsMemoryRate_Title,.userInfoModify_OsDiskMaxRate_Title,.userInfoModify_JavaVersion_Title,.userInfoModify_MaxMemory_Title,.userInfoModify_TotalMemory_Title,.userInfoModify_FreeMemory_Title,.userInfoModify_ThreadCount_Title,.userInfoModify_QueueCount_Title,.userInfoModify_StartTime_Title,.userInfoModify_ServerStatus_Title{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px; background-color:#D5DDF6;}
 .userInfoModify_labeTag1,.userInfoModify_ServerName,.userInfoModify_OsCPURate,.userInfoModify_OsMemoryRate,.userInfoModify_OsDiskMaxRate,.userInfoModify_JavaVersion,.userInfoModify_MaxMemory,.userInfoModify_TotalMemory,.userInfoModify_FreeMemory,.userInfoModify_ThreadCount,.userInfoModify_QueueCount,.userInfoModify_StartTime,.userInfoModify_ServerStatus{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
@@ -72,69 +89,196 @@ html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
 
 a{ color:#669900; text-decoration:none; outline:none;}
 a:hover{color:#99CC00;text-decoration:none;}
+
+.rightMenuBar {
+    position: fixed;
+    top: 36%;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.rightMenu {
+    width: 40px;
+    height: 40px;
+    background-color: #666666;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999990;
+    margin-bottom: 6px;
+}
+
+.rightMenuIcon {
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.rightMenuIsAutoRefresh {
+}
+
+.rightMenuToTop {
+}
 </style>
 
 <script type="text/javascript" src=":HttpBasePath/jquery/jquery.min.js"></script>
+<script type="text/javascript" src=":HttpBasePath/d3/d3.min.js"></script>
 
 </head>
 <body> 
-        
-       <div class="userInfoModify_logininfobody" >
-          <div class="userInfoModify_logininfo" /> 
-          <div class="userInfoModify_clearTag">
-                <div class="userInfoModify_labeTag">编号</div>
-                <div class="userInfoModify_ServerName_Title">:Column01Title</div>
-                <div class="userInfoModify_OsCPURate_Title">CPU占比%</div>
-                <div class="userInfoModify_OsMemoryRate_Title">物理内存%</div>
-                <div class="userInfoModify_OsDiskMaxRate_Title">磁盘Max%</div>
-                <div class="userInfoModify_JavaVersion_Title">JDK版本</div>
-                <div class="userInfoModify_MaxMemory_Title">JVM内存上限</div>
-                <div class="userInfoModify_TotalMemory_Title">JVM内存总量</div>
-                <div class="userInfoModify_FreeMemory_Title">JVM空闲内存</div>
-                <div class="userInfoModify_ThreadCount_Title">线程总量</div>
-                <div class="userInfoModify_QueueCount_Title">队列任务</div>
-                <div class="userInfoModify_StartTime_Title">:StartTimeTitle</div>
-                <div class="userInfoModify_ServerStatus_Title">状态</div>
-          </div> 
-         
-       </div> 
-       
-        <div id="info_fill" class="userInfoModify_logininfo1"> 
-        
-            <div class="userInfoModify_clearTag1">
-                <div class="userInfoModify_labeTag2"></div>
-                <div class="userInfoModify_ServerName_Other"></div>
-                <div class="userInfoModify_OsCPURate_Other"></div>
-                <div class="userInfoModify_OsMemoryRate_Other"></div>
-                <div class="userInfoModify_OsDiskMaxRate_Other"></div>
-                <div class="userInfoModify_JavaVersion_Other"></div>
-                <div class="userInfoModify_MaxMemory_Other"></div>
-                <div class="userInfoModify_TotalMemory_Other"></div>
-                <div class="userInfoModify_FreeMemory_Other"></div>
-                <div class="userInfoModify_ThreadCount_Other"></div>
-                <div class="userInfoModify_QueueCount_Other"></div>
-                <div class="userInfoModify_StartTime_Other"></div>
-                <div class="userInfoModify_ServerStatus_Other"></div>
-            </div> 
-        
-            :Content 
-            
-            <div class="userInfoModify_clearTag1">
-                <div class="userInfoModify_labeTag2"></div>
-                <div class="userInfoModify_ServerName_Other"></div>
-                <div class="userInfoModify_OsCPURate_Other"></div>
-                <div class="userInfoModify_OsMemoryRate_Other"></div>
-                <div class="userInfoModify_OsDiskMaxRate_Other"></div>
-                <div class="userInfoModify_JavaVersion_Other"></div>
-                <div class="userInfoModify_MaxMemory_Other"></div>
-                <div class="userInfoModify_TotalMemory_Other"></div>
-                <div class="userInfoModify_FreeMemory_Other"></div>
-                <div class="userInfoModify_ThreadCount_Other"></div>
-                <div class="userInfoModify_QueueCount_Other"></div>
-                <div class="userInfoModify_StartTime_Other"></div>
-                <div class="userInfoModify_ServerStatus_Other"></div>
-            </div> 
+
+    <!-- 右侧浮动菜单 -->
+    <div class="rightMenuBar">
+        <div class="rightMenu" id="menuIsAutoRefresh">
+            <div class="rightMenuIcon rightMenuIsAutoRefresh" data-toggle="tooltip" data-placement="center" title="自动刷新">R</div>
         </div>
+        
+        <div class="rightMenu" id="menuToTop">
+            <div class="rightMenuIcon rightMenuToTop"         data-toggle="tooltip" data-placement="center" title="置顶">Top</div>
+        </div>
+    </div>
+    
+    <input type="hidden" id="Timer" name="Timer" value=":Timer" />
+        
+    <div class="userInfoModify_logininfobody" >
+       <div class="userInfoModify_logininfo" /> 
+       <div class="userInfoModify_clearTag">
+             <div class="userInfoModify_labeTag">编号</div>
+             <div class="userInfoModify_ServerName_Title">:Column01Title</div>
+             <div class="userInfoModify_OsCPURate_Title">CPU占比%</div>
+             <div class="userInfoModify_OsMemoryRate_Title">物理内存%</div>
+             <div class="userInfoModify_OsDiskMaxRate_Title">磁盘Max%</div>
+             <div class="userInfoModify_JavaVersion_Title">JDK版本</div>
+             <div class="userInfoModify_MaxMemory_Title">JVM内存上限</div>
+             <div class="userInfoModify_TotalMemory_Title">JVM内存总量</div>
+             <div class="userInfoModify_FreeMemory_Title">JVM空闲内存</div>
+             <div class="userInfoModify_ThreadCount_Title">线程总量</div>
+             <div class="userInfoModify_QueueCount_Title">队列任务</div>
+             <div class="userInfoModify_StartTime_Title">:StartTimeTitle</div>
+             <div class="userInfoModify_ServerStatus_Title">状态</div>
+       </div> 
+      
+    </div> 
+
+
+    
+<script language="javascript" type="text/javascript">
+function f_Goto()
+{
+    var v_Timestamp = new Date().getTime();
+    
+    window.location.href = "analyseObject?cluster=Y&Timer=" + $("#Timer").val() + "&r=" + v_Timestamp;
+}
+
+
+
+$(window).bind("scroll" ,function()
+{
+    if ( $(document).scrollTop() <= 0 )
+    {
+        d3.select("#menuToTop").style("visibility" ,"hidden");
+    } 
+    else
+    {
+        d3.select("#menuToTop").style("visibility" ,"visible");
+    }
+});
+d3.select("#menuToTop").style("visibility" ,"hidden");
+
+
+
+d3.selectAll(".rightMenu")
+.on("mouseover" ,function()
+{
+    d3.select(this).style("background-color" ,"#FEBB08");
+})
+.on("mouseout" ,function()
+{
+    d3.select(this).style("background-color" ,"#666666");
+});
+
+
+
+d3.select("#menuToTop")
+.on("click" ,function()
+{
+    $("html,body").animate({scrollTop:0} ,500);
+});
+
+
+
+$("#menuIsAutoRefresh").click(function()
+{   
+    if ( $("#Timer").val() == "" )
+    {
+        $("#Timer").val("5000");
+        d3.select("#menuIsAutoRefresh").select("div").html("Stop");
+        setTimeout(f_Goto ,$("#Timer").val());
+    }
+    else
+    {
+        $("#Timer").val("");
+        d3.select("#menuIsAutoRefresh").select("div").html("R");
+    }
+});
+
+
+
+if ( $("#Timer").val() == "" )
+{
+    d3.select("#menuIsAutoRefresh").select("div").html("R");
+}
+else
+{
+    d3.select("#menuIsAutoRefresh").select("div").html("Stop");
+    setTimeout(f_Goto ,$("#Timer").val());
+}
+</script>
+
+
+    
+     <div id="info_fill" class="userInfoModify_logininfo1"> 
+     
+         <div class="userInfoModify_clearTag1">
+             <div class="userInfoModify_labeTag2"></div>
+             <div class="userInfoModify_ServerName_Other"></div>
+             <div class="userInfoModify_OsCPURate_Other"></div>
+             <div class="userInfoModify_OsMemoryRate_Other"></div>
+             <div class="userInfoModify_OsDiskMaxRate_Other"></div>
+             <div class="userInfoModify_JavaVersion_Other"></div>
+             <div class="userInfoModify_MaxMemory_Other"></div>
+             <div class="userInfoModify_TotalMemory_Other"></div>
+             <div class="userInfoModify_FreeMemory_Other"></div>
+             <div class="userInfoModify_ThreadCount_Other"></div>
+             <div class="userInfoModify_QueueCount_Other"></div>
+             <div class="userInfoModify_StartTime_Other"></div>
+             <div class="userInfoModify_ServerStatus_Other"></div>
+         </div> 
+     
+         :Content 
+         
+         <div class="userInfoModify_clearTag1">
+             <div class="userInfoModify_labeTag2"></div>
+             <div class="userInfoModify_ServerName_Other"></div>
+             <div class="userInfoModify_OsCPURate_Other"></div>
+             <div class="userInfoModify_OsMemoryRate_Other"></div>
+             <div class="userInfoModify_OsDiskMaxRate_Other"></div>
+             <div class="userInfoModify_JavaVersion_Other"></div>
+             <div class="userInfoModify_MaxMemory_Other"></div>
+             <div class="userInfoModify_TotalMemory_Other"></div>
+             <div class="userInfoModify_FreeMemory_Other"></div>
+             <div class="userInfoModify_ThreadCount_Other"></div>
+             <div class="userInfoModify_QueueCount_Other"></div>
+             <div class="userInfoModify_StartTime_Other"></div>
+             <div class="userInfoModify_ServerStatus_Other"></div>
+         </div> 
+     </div>
        
 </body>
 </html>

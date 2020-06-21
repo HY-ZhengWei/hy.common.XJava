@@ -4,9 +4,26 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>:Title</title>
 <style type="text/css"> 
-html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
-.userInfoModify_logininfobody { width:100%;height:100%;overflow-y:scroll;overflow-x:auto;}
-.userInfoModify_logininfo { width:1550px;margin:0 auto; }
+
+html,body {
+    margin: 0px;
+    width: 100%;
+}
+
+.userInfoModify_logininfobody { 
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.userInfoModify_logininfo { 
+    width: 1550px;
+    margin:0 auto;
+    position: fixed;
+    top: 0px;
+}
+
 .userInfoModify_logininfo1{ width:1550px;margin:0 auto; margin-top:28px;}
 .userInfoModify_labeTag  ,.userInfoModify_ClassName_Title ,.userInfoModify_MethodName_Title ,.userInfoModify_LineNumber_Title ,.userInfoModify_LogLevel_Title ,.userInfoModify_TotalCount_Title ,.userInfoModify_RequestCount_Title ,.userInfoModify_ErrorFatalCount_Title ,.userInfoModify_IsRunning_Title ,.userInfoModify_ExecSumTime_Title ,.userInfoModify_ExecAvgTime_Title ,.userInfoModify_LastTime_Title {float:left; height:30px; line-height:30px; font-weight:bold; font-family:"微软雅黑"; font-size:14px; background-color:#D5DDF6;}
 .userInfoModify_labeTag1 ,.userInfoModify_ClassName       ,.userInfoModify_MethodName       ,.userInfoModify_LineNumber       ,.userInfoModify_LogLevel       ,.userInfoModify_TotalCount       ,.userInfoModify_RequestCount       ,.userInfoModify_ErrorFatalCount       ,.userInfoModify_IsRunning       ,.userInfoModify_ExecSumTime       ,.userInfoModify_ExecAvgTime       ,.userInfoModify_LastTime       {float:left; height:30px; line-height:30px;                   font-family:"微软雅黑"; font-size:12px;}
@@ -79,20 +96,59 @@ a:hover{color:#99CC00;text-decoration:none;}
     width:256px;
 }
 
-#IsAutoRefresh {
-    font-size: 12px;
-    font-family: "宋体" Arial, Helvetica, sans-serif;
+.rightMenuBar {
+    position: fixed;
+    top: 36%;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.rightMenu {
+    width: 40px;
+    height: 40px;
+    background-color: #666666;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999990;
+    margin-bottom: 6px;
+}
+
+.rightMenuIcon {
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.rightMenuIsAutoRefresh {
+}
+
+.rightMenuToTop {
 }
 </style>
 
 <script type="text/javascript" src=":HttpBasePath/jquery/jquery.min.js"></script>
-<script type="text/javascript" src=":HttpBasePath/jquery/jquery-ui.min.js"></script>
 <script type="text/javascript" src=":HttpBasePath/d3/d3.min.js"></script>
-
-<link rel="stylesheet" href=":HttpBasePath/jquery/jquery-ui.min.css" />
 
 </head>
 <body> 
+
+    <!-- 右侧浮动菜单 -->
+    <div class="rightMenuBar">
+        <div class="rightMenu" id="menuIsAutoRefresh">
+            <div class="rightMenuIcon rightMenuIsAutoRefresh" data-toggle="tooltip" data-placement="center" title="自动刷新">R</div>
+        </div>
+        
+        <div class="rightMenu" id="menuToTop">
+            <div class="rightMenuIcon rightMenuToTop"         data-toggle="tooltip" data-placement="center" title="置顶">Top</div>
+        </div>
+    </div>
         
     <input type="hidden" id="cluster" name="cluster" value=":Cluster" />
     <input type="hidden" id="S"       name="S"       value=":Sort" />
@@ -103,8 +159,7 @@ a:hover{color:#99CC00;text-decoration:none;}
        <div class="userInfoModify_logininfo" /> 
        <div class="userInfoModify_clearTag">
              <div>
-               <input type="text" id="FilterClassName" name="FilterClassName" value=":FilterClassName" class="input-text" style="width:1418px;" title="类名称的模糊过滤条件（不区分大小写）" />
-               <button class="ui-button ui-widget ui-corner-all" id="IsAutoRefresh" style="width:120px; height:28px">开启自动刷新</button>
+                 <input type="text" id="FilterClassName" name="FilterClassName" value=":FilterClassName" class="input-text" style="width:1542px;" placeholder="类名称的模糊过滤条件（不区分大小写）" />
              </div>
        
              <div class="userInfoModify_labeTag">编号</div>
@@ -127,7 +182,7 @@ a:hover{color:#99CC00;text-decoration:none;}
 
 function f_Goto()
 {
-    var v_Timestamp = new Date(). getTime();
+    var v_Timestamp = new Date().getTime();
     
     if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
     {
@@ -141,18 +196,53 @@ function f_Goto()
 
 
 
-$("#IsAutoRefresh").click(function()
+$(window).bind("scroll" ,function()
+{
+    if ( $(document).scrollTop() <= 0 )
+    {
+        d3.select("#menuToTop").style("visibility" ,"hidden");
+    } 
+    else
+    {
+        d3.select("#menuToTop").style("visibility" ,"visible");
+    }
+});
+d3.select("#menuToTop").style("visibility" ,"hidden");
+
+
+
+d3.selectAll(".rightMenu")
+.on("mouseover" ,function()
+{
+    d3.select(this).style("background-color" ,"#FEBB08");
+})
+.on("mouseout" ,function()
+{
+    d3.select(this).style("background-color" ,"#666666");
+});
+
+
+
+d3.select("#menuToTop")
+.on("click" ,function()
+{
+    $("html,body").animate({scrollTop:0} ,500);
+});
+
+
+
+$("#menuIsAutoRefresh").click(function()
 {   
     if ( $("#Timer").val() == "" )
     {
         $("#Timer").val("5000");
-        $("#IsAutoRefresh").html("暂停刷新");
+        d3.select("#menuIsAutoRefresh").select("div").html("Stop");
         setTimeout(f_Goto ,$("#Timer").val());
     }
     else
     {
         $("#Timer").val("");
-        $("#IsAutoRefresh").html("开启自动刷新");
+        d3.select("#menuIsAutoRefresh").select("div").html("R");
     }
 });
 
@@ -160,12 +250,12 @@ $("#IsAutoRefresh").click(function()
 
 if ( $("#Timer").val() == "" )
 {
-    $("#IsAutoRefresh").html("开启自动刷新");
+    d3.select("#menuIsAutoRefresh").select("div").html("R");
 }
 else
 {
-   $("#IsAutoRefresh").html("暂停刷新");
-   setTimeout(f_Goto ,$("#Timer").val());
+    d3.select("#menuIsAutoRefresh").select("div").html("Stop");
+    setTimeout(f_Goto ,$("#Timer").val());
 }
 
 
