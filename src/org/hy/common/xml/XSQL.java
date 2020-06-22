@@ -7795,28 +7795,30 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     {
         $SQLBusway.put(new XSQLLog(i_SQL));
         
+        StringBuilder v_Buffer = new StringBuilder();
         if ( !Help.isNull(this.xjavaID) )
         {
+            v_Buffer.append(this.xjavaID);
+            
             if ( !Help.isNull(this.comment) )
             {
-                $Logger.debug(this.xjavaID + " : " + this.comment + "\n" + i_SQL);
+                v_Buffer.append(" : ").append(this.comment).append("\n");
             }
             else
             {
-                $Logger.debug(this.xjavaID + "\n" + i_SQL);
+                v_Buffer.append("\n");
             }
         }
         else
         {
             if ( !Help.isNull(this.comment) )
             {
-                $Logger.debug(this.comment + "\n" + i_SQL);
-            }
-            else
-            {
-                $Logger.debug(i_SQL);
+                v_Buffer.append(this.comment).append("\n");
             }
         }
+        
+        v_Buffer.append(i_SQL);
+        $Logger.debug(v_Buffer.toString());
     }
     
     
