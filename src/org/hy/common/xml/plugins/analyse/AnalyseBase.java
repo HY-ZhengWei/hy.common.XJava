@@ -3340,9 +3340,13 @@ public class AnalyseBase extends Analyse
                                     }
                                     else
                                     {
-                                        v_TR.setErrorFatalCount(  v_TR.getErrorFatalCount() + v_Report.getErrorFatalCount());
-                                        v_TR.setRequestCount(     v_TR.getRequestCount()    + v_Report.getRequestCount());
-                                        v_TR.setLastTime(Math.max(v_TR.getLastTime()         ,v_Report.getLastTime()));
+                                        v_TR.setCount(       Math.max(v_TR.getCount()            ,v_Report.getCount()));
+                                        v_TR.setCountNoError(Math.max(v_TR.getCountNoError()     ,v_Report.getCountNoError()));
+                                        v_TR.setRequestCount(         v_TR.getRequestCount()    + v_Report.getRequestCount());
+                                        v_TR.setErrorFatalCount(      v_TR.getErrorFatalCount() + v_Report.getErrorFatalCount());
+                                        v_TR.setLastTime(    Math.max(v_TR.getLastTime()         ,v_Report.getLastTime()));
+                                        v_TR.setExecSumTime(          v_TR.getExecSumTime()     + v_Report.getExecSumTime());
+                                        v_TR.setExecAvgTime(AnalyseLoggerTotal.calcExecAvgTime(v_TR));
                                     }
                                     
                                     if ( v_Report.getErrorFatalCount() > 0L )
@@ -3446,7 +3450,6 @@ public class AnalyseBase extends Analyse
             v_SumExecSumTime     += v_Report.getExecSumTime();
         }
         
-        
         // 合计
         Map<String ,String> v_RKey = new HashMap<String ,String>();
         
@@ -3460,7 +3463,7 @@ public class AnalyseBase extends Analyse
         v_RKey.put(":ErrorFatalCount" ,"<span style='color:" + (v_SumErrorFatalCount >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_SumErrorFatalCount + "</span>");
         v_RKey.put(":IsRunning"       ,"-");
         v_RKey.put(":ExecSumTime"     ,"<span style='color:" + (v_SumExecSumTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Date.toTimeLen(v_SumExecSumTime) : "-") + "</span>");
-        v_RKey.put(":ExecAvgTime"     ,"<span style='color:" + (v_SumExecSumTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Help.round(Help.division(v_SumExecSumTime ,v_SumRequestCount) ,2) : "-") + "</span>");
+        v_RKey.put(":ExecAvgTime"     ,"<span style='color:" + (v_SumExecSumTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Help.round(Help.division(v_SumExecSumTime ,Help.division(v_SumRequestCount , v_SumTotalCount)) ,2) : "-") + "</span>");
         v_RKey.put(":LastTime"        ,"-");
         
         v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));

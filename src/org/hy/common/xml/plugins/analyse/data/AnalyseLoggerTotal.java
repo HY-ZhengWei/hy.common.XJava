@@ -34,6 +34,25 @@ public class AnalyseLoggerTotal extends SerializableDef
     
     
     
+    
+    /**
+     * 计算平均业务用时（单位：毫秒）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-06-22
+     * @version     v1.0
+     *
+     * @param i_LoggerReport
+     * @return
+     */
+    public static double calcExecAvgTime(LoggerReport i_Report)
+    {
+        // 业务累计用时 / ((请求数 - 错误数) / 非错误的代码量)
+        return Help.division(i_Report.getExecSumTime() ,Help.division(i_Report.getRequestCount() - i_Report.getErrorFatalCount() ,i_Report.getCountNoError()));
+    }
+    
+    
+    
     public AnalyseLoggerTotal()
     {
         this.reports = new Hashtable<String ,LoggerReport>();
@@ -93,19 +112,19 @@ public class AnalyseLoggerTotal extends SerializableDef
                         LoggerReport v_Data = new LoggerReport();
                         
                         v_Data.setClassName(      v_ClassForLoggers.getKey());
-                        v_Data.setMethodName(     v_Method.getKey());
-                        v_Data.setCount(          v_MethodCounter                 .get(v_Method.getKey()));
-                        v_Data.setCountNoError(   v_MethodCounterNoError          .get(v_Method.getKey()));
-                        v_Data.setRequestCount(   v_Method                        .getValue());
-                        v_Data.setErrorFatalCount(v_MethodErrorCounter            .get(v_Method.getKey()));
-                        v_Data.setLastTime(       v_LastTimes                     .get(v_Method.getKey()).longValue());
+                        v_Data.setMethodName(     v_Method              .getKey());
+                        v_Data.setCount(          v_MethodCounter       .get(v_Method.getKey()));
+                        v_Data.setCountNoError(   v_MethodCounterNoError.get(v_Method.getKey()));
+                        v_Data.setRequestCount(   v_Method              .getValue());
+                        v_Data.setErrorFatalCount(v_MethodErrorCounter  .get(v_Method.getKey()));
+                        v_Data.setLastTime(       v_LastTimes           .get(v_Method.getKey()).longValue());
                         v_Data.setId(v_Data.getClassName() + v_Data.getMethodName());
                         
                         Long v_ExecSumTimes = v_Logger.getMethodExecSumTimes().get(v_Method.getKey());
                         if ( v_ExecSumTimes != null )
                         {
                             v_Data.setExecSumTime(v_Logger.getMethodExecSumTimes().get(v_Method.getKey()));
-                            v_Data.setExecAvgTime(Help.division(v_Data.getExecSumTime() ,v_Data.getRequestCount()));
+                            v_Data.setExecAvgTime(calcExecAvgTime(v_Data));
                         }
                         else
                         {
@@ -168,7 +187,7 @@ public class AnalyseLoggerTotal extends SerializableDef
                     v_Data.setId(v_Data.getClassName());
                     
                     v_Data.setExecSumTime(v_ExecSumTimes.get(v_ClassForLoggers.getKey()).longValue());
-                    v_Data.setExecAvgTime(Help.division(v_Data.getExecSumTime() ,v_Data.getRequestCount()));
+                    v_Data.setExecAvgTime(calcExecAvgTime(v_Data));
                     
                     this.reports.put(v_Data.getId() ,v_Data);
                 }
