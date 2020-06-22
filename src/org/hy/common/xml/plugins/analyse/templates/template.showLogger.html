@@ -237,7 +237,13 @@ $("#menuIsAutoRefresh").click(function()
     {
         $("#Timer").val("5000");
         d3.select("#menuIsAutoRefresh").select("div").html("Stop");
-        setTimeout(f_Goto ,$("#Timer").val());
+        setTimeout(function()
+        {
+            if ( $("#Timer").val() != "" )
+            {
+                f_Goto();
+            }
+        } ,$("#Timer").val());
     }
     else
     {
@@ -255,7 +261,13 @@ if ( $("#Timer").val() == "" )
 else
 {
     d3.select("#menuIsAutoRefresh").select("div").html("Stop");
-    setTimeout(f_Goto ,$("#Timer").val());
+    setTimeout(function()
+    {
+        if ( $("#Timer").val() != "" )
+        {
+            f_Goto();
+        }
+    } ,$("#Timer").val());
 }
 
 
