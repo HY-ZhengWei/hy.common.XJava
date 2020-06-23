@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.hy.common.Help;
 import org.hy.common.StringHelp;
 import org.hy.common.file.FileHelp;
 import org.hy.common.xml.log.Logger;
@@ -71,16 +72,25 @@ public class AppBaseServlet extends HttpServlet
     
     public void doPost(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException 
     {
-        String v_RequestInfo = this.getI(i_Request);
-        $Logger.info(v_RequestInfo);
+        String v_RequestInfo  = this.getI(i_Request);
+        String v_ResponseInfo = "";
+        $Logger.debug(v_RequestInfo);
         
-        AppMessage<?> v_AppMsg = AppInterfaces.executeMessage(this ,v_RequestInfo);
-        
-        if ( v_AppMsg != null )
+        try
         {
-            String v_ResponseInfo = v_AppMsg.toString();
-            $Logger.info(v_ResponseInfo);
-            this.responseJson(i_Request ,i_Response ,v_ResponseInfo);
+            AppMessage<?> v_AppMsg = AppInterfaces.executeMessage(this ,v_RequestInfo);
+            
+            if ( v_AppMsg != null )
+            {
+                v_ResponseInfo = v_AppMsg.toString();
+                this.responseJson(i_Request ,i_Response ,v_ResponseInfo);
+            }
+            
+            $Logger.debug(Help.NVL(v_ResponseInfo ,"It's return null"));
+        }
+        catch (Exception exce)
+        {
+            $Logger.error(exce);
         }
     }
     
