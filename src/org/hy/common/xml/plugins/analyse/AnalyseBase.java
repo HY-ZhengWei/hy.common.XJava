@@ -588,6 +588,8 @@ public class AnalyseBase extends Analyse
      */
     public String showXSQLGroupFlow(String i_BasePath ,String i_ObjectValuePath ,String i_XID)
     {
+        $Logger.debug("XSQL组流程图：" + i_XID);
+        
         Object v_XObject = XJava.getObject(i_XID);
         if ( v_XObject == null )
         {
@@ -639,6 +641,8 @@ public class AnalyseBase extends Analyse
      */
     public String analyseDBGroup(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType ,boolean i_IsAll ,String i_Timer)
     {
+        $Logger.debug("XSQL组概要统计");
+        
         StringBuilder       v_Buffer       = new StringBuilder();
         int                 v_Index        = 0;
         String              v_Content      = this.getTemplateShowXSQLGroupContent();
@@ -870,6 +874,8 @@ public class AnalyseBase extends Analyse
      */
     public String analyseDB(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType ,boolean i_IsAll ,String i_Timer)
     {
+        $Logger.debug("XSQL概要统计");
+        
         Map<String ,Object> v_XSQLs           = XJava.getObjects(XSQL.class);
         StringBuilder       v_Buffer          = new StringBuilder();
         int                 v_Index           = 0;
@@ -1246,6 +1252,8 @@ public class AnalyseBase extends Analyse
      */
     public void analyseDBGroup_Reset()
     {
+        $Logger.debug("重置XSQL组的概要统计");
+        
         Map<String ,Object> v_Objs = XJava.getObjects(XSQLGroup.class);
         
         for (Map.Entry<String, Object> v_Item : v_Objs.entrySet())
@@ -1275,6 +1283,8 @@ public class AnalyseBase extends Analyse
      */
     public void analyseDB_RestTotal()
     {
+        $Logger.debug("重置XSQL的概要统计");
+        
         Map<String ,Object> v_Objs = XJava.getObjects(XSQL.class);
         
         for (Map.Entry<String, Object> v_Item : v_Objs.entrySet())
@@ -1312,6 +1322,8 @@ public class AnalyseBase extends Analyse
     @SuppressWarnings("unchecked")
     public String analyseDBError(String i_BasePath ,String i_ObjectValuePath ,String i_XSQLXID ,boolean i_Cluster)
     {
+        $Logger.debug("查看XSQL异常记录SQL：" + i_XSQLXID);
+        
         if ( Help.isNull(i_XSQLXID) )
         {
             return "";
@@ -1455,6 +1467,8 @@ public class AnalyseBase extends Analyse
      */
     public String showXSQLCreateList(String i_BasePath ,String i_ObjectValuePath)
     {
+        $Logger.debug("查看XSQL创建DB对象列表");
+        
         Map<String ,Object> v_XSQLMap = XJava.getObjects(XSQL.class);
         Map<String ,XSQL>   v_XSQLs   = new HashMap<String ,XSQL>();
         StringBuilder       v_Buffer  = new StringBuilder();
@@ -1541,6 +1555,8 @@ public class AnalyseBase extends Analyse
      */
     public String analyseDBCreate(String i_BasePath ,String i_ObjectValuePath)
     {
+        $Logger.debug("删除并重新创建数据库对象");
+        
         Map<String ,Object> v_XSQLMap      = XJava.getObjects(XSQL.class);
         StringBuilder       v_Buffer       = new StringBuilder();
         int                 v_Index        = 0;
@@ -1678,6 +1694,8 @@ public class AnalyseBase extends Analyse
      */
     public String showXSQLRefTable(String i_BasePath ,String i_ObjectValuePath ,String i_DSGID ,String i_Sort)
     {
+        $Logger.debug("查看XSQL与表的关系图");
+        
         List<XSQLRetTable> v_Tables = new ArrayList<XSQLRetTable>();
         List<XSQLRetTable> v_XSQLs  = new ArrayList<XSQLRetTable>();
         XJSON              v_XJSON  = new XJSON();
@@ -1812,6 +1830,8 @@ public class AnalyseBase extends Analyse
      */
     public String showXSQLTablesRef(String i_BasePath ,String i_ObjectValuePath ,String i_DSGID ,String i_Sort)
     {
+        $Logger.debug("查看表的关系图");
+        
         List<XSQLRetTable>                v_XSQLs      = new ArrayList<XSQLRetTable>();
         TablePartitionRID<String ,String> v_XSQLTables = new TablePartitionRID<String ,String>();
         TablePartitionRID<String ,String> v_Tables     = new TablePartitionRID<String ,String>();
@@ -1968,6 +1988,8 @@ public class AnalyseBase extends Analyse
      */
     public String analyseObject(String i_BasePath ,String i_ObjectValuePath ,String i_XJavaObjectID ,String i_CallMethod ,String i_CallParams ,boolean i_Cluster ,boolean i_SameTime)
     {
+        $Logger.debug("集群查看或执行对象：" + i_XJavaObjectID + "." + i_CallMethod + ":" + i_CallParams + " is cluster " + (i_Cluster ? "Yes" : "No"));
+        
         if ( Help.isNull(i_XJavaObjectID) )
         {
             return "{}";
@@ -2130,6 +2152,8 @@ public class AnalyseBase extends Analyse
     @SuppressWarnings("unchecked")
     public Return<String> analyseObject_Execute(String i_XJavaObjectID ,String i_CallMethod ,Object [] i_CallParams ,boolean i_Cluster ,boolean i_SameTime)
     {
+        $Logger.debug("集群查看或执行对象：" + i_XJavaObjectID + "." + i_CallMethod + ":" + i_CallParams + " is cluster " + (i_Cluster ? "Yes" : "No"));
+        
         Return<String> v_RetInfo = new Return<String>();
         Object         v_Object  = XJava.getObject(i_XJavaObjectID);
         
@@ -2286,6 +2310,8 @@ public class AnalyseBase extends Analyse
      */
     public String showExecuteMethod(String i_BasePath ,String i_ObjectValuePath ,String i_XJavaObjectID ,String i_CallMethod ,String i_CallParams)
     {
+        $Logger.debug("显示带参数执行方法的配置页面：" + i_XJavaObjectID + "." + i_CallMethod + ":" + i_CallParams);
+        
         String []   v_Param1 = new String[] {"java.lang.Void" ,""};
         String []   v_Param2 = new String[] {"java.lang.Void" ,""};
         String []   v_Param3 = new String[] {"java.lang.Void" ,""};
@@ -2370,6 +2396,8 @@ public class AnalyseBase extends Analyse
      */
     public String analyseObjects(String i_BasePath ,String i_ObjectValuePath ,String i_XIDPrefix)
     {
+        $Logger.debug("查看对象列表：" + i_XIDPrefix );
+        
         Map<String ,Object>  v_Objects      = (Map<String ,Object>)XJava.getObjects(i_XIDPrefix);
         StringBuilder        v_Buffer       = new StringBuilder();
         int                  v_Index        = 0;
@@ -2445,6 +2473,8 @@ public class AnalyseBase extends Analyse
     @SuppressWarnings("unchecked")
     public String analyseXFile(String i_BasePath ,String i_ReLoadPath ,String i_XFile ,boolean i_Cluster)
     {
+        $Logger.debug("查看或热加载XJava配置列表：" + i_XFile + " is cluster " +  (i_Cluster ? "Yes" : "No"));
+        
         Map<String ,Object> v_XFileNames = (Map<String ,Object>)XJava.getObject(AppInitConfig.$XFileNames_XID);
         Map<String ,Date>   v_XFileTime  = (Map<String ,Date>)  XJava.getObject(AppInitConfig.$XFileNames_XID_Time);
         StringBuilder       v_Buffer     = new StringBuilder();
@@ -2505,6 +2535,8 @@ public class AnalyseBase extends Analyse
     @SuppressWarnings("unchecked")
     public String analyseXFile_Reload(String i_XFile ,boolean i_Cluster)
     {
+        $Logger.debug("热加载XJava配置：" + i_XFile + " is cluster " +  (i_Cluster ? "Yes" : "No"));
+        
         Map<String ,Object> v_XFileNames = (Map<String ,Object>)XJava.getObject(AppInitConfig.$XFileNames_XID);
         
         if ( v_XFileNames.containsKey(i_XFile) )
@@ -2565,6 +2597,8 @@ public class AnalyseBase extends Analyse
      */
     public String analyseCluster(String i_BasePath ,String i_ReLoadPath ,boolean i_IsShowSysTime ,String i_Timer)
     {
+        $Logger.debug("查看集群服务列表");
+        
         List<ClientSocket>   v_Servers      = Cluster.getClusters();
         StringBuilder        v_Buffer       = new StringBuilder();
         int                  v_Index        = 0;
@@ -2784,6 +2818,8 @@ public class AnalyseBase extends Analyse
      */
     public String analyseThreadPool(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster)
     {
+        $Logger.debug("查看线程池运行情况：" + " is cluster " +  (i_Cluster ? "Yes" : "No"));
+        
         StringBuilder          v_Buffer         = new StringBuilder();
         int                    v_Index          = 0;
         String                 v_Content        = this.getTemplateShowThreadPoolContent();
@@ -2921,6 +2957,8 @@ public class AnalyseBase extends Analyse
      */
     public String analyseJob(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_Timer)
     {
+        $Logger.debug("查看线程池运行情况：" + " is cluster " +  (i_Cluster ? "Yes" : "No"));
+        
         StringBuilder   v_Buffer  = new StringBuilder();
         int             v_Index   = 0;
         String          v_Content = this.getTemplateShowJobContent();
@@ -3041,6 +3079,8 @@ public class AnalyseBase extends Analyse
      */
     public String analyseJobDisasterRecoverys(String i_BasePath ,String i_ReLoadPath)
     {
+        $Logger.debug("查看定时任务的灾备多活集群");
+        
         StringBuilder v_Buffer  = new StringBuilder();
         int           v_Index   = 0;
         String        v_Content = this.getTemplateShowJobDisasterRecoverysContent();
@@ -3134,6 +3174,8 @@ public class AnalyseBase extends Analyse
      */
     public String analyseDataSourceGroup(String i_BasePath ,String i_ReLoadPath ,boolean i_Cluster)
     {
+        $Logger.debug("数据库连接池：" + " is cluster " +  (i_Cluster ? "Yes" : "No"));
+        
         StringBuilder   v_Buffer  = new StringBuilder();
         int             v_Index   = 0;
         String          v_Content = this.getTemplateShowDSGContent();
@@ -3297,6 +3339,8 @@ public class AnalyseBase extends Analyse
                                ,String  i_FilterClassName
                                ,String  i_Timer)
     {
+        $Logger.debug("日志引擎的监控：" + " is cluster " +  (i_Cluster ? "Yes" : "No"));
+        
         StringBuilder                     v_Buffer  = new StringBuilder();
         int                               v_Index   = 0;
         String                            v_Content = this.getTemplateShowLoggerContent();
@@ -3557,6 +3601,8 @@ public class AnalyseBase extends Analyse
      */
     public void analyseLogger_RestTotal()
     {
+        $Logger.debug("重置日志引擎的监控");
+        
         Logger.resets();
     }
     

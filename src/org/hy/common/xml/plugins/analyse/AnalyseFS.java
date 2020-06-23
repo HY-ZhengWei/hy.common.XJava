@@ -20,6 +20,8 @@ import org.hy.common.net.ServerSocket;
 import org.hy.common.net.data.CommunicationResponse;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.annotation.Xjava;
+import org.hy.common.xml.log.Logger;
+import org.hy.common.xml.plugins.AppBaseServlet;
 import org.hy.common.xml.plugins.AppInitConfig;
 import org.hy.common.xml.plugins.analyse.data.FileReport;
 
@@ -46,10 +48,12 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
  *                                添加：返回失败服务IP的同时，也返回成功克隆文件的服务IP。
  *                                添加：“全体计算”功能，包括对集群目录大小的计算。
  *              v9.0  2019-12-18  添加：排除哪些文件或目录不显示、不对比、不计算大小等的排除功能
+ *              v10.0 2020-06-22  添加：日志监控
  */
 @Xjava
 public class AnalyseFS extends Analyse
 {
+    private static final Logger $Logger = new Logger(AppBaseServlet.class);
     
     /** 虚拟的Web服务的主目录。有了它，就支持集群中各个服务可以在不同目录中的功能 */
     public static final String    $WebHome   = "$WebHome";
@@ -90,6 +94,8 @@ public class AnalyseFS extends Analyse
     @SuppressWarnings("unchecked")
     public String analysePath(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_FPath ,String i_SortType)
     {
+        $Logger.debug("Web资源管理：" + i_FPath);
+        
         StringBuilder           v_Buffer  = new StringBuilder();
         int                     v_Index   = 0;
         String                  v_Content = this.getTemplateShowFilesContent();
@@ -413,6 +419,8 @@ public class AnalyseFS extends Analyse
      */
     public String diffFile(String i_BasePath ,String i_FPath ,String i_FName ,String i_HIP)
     {
+        $Logger.debug("对比文件内容：" + i_FPath + Help.getSysPathSeparator() + i_FName);
+        
         String   v_FPath         = toWebHome(i_FPath);
         File     v_File          = new File(toTruePath(i_FPath) + Help.getSysPathSeparator() + i_FName);
         FileHelp v_FileHelp      = new FileHelp();
@@ -477,6 +485,8 @@ public class AnalyseFS extends Analyse
      */
     public String getFileContent(String i_FPath ,String i_FName)
     {
+        $Logger.debug("显示文件内容：" + i_FPath + Help.getSysPathSeparator() + i_FName);
+        
         File     v_File     = new File(toTruePath(i_FPath) + Help.getSysPathSeparator() + i_FName);
         FileHelp v_FileHelp = new FileHelp();
         
@@ -680,6 +690,8 @@ public class AnalyseFS extends Analyse
      */
     public String cloneFileDownload(String i_FilePath ,String i_FileName ,String i_HIP ,String i_LocalIP)
     {
+        $Logger.debug("下载文件：" + i_HIP + Help.getSysPathSeparator() + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_LocalIP);
+        
         List<ClientSocket> v_Servers = Cluster.getClusters();
         
         removeHIP(v_Servers ,i_HIP ,false);
@@ -723,6 +735,8 @@ public class AnalyseFS extends Analyse
      */
     public String cloneFile(String i_FilePath ,String i_FileName ,String i_HIP)
     {
+        $Logger.debug("集群克隆文件：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
+        
         File     v_File      = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
         File     v_CloudLock = null;
         FileHelp v_FileHelp  = new FileHelp();
@@ -846,6 +860,8 @@ public class AnalyseFS extends Analyse
      */
     public int cloneFileUpload(String i_Dir ,FileDataPacket i_DataPacket)
     {
+        $Logger.debug("克隆文件：" + i_Dir + Help.getSysPathSeparator() + i_DataPacket.getName() + " is " + i_DataPacket.getDataNo() + "/" + i_DataPacket.getDataCount());
+        
         String v_Dir     = toTruePath(i_Dir);
         File   v_DirFile = new File(v_Dir);
         if ( !v_DirFile.exists() || !v_DirFile.isDirectory() )
@@ -933,6 +949,8 @@ public class AnalyseFS extends Analyse
      */
     public String executeCommandCluster(String i_FilePath ,String i_FileName ,String i_HIP)
     {
+        $Logger.debug("集群执行命令：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
+        
         String             v_HIP     = "";
         int                v_ExecRet = 0;
         List<ClientSocket> v_Servers = Cluster.getClusters();
@@ -1011,6 +1029,8 @@ public class AnalyseFS extends Analyse
      */
     public String executeCommand(String i_FilePath ,String i_FileName)
     {
+        $Logger.debug("执行命令：" + i_FilePath + Help.getSysPathSeparator() + i_FileName);
+        
         File v_File = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
         
         if ( v_File.exists() && v_File.isFile() )
@@ -1065,6 +1085,8 @@ public class AnalyseFS extends Analyse
      */
     public String delFile(String i_FilePath ,String i_FileName)
     {
+        $Logger.debug("删除文件：" + i_FilePath + Help.getSysPathSeparator() + i_FileName);
+        
         File v_File = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
         
         if ( v_File.exists() )
@@ -1112,6 +1134,8 @@ public class AnalyseFS extends Analyse
      */
     public String delFileByCluster(String i_FilePath ,String i_FileName ,String i_HIP)
     {
+        $Logger.debug("集群删除文件：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
+        
         int                v_ExecRet = 0;
         List<ClientSocket> v_Servers = Cluster.getClusters();
         List<String>       v_FailIP  = new ArrayList<String>();
@@ -1183,6 +1207,8 @@ public class AnalyseFS extends Analyse
      */
     public String zipFile(String i_FilePath ,String i_FileName ,String i_TimeID)
     {
+        $Logger.debug("压缩文件：" + i_FilePath + Help.getSysPathSeparator() + i_FileName);
+        
         File     v_File     = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
         FileHelp v_FileHelp = new FileHelp();
         
@@ -1244,6 +1270,8 @@ public class AnalyseFS extends Analyse
      */
     public String zipFileByCluster(String i_FilePath ,String i_FileName ,String i_HIP)
     {
+        $Logger.debug("集群压缩文件：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
+        
         String             v_HIP     = "";
         int                v_ExecRet = 0;
         List<ClientSocket> v_Servers = Cluster.getClusters();
@@ -1321,6 +1349,8 @@ public class AnalyseFS extends Analyse
      */
     public String unZipFile(String i_FilePath ,String i_FileName)
     {
+        $Logger.debug("解压文件：" + i_FilePath + Help.getSysPathSeparator() + i_FileName);
+        
         File       v_File     = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
         FileHelp   v_FileHelp = new FileHelp();
         
@@ -1362,6 +1392,8 @@ public class AnalyseFS extends Analyse
      */
     public String unZipFileByCluster(String i_FilePath ,String i_FileName ,String i_HIP)
     {
+        $Logger.debug("集群解压文件：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
+        
         int                v_ExecRet = 0;
         List<ClientSocket> v_Servers = Cluster.getClusters();
         List<String>       v_FailIP  = new ArrayList<String>();
@@ -1432,6 +1464,8 @@ public class AnalyseFS extends Analyse
      */
     public String mkdir(String i_FilePath ,String i_FileName)
     {
+        $Logger.debug("创建目录：" + i_FilePath + Help.getSysPathSeparator() + i_FileName);
+        
         File v_File = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
         
         if ( !v_File.exists() || !v_File.isDirectory() )
@@ -1470,6 +1504,8 @@ public class AnalyseFS extends Analyse
      */
     public String mkdirByCluster(String i_FilePath ,String i_FileName ,String i_HIP)
     {
+        $Logger.debug("集群创建目录：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
+        
         String             v_HIP     = "";
         int                v_ExecRet = 0;
         List<ClientSocket> v_Servers = Cluster.getClusters();
@@ -1548,6 +1584,8 @@ public class AnalyseFS extends Analyse
      */
     public String calcFileSize(String i_FilePath ,String i_FileName)
     {
+        $Logger.debug("计算目录或文件的大小：" + i_FilePath + Help.getSysPathSeparator() + i_FileName);
+        
         File v_File = new File(toTruePath(i_FilePath) + Help.getSysPathSeparator() + i_FileName);
         
         if ( v_File.exists() )
@@ -1602,6 +1640,8 @@ public class AnalyseFS extends Analyse
      */
     public String calcFileSizeCluster(String i_FilePath ,String i_FileName ,String i_HIP)
     {
+        $Logger.debug("集群计算目录或文件大小：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
+        
         int                 v_ExecRet     = 0;
         int                 v_Error       = 0;
         List<ClientSocket>  v_Servers     = Cluster.getClusters();
@@ -1793,6 +1833,8 @@ public class AnalyseFS extends Analyse
      */
     public String getSystemTimeCluster()
     {
+        $Logger.debug("集群查看系统时间");
+        
         String              v_HIP     = "";
         int                 v_ExecRet = 0;
         List<ClientSocket>  v_Servers = Cluster.getClusters();
@@ -1873,6 +1915,8 @@ public class AnalyseFS extends Analyse
     @SuppressWarnings("unchecked")
     public String reload(String i_XFile ,boolean i_Cluster)
     {
+        $Logger.debug("热部署：" + i_XFile + Help.getSysPathSeparator() + " is cluster " + (i_Cluster ? "Yes" : "No"));
+        
         Map<String ,Object> v_XFileNames = (Map<String ,Object>)XJava.getObject(AppInitConfig.$XFileNames_XID);
         
         if ( v_XFileNames.containsKey(i_XFile) )

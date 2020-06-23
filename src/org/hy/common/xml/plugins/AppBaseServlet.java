@@ -58,7 +58,7 @@ public class AppBaseServlet extends HttpServlet
     
     private static final long serialVersionUID = -5189383556838396564L;
     
-    private static final Logger $Logger = new Logger(AppBaseServlet.class ,true);
+    private static final Logger $Logger = new Logger(AppBaseServlet.class);
     
     
     
