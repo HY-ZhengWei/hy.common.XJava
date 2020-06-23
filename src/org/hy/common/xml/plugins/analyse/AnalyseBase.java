@@ -3325,6 +3325,7 @@ public class AnalyseBase extends Analyse
      * @param  i_BasePath         服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ReLoadPath       重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject?logger=Y
      * @param  i_Cluster          是否为集群
+     * @param  i_ShowEveryOne     是否显示每一个。仅在i_Cluster为True时有效，表示集群统计时，显示每台服务上每个日志项，并不日志项合并统计
      * @param  i_TotalType        统计类型(class、method、lineNumber)
      * @param  i_SortType         排序类型(requectCount、lastTime、name、errorCount、execSumTime、execAvgTime)
      * @param  i_FilterClassName  名称的模糊过滤条件
@@ -3334,6 +3335,7 @@ public class AnalyseBase extends Analyse
     public String analyseLogger(String  i_BasePath 
                                ,String  i_ReLoadPath 
                                ,boolean i_Cluster 
+                               ,boolean i_ShowEveryOne
                                ,String  i_TotalType 
                                ,String  i_SortType 
                                ,String  i_FilterClassName
@@ -3374,28 +3376,48 @@ public class AnalyseBase extends Analyse
                             
                             if ( !Help.isNull(v_TempTotal.getReports()) )
                             {
-                                for (LoggerReport v_Report : v_TempTotal.getReports().values())
+                                // 显示每台服务上每个日志项，并不日志项合并统计
+                                if ( i_ShowEveryOne )
                                 {
-                                    LoggerReport v_TR = v_Total.getReports().get(v_Report.getId());
-                                    
-                                    if ( v_TR == null )
+                                    String v_IP   = v_Item.getKey().getHostName();
+                                    String v_Host = v_IP + v_Item.getKey().getPort();
+                                    for (LoggerReport v_Report : v_TempTotal.getReports().values())
                                     {
-                                        v_Total.getReports().put(v_Report.getId() ,v_Report);
+                                        v_Report.setClassName(v_IP + "/" + v_Report.getClassName());
+                                        v_Total.getReports().put(v_Host + v_Report.getId() ,v_Report);
+                                        
+                                        if ( v_Report.getErrorFatalCount() > 0L )
+                                        {
+                                            v_Errors.putRow(v_Report.getId() ,v_Item.getKey().getHostName() ,1);
+                                        }
                                     }
-                                    else
+                                }
+                                // 对集群的日志项做Map/Reduce合计统计
+                                else
+                                {
+                                    for (LoggerReport v_Report : v_TempTotal.getReports().values())
                                     {
-                                        v_TR.setCount(       Math.max(v_TR.getCount()            ,v_Report.getCount()));
-                                        v_TR.setCountNoError(Math.max(v_TR.getCountNoError()     ,v_Report.getCountNoError()));
-                                        v_TR.setRequestCount(         v_TR.getRequestCount()    + v_Report.getRequestCount());
-                                        v_TR.setErrorFatalCount(      v_TR.getErrorFatalCount() + v_Report.getErrorFatalCount());
-                                        v_TR.setLastTime(    Math.max(v_TR.getLastTime()         ,v_Report.getLastTime()));
-                                        v_TR.setExecSumTime(          v_TR.getExecSumTime()     + v_Report.getExecSumTime());
-                                        v_TR.setExecAvgTime(AnalyseLoggerTotal.calcExecAvgTime(v_TR));
-                                    }
-                                    
-                                    if ( v_Report.getErrorFatalCount() > 0L )
-                                    {
-                                        v_Errors.putRow(v_Report.getId() ,v_Item.getKey().getHostName() ,1);
+                                        LoggerReport v_TR = v_Total.getReports().get(v_Report.getId());
+                                        
+                                        if ( v_TR == null )
+                                        {
+                                            v_Total.getReports().put(v_Report.getId() ,v_Report);
+                                        }
+                                        else
+                                        {
+                                            v_TR.setCount(       Math.max(v_TR.getCount()            ,v_Report.getCount()));
+                                            v_TR.setCountNoError(Math.max(v_TR.getCountNoError()     ,v_Report.getCountNoError()));
+                                            v_TR.setRequestCount(         v_TR.getRequestCount()    + v_Report.getRequestCount());
+                                            v_TR.setErrorFatalCount(      v_TR.getErrorFatalCount() + v_Report.getErrorFatalCount());
+                                            v_TR.setLastTime(    Math.max(v_TR.getLastTime()         ,v_Report.getLastTime()));
+                                            v_TR.setExecSumTime(          v_TR.getExecSumTime()     + v_Report.getExecSumTime());
+                                            v_TR.setExecAvgTime(AnalyseLoggerTotal.calcExecAvgTime(v_TR));
+                                        }
+                                        
+                                        if ( v_Report.getErrorFatalCount() > 0L )
+                                        {
+                                            v_Errors.putRow(v_Report.getId() ,v_Item.getKey().getHostName() ,1);
+                                        }
                                     }
                                 }
                             }
@@ -3567,8 +3589,8 @@ public class AnalyseBase extends Analyse
         v_Errors = null;
         
         return StringHelp.replaceAll(this.getTemplateShowLogger()
-                                    ,new String[]{":GotoTitle"           ,":Goto_02_Title" ,":Title"        ,":HttpBasePath" ,":Sort"   ,":TotalType" ,":Cluster"              ,":Timer" ,":FilterClassName"         ,":Content"}
-                                    ,new String[]{v_GotoTitle.toString() ,v_GotoTitle02    ,"日志引擎分析" ,i_BasePath      ,i_SortType ,i_TotalType ,(i_Cluster ? "Y" : "N") ,i_Timer  ,Help.NVL(i_FilterClassName) ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle"           ,":Goto_02_Title" ,":Title"        ,":HttpBasePath" ,":Sort"   ,":TotalType" ,":Cluster"             ,":ShowEveryOne"              ,":Timer" ,":FilterClassName"          ,":Content"}
+                                    ,new String[]{v_GotoTitle.toString() ,v_GotoTitle02    ,"日志引擎分析" ,i_BasePath      ,i_SortType ,i_TotalType ,(i_Cluster ? "Y" : "N") ,(i_ShowEveryOne ? "Y" : "N") ,i_Timer  ,Help.NVL(i_FilterClassName) ,v_Buffer.toString()});
     }
     
     

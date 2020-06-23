@@ -83,8 +83,11 @@ html,body {
 .cont_show_LastTime        { width:135px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 
 
-a{ color:#669900; text-decoration:none; outline:none;}
-a:hover{color:#99CC00;text-decoration:none;}
+a { color:#669900; text-decoration:none; outline:none;}
+a:hover {color:#99CC00;text-decoration:none;}
+
+.ShowEveryOne { color:#669900; text-decoration:none; outline:none;}
+.ShowEveryOne:hover {color:#99CC00;text-decoration:none;}
 
 .input-text{ 
     vertical-align:middle; 
@@ -150,10 +153,11 @@ a:hover{color:#99CC00;text-decoration:none;}
         </div>
     </div>
         
-    <input type="hidden" id="cluster" name="cluster" value=":Cluster" />
-    <input type="hidden" id="S"       name="S"       value=":Sort" />
-    <input type="hidden" id="TT"      name="TT"      value=":TotalType" />
-    <input type="hidden" id="Timer"   name="Timer"   value=":Timer" />
+    <input type="hidden" id="cluster"      name="cluster"      value=":Cluster" />
+    <input type="hidden" id="S"            name="S"            value=":Sort" />
+    <input type="hidden" id="TT"           name="TT"           value=":TotalType" />
+    <input type="hidden" id="Timer"        name="Timer"        value=":Timer" />
+    <input type="hidden" id="ShowEveryOne" name="ShowEveryOne" value=":ShowEveryOne" />
      
     <div class="userInfoModify_logininfobody" >
        <div class="userInfoModify_logininfo" /> 
@@ -186,11 +190,22 @@ function f_Goto()
     
     if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
     {
-        window.location.href = "analyseObject?logger=Y&S=" + $("#S").val() + "&TT=" + $("#TT").val() + "&cluster=Y&FCN=" + $("#FilterClassName").val() + "&Timer=" + $("#Timer").val() + "&r=" + v_Timestamp;
+        window.location.href = "analyseObject?logger=Y&S=" + $("#S").val() + "&TT=" + $("#TT").val() + "&cluster=Y&FCN=" + $("#FilterClassName").val() + "&Timer=" + $("#Timer").val() + "&ShowEveryOne=" + $("#ShowEveryOne").val() + "&r=" + v_Timestamp;
     }
     else
     {
         window.location.href = "analyseObject?logger=Y&S=" + $("#S").val() + "&TT=" + $("#TT").val() + "&FCN=" + $("#FilterClassName").val() + "&Timer=" + $("#Timer").val() + "&r=" + v_Timestamp;
+    }
+}
+
+
+
+function f_GotoNew(i_ClassName)
+{
+    if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+    {
+        var v_Timestamp = new Date().getTime();
+        window.open(":HttpBasePath/analyses/analyseObject?logger=Y&S=name" + "&TT=" + $("#TT").val() + "&cluster=Y&FCN=" + i_ClassName + "&ShowEveryOne=Y" + "&r=" + v_Timestamp);
     }
 }
 
@@ -434,6 +449,22 @@ else
             <div class="userInfoModify_LastTime_Other"></div>
         </div>
     </div>
-       
+
+<script language="javascript" type="text/javascript">
+
+if ( ($("#cluster")     .val() == "Y" || $("#cluster")     .val() == "y") 
+ && !($("#ShowEveryOne").val() == "Y" || $("#ShowEveryOne").val() == "y") )
+{
+    d3.selectAll(".userInfoModify_ClassName")
+    .classed("ShowEveryOne" ,true)
+    .style("cursor" ,"pointer")
+    .on("click" ,function()
+    {
+        f_GotoNew(d3.select(this).select(".cont_show_ClassName").html());
+    });
+}
+
+</script>
+
 </body>
 </html>
