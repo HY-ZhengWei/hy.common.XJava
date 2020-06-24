@@ -19,6 +19,7 @@ import org.hy.common.TablePartitionSet;
 import org.hy.common.db.DBSQL;
 import org.hy.common.xml.annotation.Xparam;
 import org.hy.common.xml.annotation.Xsql;
+import org.hy.common.xml.log.Logger;
 import org.hy.common.xml.plugins.XSQLGroup;
 import org.hy.common.xml.plugins.XSQLGroupResult;
 
@@ -43,11 +44,14 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  *              v1.5  2018-07-21  添加：支持分页模板自动封装的查询。建议人：李浩
  *              v1.6  2018-07-26  优化：及时释放资源，自动的GC太慢了。
  *              v1.7  2018-08-08  添加：@Xsql.execute()属性，支持多种类不同的SQL在同一XSQL中执行。
+ *              v1.8  2020-06-24  添加：通过日志引擎规范输出日志
  */
 public class XSQLProxy implements InvocationHandler ,Serializable
 {
 
-    private static final long serialVersionUID   = -4219520889151933542L;
+    private static final long   serialVersionUID = -4219520889151933542L;
+
+    private static final Logger $Logger          = new Logger(XSQLProxy.class);
     
     /** 
      * names()[x] 值为"ToMap"时，表示将方法入参转为Map集合后再putAll()整合后的大Map集合中。 
@@ -163,20 +167,20 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                     // 方法入参个数大于1，应设置@Xsql(names)
                     if ( Help.isNull(v_Anno.getXparams()) && v_Method.getParameterTypes().length >= 2 )
                     {
-                        this.errorLog(v_Method ,"Method parameter count >= 2 ,but @Xsql(names) count is 0.");
+                        this.errorLog(v_Method ,"Method parameter count >= 2 ,but @Xsql(names) count is 0." ,null);
                         return;
                     }
                     // @Xsql中设置的参数名称个数，应于方法入参个数数量相同
                     else if ( !Help.isNull(v_Anno.getXparams()) 
                            && v_Anno.getXparams().size() > v_Method.getParameterTypes().length )
                     {
-                        this.errorLog(v_Method ,"@Xsql(names) count greater than method parameter count.");
+                        this.errorLog(v_Method ,"@Xsql(names) count greater than method parameter count." ,null);
                         return;
                     }
                 }
                 catch (Exception exce)
                 {
-                    this.errorLog(v_Method ,exce.toString());
+                    this.errorLog(v_Method ,exce.toString() ,exce);
                 }
             }
             
@@ -211,7 +215,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                     
                     if ( v_XObject == null )
                     {
-                        return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] is not exists.");
+                        return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] is not exists." ,null);
                     }
                     else if ( v_XObject instanceof XSQL )
                     {
@@ -223,7 +227,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                     }
                     else
                     {
-                        return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] java class type is not XSQL or XSQLGroup.");
+                        return errorLog(i_Method ,"XID [" + v_Anno.getXid() + "] java class type is not XSQL or XSQLGroup." ,null);
                     }
                 }
             }
@@ -231,6 +235,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         catch (Exception exce)
         {
             // 输出异常后，并断续向外抛
+            $Logger.error(exce);
             exce.printStackTrace();
             throw exce;
         }
@@ -249,11 +254,11 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @param i_ErrorInfo  为空，表示只返回不输出日志
      * @return
      */
-    private Object errorLog(Method i_Method ,String i_ErrorInfo)
+    private Object errorLog(Method i_Method ,String i_ErrorInfo ,Exception i_Exce)
     {
         if ( !Help.isNull(i_ErrorInfo) )
         {
-            System.err.println("\nError: Call " + this.xsqlInterface.getName() + "." + i_Method.getName() + "：" + i_ErrorInfo + "\n");
+            $Logger.error("\nError: Call " + this.xsqlInterface.getName() + "." + i_Method.getName() + "：" + i_ErrorInfo + "\n" ,i_Exce);
         }
         
         // 定义的方法无返回类型：void
@@ -461,7 +466,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         }
         catch (Exception exce)
         {
-            return this.errorLog(i_Method ,null);
+            return this.errorLog(i_Method ,null ,exce);
         }
         
         if ( i_Args == null || i_Args.length == 0 )
@@ -767,7 +772,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         }
         catch (Exception exce)
         {
-            return this.errorLog(i_Method ,null);
+            return this.errorLog(i_Method ,null ,exce);
         }
         
         // 2018-01-25 Add 如果方法返回值是整数，则按查询记录行数的SELECT Count(1) FROM ... 返回
@@ -967,7 +972,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         }
         catch (Exception exce)
         {
-            return this.errorLog(i_Method ,null);
+            return this.errorLog(i_Method ,null ,exce);
         }
         
         if ( i_Args == null || i_Args.length == 0 )
@@ -1049,7 +1054,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         }
         catch (Exception exce)
         {
-            return this.errorLog(i_Method ,null);
+            return this.errorLog(i_Method ,null ,exce);
         }
         
         if ( i_Args == null || i_Args.length == 0 )
@@ -1111,7 +1116,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         }
         catch (Exception exce)
         {
-            return this.errorLog(i_Method ,null);
+            return this.errorLog(i_Method ,null ,exce);
         }
         
         if ( i_Args == null || i_Args.length == 0 )
@@ -1223,6 +1228,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                             }
                             catch (Exception exce)
                             {
+                                $Logger.error(exce);
                                 throw new RuntimeException(exce);
                             }
                         }

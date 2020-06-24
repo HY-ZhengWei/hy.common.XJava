@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hy.common.xml.XJava;
-
+import org.hy.common.xml.log.Logger;
 import org.hy.common.Date;
 import org.hy.common.Des;
 import org.hy.common.Help;
@@ -39,9 +39,11 @@ import org.hy.common.file.FileHelp;
  *              v4.1  2019-02-27  修复：加载目录中所有配置文件时，某一配置文件加载异常，继续加载后面的配置文件。
  *              v4.2  2019-05-20  添加：加载空目录时，显示it is empty的提示。
  *              v5.0  2019-08-21  添加：load(...)系列方法，显示区分功能划分，方便用户选择。
+ *              v6.0  2020-06-24  添加：通过日志引擎规范输出日志
  */
 public class AppInitConfig
 {
+    private static final Logger $Logger = new Logger(AppInitConfig.class);
     
     /** 保存所有初始化过的XJava配置文件的XID标记 */
     public static final String $XFileNames_XID      = "XFILENAMES";
@@ -178,9 +180,10 @@ public class AppInitConfig
                 XJava.parserAnnotation(i_PackageName);
             }
         }
-        catch (Exception e)
+        catch (Exception exce)
         {
-            e.printStackTrace();
+            $Logger.error(exce);
+            exce.printStackTrace();
         }
     }
     
@@ -588,7 +591,7 @@ public class AppInitConfig
         }
         catch (Exception exce)
         {
-            System.out.println(exce.getMessage());
+            $Logger.error(exce);
             exce.printStackTrace();
         }
         
@@ -621,9 +624,10 @@ public class AppInitConfig
             {
                 XJava.parserAnnotation();
             }
-            catch (Exception e)
+            catch (Exception exce)
             {
-                e.printStackTrace();
+                $Logger.error(exce);
+                exce.printStackTrace();
             }
             return;
         }
@@ -645,9 +649,10 @@ public class AppInitConfig
         {
             XJava.parserAnnotation(i_PackageName);
         }
-        catch (Exception e)
+        catch (Exception exce)
         {
-            e.printStackTrace();
+            $Logger.error(exce);
+            exce.printStackTrace();
         }
     }
     
@@ -723,9 +728,10 @@ public class AppInitConfig
         {
             XJava.parserAnnotation();
         }
-        catch (Exception e)
+        catch (Exception exce)
         {
-            e.printStackTrace();
+            $Logger.error(exce);
+            exce.printStackTrace();
         }
     }
     
@@ -755,9 +761,10 @@ public class AppInitConfig
             {
                 XJava.parserAnnotation();
             }
-            catch (Exception e)
+            catch (Exception exce)
             {
-                e.printStackTrace();
+                $Logger.error(exce);
+                exce.printStackTrace();
             }
             return;
         }
@@ -779,9 +786,10 @@ public class AppInitConfig
         {
             XJava.parserAnnotation(i_PackageName);
         }
-        catch (Exception e)
+        catch (Exception exce)
         {
-            e.printStackTrace();
+            $Logger.error(exce);
+            exce.printStackTrace();
         }
     }
     
@@ -853,6 +861,7 @@ public class AppInitConfig
         else
         {
             System.out.println("Loading    " + i_Name + " error.");
+            $Logger.error("Loading " + i_Name + " error.");
         }
     }
     

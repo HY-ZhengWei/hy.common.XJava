@@ -27,6 +27,7 @@ import org.hy.common.MethodReflect;
 import org.hy.common.Return;
 import org.hy.common.StringHelp;
 import org.hy.common.XJavaID;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -51,11 +52,14 @@ import org.hy.common.XJavaID;
  *                                   这样最大好处是：不用再每次请求时创建一个XHttp的实例。
  *           V3.1  2018-11-15  添加1：新类型的转义方法 isEncode。
  *           V4.0  2020-06-09  添加1：支持序列化接口、XJavaID接口
+ *           V5.0  2020-06-24  添加1：通过日志引擎规范输出日志
  */
 public final class XHttp extends SerializableDef implements XJavaID
 {  
-    private static final long serialVersionUID = 9198603998217342471L;
+    private static final long   serialVersionUID = 9198603998217342471L;
 
+    private static final Logger $Logger = new Logger(XHttp.class);
+    
     /** 请求类型:get方式 */
     public static  final int    $Request_Type_Get  = 1;
     
@@ -308,6 +312,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             return v_Ret.set(false).exception(exce);
         }
         finally
@@ -481,6 +486,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             return v_Ret.set(false).exception(exce);
         }
         finally
@@ -648,6 +654,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             return v_Ret.set(false).exception(exce);
         }
         finally
@@ -802,6 +809,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             return exce.getMessage();
         }
         finally
@@ -964,6 +972,7 @@ public final class XHttp extends SerializableDef implements XJavaID
             }
             catch (Exception exce)
             {
+                $Logger.error("XHttp param name [" + i_XHttpParam.getParamName() + "] is not find Object method." ,exce);
                 throw new NoSuchMethodException("XHttp param name [" + i_XHttpParam.getParamName() + "] is not find Object method.");
             }
         }
@@ -1245,6 +1254,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             v_Buffer.append(exce.getMessage());
         }
         
@@ -1280,6 +1290,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             v_Buffer.append(exce.getMessage());
         }
         
@@ -1312,6 +1323,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             v_Buffer.append(exce.getMessage());
         }
         

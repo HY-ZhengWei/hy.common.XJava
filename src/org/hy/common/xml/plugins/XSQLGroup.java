@@ -24,6 +24,7 @@ import org.hy.common.thread.ThreadPool;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQLBigData;
 import org.hy.common.xml.XSQLData;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -103,19 +104,19 @@ import org.hy.common.xml.XSQLData;
  *              v12.0 2017-05-05  1.添加：XSQLNode.oneConnection 查询SQL数据库连接的占用模式。
  *              v13.0 2017-05-17  1.添加：this.returnQuery，针对 this.returnID 属性，定义返回查询结果集是 "返回结果集"？还是 "查询并返回"。
  *                                  提供一种好理解的数据结构(与this.queryReturnID属性返回的数据结构相比)。
- *                                  建议来自于：向以前同学
+ *                                  建议来自于：向以前
  *                                2.准备放弃this.queryReturnID属性，只少是不再建议使用此属性。
  *              v14.0 2017-06-22  1.添加：XSQLGroup也同样支持在执行前的条件检查，只有检查通过时才允许执行。
  *                                2.添加：XSQLGroup也同样支持在执行前的提交BeforeCommit。
  *                                3.添加：XSQLGroup也同样支持在执行前的提交AfterCommit。
- *                                  建议来自于：谈闻同学
+ *                                  建议来自于：谈闻
  *              v14.1 2017-07-06  1.修正：当预处理 XSQLNode.$Type_CollectionToExecuteUpdate 执行异常时，输出的SQL日志不正确的问题。
- *                                  发现人：向以前同学
+ *                                  发现人：向以前
  *              v14.2 2017-10-31  1.修正：getConnection()未添加同步锁，造成XSQL组在发起多线程执行时，会出现挂死的问题。
  *                                  发现人：邹德福
  *              v15.0 2017-11-03  1.添加：由外界决定是否提交、是否回滚的功能。
  *                                       通过 this.executes(...) 执行结果 XSQLGroupResult 来手工提交、回滚。
- *                                  建议来自于：向以前同学
+ *                                  建议来自于：向以前
  *              v15.1 2017-11-20  1.优化：提升getCollectionToDB()方法的执行性能。
  *              v16.0 2017-12-22  1.添加：XSQL组执行的Java方法的入参参数中增加控制中心XSQLGroupControl，实现事务统一提交、回滚。
  *                                2.添加：XSQLNode.isNoUpdateRollbacks()方法，当未更新任何数据（操作影响的数据量为0条）时，是否执行事务统一回滚操作。
@@ -160,9 +161,12 @@ import org.hy.common.xml.XSQLData;
  *                                        发现人：张德宏
  *              v24.1 2019-12-25  1.修正：组内主动提交后输出日志中，影响操作记录里，不应累计查询数量。对此进行分类区分。发现人：张宇
  *              v25.0 2020-06-02  1.添加：支持规则引擎，对执行入参、返回结果、XJava对象池中的数据使用规则引擎。
+ *              v26.0 2020-06-24  1.添加：通过日志引擎规范输出日志
  */
 public final class XSQLGroup implements XJavaID
 {
+    
+    private static final Logger      $Logger = new Logger(XSQLGroup.class);
     
     /** 执行SQL(Insert、Update、Delete)影响行数的变量名前缀 */
     public  static final String      $Param_ExecCount   = "ExecCount_";
@@ -501,9 +505,10 @@ public final class XSQLGroup implements XJavaID
                 return this.executeGroup(Help.toMap(i_Obj ,null ,false));
             }
         }
-        catch (Exception e)
+        catch (Exception exce)
         {
-            e.printStackTrace();
+            $Logger.error(exce);
+            exce.printStackTrace();
         }
         
         return new XSQLGroupResult(false);
@@ -981,6 +986,7 @@ public final class XSQLGroup implements XJavaID
                     v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
                     v_Ret.setException(    exce);
                     v_Ret.setSuccess(false);
+                    $Logger.error(exce);
                 }
                 
                 v_RetryCount--;
@@ -1187,6 +1193,7 @@ public final class XSQLGroup implements XJavaID
                         v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
                         v_Ret.setException(    exce);
                         v_Ret.setSuccess(false);
+                        $Logger.error(exce);
                     }
                     
                     v_RetryCount--;
@@ -1445,6 +1452,7 @@ public final class XSQLGroup implements XJavaID
                             v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
                             v_Ret.setException(    exce);
                             v_Ret.setSuccess(false);
+                            $Logger.error(exce);
                             return v_Ret;
                         }
                     }
@@ -1523,6 +1531,7 @@ public final class XSQLGroup implements XJavaID
                         v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
                         v_Ret.setException(    exce);
                         v_Ret.setSuccess(false);
+                        $Logger.error(exce);
                     }
                     
                     v_RetryCount--;
@@ -1721,6 +1730,7 @@ public final class XSQLGroup implements XJavaID
                     v_Ret.setExceptionSQL (this.getSQL(v_Node ,io_Params));
                     v_Ret.setException(    exce);
                     v_Ret.setSuccess(false);
+                    $Logger.error(exce);
                 }
                 
                 v_RetryCount--;
@@ -1930,6 +1940,7 @@ public final class XSQLGroup implements XJavaID
                 }
                 catch (Exception exce)
                 {
+                    $Logger.error(exce);
                     exce.printStackTrace();
                 }
             }
@@ -2014,6 +2025,7 @@ public final class XSQLGroup implements XJavaID
                         }
                         catch (Exception exce)
                         {
+                            $Logger.error(exce);
                             exce.printStackTrace();
                         }
                         
@@ -2317,6 +2329,7 @@ public final class XSQLGroup implements XJavaID
                 catch (Exception exce)
                 {
                     v_IsSucceed = false;
+                    $Logger.error(exce);
                     exce.printStackTrace();
                 }
             }
@@ -2372,6 +2385,7 @@ public final class XSQLGroup implements XJavaID
                 }
                 catch (Exception exce)
                 {
+                    $Logger.error(exce);
                     exce.printStackTrace();
                 }
             }
@@ -2406,6 +2420,7 @@ public final class XSQLGroup implements XJavaID
                 }
                 catch (Exception exce)
                 {
+                    $Logger.error(exce);
                     exce.printStackTrace();
                 }
                 finally
@@ -3112,6 +3127,7 @@ public final class XSQLGroup implements XJavaID
             }
             catch (Exception exce)
             {
+                $Logger.error(exce);
                 exce.printStackTrace();
             }
             finally
@@ -3346,6 +3362,7 @@ public final class XSQLGroup implements XJavaID
                 xsqlRet.setExceptionSQL (xsqlGroup.getSQL(xsqlNode ,xsqlParams));
                 xsqlRet.setException(    exce);
                 xsqlRet.setSuccess(false);
+                $Logger.error(exce);
                 return false;
             }
         }

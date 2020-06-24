@@ -16,6 +16,7 @@ import org.hy.common.Help;
 import org.hy.common.ListMap;
 import org.hy.common.StringHelp;
 import org.hy.common.file.FileHelp;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -40,9 +41,12 @@ import org.hy.common.file.FileHelp;
  * @version     v1.0  
  *              v2.0  2020-06-02  修改：request()方法直接返回响应结果信息。
  *                                      最终用户可通过getReceiveObj()方法，主动的将结果信息转换为对象。
+ *              v3.0  2020-06-24  添加：通过日志引擎规范输出日志
  */
 public class XWebService
 {
+    private final static Logger        $Logger              = new Logger(XWebService.class);
+    
     private final static String        $Default_CharSetName = "UTF-8";
     
     private final static long          $Default_Timeout     = 10000;
@@ -301,6 +305,7 @@ public class XWebService
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             exce.printStackTrace();
         }
         finally
@@ -313,6 +318,7 @@ public class XWebService
                 }
                 catch (Exception exce)
                 {
+                    $Logger.error(exce);
                     exce.printStackTrace();
                 }
                 
@@ -328,6 +334,7 @@ public class XWebService
                 }
                 catch (Exception exce)
                 {
+                    $Logger.error(exce);
                     exce.printStackTrace();
                 }
                 
@@ -458,6 +465,7 @@ public class XWebService
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             exce.printStackTrace();
         }
         finally
@@ -471,6 +479,7 @@ public class XWebService
                 }
                 catch (Exception exce)
                 {
+                    $Logger.error(exce);
                     exce.printStackTrace();
                 }
                 
@@ -486,6 +495,7 @@ public class XWebService
                 }
                 catch (Exception exce)
                 {
+                    $Logger.error(exce);
                     exce.printStackTrace();
                 }
                 
@@ -549,6 +559,7 @@ public class XWebService
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             exce.printStackTrace();
         }
         
@@ -610,6 +621,7 @@ public class XWebService
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             exce.printStackTrace();
         }
         
@@ -728,6 +740,7 @@ public class XWebService
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             exce.printStackTrace();
         }
     }
@@ -756,6 +769,7 @@ public class XWebService
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             exce.printStackTrace();
         }
     }
@@ -796,6 +810,7 @@ public class XWebService
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             exce.printStackTrace();
         }
     }

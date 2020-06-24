@@ -8,6 +8,7 @@ import org.hy.common.PartitionMap;
 import org.hy.common.TablePartition;
 import org.hy.common.app.Param;
 import org.hy.common.xml.XJava;
+import org.hy.common.xml.log.Logger;
 import org.hy.common.xml.plugins.AppInterface;
 
 
@@ -23,6 +24,8 @@ import org.hy.common.xml.plugins.AppInterface;
  */
 public class AppInterfaceInfo extends Param
 {
+    
+    private static final Logger $Logger = new Logger(AppInterfaceInfo.class);
     
     private static final long serialVersionUID = 2497294980260367411L;
 
@@ -263,7 +266,7 @@ public class AppInterfaceInfo extends Param
         }
         catch (Exception exce)
         {
-            System.out.println("\njava.lang.ClassNotFoundException(" + i_RequestClass + ") for [" + i_AIFName + "].\n");
+            $Logger.error("\njava.lang.ClassNotFoundException(" + i_RequestClass + ") for [" + i_AIFName + "].\n" ,exce);
         }
         
         v_Requests.put(i_AIFName ,v_AIF);
@@ -299,7 +302,7 @@ public class AppInterfaceInfo extends Param
         }
         catch (Exception exce)
         {
-            System.out.println("\n\njava.lang.ClassNotFoundException(" + i_ResponseClass + ") for [" + i_AIFName + "].\n");
+            $Logger.error("\n\njava.lang.ClassNotFoundException(" + i_ResponseClass + ") for [" + i_AIFName + "].\n" ,exce);
         }
         
         v_Responses.put(i_AIFName ,v_AIF);

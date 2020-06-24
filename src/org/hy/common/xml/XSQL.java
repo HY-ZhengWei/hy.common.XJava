@@ -139,6 +139,7 @@ import org.hy.common.xml.event.BLobEvent;
  *              v18.0 2019-12-25  添加：预编译支持NULL值的写入。发现人：张宇
  *              v19.0 2020-05-26  添加：执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎 
  *                                添加：执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。
+ *              v20.0 2020-06-24  添加：通过日志引擎规范输出日志
  */
 /*
  * 游标类型的说明
@@ -5156,6 +5157,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                     }
                     catch (Exception exce)
                     {
+                        $Logger.error(exce);
                         exce.printStackTrace();
                     }
                     
@@ -5195,6 +5197,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 }
                 catch (Exception exce)
                 {
+                    $Logger.error(exce);
                     exce.printStackTrace();
                 }
             }
@@ -5474,6 +5477,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 				}
 				catch (Exception exce)
 				{
+				    $Logger.error(exce);
 					exce.printStackTrace();
 				}
 				
@@ -5489,6 +5493,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 				}
 				catch (Exception exce)
 				{
+				    $Logger.error(exce);
 					exce.printStackTrace();
 				}
 				
@@ -5512,6 +5517,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 				}
 				catch (Exception exce)
 				{
+				    $Logger.error(exce);
 					exce.printStackTrace();
 				}
 			}
@@ -5750,6 +5756,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 				}
 				catch (Exception exce)
 				{
+				    $Logger.error(exce);
 					exce.printStackTrace();
 				}
 				
@@ -5765,6 +5772,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 				}
 				catch (Exception exce)
 				{
+				    $Logger.error(exce);
 					exce.printStackTrace();
 				}
 				
@@ -6779,6 +6787,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     	}
     	catch (Exception exce)
     	{
+    	    $Logger.error(exce);
     		throw new RuntimeException(exce.getMessage());
     	}
     	finally
@@ -6797,6 +6806,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     	}
     	catch (Exception exce)
     	{
+    	    $Logger.error(exce);
     		throw new RuntimeException(exce.getMessage());
     	}
     	finally
@@ -6815,6 +6825,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     	}
     	catch (Exception exce)
     	{
+    	    $Logger.error(exce);
     		throw new RuntimeException(exce.getMessage());
     	}
     	finally
@@ -7167,6 +7178,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 catch (Exception exce)
                 {
                     v_IsOK = false;
+                    $Logger.error(exce);
                     exce.printStackTrace();
                 }
             }
@@ -7190,6 +7202,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     	        catch (Exception exce)
     	        {
     	            v_IsOK = false;
+    	            $Logger.error(exce);
     	            exce.printStackTrace();
     	        }
     	    }
@@ -7338,6 +7351,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             }
             catch (Exception exce)
             {
+                $Logger.error(exce);
                 exce.printStackTrace();
             }
         }
@@ -7454,6 +7468,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 else
                 {
                     System.err.println("Create object[" + this.create + "] Error. " + Help.NVL(this.comment));
+                    $Logger.error("Create object[" + this.create + "] Error. " + Help.NVL(this.comment));
                 }
                 
                 return v_Ret;
@@ -7462,6 +7477,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (Exception exce)
         {
             System.err.println("Create object[" + this.create + "] Error. " + Help.NVL(this.comment));
+            $Logger.error("Create object[" + this.create + "] Error. " + Help.NVL(this.comment) ,exce);
             exce.printStackTrace();
         }
         
@@ -7751,9 +7767,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             }
         }
         
-        System.err.println("\n-- Error time:    " + Date.getNowTime().getFull() 
-                         + "\n-- Error XSQL ID: " + v_XJavaID
-                         + "\n-- Error SQL:     " + i_SQL);
+        $Logger.error("\n-- Error time:    " + Date.getNowTime().getFull() 
+                    + "\n-- Error XSQL ID: " + v_XJavaID
+                    + "\n-- Error SQL:     " + i_SQL ,i_Exce);
         
         i_Exce.printStackTrace();
     }
