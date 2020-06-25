@@ -48,6 +48,7 @@ import org.hy.common.file.FileHelp;
  *              v5.3  2020-06-16  添加：区分SLF4J是引用Log4J，还是引用Logback。
  *              v6.0  2020-06-20  添加：通过方法内两次及以上的多次日志输出，尝试计算出方法执行用时。
  *                                      建议人：李浩; 解决方案：程志华
+ *              v7.0  2020-06-25  添加：无日志组件的日志输出提示
  */
 public class Logger
 {
@@ -112,7 +113,9 @@ public class Logger
     private static Method                       $DebugIsEnabled;
                                                 
     private static Method                       $TraceIsEnabled;
-                                                
+    
+    private static Method                       $LogMethodNull;
+    
     private static Method                       $LogMethod;
                                                 
     private static Method                       $LogMethod_Log4j2Throwable;
@@ -184,6 +187,20 @@ public class Logger
      * 仅限内部使用
      */
     private Map<String ,Long>                   methodExecLastime;
+    
+    
+    
+    static 
+    {
+        try
+        {
+            $LogMethodNull = Logger.class.getMethod("toString");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
     
     
     
@@ -521,7 +538,7 @@ public class Logger
                 {
                     if ( $LogType == $LogType_SLF4J )
                     {
-                        intiSLF4JMethod(this.log);
+                        initSLF4JMethod(this.log);
                         initSLF4JLevels();
                         
                         $FatalIsEnabled = null;
@@ -533,7 +550,7 @@ public class Logger
                     }
                     else if ( $LogType == $LogType_Log4J )
                     {
-                        intiLog4JMethod(this.log);
+                        initLog4JMethod(this.log);
                         initLog4JLevels();
                         
                         if ( $LogVersion == 1 )
@@ -567,10 +584,24 @@ public class Logger
             try
             {
                 this.logClass = Help.forName(i_ClassName);
+                
+                if ( $LogMethod != $LogMethodNull )
+                {
+                    showLoggerInfo(this.logClass);
+                    $LogMethod = $LogMethodNull;
+                }
             }
             catch (ClassNotFoundException e)
             {
                 e.printStackTrace();
+            }
+        }
+        else
+        {
+            if ( $LogMethod != $LogMethodNull )
+            {
+                showLoggerInfo(null);
+                $LogMethod = $LogMethodNull;
             }
         }
     }
@@ -596,7 +627,12 @@ public class Logger
             if ( $LogType == $LogType_SLF4J )
             {
                 String v_LoggerName = i_Log.getClass().getName();
-                if ( "ch.qos.logback.classic.Logger".equalsIgnoreCase(v_LoggerName) )
+                if ( "org.slf4j.helpers.NOPLogger".equalsIgnoreCase(v_LoggerName) )
+                {
+                    v_Buffer.append("Loading logger is SLF4J ,but not any implementation (").append(Date.getNowTime().getFullMilli()).append(")\n");
+                    v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("SFL4J_NoLogger.txt") ,"UTF-8" ,true));
+                }
+                else if ( "ch.qos.logback.classic.Logger".equalsIgnoreCase(v_LoggerName) )
                 {
                     v_Buffer.append("Loading logger is SLF4J & Logback (").append(Date.getNowTime().getFullMilli()).append(")\n");
                     v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("SFL4J_Logback.txt") ,"UTF-8" ,true));
@@ -611,6 +647,15 @@ public class Logger
             {
                 v_Buffer.append("Loading logger is Log4J " + $LogVersion + ".x (").append(Date.getNowTime().getFullMilli()).append(")\n");
                 v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("Log4J.txt") ,"UTF-8" ,true));
+            }
+            else if ( i_Log != null )
+            {
+                v_Buffer.append("Loading logger is System.out (").append(Date.getNowTime().getFullMilli()).append(")\n\n");
+            }
+            else 
+            {
+                v_Buffer.append("Loading logger is not any implementation (").append(Date.getNowTime().getFullMilli()).append(")\n");
+                v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("NoLogger.txt") ,"UTF-8" ,true));
             }
         }
         catch (Exception exce)
@@ -681,7 +726,7 @@ public class Logger
                     // Log4j 1.x 的版本
                     // v_MarkerClass = null;
                     $LogClass     = Help.forName("org.apache.log4j.Logger");
-                    $LogClass     = Help.forName("org.apache.log4j.LogManager");
+                    $LogManager   = Help.forName("org.apache.log4j.LogManager");
                     $LogType      = $LogType_Log4J;
                     $LogVersion   = 1;
                 }
@@ -704,7 +749,7 @@ public class Logger
      *
      * @param i_Log         SLF4J实现类
      */
-    private static synchronized void intiSLF4JMethod(Object i_Log)
+    private static synchronized void initSLF4JMethod(Object i_Log)
     {
         if ( $LogMethod != null )
         {
@@ -757,6 +802,8 @@ public class Logger
                 }
             }
         }
+        
+        $LogMethod = $LogMethodNull;
     }
     
     
@@ -770,7 +817,7 @@ public class Logger
      *
      * @param i_Log         Log4J实现类
      */
-    private static synchronized void intiLog4JMethod(Object i_Log)
+    private static synchronized void initLog4JMethod(Object i_Log)
     {
         if ( $LogMethod != null )
         {
@@ -860,6 +907,8 @@ public class Logger
                 }
             }
         }
+        
+        $LogMethod = $LogMethodNull;
     }
     
     
@@ -1342,7 +1391,7 @@ public class Logger
     {
         this.request(getLevelName(i_Level));
         
-        if ( this.log != null )
+        if ( this.log != null && $LogMethod != $LogMethodNull )
         {
             try
             {
