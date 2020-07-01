@@ -3531,6 +3531,7 @@ public class AnalyseBase extends Analyse
         v_RKey.put(":ExecSumTime"     ,"<span style='color:" + (v_SumExecSumTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Date.toTimeLen(v_SumExecSumTime) : "-") + "</span>");
         v_RKey.put(":ExecAvgTime"     ,"<span style='color:" + (v_SumExecSumTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Help.round(Help.division(v_SumExecSumTime ,Help.division(v_SumRequestCount , v_SumTotalCount)) ,2) : "-") + "</span>");
         v_RKey.put(":LastTime"        ,"-");
+        v_RKey.put(":ErrorFatalIP"    ,"");
         
         v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
         
