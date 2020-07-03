@@ -102,7 +102,7 @@ import org.hy.common.xml.event.BLobEvent;
  *              v7.0  2017-09-18  添加：数据库连接的域。实现相同数据库结构下的，多个数据库间的分域功能。
  *                                     多个数据库间的相同SQL语句，不用重复写多次，只须通过"分域"动态改变数据库连接池组即可。
  *              v7.1  2017-11-06  修正：当预处理 this.executeUpdatesPrepared_Inner() 执行的同时 batchCommit >= 1时，可能出现未"执行executeBatch"情况。
- *                                       发现人：向以前同学
+ *                                       发现人：向以前
  *              v8.0  2017-12-19  添加：将参数效验检查抛出的异常，也包括在try{}cacth{}内，自己抛出自己捕获，并记录在统计数据中。
  *                                       记录完成后再向外抛出。
  *                                       方便异常定位页面统计数据：http://IP:Port/服务名/analyses/analyseDB
