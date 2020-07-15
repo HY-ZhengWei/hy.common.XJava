@@ -3460,7 +3460,7 @@ public class AnalyseBase extends Analyse
         // 排序类型(Error级日志量)
         else if ( "errorCount".equalsIgnoreCase(i_SortType) )
         {
-            Help.toSort(v_TotalList ,"ErrorFatalCount DESC" ,"className" ,"methodName" ,"requestCount DESC" ,"lastTime DESC");
+            Help.toSort(v_TotalList ,"ErrorFatalCount DESC" ,"execAvgTime DESC" ,"execSumTime DESC" ,"requestCount DESC" ,"className" ,"methodName");
         }
         // 排序类型(业务累计用时)
         else if ( "execSumTime".equalsIgnoreCase(i_SortType) )
