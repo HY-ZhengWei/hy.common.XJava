@@ -38,7 +38,6 @@
 	<classpathentry kind="lib" path="lib/drools/kie-soup-project-datamodel-api-7.37.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/drools/kie-soup-project-datamodel-commons-7.37.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/drools/mvel2-2.4.7.Final.jar"/>
-	<classpathentry kind="lib" path="lib/drools/slf4j-api-1.7.26.jar"/>
 	<classpathentry kind="lib" path="lib/drools/drools-compiler-7.37.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/spring_5x/spring-beans-5.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring_5x/spring-context-5.0.7.RELEASE.jar"/>
@@ -46,5 +45,9 @@
 	<classpathentry kind="lib" path="lib/spring_5x/spring-web-5.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring_5x/spring-webmvc-5.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring_boot/spring-boot-2.0.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-api-2.13.3.jar"/>
+	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-core-2.13.3.jar"/>
+	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-slf4j-impl-2.13.3.jar"/>
+	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/slf4j-api-1.7.30.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

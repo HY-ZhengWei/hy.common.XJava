@@ -17,17 +17,19 @@ public class JU_Log
         // PropertyConfigurator.configure(url);
 
         Logger logger = LoggerFactory.getLogger(JU_Log.class);
-        logger.fatal("fatal msg");
-        logger.error("error msg");
-        logger.warn("warn msg");
-        logger.info("info msg");
-        logger.debug("debug msg");
-        logger.trace("trace msg");
+//        logger.fatal("fatal msg");
+//        logger.error("error msg");
+//        logger.warn("warn msg");
+//        logger.info("info msg");
+//        logger.debug("debug msg");
+//        logger.trace("trace msg");
+//        
+//        logger.fatal("fatal msg" ,"123456");
+//        logger.fatal("fatal msg" ,"123456" ,"654321");
         
-        logger.fatal("fatal msg" ,"123456");
-        logger.fatal("fatal msg" ,"123456" ,"654321");
+        //logger.info("工作台：用户{}进入log4j\n", "123456");
         
-        logger.info("工作台：用户{}进入log4j\n", "123456");
+        logger.info("查询用户{}的{}{}数据：{}" ,"1", "2", "3" ,"4");
         
         new JU_Log_IsSame().test_Log_IsSame();
     }
