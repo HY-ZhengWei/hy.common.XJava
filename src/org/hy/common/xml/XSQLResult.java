@@ -1774,7 +1774,7 @@ public final class XSQLResult
 		}
 		else
 		{
-			throw new NoSuchMethodError("Fill method name[" + this.fill + "] is not exist.");
+			throw new RuntimeException("Fill method name[" + this.fill + "] is not exist.");
 		}
 		
 		
@@ -1812,12 +1812,12 @@ public final class XSQLResult
 				
 				if ( v_AttrMethodList.size() == 0 )
 				{
-					throw new NoSuchMethodError("Row.Getter method name[" + v_ParamArr[i].trim() + "] is not exist.");
+					throw new RuntimeException("Row.Getter method name[" + v_ParamArr[i].trim() + "] is not exist.");
 				}
 				else if ( v_AttrMethodList.size() > 1 )
 				{
 					// 对象属性方法有多个重载方法，无法正确识别
-					throw new NoSuchMethodError("Row.Getter method name[" + v_ParamArr[i].trim() + "] have much override methods.");
+					throw new RuntimeException("Row.Getter method name[" + v_ParamArr[i].trim() + "] have much override methods.");
 				}
 				
 				v_ParamClassArr_int[i]     = v_AttrMethodList.get(0).getReturnType();
@@ -1828,7 +1828,7 @@ public final class XSQLResult
 			else
 			{
 				// 方法的参数形式只能是 row、rowNo、row.xxx
-				throw new NoSuchMethodError("Fill method[" + this.fill + "] Parameter is not valid. Parameter only 'row' or 'rowNo' or 'row.xxx'.");
+				throw new RuntimeException("Fill method[" + this.fill + "] Parameter is not valid. Parameter only 'row' or 'rowNo' or 'row.xxx'.");
 			}
 			
 			this.fillMethod.addParam(v_MethodParam);
@@ -1860,12 +1860,12 @@ public final class XSQLResult
 			// 行级填充方法有多个重载方法，无法正确识别
 			if ( this.fillMethod.getCall() == null )
 			{
-				throw new NoSuchMethodError("Fill method name[" + this.fill + "] have much override methods.");
+				throw new RuntimeException("Fill method name[" + this.fill + "] have much override methods.");
 			}
 		}
 		else
 		{
-			throw new NoSuchMethodError("Fill method name[" + this.fill + "] is not exist.");
+			throw new RuntimeException("Fill method name[" + this.fill + "] is not exist.");
 		}
 		
 	}
@@ -1895,7 +1895,7 @@ public final class XSQLResult
 		}
 		else
 		{
-			throw new NoSuchMethodError("CFill method name[" + this.cfill + "] is not exist.");
+			throw new RuntimeException("CFill method name[" + this.cfill + "] is not exist.");
 		}
 		
 		
@@ -2027,7 +2027,7 @@ public final class XSQLResult
 				else
 				{
 					// 方法的参数形式只能是 colValue、colNo、colName
-					throw new NoSuchMethodError("CFill method[" + this.cfill + "] Parameter is not valid. Parameter only 'colValue' or 'colNo' or 'colName'.");
+					throw new RuntimeException("CFill method[" + this.cfill + "] Parameter is not valid. Parameter only 'colValue' or 'colNo' or 'colName'.");
 				}
 				
 				this.cfillMethodArr[0].addParam(v_MethodParam);
@@ -2059,12 +2059,12 @@ public final class XSQLResult
 				// 列级填充方法有多个重载方法，无法正确识别
 				if ( this.cfillMethodArr[0].getCall() == null )
 				{
-					throw new NoSuchMethodError("CFill method name[" + this.cfill + "] have much override methods.");
+					throw new RuntimeException("CFill method name[" + this.cfill + "] have much override methods.");
 				}
 			}
 			else
 			{
-				throw new NoSuchMethodError("CFill method name[" + this.cfill + "] is not exist.");
+				throw new RuntimeException("CFill method name[" + this.cfill + "] is not exist.");
 			}
 		
 		}
@@ -2184,8 +2184,9 @@ public final class XSQLResult
 	 * 
 	 * @return
 	 * @throws ClassNotFoundException
+	 * @throws InstantiationException 
 	 */
-	private Object newTableObject() throws ClassNotFoundException
+	private Object newTableObject() throws ClassNotFoundException, InstantiationException
 	{
 		Object v_TableInstance = null;
 		
@@ -2195,7 +2196,7 @@ public final class XSQLResult
 		}
 		catch (Exception exce)
 		{
-			throw new InstantiationError("Table Class(" + this.table + ") instantiation is error.");
+			throw new InstantiationException("Table Class(" + this.table + ") instantiation is error.");
 		}
 		
 		return v_TableInstance;
@@ -2208,8 +2209,9 @@ public final class XSQLResult
 	 * 
 	 * @return
 	 * @throws ClassNotFoundException
+	 * @throws InstantiationException 
 	 */
-	private Object newRowObject() throws ClassNotFoundException
+	private Object newRowObject() throws ClassNotFoundException, InstantiationException
 	{
 		Object v_TableInstance = null;
 		
@@ -2219,7 +2221,7 @@ public final class XSQLResult
 		}
 		catch (Exception exce)
 		{
-			throw new InstantiationError("Row Class(" + this.row + ") instantiation is error.");
+			throw new InstantiationException("Row Class(" + this.row + ") instantiation is error.");
 		}
 		
 		return v_TableInstance;
@@ -2271,7 +2273,7 @@ public final class XSQLResult
 			{
 				if ( !"SETTER(COLVALUE)".equalsIgnoreCase(i_CFill.trim()) )
 				{
-					throw new NoSuchMethodError("CFill[" + i_CFill + "] inconformity standard. Setter method parameter Only 'colValue'.");
+					throw new RuntimeException("CFill[" + i_CFill + "] inconformity standard. Setter method parameter Only 'colValue'.");
 				}
 			}
 			
@@ -2281,7 +2283,7 @@ public final class XSQLResult
 		else
 		{
 			// 填充方法不符合规范
-			throw new NoSuchMethodError("CFill[" + i_CFill + "] inconformity standard.");
+			throw new RuntimeException("CFill[" + i_CFill + "] inconformity standard.");
 		}
 	}
 	
@@ -2309,7 +2311,7 @@ public final class XSQLResult
 		else
 		{
 			// 填充方法不符合规范
-			throw new NoSuchMethodError("Fill[" + i_Fill + "] inconformity standard");
+			throw new RuntimeException("Fill[" + i_Fill + "] inconformity standard");
 		}
 	}
 	

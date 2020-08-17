@@ -1827,7 +1827,7 @@ public final class XJava
                                     catch (Exception exce)
                                     {
                                         // 执行属性的Setter方法注入参数异常
-                                        throw new IllegalAccessError("Call Field's[" + v_Field.getName() + "] Setter Method[" + v_Method.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "].");
+                                        throw new RuntimeException("Call Field's[" + v_Field.getName() + "] Setter Method[" + v_Method.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "].");
                                     }
                                 }
                             }
@@ -2774,12 +2774,12 @@ public final class XJava
 								}
 								catch (Exception exce)
 								{
-									throw new InstantiationError("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].\n" + exce.getMessage());
+									throw new InstantiationException("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].\n" + exce.getMessage());
 								}
 							}
 							else
 							{
-								throw new InstantiationError("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+								throw new InstantiationException("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
 							}
 						}
 						else

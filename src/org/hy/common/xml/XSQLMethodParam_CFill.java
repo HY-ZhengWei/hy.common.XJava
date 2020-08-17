@@ -38,6 +38,7 @@ public final class XSQLMethodParam_CFill
 	 * 
 	 * @param i_ParamType
 	 * @return
+	 * @throws InstantiationException 
 	 */
 	public static XSQLMethodParam getInstance(int i_ParamType)
 	{
@@ -55,7 +56,7 @@ public final class XSQLMethodParam_CFill
 		}
 		else
 		{
-			throw new InstantiationError("Param type is error.");
+			throw new RuntimeException("Param type is error.");
 		}
 	}
 	

@@ -54,7 +54,7 @@ public final class XSQLMethodParam_Fill
 		}
 		else
 		{
-			throw new InstantiationError("Param type is error.");
+			throw new RuntimeException("Param type is error.");
 		}
 	}
 	
@@ -90,7 +90,7 @@ public final class XSQLMethodParam_Fill
 		}
 		else
 		{
-			throw new InstantiationError("Param type is error.");
+			throw new RuntimeException("Param type is error.");
 		}
 	}
 	
@@ -301,7 +301,7 @@ class XSQLMethodParam_Fill_Row_Getter implements XSQLMethodParam
 		}
 		catch (Exception exce)
 		{
-			throw new NoSuchMethodError(exce.getMessage());
+			throw new RuntimeException(exce.getMessage());
 		}
 	}
 	

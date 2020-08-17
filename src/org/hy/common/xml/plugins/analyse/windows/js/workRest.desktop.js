@@ -2,6 +2,7 @@ var v_DayInfoColors = d3.scaleOrdinal(d3.schemeCategory10);
 var v_DayInfos      = new Object();
 
 
+
 d3.selectAll(".dayInfoBarCloseBtn").on("click" ,function()
 {
     d3.select("#dayInfoBar").style("visibility" ,"hidden").style("height" ,"0px");
@@ -34,19 +35,19 @@ function showDayInfo_OnClick(i_Year ,i_Month ,i_Day ,i_DayInfo)
   
     
     var v_DayInfo = v_DayInfos["y" + i_Year + "m" + i_Month];
-    if ( v_DayInfo == null || v_DayInfo[0] == null || v_DayInfo[0].data == null || v_DayInfo[0].data.length <= 0 )
+    if ( v_DayInfo == null || v_DayInfo.length <= 0 )
     {
         loadingDayInfos(i_Year ,i_Month ,false);
         v_DayInfo = v_DayInfos["y" + i_Year + "m" + i_Month];
     }
-    if ( v_DayInfo == null || v_DayInfo[0] == null || v_DayInfo[0].data == null || v_DayInfo[0].data.length <= 0 )
+    if ( v_DayInfo == null || v_DayInfo.length <= 0 )
     {
         d3.selectAll(".dayInfoTitle").html(i_Year + "-" + i_Month + "-" + i_Day + " 暂无安排");
         return;
     }
     else
     {
-        v_DayInfo = v_DayInfo[0].data[i_Day - 1];
+        v_DayInfo = v_DayInfo[i_Day - 1];
         if ( v_DayInfo.tasks == null || v_DayInfo.tasks.length <= 0 )
         {
             d3.selectAll(".dayInfoTitle").html(v_DayInfo.taskDate + " 暂无安排");
@@ -107,7 +108,12 @@ function loadingDayInfos(i_Year ,i_Month ,i_IsAsync)
        }
       ,function(data)
       {
-          v_DayInfos["y" + i_Year + "m" + i_Month] = data;
+          if ( data == null || data[0] == null || data[0].data == null || data[0].user == null )
+          {
+              return;
+          }
+          v_DayInfos["y" + i_Year + "m" + i_Month] = data[0].data;
+          app.reLoadRefreshUser(data[0].user.userName ,data[0].user.modelID);
       });
     
     $.ajaxSettings.async = true;

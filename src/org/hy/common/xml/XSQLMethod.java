@@ -252,7 +252,7 @@ public final class XSQLMethod
 		    {
 		        v_VString = StringHelp.toString(v_Values);
 		    }
-			throw new NoSuchMethodError(i_Father.getClass().getName() + "." + this.call.getName() + "(" + v_VString + ").\n" + exce.getMessage());
+			throw new RuntimeException(i_Father.getClass().getName() + "." + this.call.getName() + "(" + v_VString + ").\n" + exce.getMessage());
 		}
 	}
 	

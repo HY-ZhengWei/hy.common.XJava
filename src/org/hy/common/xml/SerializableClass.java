@@ -9,6 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.RuntimeErrorException;
+
 import org.hy.common.Date;
 import org.hy.common.GenericsReturn;
 import org.hy.common.Help;
@@ -292,7 +294,7 @@ public class SerializableClass implements Serializable
         }
         catch (Exception exce)
         {
-            throw new Error(exce.getMessage());
+            throw new RuntimeException(exce.getMessage());
         }
     }
     

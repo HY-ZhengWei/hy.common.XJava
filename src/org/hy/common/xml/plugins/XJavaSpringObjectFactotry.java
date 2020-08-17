@@ -198,7 +198,7 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
         catch (Exception exce)
         {
             exce.printStackTrace();
-            throw new NoSuchMethodError("DefaultListableBeanFactory.doResolveDependency is unknown Spring version.");
+            throw new RuntimeException("DefaultListableBeanFactory.doResolveDependency is unknown Spring version.");
         }
     }
     
