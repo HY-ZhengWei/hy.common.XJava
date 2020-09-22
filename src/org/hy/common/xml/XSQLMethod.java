@@ -228,7 +228,10 @@ public final class XSQLMethod
                         }
                     }
                     
-                    this.call.invoke(v_CollectionElementTemp ,v_Values);
+                    if ( v_CollectionElementTemp != null )
+                    {
+                        this.call.invoke(v_CollectionElementTemp ,v_Values);
+                    }
                 }
                 else if ( this.collection == Set.class )
                 {
@@ -250,7 +253,10 @@ public final class XSQLMethod
                         }
                     }
                     
-                    this.call.invoke(v_CollectionElementTemp ,v_Values);
+                    if ( v_CollectionElementTemp != null )
+                    {
+                        this.call.invoke(v_CollectionElementTemp ,v_Values);
+                    }
                 }
                 else
                 {
