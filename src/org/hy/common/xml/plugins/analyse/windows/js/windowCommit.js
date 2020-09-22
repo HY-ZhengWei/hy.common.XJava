@@ -8,16 +8,16 @@
  */
 function commitWindowAppCreate(i_NewApp)
 {
-	if ( !v_IsCommit )
-	{
-		return;
-	}
-	
-	$.post("addWidnowDesktopApp.page"
-		,i_NewApp
-		,function(data)
-		{
-		});
+    if ( !v_IsCommit )
+    {
+        return;
+    }
+    
+    $.post("addWindowDesktopApp.page"
+        ,i_NewApp
+        ,function(data)
+        {
+        });
 }
 
 
@@ -32,16 +32,16 @@ function commitWindowAppCreate(i_NewApp)
  */
 function commitWindowAppEdit(i_EditApp)
 {
-	if ( !v_IsCommit )
-	{
-		return;
-	}
-	
-	$.post("editWidnowDesktopApp.page"
-		,i_EditApp
-		,function(data)
-		{
-		});
+    if ( !v_IsCommit )
+    {
+        return;
+    }
+    
+    $.post("editWindowDesktopApp.page"
+        ,i_EditApp
+        ,function(data)
+        {
+        });
 }
 
 
@@ -56,16 +56,16 @@ function commitWindowAppEdit(i_EditApp)
  */
 function commitWindowAppXXColorSize(i_EditApp)
 {
-	if ( !v_IsCommit )
-	{
-		return;
-	}
-	
-	$.post("editWidnowDesktopXYColorSize.page"
-		,i_EditApp
-		,function(data)
-		{
-		});
+    if ( !v_IsCommit )
+    {
+        return;
+    }
+    
+    $.post("editWindowDesktopXYColorSize.page"
+        ,i_EditApp
+        ,function(data)
+        {
+        });
 }
 
 
@@ -80,16 +80,16 @@ function commitWindowAppXXColorSize(i_EditApp)
  */
 function commitWindowAppName(i_EditApp)
 {
-	if ( !v_IsCommit )
-	{
-		return;
-	}
-	
-	$.post("editWidnowDesktopAppName.page"
-		,i_EditApp
-		,function(data)
-		{
-		});
+    if ( !v_IsCommit )
+    {
+        return;
+    }
+    
+    $.post("editWindowDesktopAppName.page"
+        ,i_EditApp
+        ,function(data)
+        {
+        });
 }
 
 
@@ -104,16 +104,16 @@ function commitWindowAppName(i_EditApp)
  */
 function commitWindowAppDel(i_DelApp)
 {
-	if ( !v_IsCommit )
-	{
-		return;
-	}
-	
-	$.post("delWidnowDesktopApp.page"
-		,i_DelApp
-		,function(data)
-		{
-		});
+    if ( !v_IsCommit )
+    {
+        return;
+    }
+    
+    $.post("delWindowDesktopApp.page"
+        ,i_DelApp
+        ,function(data)
+        {
+        });
 }
 
 
@@ -128,16 +128,16 @@ function commitWindowAppDel(i_DelApp)
  */
 function commitWindowAppRecovery(i_RecoveryApp)
 {
-	if ( !v_IsCommit )
-	{
-		return;
-	}
-	
-	$.post("recoveryWidnowDesktopApp.page"
-		,i_RecoveryApp
-		,function(data)
-		{
-		});
+    if ( !v_IsCommit )
+    {
+        return;
+    }
+    
+    $.post("recoveryWindowDesktopApp.page"
+        ,i_RecoveryApp
+        ,function(data)
+        {
+        });
 }
 
 
@@ -152,16 +152,16 @@ function commitWindowAppRecovery(i_RecoveryApp)
  */
 function commitWindowAppOpenCount(i_OpenApp)
 {
-	if ( !v_IsCommit )
-	{
-		return;
-	}
-	
-	$.post("openCountApp.page"
-		,i_OpenApp
-		,function(data)
-		{
-		});
+    if ( !v_IsCommit )
+    {
+        return;
+    }
+    
+    $.post("openCountApp.page"
+        ,i_OpenApp
+        ,function(data)
+        {
+        });
 }
 
 
@@ -176,18 +176,18 @@ function commitWindowAppOpenCount(i_OpenApp)
  */
 function commitDesktopBG(i_DesktopBG)
 {
-	if ( !v_IsCommit )
-	{
-		return;
-	}
-	
-	i_DesktopBG.userID = v_UserID;
-	
-	$.post("desktopBG.page"
-		   ,i_DesktopBG
-		   ,function(data)
-		   {
-		   });
+    if ( !v_IsCommit )
+    {
+        return;
+    }
+    
+    i_DesktopBG.userID = v_UserID;
+    
+    $.post("desktopBG.page"
+           ,i_DesktopBG
+           ,function(data)
+           {
+           });
 }
 
 
@@ -201,15 +201,15 @@ function commitDesktopBG(i_DesktopBG)
  */
 function commitLogout()
 {
-	if ( !v_IsCommit )
-	{
-		return;
-	}
-	
-	$.post("../login/logout.page"
-	,{}
-	,function(data)
-	{
-		window.location.href = "../home/index.page";
-	});
+    if ( !v_IsCommit )
+    {
+        return;
+    }
+    
+    $.post("../login/logout.page"
+    ,{}
+    ,function(data)
+    {
+        window.location.href = "../home/index.page";
+    });
 }
