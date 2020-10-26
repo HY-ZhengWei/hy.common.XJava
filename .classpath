@@ -6,7 +6,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.base"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.db"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.file"/>
-	<classpathentry kind="lib" path="lib/junit-4.11.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.net"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.tpool"/>
@@ -49,5 +48,6 @@
 	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-core-2.13.3.jar"/>
 	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-slf4j-impl-2.13.3.jar"/>
 	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/slf4j-api-1.7.30.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4.13.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

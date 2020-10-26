@@ -33,6 +33,7 @@ import org.hy.common.StringHelp;
  *              v2.2  2018-05-15  添加：数据库java.sql.Timestamp时间的转换
  *              v3.0  2018-06-14  添加：支持Clob大类型字段类型的读取
  *              v4.0  2020-09-22  添加：解决一对多关系时，对象的所有属性为空时，不向集合add元素。发现人：李浩
+ *              v5.0  2020-10-26  添加：对Byte[]数组、SQL Server Varbinary的支持。发现人：马龙
  */
 public final class XSQLMethod
 {
@@ -371,6 +372,11 @@ public final class XSQLMethod
                    || v_SetterParamClass == Byte.class )
             {
                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getByte"       ,int.class);
+            }
+            else if ( v_SetterParamClass == byte[].class 
+                   || v_SetterParamClass == Byte[].class )
+            {
+                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getBytes"      ,int.class);
             }
             else if ( MethodReflect.isExtendImplement(v_SetterParamClass ,Enum.class) )
             {

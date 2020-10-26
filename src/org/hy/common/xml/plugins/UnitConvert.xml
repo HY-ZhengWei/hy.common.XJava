@@ -263,7 +263,7 @@
 			
 			
 			
-			<!-- 压力单位：绝压to表压的部 -->
+			<!-- 压力单位：绝压to表压的部分 -->
 			<call name="putRow">
 				<String>MPa.a</String>
 				<String>MPa.g</String>
@@ -374,7 +374,7 @@
 			
 			
 			
-			<!-- 压力单位：绝压to绝压的部 -->
+			<!-- 压力单位：绝压to绝压的部分 -->
 			<call name="putRow">
 				<String>MPa.a</String>
 				<String>bar.a</String>
