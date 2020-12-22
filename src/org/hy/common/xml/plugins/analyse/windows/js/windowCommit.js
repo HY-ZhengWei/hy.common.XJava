@@ -13,6 +13,11 @@ function commitWindowAppCreate(i_NewApp)
         return;
     }
     
+    i_NewApp.userID   = v_UserNo;   /* 工号 */
+    i_NewApp.userCode = v_UserID;   /* 登录账号 */
+    
+    console.log(i_NewApp);
+    
     $.post("addWindowDesktopApp.page"
         ,i_NewApp
         ,function(data)
@@ -37,11 +42,24 @@ function commitWindowAppEdit(i_EditApp)
         return;
     }
     
-    $.post("editWindowDesktopApp.page"
-        ,i_EditApp
-        ,function(data)
+    i_EditApp.userID   = v_UserNo;
+    i_EditApp.userCode = v_UserID;
+    
+    $.ajax({
+         async: true
+        ,dataType: "json"
+        ,type: "post"
+        ,url: "editWindowDesktopApp.page"
+        ,data: i_EditApp
+        ,success: function(data) 
         {
-        });
+            console.log(data);
+        }
+        ,error: function (message) 
+        {
+            console.log(message);
+        }
+    });
 }
 
 
@@ -60,6 +78,9 @@ function commitWindowAppXXColorSize(i_EditApp)
     {
         return;
     }
+    
+    i_EditApp.userID   = v_UserNo;
+    i_EditApp.userCode = v_UserID;
     
     $.post("editWindowDesktopXYColorSize.page"
         ,i_EditApp
@@ -85,6 +106,9 @@ function commitWindowAppName(i_EditApp)
         return;
     }
     
+    i_EditApp.userID   = v_UserNo;
+    i_EditApp.userCode = v_UserID;
+    
     $.post("editWindowDesktopAppName.page"
         ,i_EditApp
         ,function(data)
@@ -108,6 +132,9 @@ function commitWindowAppDel(i_DelApp)
     {
         return;
     }
+    
+    i_DelApp.userID   = v_UserNo;
+    i_DelApp.userCode = v_UserID;
     
     $.post("delWindowDesktopApp.page"
         ,i_DelApp
@@ -133,6 +160,9 @@ function commitWindowAppRecovery(i_RecoveryApp)
         return;
     }
     
+    i_RecoveryApp.userID   = v_UserNo;
+    i_RecoveryApp.userCode = v_UserID;
+    
     $.post("recoveryWindowDesktopApp.page"
         ,i_RecoveryApp
         ,function(data)
@@ -156,6 +186,9 @@ function commitWindowAppOpenCount(i_OpenApp)
     {
         return;
     }
+    
+    i_OpenApp.userID   = v_UserNo;
+    i_OpenApp.userCode = v_UserID;
     
     $.post("openCountApp.page"
         ,i_OpenApp
@@ -181,7 +214,8 @@ function commitDesktopBG(i_DesktopBG)
         return;
     }
     
-    i_DesktopBG.userID = v_UserID;
+    i_DesktopBG.userID   = v_UserNo;
+    i_DesktopBG.userCode = v_UserID;
     
     $.post("desktopBG.page"
            ,i_DesktopBG
@@ -212,4 +246,82 @@ function commitLogout()
     {
         window.location.href = "../home/index.page";
     });
+}
+
+
+
+/**
+ * 保存Window应用与系统的关系
+ * 
+ * @param i_EditApp
+ * @returns
+ * 
+ * ZhengWei(HY) Add 2019-09-08
+ */
+function commitSaveAppBySystem(i_EditApp)
+{
+    if ( !v_IsCommit )
+    {
+        return;
+   }
+    
+    i_EditApp.userID   = v_UserNo;
+    i_EditApp.userCode = v_UserID;
+    
+    $.post(
+        "saveAppBySystem.page"
+       ,i_EditApp
+       ,function(data)
+       {
+           if ( data )
+           {
+               if ( data.datas == '1' )
+               {
+                   alert("同步记录完成");
+               }
+               else if ( data.datas == '-1' )
+               {
+                   alert("您尚未取得权限，可向管理员申请");
+               }
+               else
+               {
+                   alert("数据不完整或异常，请稍的重试");
+               }
+           }
+           else
+           {
+               alert("数据不完整或异常，请稍的重试");
+           }
+           
+           console.log(data);
+       }
+    );
+}
+
+
+
+/**
+ * 同步云端桌面
+ * 
+ * @param i_DesktopBG
+ * @returns
+ * 
+ * ZhengWei(HY) Add 2020-08-27
+ */
+function commitSyncCloudDesktop(i_DesktopBG)
+{
+    if ( !v_IsCommit )
+    {
+        return;
+    }
+    
+    $.post("../login/syncCloudDesktop.page"
+           ,{
+               userID: v_UserNo
+            }
+           ,function(data)
+           {
+               console.log("同步云端桌面 = " + data);
+               location.reload();
+           });
 }

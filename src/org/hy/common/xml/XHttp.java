@@ -53,6 +53,7 @@ import org.hy.common.xml.log.Logger;
  *           V3.1  2018-11-15  添加1：新类型的转义方法 isEncode。
  *           V4.0  2020-06-09  添加1：支持序列化接口、XJavaID接口
  *           V5.0  2020-06-24  添加1：通过日志引擎规范输出日志
+ *           V6.0  2020-12-22  添加1：请求体中的独立数据与动态请求数据共存的请求处理功能
  */
 public final class XHttp extends SerializableDef implements XJavaID
 {  
@@ -175,12 +176,117 @@ public final class XHttp extends SerializableDef implements XJavaID
     /**
      * 发起Http请求 -- 对象参数
      * 
-     * @param   i_ParamObj  对象参数
+     * @author      ZhengWei(HY)
+     * @createDate  2013-08-06
+     * @version     v1.0
+     *
+     * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
+     *                      1. 当为Get请求时，表示请求URL的动态请求参加
+     *                      2. 当为Post请求时，表示请求体中的请求数据
+     *                      
      * @return  返回是否请求成功。
      *          Return.paramStr  保存响应信息
      *          Return.exception 保存异常信息
+     * @return
      */
-    public Return<?> request(Object i_ParamObj)
+    public Return<?> request(Object i_UrlData)
+    {
+        return this.request(i_UrlData ,(String)null);
+    }
+    
+    
+    
+    /**
+     * 发起Http请求 -- 对象参数
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2013-08-06
+     * @version     v1.0
+     *
+     * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
+     *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
+     *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
+     *                      
+     * @param   i_BodyData  请求体中的数据
+     *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
+     *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
+     *                      3. 只用于Post请求
+     *                      
+     * @return  返回是否请求成功。
+     *          Return.paramStr  保存响应信息
+     *          Return.exception 保存异常信息
+     * @return
+     */
+    public Return<?> request(Object i_UrlData ,Map<String ,?> i_BodyData)
+    {
+        return this.request(i_UrlData ,this.getParamsUrl(i_BodyData));
+    }
+    
+    
+    
+    /**
+     * 发起Http请求 -- 对象参数
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2013-08-06
+     * @version     v1.0
+     *              v2.0  2020-12-22  添加：请求体中的独立数据与动态请求数据共存的请求处理功能
+     *
+     * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
+     *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
+     *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
+     *                      
+     * @param   i_BodyData  请求体中的数据
+     *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
+     *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
+     *                      3. 只用于Post请求
+     * 
+     * @return  返回是否请求成功。
+     *          Return.paramStr  保存响应信息
+     *          Return.exception 保存异常信息
+     * @return
+     */
+    public Return<?> request(Object i_UrlData ,Object i_BodyData)
+    {
+        String v_BodyData = "";
+        
+        try
+        {
+            v_BodyData = this.getParamsUrl(i_BodyData);
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+        }
+        
+        return this.request(i_UrlData ,v_BodyData);
+    }
+    
+    
+    
+    /**
+     * 发起Http请求 -- 对象参数
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2013-08-06
+     * @version     v1.0
+     *              v2.0  2020-12-22  添加：请求体中的独立数据与动态请求数据共存的请求处理功能
+     *
+     * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
+     *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
+     *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
+     *                      
+     * @param   i_BodyData  请求体中的数据
+     *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
+     *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
+     *                      3. 只用于Post请求
+     * 
+     * @return  返回是否请求成功。
+     *          Return.paramStr  保存响应信息
+     *          Return.exception 保存异常信息
+     * @return
+     */
+    public Return<?> request(Object i_UrlData ,String i_BodyData)
     {
         if ( Help.isNull(this.getIp()) )
         {
@@ -195,17 +301,36 @@ public final class XHttp extends SerializableDef implements XJavaID
         
         try
         {
-            String v_ParamsUrl = this.getParamsUrl(i_ParamObj);
+            String v_ParamsUrl = this.getParamsUrl(i_UrlData);
             
             if ( this.requestType == $Request_Type_Post )
             {
+                String v_URLParamStr = this.getUrl();
+                
+                if ( !Help.isNull(i_BodyData) )
+                {
+                    if ( this.isToUnicode )
+                    {
+                        v_ParamsUrl = StringHelp.escape_toUnicode(v_ParamsUrl ,$NotInString);
+                    }
+                    else if ( this.isEncode )
+                    {
+                        v_ParamsUrl = StringHelp.encode(v_ParamsUrl ,this.getCharset() ,$NotInString);
+                    }
+                    
+                    if ( this.haveQuestionMark && v_URLParamStr.indexOf("?") < 0 )
+                    {
+                        v_URLParamStr = v_URLParamStr + "?";
+                    }
+                }
+                
                 if ( this.getPort() == 0 )
                 {
-                    v_URL = new URL(this.getProtocol() + "://" + this.getIp() + this.getUrl());
+                    v_URL = new URL(this.getProtocol() + "://" + this.getIp() + v_URLParamStr + (!Help.isNull(i_BodyData) ? v_ParamsUrl : ""));
                 }
                 else
                 {
-                    v_URL = new URL(this.getProtocol() ,this.getIp() ,this.getPort() ,this.getUrl());
+                    v_URL = new URL(this.getProtocol() ,this.getIp() ,this.getPort() ,v_URLParamStr + (!Help.isNull(i_BodyData) ? v_ParamsUrl : ""));
                 }
                 
                 if ( this.proxy != null )
@@ -230,7 +355,14 @@ public final class XHttp extends SerializableDef implements XJavaID
                 v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
                 v_URLConn.setRequestProperty("Cookie"       ,this.cookie.toString());
                 
-                v_URLConn.getOutputStream().write(v_ParamsUrl.getBytes(this.getCharset()));
+                if ( !Help.isNull(i_BodyData) )
+                {
+                    v_URLConn.getOutputStream().write(i_BodyData.getBytes(this.getCharset()));
+                }
+                else
+                {
+                    v_URLConn.getOutputStream().write(v_ParamsUrl.getBytes(this.getCharset()));
+                }
                 v_URLConn.getOutputStream().flush();
                 v_URLConn.getOutputStream().close();
             }
@@ -343,12 +475,116 @@ public final class XHttp extends SerializableDef implements XJavaID
     /**
      * 发起Http请求 -- 集合参数
      * 
-     * @param   i_ParamValues  集合参数
-     * @return  返回是否请求成功
+     * @author      ZhengWei(HY)
+     * @createDate  2013-08-06
+     * @version     v1.0
+     *
+     * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
+     *                      1. 当为Get请求时，表示请求URL的动态请求参加
+     *                      2. 当为Post请求时，表示请求体中的请求数据
+     *                      
+     * @return  返回是否请求成功。
      *          Return.paramStr  保存响应信息
      *          Return.exception 保存异常信息
+     * @return
      */
-    public Return<?> request(Map<String ,?> i_ParamValues)
+    public Return<?> request(Map<String ,?> i_UrlData)
+    {
+        return this.request(i_UrlData ,(String)null);
+    }
+    
+    
+    
+    /**
+     * 发起Http请求 -- 集合参数
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-12-22
+     * @version     v1.0
+     *
+     * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
+     *                      1. 当为Get请求时，表示请求URL的动态请求参加
+     *                      2. 当为Post请求时，表示请求体中的请求数据
+     *                      
+     * @param   i_BodyData  请求体中的数据
+     *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
+     *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
+     *                      3. 只用于Post请求
+     *                      
+     * @return  返回是否请求成功。
+     *          Return.paramStr  保存响应信息
+     *          Return.exception 保存异常信息
+     * @return
+     */
+    public Return<?> request(Map<String ,?> i_UrlData ,Map<String ,?>  i_BodyData)
+    {
+        return this.request(i_UrlData ,this.getParamsUrl(i_BodyData));
+    }
+    
+    
+    
+    /**
+     * 发起Http请求 -- 集合参数
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  020-12-22
+     * @version     v1.0
+     *
+     * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
+     *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
+     *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
+     *                      
+     * @param   i_BodyData  请求体中的数据
+     *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
+     *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
+     *                      3. 只用于Post请求
+     * 
+     * @return  返回是否请求成功。
+     *          Return.paramStr  保存响应信息
+     *          Return.exception 保存异常信息
+     * @return
+     */
+    public Return<?> request(Map<String ,?> i_UrlData ,Object i_BodyData)
+    {
+        String v_BodyData = "";
+        
+        try
+        {
+            v_BodyData = this.getParamsUrl(i_BodyData);
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+        }
+        
+        return this.request(i_UrlData ,v_BodyData);
+    }
+    
+    
+    
+    /**
+     * 发起Http请求 -- 集合参数
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2013-08-06
+     * @version     v1.0
+     *              v2.0  2020-12-22  添加：请求体中的独立数据与动态请求数据共存的请求处理功能
+     *
+     * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
+     *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
+     *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
+     *                      
+     * @param   i_BodyData  请求体中的数据
+     *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
+     *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
+     *                      3. 只用于Post请求
+     * 
+     * @return  返回是否请求成功。
+     *          Return.paramStr  保存响应信息
+     *          Return.exception 保存异常信息
+     * @return
+     */
+    public Return<?> request(Map<String ,?> i_UrlData ,String i_BodyData)
     {
         if ( Help.isNull(this.getIp()) )
         {
@@ -363,17 +599,43 @@ public final class XHttp extends SerializableDef implements XJavaID
         
         try
         {
-            String v_ParamsUrl = this.getParamsUrl(i_ParamValues);
+            String v_ParamsUrl = this.getParamsUrl(i_UrlData);
             
             if ( this.requestType == $Request_Type_Post )
             {
+                String v_URLParamStr = this.getUrl();
+                
+                if ( !Help.isNull(i_BodyData) )
+                {
+                    if ( this.isToUnicode )
+                    {
+                        v_ParamsUrl = StringHelp.escape_toUnicode(v_ParamsUrl ,$NotInString);
+                    }
+                    else if ( this.isEncode )
+                    {
+                        v_ParamsUrl = StringHelp.encode(v_ParamsUrl ,this.getCharset() ,$NotInString);
+                    }
+                    
+                    if ( this.haveQuestionMark && v_URLParamStr.indexOf("?") < 0 )
+                    {
+                        v_URLParamStr = v_URLParamStr + "?";
+                    }
+                    else
+                    {
+                        if ( !Help.isNull(v_ParamsUrl) )
+                        {
+                            v_ParamsUrl = "&" + v_ParamsUrl;
+                        }
+                    }
+                }
+                
                 if ( this.getPort() == 0 )
                 {
-                    v_URL = new URL(this.getProtocol() + "://" + this.getIp() + this.getUrl());
+                    v_URL = new URL(this.getProtocol() + "://" + this.getIp() + v_URLParamStr + (!Help.isNull(i_BodyData) ? v_ParamsUrl : ""));
                 }
                 else
                 {
-                    v_URL = new URL(this.getProtocol() ,this.getIp() ,this.getPort() ,this.getUrl());
+                    v_URL = new URL(this.getProtocol() ,this.getIp() ,this.getPort() ,v_URLParamStr + (!Help.isNull(i_BodyData) ? v_ParamsUrl : ""));
                 }
                 
                 if ( this.proxy != null )
@@ -398,7 +660,15 @@ public final class XHttp extends SerializableDef implements XJavaID
                 v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
                 v_URLConn.setRequestProperty("Cookie"       ,this.cookie.toString());
                 
-                v_URLConn.getOutputStream().write(v_ParamsUrl.getBytes(this.getCharset()));
+                if ( !Help.isNull(i_BodyData) )
+                {
+                    v_URLConn.getOutputStream().write(i_BodyData.getBytes(this.getCharset()));
+                }
+                else
+                {
+                    v_URLConn.getOutputStream().write(v_ParamsUrl.getBytes(this.getCharset()));
+                }
+                
                 v_URLConn.getOutputStream().flush();
                 v_URLConn.getOutputStream().close();
             }
@@ -517,12 +787,120 @@ public final class XHttp extends SerializableDef implements XJavaID
     /**
      * 发起Http请求 -- 参数字符串
      * 
-     * @param   i_ParamString  参数字符串。这个字符串已被外界拼接好了。
-     * @return  返回是否请求成功
+     * @author      ZhengWei(HY)
+     * @createDate  2013-08-06
+     * @version     v1.0
+     *
+     * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
+     *                      这个字符串已被外界拼接好了。
+     *                      1. 当为Get请求时，表示请求URL的动态请求参加
+     *                      2. 当为Post请求时，表示请求体中的请求数据
+     *                      
+     * @return  返回是否请求成功。
      *          Return.paramStr  保存响应信息
      *          Return.exception 保存异常信息
+     * @return
      */
-    public Return<?> request(String i_ParamString)
+    public Return<?> request(String i_UrlData)
+    {
+        return this.request(i_UrlData ,(String)null);
+    }
+    
+    
+    
+    /**
+     * 发起Http请求 -- 参数字符串
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  020-12-22
+     * @version     v1.0
+     *
+     * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
+     *                      这个字符串已被外界拼接好了。
+     *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
+     *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
+     *                      
+     * @param   i_BodyData  请求体中的数据
+     *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
+     *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
+     *                      3. 只用于Post请求
+     * 
+     * @return  返回是否请求成功。
+     *          Return.paramStr  保存响应信息
+     *          Return.exception 保存异常信息
+     * @return
+     */
+    public Return<?> request(String i_UrlData ,Map<String ,?> i_BodyData)
+    {
+        return this.request(i_UrlData ,this.getParamsUrl(i_BodyData));
+    }
+    
+    
+    
+    /**
+     * 发起Http请求 -- 参数字符串
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  020-12-22
+     * @version     v1.0
+     *
+     * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
+     *                      这个字符串已被外界拼接好了。
+     *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
+     *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
+     *                      
+     * @param   i_BodyData  请求体中的数据
+     *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
+     *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
+     *                      3. 只用于Post请求
+     * 
+     * @return  返回是否请求成功。
+     *          Return.paramStr  保存响应信息
+     *          Return.exception 保存异常信息
+     * @return
+     */
+    public Return<?> request(String i_UrlData ,Object i_BodyData)
+    {
+        String v_BodyData = "";
+        
+        try
+        {
+            v_BodyData = this.getParamsUrl(i_BodyData);
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+        }
+        
+        return this.request(i_UrlData ,v_BodyData);
+    }
+    
+    
+    
+    /**
+     * 发起Http请求 -- 参数字符串
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2013-08-06
+     * @version     v1.0
+     *              v2.0  2020-12-22  添加：请求体中的独立数据与动态请求数据共存的请求处理功能
+     *
+     * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
+     *                      这个字符串已被外界拼接好了。
+     *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
+     *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
+     *                      
+     * @param   i_BodyData  请求体中的数据
+     *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
+     *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
+     *                      3. 只用于Post请求
+     * 
+     * @return  返回是否请求成功。
+     *          Return.paramStr  保存响应信息
+     *          Return.exception 保存异常信息
+     * @return
+     */
+    public Return<?> request(String i_UrlData ,String i_BodyData)
     {
         if ( Help.isNull(this.getIp()) )
         {
@@ -537,17 +915,43 @@ public final class XHttp extends SerializableDef implements XJavaID
         
         try
         {
-            String v_ParamsUrl = i_ParamString.trim();
+            String v_ParamsUrl = i_UrlData.trim();
             
             if ( this.requestType == $Request_Type_Post )
             {
+                String v_URLParamStr = this.getUrl();
+                
+                if ( !Help.isNull(i_BodyData) )
+                {
+                    if ( this.isToUnicode )
+                    {
+                        v_ParamsUrl = StringHelp.escape_toUnicode(v_ParamsUrl ,$NotInString);
+                    }
+                    else if ( this.isEncode )
+                    {
+                        v_ParamsUrl = StringHelp.encode(v_ParamsUrl ,this.getCharset() ,$NotInString);
+                    }
+                    
+                    if ( this.haveQuestionMark && v_URLParamStr.indexOf("?") < 0 )
+                    {
+                        v_URLParamStr = v_URLParamStr + "?";
+                    }
+                    else
+                    {
+                        if ( !Help.isNull(v_ParamsUrl) )
+                        {
+                            v_ParamsUrl = "&" + v_ParamsUrl;
+                        }
+                    }
+                }
+                
                 if ( this.getPort() == 0 )
                 {
-                    v_URL = new URL(this.getProtocol() + "://" + this.getIp() + this.getUrl());
+                    v_URL = new URL(this.getProtocol() + "://" + this.getIp() + v_URLParamStr + (!Help.isNull(i_BodyData) ? v_ParamsUrl : ""));
                 }
                 else
                 {
-                    v_URL = new URL(this.getProtocol() ,this.getIp() ,this.getPort() ,this.getUrl());
+                    v_URL = new URL(this.getProtocol() ,this.getIp() ,this.getPort() ,v_URLParamStr + (!Help.isNull(i_BodyData) ? v_ParamsUrl : ""));
                 }
                 
                 if ( this.proxy != null )
@@ -572,7 +976,15 @@ public final class XHttp extends SerializableDef implements XJavaID
                 v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
                 v_URLConn.setRequestProperty("Cookie"       ,this.cookie.toString());
                 
-                v_URLConn.getOutputStream().write(v_ParamsUrl.getBytes(this.getCharset()));
+                if ( !Help.isNull(i_BodyData) )
+                {
+                    v_URLConn.getOutputStream().write(i_BodyData.getBytes(this.getCharset()));
+                }
+                else
+                {
+                    v_URLConn.getOutputStream().write(v_ParamsUrl.getBytes(this.getCharset()));
+                }
+                
                 v_URLConn.getOutputStream().flush();
                 v_URLConn.getOutputStream().close();
             }

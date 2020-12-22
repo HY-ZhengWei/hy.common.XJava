@@ -84,6 +84,8 @@ function bodyPageInit()
 	/* 不设置一下话，可能会出现首次点击无效的问题 */
 	$("#newBackgroundColor") .dropdown();
 	$("#newSizeType")        .dropdown();
+	$("#newNameToLMR")       .dropdown();
 	$("#editBackgroundColor").dropdown();
 	$("#editSizeType")       .dropdown();
+	$("#editNameToLMR")      .dropdown();
 }

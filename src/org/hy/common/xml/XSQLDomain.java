@@ -20,6 +20,15 @@ import org.hy.common.db.DataSourceGroup;
 public interface XSQLDomain
 {
     
+    /**
+     * 可用会话Session中的用户信息来做判定标准
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2017-09-18
+     * @version     v1.0
+     *
+     * @return
+     */
     public DataSourceGroup getDataSourceGroup();
     
 }

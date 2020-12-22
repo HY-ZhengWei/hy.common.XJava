@@ -30,7 +30,6 @@ import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebSe
         @Overrid
         protected WebApplicationContext run(SpringApplication i_Application) 
         {
-            i_Application.addInitializers(new XJavaSpringInitialzer());
             i_Application.setApplicationContextClass(XJavaSpringAnnotationConfigServletWebServerApplicationContext.class);
             
             return (WebApplicationContext) i_Application.run();

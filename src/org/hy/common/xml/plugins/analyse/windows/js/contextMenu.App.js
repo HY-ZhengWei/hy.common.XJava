@@ -12,61 +12,61 @@ var v_AppMenus = null;
  */
 function appOnContextmenu(i_G ,i_Data)
 {
-	hideAppDesktopMenu();
-	hideColorPicker();
-	hideWindowStartMenus(1);
-	hideAppMenu();
-	
-	if ( i_Data != null && i_G != null )
-	{
-		var v_MySize = v_Sizes[i_Data.sizeType];
-		var v_XY     = getGXY(i_G);
-		
-		for (var i=0; i<v_AppMenusSizeConfig.length; i++)
-		{
-			v_AppMenusSizeConfig[i].valid = true;
-		}
-		
-		if ( i_Data.sizeType == "max" )
-		{
-			v_XY[0] = Number(v_XY[0]) - 9;
-			v_XY[1] = Number(v_XY[1]) - 6;
-			v_AppMenusSizeConfig[1].valid = false;
-		}
-		else if ( i_Data.sizeType == "longWidth" )
-		{
-			v_XY[0] = Number(v_XY[0]) - 9;
-			v_XY[1] = Number(v_XY[1]) - 64;
-			v_AppMenusSizeConfig[2].valid = false;
-		}
-		else if ( i_Data.sizeType == "longHeight" )
-		{
-			v_XY[0] = Number(v_XY[0]) - 64;
-			v_XY[1] = Number(v_XY[1]) - 9;
-			v_AppMenusSizeConfig[3].valid = false;
-		}
-		else if ( i_Data.sizeType == "middle" )
-		{
-			v_XY[0] = Number(v_XY[0]) - 64;
-			v_XY[1] = Number(v_XY[1]) - 64;
-			v_AppMenusSizeConfig[4].valid = false;
-		}
-		else if ( i_Data.sizeType == "min" )
-		{
-			v_XY[0] = Number(v_XY[0]) - 92;
-			v_XY[1] = Number(v_XY[1]) - 92;
-			v_AppMenusSizeConfig[5].valid = false;
-		}
-		
-		
-		v_AppMenus = v_SVG.append("g");
-		createSmartContextMenu(v_AppMenus ,30 ,v_AppMenusConfig);
-		v_AppMenus.attr("transform", "translate(" + v_XY[0] + "," + v_XY[1] + ")");
-		
-		v_ContextMenu = true;
-		v_ContextG    = i_G;
-		v_ContextData = i_Data;
-	}
+    hideAppDesktopMenu();
+    hideColorPicker();
+    hideWindowStartMenus(1);
+    hideAppMenu();
+    
+    if ( i_Data != null && i_G != null )
+    {
+        var v_MySize = v_Sizes[i_Data.sizeType];
+        var v_XY     = getGXY(i_G);
+        
+        for (var i=0; i<v_AppMenusSizeConfig.length; i++)
+        {
+            v_AppMenusSizeConfig[i].valid = true;
+        }
+        
+        if ( i_Data.sizeType == "max" )
+        {
+            v_XY[0] = Number(v_XY[0]) - 9;
+            v_XY[1] = Number(v_XY[1]) - 6;
+            v_AppMenusSizeConfig[1].valid = false;
+        }
+        else if ( i_Data.sizeType == "longWidth" )
+        {
+            v_XY[0] = Number(v_XY[0]) - 9;
+            v_XY[1] = Number(v_XY[1]) - 64;
+            v_AppMenusSizeConfig[2].valid = false;
+        }
+        else if ( i_Data.sizeType == "longHeight" )
+        {
+            v_XY[0] = Number(v_XY[0]) - 64;
+            v_XY[1] = Number(v_XY[1]) - 9;
+            v_AppMenusSizeConfig[3].valid = false;
+        }
+        else if ( i_Data.sizeType == "middle" )
+        {
+            v_XY[0] = Number(v_XY[0]) - 64;
+            v_XY[1] = Number(v_XY[1]) - 64;
+            v_AppMenusSizeConfig[4].valid = false;
+        }
+        else if ( i_Data.sizeType == "min" )
+        {
+            v_XY[0] = Number(v_XY[0]) - 92;
+            v_XY[1] = Number(v_XY[1]) - 92;
+            v_AppMenusSizeConfig[5].valid = false;
+        }
+        
+        
+        v_AppMenus = v_SVG.append("g");
+        createSmartContextMenu(v_AppMenus ,30 ,v_AppMenusConfig);
+        v_AppMenus.attr("transform", "translate(" + v_XY[0] + "," + v_XY[1] + ")");
+        
+        v_ContextMenu = true;
+        v_ContextG    = i_G;
+        v_ContextData = i_Data;
+    }
 }
 
 
@@ -78,13 +78,13 @@ function appOnContextmenu(i_G ,i_Data)
  */
 function hideAppMenu()
 {
-	if ( v_AppMenus != null )
-	{
-		v_AppMenus.attr("transform", "translate(-99999,-99999)");
-		disposeSmartContextMenu(v_AppMenus);
-		v_AppMenus.remove();  /* 每次删除后重新创建的原因：为了保证永远在最上层 */
-	}
-	v_ContextMenu = false;
+    if ( v_AppMenus != null )
+    {
+        v_AppMenus.attr("transform", "translate(-99999,-99999)");
+        disposeSmartContextMenu(v_AppMenus);
+        v_AppMenus.remove();  /* 每次删除后重新创建的原因：为了保证永远在最上层 */
+    }
+    v_ContextMenu = false;
 }
 
 
@@ -96,39 +96,39 @@ function hideAppMenu()
  */
 function menuOnClickCopyApp()
 {
-	hideAppMenu();
-	
-	if ( v_ContextG != null && v_ContextData != null )
-	{
-		var v_NewData = $.extend(true, {}, v_ContextData);
-		v_NewData.userID   = v_UserID;
-		v_NewData.appID    = "APP" + v_UserID + "_" + (new Date()).getTime();
-		v_NewData.appName += "-复本"; 
-		v_NewData.x        = parseFloat(v_NewData.x) + 20;
-		v_NewData.y        = parseFloat(v_NewData.y) + 20;
-		v_NewData.appIndex = -1;
-		
-		/*
-		v_NewData.x               = v_ContextData.x + 20;
-		v_NewData.y               = v_ContextData.y + 20;
-		v_NewData.appName         = v_ContextData.appName + "-复本"; 
-		v_NewData.icon            = v_ContextData.icon;
-		v_NewData.backgroundColor = v_ContextData.backgroundColor;
-		v_NewData.sizeType        = v_ContextData.sizeType;
-		v_NewData.actionType      = v_ContextData.actionType;
-		v_NewData.url             = v_ContextData.url;
-		*/
-		
-		v_Apps.push(v_NewData);
-		var v_MyG = createApp(v_NewData ,null);
-		v_MyG
-		.attr("opacity" ,0)
-		.transition()
-		.duration(1200)
-		.attr("opacity" ,1);
-		
-		commitWindowAppCreate(v_NewData);
-	}
+    hideAppMenu();
+    
+    if ( v_ContextG != null && v_ContextData != null )
+    {
+        var v_NewData = $.extend(true, {}, v_ContextData);
+        v_NewData.userID   = v_UserID;
+        v_NewData.appID    = "APP" + v_UserID + "_" + (new Date()).getTime();
+        v_NewData.appName += "-复本"; 
+        v_NewData.x        = parseFloat(v_NewData.x) + 20;
+        v_NewData.y        = parseFloat(v_NewData.y) + 20;
+        v_NewData.appIndex = -1;
+        
+        /*
+        v_NewData.x               = v_ContextData.x + 20;
+        v_NewData.y               = v_ContextData.y + 20;
+        v_NewData.appName         = v_ContextData.appName + "-复本"; 
+        v_NewData.icon            = v_ContextData.icon;
+        v_NewData.backgroundColor = v_ContextData.backgroundColor;
+        v_NewData.sizeType        = v_ContextData.sizeType;
+        v_NewData.actionType      = v_ContextData.actionType;
+        v_NewData.url             = v_ContextData.url;
+        */
+        
+        v_Apps.push(v_NewData);
+        var v_MyG = createApp(v_NewData ,null);
+        v_MyG
+        .attr("opacity" ,0)
+        .transition()
+        .duration(1200)
+        .attr("opacity" ,1);
+        
+        commitWindowAppCreate(v_NewData);
+    }
 }
 
 
@@ -140,13 +140,13 @@ function menuOnClickCopyApp()
  */
 function menuOnClickDelApp()
 {
-	hideAppMenu();
-	
-	if ( v_ContextG != null && v_ContextData != null )
-	{
-		$('#delAppTextDiv').html("确认删除 " + v_ContextData.appName + " ？");
-		$('#delAppDialog').modal('show');
-	}
+    hideAppMenu();
+    
+    if ( v_ContextG != null && v_ContextData != null )
+    {
+        $('#delAppTextDiv').html("确认删除 " + v_ContextData.appName + " ？");
+        $('#delAppDialog').modal('show');
+    }
 }
 
 
@@ -158,18 +158,18 @@ function menuOnClickDelApp()
  */
 function menuOnClickReColor()
 {
-	hideAppMenu();
-	
-	if ( v_ContextG != null && v_ContextData != null )
-	{
-		showColorPicker(v_ContextData.backgroundColor ,d3.event.pageX ,d3.event.pageY ,function(i_Color)
-		{
-			v_ContextData.backgroundColor = i_Color;
-			v_ContextG.select("rect").attr("fill" ,v_ContextData.backgroundColor);
-			
-			commitWindowAppXXColorSize(v_ContextData);
-		});
-	}
+    hideAppMenu();
+    
+    if ( v_ContextG != null && v_ContextData != null )
+    {
+        showColorPicker(v_ContextData.backgroundColor ,d3.event.pageX ,d3.event.pageY ,function(i_Color)
+        {
+            v_ContextData.backgroundColor = i_Color;
+            v_ContextG.select("rect").attr("fill" ,v_ContextData.backgroundColor);
+            
+            commitWindowAppXXColorSize(v_ContextData);
+        });
+    }
 }
 
 
@@ -181,13 +181,13 @@ function menuOnClickReColor()
  */
 function menuOnClickShowSize()
 {
-	v_ContextMenu = false;
-	disposeSmartContextMenu(v_AppMenus);
-	setTimeout(function()                /* 延时处理的原因：点击也会同时触发桌面的点击事件 */
-	{
-		createSmartContextMenu(v_AppMenus ,30 ,v_AppMenusSizeConfig);
-		v_ContextMenu = true;
-	} ,100);
+    v_ContextMenu = false;
+    disposeSmartContextMenu(v_AppMenus);
+    setTimeout(function()                /* 延时处理的原因：点击也会同时触发桌面的点击事件 */
+    {
+        createSmartContextMenu(v_AppMenus ,30 ,v_AppMenusSizeConfig);
+        v_ContextMenu = true;
+    } ,100);
 }
 
 
@@ -199,13 +199,13 @@ function menuOnClickShowSize()
  */
 function menuOnClickSizeGoBack()
 {
-	v_ContextMenu = false;
-	disposeSmartContextMenu(v_AppMenus);
-	setTimeout(function()                /* 延时处理的原因：点击也会同时触发桌面的点击事件 */
-	{
-		createSmartContextMenu(v_AppMenus ,30 ,v_AppMenusConfig);
-		v_ContextMenu = true;
-	} ,100);
+    v_ContextMenu = false;
+    disposeSmartContextMenu(v_AppMenus);
+    setTimeout(function()                /* 延时处理的原因：点击也会同时触发桌面的点击事件 */
+    {
+        createSmartContextMenu(v_AppMenus ,30 ,v_AppMenusConfig);
+        v_ContextMenu = true;
+    } ,100);
 }
 
 
@@ -217,12 +217,12 @@ function menuOnClickSizeGoBack()
  */
 function menuOnClickResizeMin()
 {
-	hideAppMenu();
-	
-	if ( v_ContextG != null && v_ContextData != null )
-	{
-		changeAppSize(v_ContextG ,v_ContextData ,"min");
-	}
+    hideAppMenu();
+    
+    if ( v_ContextG != null && v_ContextData != null )
+    {
+        changeAppSize(v_ContextG ,v_ContextData ,"min");
+    }
 }
 
 
@@ -234,12 +234,12 @@ function menuOnClickResizeMin()
  */
 function menuOnClickResizeMiddle()
 {
-	hideAppMenu();
-	
-	if ( v_ContextG != null && v_ContextData != null )
-	{
-		changeAppSize(v_ContextG ,v_ContextData ,"middle");
-	}
+    hideAppMenu();
+    
+    if ( v_ContextG != null && v_ContextData != null )
+    {
+        changeAppSize(v_ContextG ,v_ContextData ,"middle");
+    }
 }
 
 
@@ -251,12 +251,12 @@ function menuOnClickResizeMiddle()
  */
 function menuOnClickResizeLongWidth()
 {
-	hideAppMenu();
-	
-	if ( v_ContextG != null && v_ContextData != null )
-	{
-		changeAppSize(v_ContextG ,v_ContextData ,"longWidth");
-	}
+    hideAppMenu();
+    
+    if ( v_ContextG != null && v_ContextData != null )
+    {
+        changeAppSize(v_ContextG ,v_ContextData ,"longWidth");
+    }
 }
 
 
@@ -268,12 +268,12 @@ function menuOnClickResizeLongWidth()
  */
 function menuOnClickResizeLongHeight()
 {
-	hideAppMenu();
-	
-	if ( v_ContextG != null && v_ContextData != null )
-	{
-		changeAppSize(v_ContextG ,v_ContextData ,"longHeight");
-	}
+    hideAppMenu();
+    
+    if ( v_ContextG != null && v_ContextData != null )
+    {
+        changeAppSize(v_ContextG ,v_ContextData ,"longHeight");
+    }
 }
 
 
@@ -285,12 +285,12 @@ function menuOnClickResizeLongHeight()
  */
 function menuOnClickResizeMax()
 {
-	hideAppMenu();
-	
-	if ( v_ContextG != null && v_ContextData != null )
-	{
-		changeAppSize(v_ContextG ,v_ContextData ,"max");
-	}
+    hideAppMenu();
+    
+    if ( v_ContextG != null && v_ContextData != null )
+    {
+        changeAppSize(v_ContextG ,v_ContextData ,"max");
+    }
 }
 
 
@@ -302,13 +302,13 @@ function menuOnClickResizeMax()
  */
 function menuOnClickRename()
 {
-	hideAppMenu();
-	
-	if ( v_ContextG != null && v_ContextData != null )
-	{
-		$('#renameText').val(v_ContextData.appName);
-		$('#renameDialog').modal('show');
-	}
+    hideAppMenu();
+    
+    if ( v_ContextG != null && v_ContextData != null )
+    {
+        $('#renameText').val(v_ContextData.appName);
+        $('#renameDialog').modal('show');
+    }
 }
 
 
@@ -320,8 +320,8 @@ function menuOnClickRename()
  */
 function menuOnClickEditApp()
 {
-	hideAppMenu();
-	showEditAppDialog();
+    hideAppMenu();
+    showEditAppDialog();
 }
 
 

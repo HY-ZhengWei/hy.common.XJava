@@ -24,7 +24,7 @@ function setEditSystemBysTitle()
                 v_NewTitle += " | ";
             }
             
-            v_NewCodes += v_My.attr("id");
+            v_NewCodes += v_My.attr("data-code");
             v_NewTitle += v_My.attr("data-name");
         }
     });
@@ -57,7 +57,7 @@ function setEditSystemBysCheckeds(i_Codes)
     {
         var v_My = d3.select(this);
         
-        v_My.property("checked" ,(i_Codes.indexOf(v_My.attr("id")) >= 0));
+        v_My.property("checked" ,(i_Codes.indexOf(v_My.attr("data-code")) >= 0));
     });
 }
 
@@ -97,6 +97,7 @@ function initEditAppDialog()
         .attr("id"        ,"editSystemBysItem_" + d.code)
         .attr("class"     ,"form-check-input editSystemBysItem")
         .attr("type"      ,"checkbox")
+        .attr("data-code" ,d.code)
         .attr("data-name" ,d.name)
         .on("change" ,function()
         {
@@ -126,10 +127,11 @@ function showEditAppDialog()
         return;
     }
     
-    $('#editAppName')   .val(v_ContextData.appName);
-    $('#editActionType').val((v_ContextData.actionType == null || v_ContextData.actionType == "") ? "open" : v_ContextData.actionType);
-    $('#editAppUrl')    .val(v_ContextData.url);
-    $('#editAppConfirm').val(v_ContextData.confirm);
+    $('#editAppName')        .val(v_ContextData.appName);
+    $('#editActionType')     .val((v_ContextData.actionType == null || v_ContextData.actionType == "") ? "open" : v_ContextData.actionType);
+    $('#editAppUrl')         .val(v_ContextData.url);
+    $('#editAppDownloadUrl') .val(v_ContextData.downloadUrl);
+    $('#editAppConfirm')     .val(v_ContextData.confirm);
     d3.select("#editAppIcon").attr("data-icon"   ,v_ContextData.icon);
     d3.select("#editAppIcon").attr("data-iconID" ,v_ContextData.iconID);
     
@@ -160,6 +162,14 @@ function showEditAppDialog()
     d3.select("#editSizeType")
     .attr("data-sizeType" ,v_ContextData.sizeType)
     .html(v_Sizes[v_ContextData.sizeType].comment);
+    
+    if ( !v_ContextData.nameToLMR || v_ContextData.nameToLMR == undefined || v_ContextData.nameToLMR == "")
+    {
+        v_ContextData.nameToLMR = "toLeft";
+    }
+    d3.select("#editNameToLMR")
+    .attr("data-nameToLMR" ,v_ContextData.nameToLMR)
+    .html(v_NameToLMR[v_ContextData.nameToLMR].comment);
     
     
     if ( v_ContextData.icon != null && v_ContextData.icon != "" )
@@ -219,6 +229,49 @@ function showEditAppDialog()
 
 
 
+d3.select("#editAppSaveBySystem").on("click" ,function()
+{
+    var v_EditAppName    = $('#editAppName')   .val();
+    var v_EditActionType = $('#editActionType').val();
+    var v_EditAppUrl     = $('#editAppUrl')    .val();
+    var v_IsError        = false;
+    
+    if ( v_EditAppName == null || v_EditAppName == "" )
+    {
+        $('#editAppName').popover('show');
+        v_IsError = true;
+    }
+    if ( v_EditAppUrl == null || v_EditAppUrl == "" )
+    {
+        $('#editAppUrl').popover('show');
+        v_IsError = true;
+    }
+    if ( v_IsError ) { return; }
+    
+    
+    v_ContextData.userID          = v_UserID;
+    v_ContextData.appName         = v_EditAppName;
+    v_ContextData.actionType      = v_EditActionType;
+    v_ContextData.url             = v_EditAppUrl;
+    v_ContextData.downloadUrl     = $('#editAppDownloadUrl').val();
+    v_ContextData.confirm         = $('#editAppConfirm').val();
+    v_ContextData.icon            = d3.select('#editAppIcon')        .attr("data-icon");
+    v_ContextData.iconID          = d3.select('#editAppIcon')        .attr("data-iconID");
+    v_ContextData.backgroundColor = d3.select("#editBackgroundColor").attr("data-color");
+    v_ContextData.sizeType        = d3.select("#editSizeType")       .attr("data-sizeType");
+    v_ContextData.nameToLMR       = d3.select("#editNameToLMR")      .attr("data-nameToLMR");
+    v_ContextData.systemBysCodes  = v_EditSystemBysCodes;
+    
+    if ( v_ContextData.sizeType == null || v_ContextData.sizeType == "" )
+    {
+        v_ContextData.sizeType = "middle";
+    }
+    
+    commitSaveAppBySystem(v_ContextData);
+});
+
+
+
 /**
  * 编辑App图标的确定按钮的事件
  *
@@ -250,11 +303,13 @@ d3.select("#editAppBtn").on("click" ,function()
     v_ContextData.appName         = v_EditAppName;
     v_ContextData.actionType      = v_EditActionType;
     v_ContextData.url             = v_EditAppUrl;
+    v_ContextData.downloadUrl     = $('#editAppDownloadUrl').val();
     v_ContextData.confirm         = $('#editAppConfirm').val();
     v_ContextData.icon            = d3.select('#editAppIcon')        .attr("data-icon");
     v_ContextData.iconID          = d3.select('#editAppIcon')        .attr("data-iconID");
     v_ContextData.backgroundColor = d3.select("#editBackgroundColor").attr("data-color");
     v_ContextData.sizeType        = d3.select("#editSizeType")       .attr("data-sizeType");
+    v_ContextData.nameToLMR       = d3.select("#editNameToLMR")      .attr("data-nameToLMR");
     v_ContextData.systemBysCodes  = v_EditSystemBysCodes;
     
     if ( v_ContextData.sizeType == null || v_ContextData.sizeType == "" )
@@ -304,6 +359,26 @@ d3.select("#editAppUrl").on("keyup" ,function()
     else
     {
         $('#editAppUrl').popover('hide');
+    }
+});
+
+
+
+/**
+ * 输入变化时的提示信息
+ *
+ * ZhengWei(HY) Add 2020-12-16
+ */
+d3.select("#editAppDownloadUrl").on("keyup" ,function()
+{
+    var v_Text = $('#editAppDownloadUrl').val();
+    if ( v_Text == null || v_Text == "" )
+    {
+        $('#editAppDownloadUrl').popover('show');
+    }
+    else
+    {
+        $('#editAppDownloadUrl').popover('hide');
     }
 });
 
@@ -390,9 +465,9 @@ d3.selectAll(".editBackgroundColorItem").on("click" ,function()
  */
 d3.selectAll(".editSizeTypeItem").on("click" ,function()
 {
-    var v_EditBGColor = d3.select(this).attr("data-sizeType");
+    var v_EditSizeType = d3.select(this).attr("data-sizeType");
     d3.select("#editSizeType")
-    .attr("data-sizeType" ,v_EditBGColor)
+    .attr("data-sizeType" ,v_EditSizeType)
     .html(d3.select(this).html());
 });
 
@@ -401,4 +476,19 @@ d3.selectAll(".editSizeTypeItem").on("click" ,function()
 $("#editAppIcon").change(function()
 {
     $("#editAppIconTitle").html($("#editAppIcon").val());
+});
+
+
+
+/**
+ * App图标名称对齐方式的选择改变事件
+ *
+ * ZhengWei(HY) Add 2020-10-22
+ */
+d3.selectAll(".editNameToLMRItem").on("click" ,function()
+{
+    var v_EditNameToLMR = d3.select(this).attr("data-nameToLMR");
+    d3.select("#editNameToLMR")
+    .attr("data-nameToLMR" ,v_EditNameToLMR)
+    .html(d3.select(this).html());
 });

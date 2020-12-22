@@ -216,7 +216,12 @@ function createWindowPage(i_Data)
 	})
 	.on("click" ,function()
 	{
-		window.open(i_Data.url); 
+		window.open(i_Data.url.replace(':USERNO' ,v_UserNo)); 
+		
+		if ( i_Data.downloadUrl != undefined && i_Data.downloadUrl != '' )
+		{
+		    window.open(i_Data.downloadUrl.replace(':USERNO' ,v_UserNo)); 
+		}
 	});
 	
 	if ( isSameArea(i_Data.url) )
@@ -354,7 +359,16 @@ function createWindowPage(i_Data)
 	windowPageToTop(v_Create);
 	v_Create.select(".windowPageIcon").attr("src" ,(i_Data.icon != null && i_Data.icon != "") ? i_Data.icon : v_DefaultWindowIcon);
 	v_Create.select(".windowPageTitle").html(i_Data.appName);
-	v_Create.select("iframe").attr("src" ,i_Data.url);
+	v_Create.select(".windowFrame").attr("src" ,i_Data.url.replace(':USERNO' ,v_UserNo));
+	
+	if ( i_Data.downloadUrl != undefined && i_Data.downloadUrl != '' )
+	{
+	    v_Create.select(".downloadFrame").attr("src" ,i_Data.downloadUrl.replace(':USERNO' ,v_UserNo));
+	}
+	else
+	{
+	    v_Create.select(".downloadFrame").remove();
+	}
 	
 	commitWindowAppOpenCount(i_Data);
 	
@@ -403,7 +417,7 @@ function windowPageToTop(i_WindowPage)
  */
 function windowPageReload(i_WindowPage)
 {
-	i_WindowPage.select("iframe").attr("src" ,i_WindowPage.select("iframe").attr("src"));
+	i_WindowPage.select(".windowFrame").attr("src" ,i_WindowPage.select(".windowFrame").attr("src"));
 }
 
 

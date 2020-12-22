@@ -24,7 +24,7 @@ function setNewSystemBysTitle()
                 v_NewTitle += " | ";
             }
             
-            v_NewCodes += v_My.attr("id");
+            v_NewCodes += v_My.attr("data-code");
             v_NewTitle += v_My.attr("data-name");
         }
     });
@@ -57,7 +57,7 @@ function setNewSystemBysCheckeds(i_Codes)
     {
         var v_My = d3.select(this);
         
-        v_My.property("checked" ,(i_Codes.indexOf(v_My.attr("id")) >= 0));
+        v_My.property("checked" ,(i_Codes.indexOf(v_My.attr("data-code")) >= 0));
     });
 }
 
@@ -97,6 +97,7 @@ function initNewAppDialog()
         .attr("id"        ,"newSystemBysItem_" + d.code)
         .attr("class"     ,"form-check-input newSystemBysItem")
         .attr("type"      ,"checkbox")
+        .attr("data-code" ,d.code)
         .attr("data-name" ,d.name)
         .on("change" ,function()
         {
@@ -134,6 +135,7 @@ function showNewAppDialog(i_MWTID)
     {
         $('#newAppUrl').val("http://");
     }
+    $('#newAppDownloadUrl').val("");
     $('#newAppConfirm').val("");
     d3.select("#newAppIcon").attr("data-icon"   ,"");
     d3.select("#newAppIcon").attr("data-iconID" ,"");
@@ -145,7 +147,11 @@ function showNewAppDialog(i_MWTID)
     
     d3.select("#newSizeType")
     .attr("data-sizeType" ,"middle")
-    .html("中");
+    .html(v_Sizes["middle"].comment);
+    
+    d3.select("#newNameToLMR")
+    .attr("data-nameToLMR" ,"toLeft")
+    .html(v_NameToLMR["toLeft"].comment);
     
     delete v_FileConfigs.initialPreviewAsData;
     delete v_FileConfigs.initialPreview;
@@ -224,11 +230,13 @@ d3.select("#newAppBtn").on("click" ,function()
     v_NewData.appName         = v_NewAppName;
     v_NewData.actionType      = v_NewActionType;
     v_NewData.url             = v_NewAppUrl;
+    v_NewData.downloadUrl     = $('#newAppDownloadUrl').val();
     v_NewData.confirm         = $('#newAppConfirm').val();
     v_NewData.icon            = d3.select('#newAppIcon')        .attr("data-icon");
     v_NewData.iconID          = d3.select('#newAppIcon')        .attr("data-iconID");
     v_NewData.backgroundColor = d3.select("#newBackgroundColor").attr("data-color");
     v_NewData.sizeType        = d3.select("#newSizeType")       .attr("data-sizeType");
+    v_NewData.nameToLMR       = d3.select("#newNameToLMR")      .attr("data-nameToLMR");
     v_NewData.x               = d3.select("#newAppName")        .attr("data-x");
     v_NewData.y               = d3.select("#newAppName")        .attr("data-y");
     v_NewData.systemBysCodes  = v_NewSystemBysCodes;
@@ -265,7 +273,7 @@ d3.select("#newAppName").on("keyup" ,function()
     }
     else
     {
-        $('#newAppName').popover('hide');
+        $('#newAppName').popover('h de');
     }
 });
 
@@ -286,6 +294,26 @@ d3.select("#newAppUrl").on("keyup" ,function()
     else
     {
         $('#newAppUrl').popover('hide');
+    }
+});
+
+
+
+/**
+ * 输入变化时的提示信息
+ *
+ * ZhengWei(HY) Add 2020-12-16
+ */
+d3.select("#newAppDownloadUrl").on("keyup" ,function()
+{
+    var v_Text = $('#newAppDownloadUrl').val();
+    if ( v_Text == null || v_Text == "" )
+    {
+        $('#newAppDownloadUrl').popover('show');
+    }
+    else
+    {
+        $('#newAppDownloadUrl').popover('hide');
     }
 });
 
@@ -373,8 +401,23 @@ d3.selectAll(".newBackgroundColorItem")
  */
 d3.selectAll(".newSizeTypeItem").on("click" ,function()
 {
-    var v_NewBGColor = d3.select(this).attr("data-sizeType");
+    var v_NewSizeType = d3.select(this).attr("data-sizeType");
     d3.select("#newSizeType")
-    .attr("data-sizeType" ,v_NewBGColor)
+    .attr("data-sizeType" ,v_NewSizeType)
+    .html(d3.select(this).html());
+});
+
+
+
+/**
+ * App图标名称对齐方式的选择改变事件
+ *
+ * ZhengWei(HY) Add 2020-10-22
+ */
+d3.selectAll(".newNameToLMRItem").on("click" ,function()
+{
+    var v_EditNameToLMR = d3.select(this).attr("data-nameToLMR");
+    d3.select("#newNameToLMR")
+    .attr("data-nameToLMR" ,v_EditNameToLMR)
     .html(d3.select(this).html());
 });
