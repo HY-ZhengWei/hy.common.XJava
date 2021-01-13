@@ -162,6 +162,7 @@ import org.hy.common.xml.log.Logger;
  *              v24.1 2019-12-25  1.修正：组内主动提交后输出日志中，影响操作记录里，不应累计查询数量。对此进行分类区分。发现人：张宇
  *              v25.0 2020-06-02  1.添加：支持规则引擎，对执行入参、返回结果、XJava对象池中的数据使用规则引擎。
  *              v26.0 2020-06-24  1.添加：通过日志引擎规范输出日志
+ *              v27.0 2021-01-13  1.修正：组级停止状态。用于组内某一任务发起“停止”后，任务池中的其它任务及马上将要执行的任务均能不抛异常的停止。
  */
 public final class XSQLGroup implements XJavaID
 {
@@ -3106,6 +3107,12 @@ public final class XSQLGroup implements XJavaID
         {
             try
             {
+                // 组级停止状态。用于组内某一任务发起“停止”后，任务池中的其它任务及马上将要执行的任务均能不抛异常的停止。
+                if ( this.getTaskGroup().isAllStop() )
+                {
+                    return;
+                }
+                
                 this.xsqlGroupResult = this.xsqlGroup.executeGroup(this.superNodeIndex 
                                                                   ,this.params 
                                                                   ,this.xsqlGroupResult 
