@@ -3108,7 +3108,7 @@ public final class XSQLGroup implements XJavaID
             try
             {
                 // 组级停止状态。用于组内某一任务发起“停止”后，任务池中的其它任务及马上将要执行的任务均能不抛异常的停止。
-                if ( this.getTaskGroup().isAllStop() )
+                if ( this.getTaskGroup().isAllStop() || this.isStop() || this.xsqlGroup == null )
                 {
                     return;
                 }
@@ -3166,11 +3166,12 @@ public final class XSQLGroup implements XJavaID
         
         public void clear()
         {
-            this.params.clear();
-            this.params          = null;
             this.xsqlGroup       = null;
             this.xsqlGroupResult = null;
             this.dsgConns        = null;
+
+            this.params.clear();
+            this.params          = null;
         }
         
     }
