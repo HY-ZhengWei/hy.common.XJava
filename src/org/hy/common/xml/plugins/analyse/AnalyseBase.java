@@ -107,6 +107,8 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *                                      定时任务的定时刷新
  *                                      XSQL监控的定时刷新
  *                                      XSQL组监控的定时刷新
+ *              v22.3 2021-01-15  修正：执行Java方法时，防止方法不存的异常。
+ *                                修正：执行Java方法时，防止Json格式的字符无法正常显示的问题
  *                                      
  */
 @Xjava
@@ -2115,6 +2117,11 @@ public class AnalyseBase extends Analyse
                 if ( !i_Cluster )
                 {
                     List<Method> v_Methods = MethodReflect.getMethodsIgnoreCase(v_Object.getClass() ,i_CallMethod ,v_CallParams.size());
+                    if ( Help.isNull(v_Methods) )
+                    {
+                        return "Execute method is " + i_XJavaObjectID + "." + i_CallMethod + "() is not exists.";
+                    }
+                    
                     return StringHelp.replaceAll(this.getTemplateShowObject() 
                                                 ,new String[]{":HttpBasePath" ,":TitleInfo"    ,":XJavaObjectID"                                           ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3" ,":OperateURL4" ,":OperateTitle4" ,":OperateURL5" ,":OperateTitle5"} 
                                                 ,new String[]{i_BasePath      ,"对象方法执行结果" ,i_XJavaObjectID + "." + v_Methods.get(0).getName() + "()"  ,v_Content  ,""});
@@ -2207,14 +2214,22 @@ public class AnalyseBase extends Analyse
                 
                 if ( v_CallRet != null )
                 {
-                    XJSONObject v_Ret = v_XJSON.parser(v_CallRet);
-                    if ( null != v_Ret )
+                    // 防止Json格式的字符无法正常显示的问题
+                    if ( v_CallRet instanceof String && XJSON.isJson(v_CallRet.toString()) )
                     {
-                        v_Content = v_Ret.toJSONString();
+                        v_Content = "{\"return\":\"" + StringHelp.replaceAll(v_CallRet.toString() ,"\"" ,"'") + "\" ,\"returnJson\":true}";
                     }
                     else
                     {
-                        v_Content = "{\"return\":\"" + v_CallRet.toString() + "\"}";
+                        XJSONObject v_Ret = v_XJSON.parser(v_CallRet);
+                        if ( null != v_Ret )
+                        {
+                            v_Content = v_Ret.toJSONString();
+                        }
+                        else
+                        {
+                            v_Content = "{\"return\":\"" + v_CallRet.toString() + "\"}";
+                        }
                     }
                 }
                 else if ( null != v_Methods.get(0).getReturnType()

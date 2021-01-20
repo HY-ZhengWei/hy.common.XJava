@@ -25,6 +25,9 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+import com.sun.istack.internal.logging.Logger;
+
 import org.hy.common.ClassInfo;
 import org.hy.common.ClassReflect;
 import org.hy.common.Date;
@@ -91,6 +94,8 @@ import org.hy.common.xml.plugins.XSQLGroup;
  */
 public final class XJava
 {
+    private final static Logger                    $Logger                       = Logger.getLogger(XJava.class);
+    
 	private final static String                    $XML_JAVA_DATATYPE_CHAR       = "char";
 	
 	private final static String                    $XML_JAVA_DATATYPE_BYTE       = "byte";
@@ -540,13 +545,24 @@ public final class XJava
      * @author      ZhengWei(HY)
      * @createDate  2016-07-14
      * @version     v1.0
+     *              v2.0  2021-01-20  添加：当参加对象不存时，给于日志警告，同时不再返回空指针
      *
      * @param i_ID
      * @return
      */
     public static Param getParam(String i_ID)
     {
-        return (Param)getObject(i_ID);
+        Param v_Param = (Param)getObject(i_ID);
+        
+        if ( v_Param == null )
+        {
+            $Logger.warning("Param id(" + i_ID + ") is not exists.");
+            return new Param();
+        }
+        else
+        {
+            return v_Param;
+        }
     }
     
     
@@ -557,6 +573,7 @@ public final class XJava
      * @author      ZhengWei(HY)
      * @createDate  2016-07-14
      * @version     v1.0
+     *              v2.0  2021-01-20  添加：当参加对象不存时，给于日志警告，同时不再返回空指针
      *
      * @param i_ID
      * @param i_IsNew
@@ -564,7 +581,17 @@ public final class XJava
      */
     public static Param getParam(String i_ID ,boolean i_IsNew)
     {
-        return (Param)getObject(i_ID ,i_IsNew);
+        Param v_Param = (Param)getObject(i_ID ,i_IsNew);
+        
+        if ( v_Param == null )
+        {
+            $Logger.warning("Param id(" + i_ID + ") is not exists.");
+            return new Param();
+        }
+        else
+        {
+            return v_Param;
+        }
     }
     
     

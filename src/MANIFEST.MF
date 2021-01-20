@@ -1,5 +1,5 @@
 Manifest-Version: 4.1.0
 Created-By: HY.ZhengWei@qq.com  2011
-Specification-Version: 4.1.0  2021-01-13
+Specification-Version: 4.1.0  2021-01-20
 SourceCode: https://github.com/HY-ZhengWei/XJava
 Build-JDK: 1.8

@@ -81,6 +81,7 @@ import net.minidev.json.parser.JSONParser;
  *                                             否则，NULL的Json字符串将转成""空字符串写入Hashtable中。
  *                                     2. 防止递归功能，添加允许递归次数。允许一定范围内的递归或重复数据。发现人：马龙。 
  *              2020-01-15  V3.7  添加：当Java对象转Json字符串时，是否包含对成员方法的转换输出。
+ *              2021-01-15  V3.8  添加：简单判定字符串是否为Json格式的字符串
  *                                
  */
 public final class XJSON
@@ -1992,6 +1993,61 @@ public final class XJSON
         super.finalize();
     }
     */
+    
+    
+    
+    /**
+     * 简单判定字符串是否为Json格式的字符串
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-01-15
+     * @version     v1.0
+     *
+     * @param i_JsonText
+     * @return
+     */
+    public static boolean isJson(String i_JsonText)
+    {
+        if ( Help.isNull(i_JsonText) )
+        {
+            return false;
+        }
+        
+        String v_JT = StringHelp.replaceAll(i_JsonText ,new String[] {"\n" ,"\r" ,"\t" ," "} ,new String[] {""});
+        
+        if ( (v_JT.startsWith("{") || v_JT.startsWith("[")) && (v_JT.endsWith("]") || v_JT.endsWith("}")) )
+        {
+            int v_LimitCount1 = StringHelp.getCount(i_JsonText ,"\"");
+            if ( v_LimitCount1 <= 0 && v_LimitCount1 % 2 != 0 )
+            {
+                return false;
+            }
+            
+            int v_PropCount = StringHelp.getCount(i_JsonText ,":");
+            if ( v_PropCount <= 0 )
+            {
+                return false;
+            }
+            
+            int v_LimitCount2S = StringHelp.getCount(i_JsonText ,"\\{");
+            int v_LimitCount2E = StringHelp.getCount(i_JsonText ,"\\}");
+            if ( v_LimitCount2S != v_LimitCount2E)
+            {
+                return false;
+            }
+            
+            v_LimitCount2S = StringHelp.getCount(i_JsonText ,"\\[");
+            v_LimitCount2E = StringHelp.getCount(i_JsonText ,"\\]");
+            if ( v_LimitCount2S != v_LimitCount2E)
+            {
+                return false;
+            }
+            
+            return true;
+        }
+        
+        return false;
+    }
     
     
     

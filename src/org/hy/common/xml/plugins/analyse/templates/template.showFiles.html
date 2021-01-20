@@ -561,7 +561,7 @@ function calcFileSizeCluster(i_File ,i_IsMsg)
                         
                         if ( i_IsMsg )
                         {
-                            f_ShowMsg("消息" ,"各服务器上的文件大小 (" + i_Ret.clusterSize + "台)：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
+                            f_ShowMsg("消息" ,"各服务器上的文件大小 (" + i_Ret.clusterSize + "台)：</b><br><br>" + i_Ret.datas ,v_Height_HIP ,800);
                         }
                     }
                     else if ( i_Ret.retCode == "1" )
@@ -570,11 +570,11 @@ function calcFileSizeCluster(i_File ,i_IsMsg)
                         
                         if ( i_IsMsg )
                         {
-                            f_ShowMsg("消息" ,"各服务器上的文件大小 (" + i_Ret.clusterSize + "台)：</b><br><br>" + i_Ret.datas ,v_Height_HIP);
+                            f_ShowMsg("消息" ,"各服务器上的文件大小 (" + i_Ret.clusterSize + "台)：</b><br><br>" + i_Ret.datas ,v_Height_HIP ,800);
                         }
                     }
                     
-                    var v_Title = i_Ret.datas;
+                    var v_Title = i_Ret.title;
                     v_Title = f_ReplaceAll(v_Title ,"<table>"  ,"");
                     v_Title = f_ReplaceAll(v_Title ,"</table>" ,"");
                     v_Title = f_ReplaceAll(v_Title ,"<tr>"     ,"");
@@ -1033,12 +1033,13 @@ function f_ShowLoading(i_Title ,i_Msg ,i_Height)
 
 
 
-function f_ShowMsg(i_Title ,i_Msg ,i_Height)
+function f_ShowMsg(i_Title ,i_Msg ,i_Height ,i_Width)
 {
-    return f_OpenDialog("Dialog-Default"
+    return f_OpenDialogWidth("Dialog-Default"
                 ,i_Title
                 ,i_Msg
                 ,i_Height
+                ,i_Width == null ? 500 : i_Width
                 ,{
                     "确　　定": function() 
                     {
@@ -1051,12 +1052,19 @@ function f_ShowMsg(i_Title ,i_Msg ,i_Height)
 
 function f_OpenDialog(i_DiaglogID ,i_Title ,i_Msg ,i_Height ,i_Buttons)
 {
+    return f_OpenDialogWidth(i_DiaglogID ,i_Title ,i_Msg ,i_Height ,500 ,i_Buttons);
+}
+
+
+
+function f_OpenDialogWidth(i_DiaglogID ,i_Title ,i_Msg ,i_Height ,i_Width ,i_Buttons)
+{
     $("#" + i_DiaglogID).attr("title" ,i_Title);
     $("#" + i_DiaglogID + "-Msg").html(i_Msg);
     $("#" + i_DiaglogID).dialog({
           resizable: false,
           height: i_Height,
-          width: 500,
+          width: i_Width,
           modal: true,
           buttons: i_Buttons
     });

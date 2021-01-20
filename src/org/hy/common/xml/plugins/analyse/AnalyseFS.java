@@ -14,6 +14,8 @@ import org.hy.common.file.FileDataPacket;
 import org.hy.common.file.FileHelp;
 import org.hy.common.file.event.FileReadEvent;
 import org.hy.common.file.event.FileReadListener;
+import org.hy.common.license.FileFingerprint;
+import org.hy.common.license.Hash;
 import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
 import org.hy.common.net.ServerSocket;
@@ -49,6 +51,7 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
  *                                添加：“全体计算”功能，包括对集群目录大小的计算。
  *              v9.0  2019-12-18  添加：排除哪些文件或目录不显示、不对比、不计算大小等的排除功能
  *              v10.0 2020-06-22  添加：日志监控
+ *              v11.0 2021-01-15  添加：通过文件指纹，高精度判定目录差异、文件差异（集群是否相同）的功能。
  */
 @Xjava
 public class AnalyseFS extends Analyse
@@ -1608,8 +1611,12 @@ public class AnalyseFS extends Analyse
                     }
                 }
                 
+                FileFingerprint v_FFinger     = new FileFingerprint(new Hash(2 ,2 ,null ,false));
+                String          v_FFingerCode = v_FFinger.calcFingerprint(v_File ,$ExcludeFiles ,$ExcludeFolders);
+                
                 return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size ,2) 
                                            + "','fileByteSize':'"          + v_Size
+                                           + "','fingerCode':'"            + v_FFingerCode
                                            + "','lastTime':'"              + new Date(v_File.lastModified()).getFull() + "'}" ,"'" ,"\"");
             }
             catch (Exception exce)
@@ -1649,8 +1656,10 @@ public class AnalyseFS extends Analyse
         Map<String ,String> v_Sizes       = new HashMap<String ,String>(); 
         String              v_FSize       = null;
         String              v_FBSize      = null;
+        String              v_Finger      = null;
         boolean             v_IsSame      = true;
         StringBuilder       v_Buffer      = new StringBuilder();
+        StringBuilder       v_Buffe2      = new StringBuilder();
         String              v_ClusterInfo = "";
         String              v_RetCode     = "0";
         
@@ -1678,11 +1687,24 @@ public class AnalyseFS extends Analyse
                             if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
                             {
                                 v_ExecRet++;
-                                String v_FileSize  = StringHelp.getString(v_RetValue ,"'fileSize':'" ,"'");
-                                String v_ByteSize  = StringHelp.getString(v_RetValue ,"'fileByteSize':'" ,"'");
-                                String v_LastTime  = StringHelp.getString(v_RetValue ,"'lastTime':'" ,"'");
+                                String v_FileSize   = StringHelp.getString(v_RetValue ,"'fileSize':'"     ,"'");
+                                String v_ByteSize   = StringHelp.getString(v_RetValue ,"'fileByteSize':'" ,"'");
+                                String v_FingerCode = StringHelp.getString(v_RetValue ,"'fingerCode':'"   ,"'");
+                                String v_LastTime   = StringHelp.getString(v_RetValue ,"'lastTime':'"     ,"'");
                                 
-                                if ( !Help.isNull(v_ByteSize) )
+                                // 通过文件指纹，高精度判定目录差异、文件差异
+                                if ( !Help.isNull(v_FingerCode) ) 
+                                {
+                                    if ( v_Finger == null )
+                                    {
+                                        v_Finger = v_FingerCode;
+                                    }
+                                    else if ( !v_Finger.equals(v_FingerCode) )
+                                    {
+                                        v_IsSame = false;
+                                    }
+                                }
+                                else if ( !Help.isNull(v_ByteSize) )
                                 {
                                     if ( v_FBSize == null )
                                     {
@@ -1709,7 +1731,7 @@ public class AnalyseFS extends Analyse
                                 {
                                     v_ByteSize = StringHelp.getComputeUnit(Long.parseLong(v_ByteSize) ,4);
                                 }
-                                v_Sizes.put(v_Item.getKey().getHostName() ,Help.NVL(v_ByteSize ,v_FileSize) + "," + v_LastTime);
+                                v_Sizes.put(v_Item.getKey().getHostName() ,Help.NVL(v_ByteSize ,v_FileSize) + "," + v_LastTime + "," + v_FingerCode);
                             }
                             else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
                             {
@@ -1744,25 +1766,37 @@ public class AnalyseFS extends Analyse
                 else
                 {
                     boolean v_IsLocalSame = false;  // 集群全有，并相同时，判定是否与本服务相同
-                    long    v_MyFileSize  = 0;
                     
-                    if ( v_File.isDirectory() )
+                    // 通过文件指纹，高精度判定目录差异、文件差异
+                    if ( !Help.isNull(v_Finger) )
                     {
-                        FileHelp v_FileHelp = new FileHelp();
-                        v_MyFileSize = v_FileHelp.calcSize(v_File);
+                        FileFingerprint v_FFinger     = new FileFingerprint(new Hash(2 ,2 ,null ,false));
+                        String          v_FFingerCode = v_FFinger.calcFingerprint(v_File ,$ExcludeFiles ,$ExcludeFolders);
+                        
+                        v_IsLocalSame = v_Finger.equals(v_FFingerCode);
                     }
                     else
                     {
-                        v_MyFileSize = v_File.length();
-                    }
-                    
-                    if ( Help.isNull(v_FBSize) )
-                    {
-                        v_IsLocalSame = v_FSize.equals(StringHelp.getComputeUnit(v_MyFileSize));
-                    }
-                    else
-                    {
-                        v_IsLocalSame = v_FBSize.equals("" + v_MyFileSize);
+                        long v_MyFileSize = 0;
+                        
+                        if ( v_File.isDirectory() )
+                        {
+                            FileHelp v_FileHelp = new FileHelp();
+                            v_MyFileSize = v_FileHelp.calcSize(v_File);
+                        }
+                        else
+                        {
+                            v_MyFileSize = v_File.length();
+                        }
+                        
+                        if ( Help.isNull(v_FBSize) )
+                        {
+                            v_IsLocalSame = v_FSize.equals(StringHelp.getComputeUnit(v_MyFileSize));
+                        }
+                        else
+                        {
+                            v_IsLocalSame = v_FBSize.equals("" + v_MyFileSize);
+                        }
                     }
                     
                     v_ClusterInfo = (v_IsLocalSame ? "全部相同" : "集群相同");
@@ -1786,6 +1820,7 @@ public class AnalyseFS extends Analyse
         
         v_Sizes = Help.toSort(v_Sizes);
         v_Buffer.append("'datas':'<table>");
+        v_Buffe2.append("'title':'");
         for (Map.Entry<String ,String> v_Item : v_Sizes.entrySet())
         {
             String [] v_Values = (v_Item.getValue() + ", ").split(",");
@@ -1795,11 +1830,23 @@ public class AnalyseFS extends Analyse
                     .append(v_Values[0])
                     .append("</td><td>&nbsp;&nbsp;&nbsp;&nbsp;")
                     .append(v_Values[1])
+                    .append("</td><td>&nbsp;&nbsp;&nbsp;&nbsp;")
+                    .append(v_Values[2])
+                    .append("</td></tr>");
+            
+            v_Buffe2.append("<tr><td>")
+                    .append(v_Item.getKey())
+                    .append("</td><td>&nbsp;&nbsp;&nbsp;&nbsp;")
+                    .append(v_Values[0])
+                    .append("</td><td>&nbsp;&nbsp;&nbsp;&nbsp;")
+                    .append(v_Values[1])
                     .append("</td></tr>");
         }
         v_Buffer.append("</table>");
         
-        return StringHelp.replaceAll("{'retCode':'" + v_RetCode + "'," + v_Buffer.toString()
+        return StringHelp.replaceAll("{'retCode':'"      + v_RetCode 
+                                   + "',"                + v_Buffer.toString()
+                                   + "',"                + v_Buffe2.toString()
                                    + "','clusterInfo':'" + v_ClusterInfo
                                    + "','clusterSize':'" + v_Sizes.size()
                                    + "'}" ,"'" ,"\"");
