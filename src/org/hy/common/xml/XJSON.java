@@ -2015,35 +2015,113 @@ public final class XJSON
         
         String v_JT = StringHelp.replaceAll(i_JsonText ,new String[] {"\n" ,"\r" ,"\t" ," "} ,new String[] {""});
         
+        int v_Len = v_JT.length();
+        if ( v_Len < 2)
+        {
+            return false;
+        }
+        
         if ( (v_JT.startsWith("{") || v_JT.startsWith("[")) && (v_JT.endsWith("]") || v_JT.endsWith("}")) )
         {
-            int v_LimitCount1 = StringHelp.getCount(i_JsonText ,"\"");
-            if ( v_LimitCount1 <= 0 && v_LimitCount1 % 2 != 0 )
-            {
-                return false;
-            }
+            int[]   v_Datas    = new int[v_Len / 2];
+            int     v_Size     = -1;
+            char    v_One      = 0;
+            boolean v_Goto     = false;   // 是否进入两个双引号内？
+            boolean v_HaveGoto = false;   // i 之前是否有进入两个双引号？
             
-            int v_PropCount = StringHelp.getCount(i_JsonText ,":");
-            if ( v_PropCount <= 0 )
+            for (int i=0; i<v_Len; i++)
             {
-                return false;
+                v_One = v_JT.charAt(i);
+                
+                if ( v_One == '"' )
+                {
+                    if ( v_Goto )
+                    {
+                        if ( v_HaveGoto )
+                        {
+                            return false;
+                        }
+                        v_Goto     = false;
+                        v_HaveGoto = true;
+                    }
+                    else
+                    {
+                        v_Goto = true;
+                    }
+                }
+                else if ( v_Goto )
+                {
+                    continue;
+                }
+                else if ( v_One == ':' )
+                {
+                    v_HaveGoto =  false;
+                }
+                else if ( v_One == ',' )
+                {
+                    if ( v_JT.charAt(i + 1) != '"' 
+                      && v_JT.charAt(i + 1) != ']'
+                      && v_JT.charAt(i + 1) != '}'
+                      && v_JT.charAt(i + 1) != '{'
+                      && v_JT.charAt(i + 1) != '[' ) 
+                    {
+                        return false;
+                    }
+                    
+                    v_HaveGoto =  false;
+                }
+                else if ( v_One == '[' )
+                {
+                    if ( v_HaveGoto )
+                    {
+                       return false;
+                    }
+                    
+                    v_HaveGoto        = false;
+                    v_Datas[++v_Size] = 2;
+                }
+                else if ( v_One == '{' )
+                {
+                    if ( v_HaveGoto )
+                    {
+                       return false;
+                    }
+                    
+                    v_HaveGoto        = false;
+                    v_Datas[++v_Size] = 3;
+                }
+                else if ( v_One == ']' )
+                {
+                    if ( v_Size >= 0 && v_Datas[v_Size] == 2 )
+                    {
+                        --v_Size;
+                        v_HaveGoto = false;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else if ( v_One == '}' )
+                {
+                    if ( v_Size >= 0 && v_Datas[v_Size] == 3 )
+                    {
+                        --v_Size;
+                        v_HaveGoto = false;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else if ( v_One == '\\' && i + 1 < v_Len && v_JT.charAt(i + 1) == '"' )
+                {
+                    // 跳过 \" 字符串的组合（转义双引号）
+                    i++;
+                }
             }
-            
-            int v_LimitCount2S = StringHelp.getCount(i_JsonText ,"\\{");
-            int v_LimitCount2E = StringHelp.getCount(i_JsonText ,"\\}");
-            if ( v_LimitCount2S != v_LimitCount2E)
-            {
-                return false;
-            }
-            
-            v_LimitCount2S = StringHelp.getCount(i_JsonText ,"\\[");
-            v_LimitCount2E = StringHelp.getCount(i_JsonText ,"\\]");
-            if ( v_LimitCount2S != v_LimitCount2E)
-            {
-                return false;
-            }
-            
-            return true;
+
+            return v_Size == -1;
         }
         
         return false;

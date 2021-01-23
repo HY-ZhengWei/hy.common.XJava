@@ -15,4 +15,12 @@ public class JU_Split
         System.out.println("split="   + v_Srt02.split("\\?")[0]);
     }
     
+    
+    
+    @Test
+    public void test_byte()
+    {
+        System.out.println((byte)3);
+    }
+    
 }
