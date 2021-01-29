@@ -3336,6 +3336,7 @@ public class AnalyseBase extends Analyse
      * @author      ZhengWei(HY)
      * @createDate  2020-06-13
      * @version     v1.0
+     *              v2.0  2021-01-27  添加：警告级的日志统计
      *
      * @param  i_BasePath         服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ReLoadPath       重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject?logger=Y
@@ -3424,6 +3425,7 @@ public class AnalyseBase extends Analyse
                                             v_TR.setCountNoError(Math.max(v_TR.getCountNoError()     ,v_Report.getCountNoError()));
                                             v_TR.setRequestCount(         v_TR.getRequestCount()    + v_Report.getRequestCount());
                                             v_TR.setErrorFatalCount(      v_TR.getErrorFatalCount() + v_Report.getErrorFatalCount());
+                                            v_TR.setWarnCount(            v_TR.getWarnCount()       + v_Report.getWarnCount());
                                             v_TR.setLastTime(    Math.max(v_TR.getLastTime()         ,v_Report.getLastTime()));
                                             v_TR.setExecSumTime(          v_TR.getExecSumTime()     + v_Report.getExecSumTime());
                                             v_TR.setExecAvgTime(AnalyseLoggerTotal.calcExecAvgTime(v_TR));
@@ -3475,7 +3477,12 @@ public class AnalyseBase extends Analyse
         // 排序类型(Error级日志量)
         else if ( "errorCount".equalsIgnoreCase(i_SortType) )
         {
-            Help.toSort(v_TotalList ,"ErrorFatalCount DESC" ,"execAvgTime DESC" ,"execSumTime DESC" ,"requestCount DESC" ,"className" ,"methodName");
+            Help.toSort(v_TotalList ,"ErrorFatalCount DESC" ,"WarnCount DESC" ,"execAvgTime DESC" ,"execSumTime DESC" ,"requestCount DESC" ,"className" ,"methodName");
+        }
+        // 排序类型(Warn级日志量)
+        else if ( "warnCount".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"WarnCount DESC" ,"ErrorFatalCount DESC" ,"execAvgTime DESC" ,"execSumTime DESC" ,"requestCount DESC" ,"className" ,"methodName");
         }
         // 排序类型(业务累计用时)
         else if ( "execSumTime".equalsIgnoreCase(i_SortType) )
@@ -3492,13 +3499,14 @@ public class AnalyseBase extends Analyse
         long v_SumTotalCount      = 0L;
         long v_SumRequestCount    = 0L;
         long v_SumErrorFatalCount = 0L;
+        long v_SumWarnCount       = 0L;
         long v_SumExecSumTime     = 0L;
         for (LoggerReport v_Report : v_TotalList)
         {
             Map<String ,String> v_RKey      = new HashMap<String ,String>();
             boolean             v_IsRunning = v_Report.getCountNoError() >= 2 
                                            && v_Report.getRequestCount() >= 1 
-                                           && (v_Report.getRequestCount() - v_Report.getErrorFatalCount()) % v_Report.getCountNoError() > 0;
+                                           && (v_Report.getRequestCount() - v_Report.getWarnCount() - v_Report.getErrorFatalCount()) % v_Report.getCountNoError() > 0;
             
             v_RKey.put(":No"              ,String.valueOf(++v_Index));
             v_RKey.put(":ClassName"       ,v_Report.getClassName());
@@ -3507,6 +3515,7 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":LogLevel"        ,Help.NVL(v_Report.getLevelName()  ,"-"));
             v_RKey.put(":TotalCount"      ,"<span style='color:" + (v_Report.getCount()           >  0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getCount()           + "</span>");
             v_RKey.put(":RequestCount"    ,"<span style='color:" + (v_Report.getRequestCount()    >  0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getRequestCount()    + "</span>");
+            v_RKey.put(":WarnCount"       ,"<span style='color:" + (v_Report.getWarnCount()       >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_Report.getWarnCount()       + "</span>");
             v_RKey.put(":ErrorFatalCount" ,"<span style='color:" + (v_Report.getErrorFatalCount() >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_Report.getErrorFatalCount() + "</span>");
             v_RKey.put(":IsRunning"       ,v_IsRunning ? "运行中" : "-");
             v_RKey.put(":ExecSumTime"     ,"<span style='color:" + (v_Report.getExecSumTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecSumTime() >= 0 ? Date.toTimeLen(v_Report.getExecSumTime()) : "-") + "</span>");
@@ -3528,6 +3537,7 @@ public class AnalyseBase extends Analyse
             v_SumTotalCount      += v_Report.getCount();
             v_SumRequestCount    += v_Report.getRequestCount();
             v_SumErrorFatalCount += v_Report.getErrorFatalCount();
+            v_SumWarnCount       += v_Report.getWarnCount();
             v_SumExecSumTime     += v_Report.getExecSumTime();
         }
         
@@ -3541,6 +3551,7 @@ public class AnalyseBase extends Analyse
         v_RKey.put(":LogLevel"        ,"-");
         v_RKey.put(":TotalCount"      ,"<span style='color:" + (v_SumTotalCount      >  0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SumTotalCount      + "</span>");
         v_RKey.put(":RequestCount"    ,"<span style='color:" + (v_SumRequestCount    >  0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SumRequestCount    + "</span>");
+        v_RKey.put(":WarnCount"       ,"<span style='color:" + (v_SumWarnCount       >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_SumWarnCount       + "</span>");
         v_RKey.put(":ErrorFatalCount" ,"<span style='color:" + (v_SumErrorFatalCount >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_SumErrorFatalCount + "</span>");
         v_RKey.put(":IsRunning"       ,"-");
         v_RKey.put(":ExecSumTime"     ,"<span style='color:" + (v_SumExecSumTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Date.toTimeLen(v_SumExecSumTime) : "-") + "</span>");

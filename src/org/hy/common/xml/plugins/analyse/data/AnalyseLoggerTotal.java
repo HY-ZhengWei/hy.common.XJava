@@ -80,18 +80,26 @@ public class AnalyseLoggerTotal extends SerializableDef
             {
                 for (Logger v_Logger : v_ClassForLoggers.getValue())
                 {
-                    Counter<String> v_MethodCounter        = new Counter<String>();
-                    Counter<String> v_MethodCounterNoError = new Counter<String>();
-                    Counter<String> v_MethodRequestCounter = new Counter<String>();
-                    Counter<String> v_MethodErrorCounter   = new Counter<String>();
+                    Counter<String> v_MethodCounter        = new Counter<String>();   // 代码量：总代码量
+                    Counter<String> v_MethodCounterNoError = new Counter<String>();   // 代码量：非异常、非警告的代码量
+                    Counter<String> v_MethodRequestCounter = new Counter<String>();   // 实际执行的次数
+                    Counter<String> v_MethodErrorCounter   = new Counter<String>();   // 实际发生异常的次数
+                    Counter<String> v_MethodWarnCounter    = new Counter<String>();   // 实际发生警告的次数
                     Max<String>     v_LastTimes            = new Max<String>();
                     
                     for (Map.Entry<String, Long> v_Method : v_Logger.getRequestCount().entrySet())
                     {
+                        // 日志级别:方法名称:代码行 
                         String [] v_MInfos     = v_Method.getKey().split(":");
-                        long      v_ErrorCount = 0; 
+                        long      v_ErrorCount = 0L; 
+                        long      v_WarnCount  = 0L;
                         
-                        if ( "error".equalsIgnoreCase(v_MInfos[0]) || "fatal".equalsIgnoreCase(v_MInfos[0]) )
+                        if ( "warn".equalsIgnoreCase(v_MInfos[0]) )
+                        {
+                            v_WarnCount = v_Method.getValue();
+                            v_MethodCounterNoError.put(v_MInfos[1] ,0L);
+                        }
+                        else if ( "error".equalsIgnoreCase(v_MInfos[0]) || "fatal".equalsIgnoreCase(v_MInfos[0]) )
                         {
                             v_ErrorCount = v_Method.getValue();
                             v_MethodCounterNoError.put(v_MInfos[1] ,0L);
@@ -104,6 +112,7 @@ public class AnalyseLoggerTotal extends SerializableDef
                         v_MethodCounter       .put(v_MInfos[1] ,1L);
                         v_MethodRequestCounter.put(v_MInfos[1] ,v_Method.getValue());
                         v_MethodErrorCounter  .put(v_MInfos[1] ,v_ErrorCount);
+                        v_MethodWarnCounter   .put(v_MInfos[1] ,v_WarnCount);
                         v_LastTimes           .put(v_MInfos[1] ,v_Logger.getRequestTime().get(v_Method.getKey()));
                     }
                     
@@ -117,6 +126,7 @@ public class AnalyseLoggerTotal extends SerializableDef
                         v_Data.setCountNoError(   v_MethodCounterNoError.get(v_Method.getKey()));
                         v_Data.setRequestCount(   v_Method              .getValue());
                         v_Data.setErrorFatalCount(v_MethodErrorCounter  .get(v_Method.getKey()));
+                        v_Data.setWarnCount(      v_MethodWarnCounter   .get(v_Method.getKey()));
                         v_Data.setLastTime(       v_LastTimes           .get(v_Method.getKey()).longValue());
                         v_Data.setId(v_Data.getClassName() + v_Data.getMethodName());
                         
@@ -142,10 +152,11 @@ public class AnalyseLoggerTotal extends SerializableDef
         {
             for (Map.Entry<String, List<Logger>> v_ClassForLoggers : Logger.getLoggers().entrySet())
             {
-                Counter<String> v_ClassCounter        = new Counter<String>();
-                Counter<String> v_ClassCounterNoError = new Counter<String>();
-                Counter<String> v_ClassRequestCounter = new Counter<String>();
-                Counter<String> v_MethodErrorCounter  = new Counter<String>();
+                Counter<String> v_ClassCounter        = new Counter<String>();   // 代码量：总代码量
+                Counter<String> v_ClassCounterNoError = new Counter<String>();   // 代码量：非异常、非警告的代码量
+                Counter<String> v_ClassRequestCounter = new Counter<String>();   // 实际执行的次数
+                Counter<String> v_MethodErrorCounter  = new Counter<String>();   // 实际发生异常的次数
+                Counter<String> v_MethodWarnCounter   = new Counter<String>();   // 实际发生警告的次数
                 Max<String>     v_LastTimes           = new Max<String>();
                 Sum<String>     v_ExecSumTimes        = new Sum<String>();
                 
@@ -154,9 +165,15 @@ public class AnalyseLoggerTotal extends SerializableDef
                     for (Map.Entry<String, Long> v_Method : v_Logger.getRequestCount().entrySet())
                     {
                         String [] v_MInfos     = v_Method.getKey().split(":");
-                        long      v_ErrorCount = 0; 
+                        long      v_ErrorCount = 0L; 
+                        long      v_WarnCount  = 0L; 
                         
-                        if ( "error".equalsIgnoreCase(v_MInfos[0]) || "fatal".equalsIgnoreCase(v_MInfos[0]) )
+                        if ( "warn".equalsIgnoreCase(v_MInfos[0]) )
+                        {
+                            v_WarnCount = v_Method.getValue();
+                            v_ClassCounterNoError.put(v_MInfos[1] ,0L);
+                        }
+                        else if ( "error".equalsIgnoreCase(v_MInfos[0]) || "fatal".equalsIgnoreCase(v_MInfos[0]) )
                         {
                             v_ErrorCount = v_Method.getValue();
                             v_ClassCounterNoError.put(v_ClassForLoggers.getKey() ,0L);
@@ -169,6 +186,7 @@ public class AnalyseLoggerTotal extends SerializableDef
                         v_ClassCounter       .put(v_ClassForLoggers.getKey() ,1L);
                         v_ClassRequestCounter.put(v_ClassForLoggers.getKey() ,v_Method.getValue());
                         v_MethodErrorCounter .put(v_ClassForLoggers.getKey() ,v_ErrorCount);
+                        v_MethodWarnCounter  .put(v_ClassForLoggers.getKey() ,v_WarnCount);
                         v_LastTimes          .put(v_ClassForLoggers.getKey() ,v_Logger.getRequestTime().get(v_Method.getKey()));
                         v_ExecSumTimes       .put(v_ClassForLoggers.getKey() ,v_Logger.getMethodExecSumTimes().getSumValue());
                     }
@@ -183,6 +201,7 @@ public class AnalyseLoggerTotal extends SerializableDef
                     v_Data.setCountNoError(v_ClassCounterNoError.get(  v_Class.getKey()));
                     v_Data.setRequestCount(                            v_Class.getValue());
                     v_Data.setErrorFatalCount(v_MethodErrorCounter.get(v_Class.getKey()));
+                    v_Data.setWarnCount(      v_MethodWarnCounter .get(v_Class.getKey()));
                     v_Data.setLastTime(       v_LastTimes.get(         v_Class.getKey()).longValue());
                     v_Data.setId(v_Data.getClassName());
                     
@@ -204,9 +223,14 @@ public class AnalyseLoggerTotal extends SerializableDef
                     {
                         String [] v_MInfos       = v_Method.getKey().split(":");
                         long      v_ErrorCount   = 0L; 
+                        long      v_WarnCount    = 0L; 
                         long      v_CountNoError = 0L;
                         
-                        if ( "error".equalsIgnoreCase(v_MInfos[0]) || "fatal".equalsIgnoreCase(v_MInfos[0]) )
+                        if ( "warn".equalsIgnoreCase(v_MInfos[0]) )
+                        {
+                            v_WarnCount = v_Method.getValue();
+                        }
+                        else if ( "error".equalsIgnoreCase(v_MInfos[0]) || "fatal".equalsIgnoreCase(v_MInfos[0]) )
                         {
                             v_ErrorCount = v_Method.getValue();
                         }
@@ -222,9 +246,10 @@ public class AnalyseLoggerTotal extends SerializableDef
                         v_Data.setMethodName(v_MInfos[1]);
                         v_Data.setLineNumber(v_MInfos[2]);
                         v_Data.setCount(1L);
-                        v_Data.setCountNoError(v_CountNoError);
+                        v_Data.setCountNoError(   v_CountNoError);
                         v_Data.setRequestCount(   v_Method.getValue());
                         v_Data.setErrorFatalCount(v_ErrorCount);
+                        v_Data.setErrorFatalCount(v_WarnCount);
                         v_Data.setLastTime(v_Logger.getRequestTime().get(v_Method.getKey()));
                         v_Data.setId(v_Data.getClassName() + v_Data.getMethodName() + v_Data.getLineNumber());
                         

@@ -12,6 +12,7 @@ import org.hy.common.xml.SerializableDef;
  * @author      ZhengWei(HY)
  * @createDate  2020-06-13
  * @version     v1.0
+ *              v2.0  2021-01-27  添加：警告级的日志统计
  */
 public class LoggerReport extends SerializableDef
 {
@@ -36,7 +37,7 @@ public class LoggerReport extends SerializableDef
     /** 日志代码量 */
     private long   count;
     
-    /** 日志代码量（不包含Error级、Fatal级的） */
+    /** 日志代码量（不包含Error级、Fatal级的、Warn级的） */
     private long   countNoError;
     
     /** 日志执行量 */
@@ -44,6 +45,9 @@ public class LoggerReport extends SerializableDef
     
     /** Error级日志量（包含Fatal级的） */
     private long   errorFatalCount;
+    
+    /** Warn级日志量 */
+    private long   warnCount;
     
     /** 最后时间 */
     private long   lastTime;
@@ -277,7 +281,7 @@ public class LoggerReport extends SerializableDef
 
     
     /**
-     * 获取：日志代码量（不包含Error级、Fatal级的）
+     * 获取：日志代码量（不包含Error级、Fatal级的、Warn级的）
      */
     public long getCountNoError()
     {
@@ -286,13 +290,33 @@ public class LoggerReport extends SerializableDef
 
     
     /**
-     * 设置：日志代码量（不包含Error级、Fatal级的）
+     * 设置：日志代码量（不包含Error级、Fatal级的、Warn级的）
      * 
      * @param countNoError 
      */
     public void setCountNoError(long countNoError)
     {
         this.countNoError = countNoError;
+    }
+
+    
+    /**
+     * 获取：Warn级日志量
+     */
+    public long getWarnCount()
+    {
+        return warnCount;
+    }
+
+    
+    /**
+     * 设置：Warn级日志量
+     * 
+     * @param warnCount 
+     */
+    public void setWarnCount(long warnCount)
+    {
+        this.warnCount = warnCount;
     }
     
 }
