@@ -468,7 +468,22 @@ public final class XJSON
         Object v_NewObj = null;
         try
         {
-            v_NewObj = i_ObjectClass.newInstance();
+            if ( Map.class.equals(i_ObjectClass) )
+            {
+                v_NewObj = new HashMap<Object ,Object>();
+            }
+            else if ( List.class.equals(i_ObjectClass) )
+            {
+                v_NewObj = new ArrayList<Object>();
+            }
+            else if ( Set.class.equals(i_ObjectClass) )
+            {
+                v_NewObj = new HashSet<Object>();
+            }
+            else
+            {
+                v_NewObj = i_ObjectClass.newInstance();
+            }
         }
         catch (Exception exce)
         {
