@@ -2140,9 +2140,11 @@ public final class XJava
                     
                     if ( v_Row.indexOf($XML_OBJECT_ENCRYPT) >= 0 )
                     {
-                        XJavaEncrypt v_XJE = this.encrypts.get(v_Index);
-                        String       v_Old = "<" + v_XJE.getNodeName() + " " + $XML_OBJECT_ENCRYPT + "=\"" + v_XJE.getEncrypt() + "\">" +                             v_XJE.getValue()        + "</" + v_XJE.getNodeName() + ">";
-                        String       v_New = "<" + v_XJE.getNodeName() + " " + $XML_OBJECT_ENCRYPT + "=\"" + v_XJE.getEncrypt() + "\">" + $XML_OBJECT_ENCRYPT + ":" + v_XJE.getValueEncrypt() + "</" + v_XJE.getNodeName() + ">";
+                        XJavaEncrypt v_XJE  = this.encrypts.get(v_Index);
+                        int          v_OldS = v_Row.indexOf("<"  + v_XJE.getNodeName() + " ");
+                        int          v_OldE = v_Row.indexOf("</" + v_XJE.getNodeName() + ">") + ("</" + v_XJE.getNodeName() + ">").length();
+                        String       v_Old  = v_Row.substring(v_OldS ,v_OldE);
+                        String       v_New  = "<" + v_XJE.getNodeName() + " " + $XML_OBJECT_ENCRYPT + "=\"" + v_XJE.getEncrypt() + "\">" + $XML_OBJECT_ENCRYPT + ":" + v_XJE.getValueEncrypt() + "</" + v_XJE.getNodeName() + ">";
                         
                         if ( v_Row.indexOf(v_Old) >= 0 )
                         {
