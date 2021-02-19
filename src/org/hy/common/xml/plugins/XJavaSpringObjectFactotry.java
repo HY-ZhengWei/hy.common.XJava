@@ -46,6 +46,7 @@ import org.springframework.lang.Nullable;
         {
             SpringApplication v_SpringApp = new SpringApplication(ProjectStart.class);
             v_SpringApp.setApplicationContextClass(XJavaSpringAnnotationConfigServletWebServerApplicationContext.class);
+            v_SpringApp.setApplicationContextFactory(XJavaSpringApplicationContextFactory.DEFAULT);  // 2.4.0 之后的新版本
             ConfigurableApplicationContext v_CAC = v_SpringApp.run(i_Args);
         }
         

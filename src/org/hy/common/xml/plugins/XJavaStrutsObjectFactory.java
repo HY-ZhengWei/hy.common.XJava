@@ -25,39 +25,39 @@ import com.opensymphony.xwork2.ObjectFactory;
 public class XJavaStrutsObjectFactory extends ObjectFactory 
 {
 
-	private static final long serialVersionUID = -5876147447358220646L;
-	
-	
-	
-	public Class<?> getClassInstance(String i_ClassName) throws ClassNotFoundException 
-	{
-		Object v_ClassInstance = XJava.getObject(i_ClassName);
-		
-		if ( v_ClassInstance != null )
-		{
-			return v_ClassInstance.getClass();
-		}
-		else
-		{
-			return super.getClassInstance(i_ClassName);
-		}
-	}
+    private static final long serialVersionUID = -5876147447358220646L;
+    
+    
+    
+    public Class<?> getClassInstance(String i_ClassName) throws ClassNotFoundException 
+    {
+        Object v_ClassInstance = XJava.getObject(i_ClassName);
+        
+        if ( v_ClassInstance != null )
+        {
+            return v_ClassInstance.getClass();
+        }
+        else
+        {
+            return super.getClassInstance(i_ClassName);
+        }
+    }
 
-	
+    
 
-	@Override
-	public Object buildBean(String i_ClassName, Map<String, Object> i_ExtraContext, boolean i_InjectInternal) throws Exception 
-	{
-		Object v_ClassInstance = XJava.getObject(i_ClassName);
-		
-		if ( v_ClassInstance != null )
-		{
-			return v_ClassInstance;
-		}
-		else
-		{
-			return super.buildBean(i_ClassName, i_ExtraContext, i_InjectInternal);
-		}
-	}
+    @Override
+    public Object buildBean(String i_ClassName, Map<String, Object> i_ExtraContext, boolean i_InjectInternal) throws Exception 
+    {
+        Object v_ClassInstance = XJava.getObject(i_ClassName);
+        
+        if ( v_ClassInstance != null )
+        {
+            return v_ClassInstance;
+        }
+        else
+        {
+            return super.buildBean(i_ClassName, i_ExtraContext, i_InjectInternal);
+        }
+    }
 
 }
