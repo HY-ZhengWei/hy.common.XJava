@@ -21,6 +21,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.ApplicationContextFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.lang.Nullable;
 
@@ -46,7 +47,7 @@ import org.springframework.lang.Nullable;
         {
             SpringApplication v_SpringApp = new SpringApplication(ProjectStart.class);
             v_SpringApp.setApplicationContextClass(XJavaSpringAnnotationConfigServletWebServerApplicationContext.class);
-            v_SpringApp.setApplicationContextFactory(XJavaSpringApplicationContextFactory.DEFAULT);  // 2.4.0 之后的新版本
+            v_SpringApp.setApplicationContextFactory(ApplicationContextFactory.ofContextClass(XJavaSpringAnnotationConfigServletWebServerApplicationContext.class));  // 2.4.0 之后的新版本
             ConfigurableApplicationContext v_CAC = v_SpringApp.run(i_Args);
         }
         

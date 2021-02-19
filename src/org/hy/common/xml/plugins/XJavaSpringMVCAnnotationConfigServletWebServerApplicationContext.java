@@ -1,6 +1,7 @@
 package org.hy.common.xml.plugins;
 
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.ApplicationContextFactory;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
 
@@ -21,7 +22,7 @@ import org.springframework.web.context.support.XmlWebApplicationContext;
         {
             SpringApplication v_SpringApp = new SpringApplication(ProjectStart.class);
             v_SpringApp.setApplicationContextClass(XJavaSpringAnnotationConfigServletWebServerApplicationContext.class);
-            v_SpringApp.setApplicationContextFactory(XJavaSpringApplicationContextFactory.DEFAULT);  // 2.4.0 之后的新版本
+            v_SpringApp.setApplicationContextFactory(ApplicationContextFactory.ofContextClass(XJavaSpringAnnotationConfigServletWebServerApplicationContext.class));  // 2.4.0 之后的新版本
             ConfigurableApplicationContext v_CAC = v_SpringApp.run(i_Args);
         }
         
