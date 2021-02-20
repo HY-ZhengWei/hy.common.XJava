@@ -129,6 +129,9 @@ public final class XHttp extends SerializableDef implements XJavaID
     /** Cookie信息 */
     private XHttpCookie                cookie;
     
+    /** 注释 */
+    private String                     comment;
+    
     
     
     public XHttp()
@@ -2047,8 +2050,28 @@ public final class XHttp extends SerializableDef implements XJavaID
 
     
     
+    /**
+     * 获取：注释
+     */
+    public String getComment()
+    {
+        return comment;
+    }
+
     
     
+    /**
+     * 设置：注释
+     * 
+     * @param comment 
+     */
+    public void setComment(String comment)
+    {
+        this.comment = comment;
+    }
+
+    
+
     /**
      * 类似于跳过 "继续浏览此网站(不推荐)" 这样的提醒 
      */
