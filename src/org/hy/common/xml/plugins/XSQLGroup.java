@@ -163,6 +163,7 @@ import org.hy.common.xml.log.Logger;
  *              v25.0 2020-06-02  1.添加：支持规则引擎，对执行入参、返回结果、XJava对象池中的数据使用规则引擎。
  *              v26.0 2020-06-24  1.添加：通过日志引擎规范输出日志
  *              v27.0 2021-01-13  1.修正：组级停止状态。用于组内某一任务发起“停止”后，任务池中的其它任务及马上将要执行的任务均能不抛异常的停止。
+ *              v28.0 2021-02-23  1.添加：集中清理计算过程中产生的缓存。而不是边计算边清理缓存，这样会在多线程的计算中造成正在使用的数据被清理掉的问题。
  */
 public final class XSQLGroup implements XJavaID
 {
@@ -523,13 +524,30 @@ public final class XSQLGroup implements XJavaID
      * @author      ZhengWei(HY)
      * @createDate  2016-01-21
      * @version     v1.0
+     *              v2.0  2021-02-23  添加：集中清理计算过程中产生的缓存
      *
      * @param io_Params         执行或查询参数
      * @return
      */
     private XSQLGroupResult executeGroup(Map<String ,Object> io_Params)
     {
-        return this.executeGroup(io_Params ,new Hashtable<DataSourceGroup ,XConnection>() ,new XSQLGroupResult());
+        XSQLGroupResult v_Ret = new XSQLGroupResult();
+        
+        try
+        {
+            v_Ret = this.executeGroup(io_Params ,new Hashtable<DataSourceGroup ,XConnection>() ,v_Ret);
+        }
+        catch (Exception exce)
+        {
+            $Logger.error(exce);
+            exce.printStackTrace();
+        }
+        finally
+        {
+            v_Ret.clearTempCaches();
+        }
+        
+        return v_Ret;
     }
     
     
@@ -1276,8 +1294,7 @@ public final class XSQLGroup implements XJavaID
                                 v_QueryReturnPart.putRows(v_QRItemMap);  // 只有执行成功后才put返回查询结果集
                                 v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
                                 
-                                v_Params.clear();
-                                v_Params = null;
+                                // i_XSQLGroupResult.addTempCache(v_Params);
                             }
                             
                             // 不能释放，因为当集合为常量类型的高速缓存时，释放会删除最后一个元素
@@ -1321,8 +1338,7 @@ public final class XSQLGroup implements XJavaID
                                 
                                 v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
                                 
-                                v_Params.clear();
-                                v_Params = null;
+                                // i_XSQLGroupResult.addTempCache(v_Params);
                             }
                             
                             // 不能释放，因为当集合为常量类型的高速缓存时，释放会删除最后一个元素
@@ -1387,8 +1403,7 @@ public final class XSQLGroup implements XJavaID
                                     }
                                     v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
                                     
-                                    v_Params.clear();
-                                    v_Params = null;
+                                    // i_XSQLGroupResult.addTempCache(v_Params);
                                 }
                                 
                                 if ( v_RowPrevious != null )
@@ -1436,8 +1451,7 @@ public final class XSQLGroup implements XJavaID
                                     }
                                     v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
                                     
-                                    v_Params.clear();
-                                    v_Params = null;
+                                    // i_XSQLGroupResult.addTempCache(v_Params);
                                 }
                                 
                                 if ( v_RowPrevious != null )

@@ -1,9 +1,13 @@
 package org.hy.common.xml.plugins;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hy.common.Counter;
+import org.hy.common.Help;
 
 
 
@@ -37,6 +41,9 @@ public class XSQLGroupResult extends XSQLGroupControl
     /** 为异常对象 */
     private Exception                         exception;
     
+    /** 计算过程中产生的临时缓存。将在XSQL组整体执行完成前集中释放 */
+    private List<Object>                      tempCaches;
+    
     
     
     public XSQLGroupResult()
@@ -48,16 +55,20 @@ public class XSQLGroupResult extends XSQLGroupControl
     
     public XSQLGroupResult(boolean i_Result)
     {
-        this(i_Result ,new HashMap<String ,Object>() ,new Counter<String>());
+        this(i_Result ,new HashMap<String ,Object>() ,new Counter<String>() ,new ArrayList<Object>());
     }
     
     
     
-    public XSQLGroupResult(boolean i_Success ,Map<String ,Object> i_Returns ,Counter<String> i_ExecSumCount)
+    public XSQLGroupResult(boolean             i_Success 
+                          ,Map<String ,Object> i_Returns 
+                          ,Counter<String>     i_ExecSumCount 
+                          ,List<Object>        i_TempCacheMap)
     {
         this.success      = i_Success;
         this.returns      = i_Returns;
         this.execSumCount = i_ExecSumCount;
+        this.tempCaches   = i_TempCacheMap;
     }
 
     
@@ -70,6 +81,7 @@ public class XSQLGroupResult extends XSQLGroupControl
         this.execLastNode = i_XResult.execLastNode;
         this.exceptionSQL = i_XResult.exceptionSQL;
         this.exception    = i_XResult.exception;
+        this.tempCaches   = i_XResult.tempCaches;
     }
     
     
@@ -202,6 +214,75 @@ public class XSQLGroupResult extends XSQLGroupControl
         this.exception = exception;
         this.success   = false;
         return this;
+    }
+
+    
+    /**
+     * 获取：计算过程中产生的临时缓存。将在XSQL组整体执行完成前集中释放
+     */
+    public List<Object> getTempCaches()
+    {
+        return tempCaches;
+    }
+
+    
+    /**
+     * 设置：计算过程中产生的临时缓存。将在XSQL组整体执行完成前集中释放
+     * 
+     * @param tempCaches 
+     */
+    public void setTempCaches(List<Object> tempCaches)
+    {
+        this.tempCaches = tempCaches;
+    }
+    
+    
+    /**
+     * 记录计算过程中产生的临时缓存
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-02-23
+     * @version     v1.0
+     *
+     * @param i_TempCache
+     */
+    public void addTempCache(Object i_TempCache)
+    {
+        this.tempCaches.add(i_TempCache);
+    }
+    
+    
+    /**
+     * 清除计算过程中产生的临时缓存。应在XSQL组整体执行完成前集中释放
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-02-23
+     * @version     v1.0
+     */
+    public synchronized void clearTempCaches()
+    {
+        if ( !Help.isNull(this.tempCaches) )
+        {
+            for (int i=this.tempCaches.size() - 1; i >= 0; i--)
+            {
+                Object v_TempCache = this.tempCaches.remove(i);
+                
+                if ( v_TempCache instanceof List )
+                {
+                    ((List<?>)v_TempCache).clear();
+                }
+                else if ( v_TempCache instanceof Set )
+                {
+                    ((Set<?>)v_TempCache).clear();
+                }
+                else if ( v_TempCache instanceof Map )
+                {
+                    ((Map<? ,?>)v_TempCache).clear();
+                }
+                
+                v_TempCache = null;
+            }
+        }
     }
     
 }
