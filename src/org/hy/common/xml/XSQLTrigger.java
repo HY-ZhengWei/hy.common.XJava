@@ -33,6 +33,8 @@ import org.hy.common.db.DataSourceGroup;
  * @version     v1.0
  *              v2.0  2019-02-18  添加：可自行定制的XSQL异常处理机制
  *              v3.0  2019-08-13  添加：设定触发器中XSQL的执行方式（$Execute、$ExecuteUpdate）
+ *              v3.1  2021-02-27  修改：syncMode默认值改为true。原因是：防止触发源是多线程执行的情况，并且触发源数据量大，
+ *                                      当触发器再是异步时，容易引发内存溢出的问题。
  */
 public class XSQLTrigger
 {
@@ -52,7 +54,7 @@ public class XSQLTrigger
      */
     private List<XSQLTriggerInfo> xsqls;
     
-    /** 同步模式。默认为：false，即异步模式 */
+    /** 同步模式。默认为：true，即同步模式 */
     private boolean               syncMode;
     
     /** 
@@ -73,7 +75,7 @@ public class XSQLTrigger
     public XSQLTrigger()
     {
         this.xsqls     = new ArrayList<XSQLTriggerInfo>();
-        this.syncMode  = false;
+        this.syncMode  = true;
         this.errorMode = true;
         this.error     = null;
         this.isInit    = false;
@@ -444,7 +446,7 @@ public class XSQLTrigger
 
     
     /**
-     * 获取：同步模式。默认为：false，即异步模式
+     * 获取：同步模式。默认为：true，即同步模式
      */
     public boolean isSyncMode()
     {
@@ -454,7 +456,7 @@ public class XSQLTrigger
 
     
     /**
-     * 设置：同步模式。默认为：false，即异步模式
+     * 设置：同步模式。默认为：true，即同步模式
      * 
      * @param syncMode 
      */

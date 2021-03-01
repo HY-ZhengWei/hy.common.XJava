@@ -1398,7 +1398,7 @@ public final class XSQLGroup implements XJavaID
                                     
                                     if ( v_RowPrevious != null )
                                     {
-                                        v_RowPrevious.clear();
+                                        // v_RowPrevious.clear();
                                         v_RowPrevious = null;
                                     }
                                     v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
@@ -1408,7 +1408,7 @@ public final class XSQLGroup implements XJavaID
                                 
                                 if ( v_RowPrevious != null )
                                 {
-                                    v_RowPrevious.clear();
+                                    // v_RowPrevious.clear();
                                     v_RowPrevious = null;
                                 }
                             }
@@ -1446,7 +1446,7 @@ public final class XSQLGroup implements XJavaID
                                     
                                     if ( v_RowPrevious != null )
                                     {
-                                        v_RowPrevious.clear();
+                                        // v_RowPrevious.clear();
                                         v_RowPrevious = null;
                                     }
                                     v_RowPrevious = Help.setMapValues(v_QRItemMap ,v_Params);
@@ -1456,7 +1456,7 @@ public final class XSQLGroup implements XJavaID
                                 
                                 if ( v_RowPrevious != null )
                                 {
-                                    v_RowPrevious.clear();
+                                    // v_RowPrevious.clear();
                                     v_RowPrevious = null;
                                 }
                             }
@@ -1990,8 +1990,8 @@ public final class XSQLGroup implements XJavaID
                         v_Interval = ThreadPool.getIntervalTime() * 3;
                     }
                     
-                    // long v_WaitCount = 0;
-                    while ( !v_TaskGroup.isTasksFinish() ) 
+                    long v_WaitCount = 0;
+                    while ( !v_TaskGroup.isTasksFinish() && !v_TaskGroup.isAllStop() ) 
                     {
                         // 一直等待并且的执行结果
                         try
@@ -2002,9 +2002,9 @@ public final class XSQLGroup implements XJavaID
                         {
                             // Nothing.
                         }
-                        // System.out.println("-- " + Date.getNowTime().getFull() + " WaitCount=" + (++v_WaitCount) + "  TaskSize=" + v_TaskGroup.size() + "  TaskFinishSize=" + v_TaskGroup.getFinishSize());
+                        $Logger.debug("WaitCount=" + (++v_WaitCount) + "  TaskSize=" + v_TaskGroup.size() + "  TaskFinishSize=" + v_TaskGroup.getFinishSize());
                     }
-                    // System.out.println("-- " + Date.getNowTime().getFull() + " Wait Finish.");
+                    $Logger.debug("Wait Finish.");
                     
                     // 获取执行结果
                     XSQLGroupTask v_Task = (XSQLGroupTask)v_TaskGroup.getTask(0);
@@ -2012,22 +2012,31 @@ public final class XSQLGroup implements XJavaID
                     
                     try
                     {
+                        XSQLGroupResult v_ErrorXGR = null;
+                        
+                        // 执行清理工作
                         for (int v_TaskIndex=0; v_TaskIndex<v_TaskGroup.size(); v_TaskIndex++)
                         {
                             v_Task = (XSQLGroupTask)v_TaskGroup.getTask(v_TaskIndex);
                             
                             if ( v_Task != null )
                             {
-                                if ( v_Task.getXsqlGroupResult() != null )
+                                if ( v_ErrorXGR == null && v_Task.getXsqlGroupResult() != null )
                                 {
                                     if ( !v_Task.getXsqlGroupResult().isSuccess() )
                                     {
-                                        return v_Task.getXsqlGroupResult();
+                                        v_ErrorXGR = v_Task.getXsqlGroupResult();
                                     }
                                 }
                                 
                                 v_Task.clear();
                             }
+                        }
+                        
+                        if ( v_ErrorXGR != null )
+                        {
+                            // 有异常时返回
+                            return v_ErrorXGR;
                         }
                     }
                     finally
@@ -3127,6 +3136,7 @@ public final class XSQLGroup implements XJavaID
                     return;
                 }
                 
+
                 this.xsqlGroupResult = this.xsqlGroup.executeGroup(this.superNodeIndex 
                                                                   ,this.params 
                                                                   ,this.xsqlGroupResult 
@@ -3138,16 +3148,22 @@ public final class XSQLGroup implements XJavaID
                 }
                 else
                 {
-                    XSQLNode v_Node = this.xsqlGroup.xsqlNodes.get(this.superNodeIndex);
-                    
-                    if ( v_Node.isPerAfterCommit() )
+                    if ( this.xsqlGroup != null && !Help.isNull(this.xsqlGroup.xsqlNodes) )
                     {
-                        this.xsqlGroup.commits(this.dsgConns ,this.xsqlGroupResult.getExecSumCount());
+                        XSQLNode v_Node = this.xsqlGroup.xsqlNodes.get(this.superNodeIndex);
+                        
+                        if ( v_Node.isPerAfterCommit() )
+                        {
+                            this.xsqlGroup.commits(this.dsgConns ,this.xsqlGroupResult.getExecSumCount());
+                        }
                     }
                 }
             }
             catch (Exception exce)
             {
+                // 多任务并发执行时，只要有一个任务异常，其它还在队列中等待执行的任务将就全部退出等待，将不再执行
+                this.getTaskGroup().stopTasksNoExecute();
+                
                 $Logger.error(exce);
                 exce.printStackTrace();
             }
