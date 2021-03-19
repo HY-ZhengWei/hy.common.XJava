@@ -1906,8 +1906,8 @@ public final class XSQLGroup implements XJavaID
                 v_Interval = ThreadPool.getIntervalTime() * 3;
             }
             
-            // long v_WaitCount = 0;
-            while ( !i_TaskGroup.isTasksFinish() ) 
+            long v_WaitCount = 0;
+            while ( !i_TaskGroup.isTaskGroupFinish() && !i_TaskGroup.isAllStop() ) 
             {
                 // 一直等待并且的执行结果
                 try
@@ -1918,9 +1918,9 @@ public final class XSQLGroup implements XJavaID
                 {
                     // Nothing.
                 }
-                // System.out.println("-- " + Date.getNowTime().getFull() + " WaitCount = " + (++v_WaitCount));
+                $Logger.debug("WaitCount=" + (++v_WaitCount) + "  TaskSize=" + i_TaskGroup.size() + "  TaskFinishSize=" + i_TaskGroup.getFinishSize());
             }
-            // System.out.println("-- " + Date.getNowTime().getFull() + " Wait Finish.");
+            $Logger.debug("Wait Finish.");
             
             // 获取执行结果
             XSQLGroupTask v_Task = (XSQLGroupTask)i_TaskGroup.getTask(0);
@@ -1991,7 +1991,7 @@ public final class XSQLGroup implements XJavaID
                     }
                     
                     long v_WaitCount = 0;
-                    while ( !v_TaskGroup.isTasksFinish() && !v_TaskGroup.isAllStop() ) 
+                    while ( !v_TaskGroup.isTaskGroupFinish() && !v_TaskGroup.isAllStop() ) 
                     {
                         // 一直等待并且的执行结果
                         try
@@ -3162,6 +3162,7 @@ public final class XSQLGroup implements XJavaID
             catch (Exception exce)
             {
                 // 多任务并发执行时，只要有一个任务异常，其它还在队列中等待执行的任务将就全部退出等待，将不再执行
+                this.finishTask();
                 this.getTaskGroup().stopTasksNoExecute();
                 
                 $Logger.error(exce);
