@@ -3135,7 +3135,6 @@ public final class XSQLGroup implements XJavaID
                 {
                     return;
                 }
-                
 
                 this.xsqlGroupResult = this.xsqlGroup.executeGroup(this.superNodeIndex 
                                                                   ,this.params 
@@ -3159,14 +3158,13 @@ public final class XSQLGroup implements XJavaID
                     }
                 }
             }
-            catch (Exception exce)
+            catch (Throwable exce)
             {
                 // 多任务并发执行时，只要有一个任务异常，其它还在队列中等待执行的任务将就全部退出等待，将不再执行
                 this.finishTask();
                 this.getTaskGroup().stopTasksNoExecute();
                 
                 $Logger.error(exce);
-                exce.printStackTrace();
             }
             finally
             {
