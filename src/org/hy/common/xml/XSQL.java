@@ -1167,26 +1167,26 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             }
         }
     }
-	
-	
-	
-	/**
-	 * 占位符SQL的查询。
-	 * 
-	 * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
-	 * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
-	 * 
-	 * @param i_Obj              占位符SQL的填充对象。
-	 * @return
-	 */
-	public Object query(Object i_Obj)
-	{
-	    return queryXSQLData(i_Obj).getDatas();
-	}
-	
-	
-	
-	/**
+    
+    
+    
+    /**
+     * 占位符SQL的查询。
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @return
+     */
+    public Object query(Object i_Obj)
+    {
+        return queryXSQLData(i_Obj).getDatas();
+    }
+    
+    
+    
+    /**
      * 占位符SQL的查询。
      * 
      * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；

@@ -164,6 +164,7 @@ import org.hy.common.xml.log.Logger;
  *              v26.0 2020-06-24  1.添加：通过日志引擎规范输出日志
  *              v27.0 2021-01-13  1.修正：组级停止状态。用于组内某一任务发起“停止”后，任务池中的其它任务及马上将要执行的任务均能不抛异常的停止。
  *              v28.0 2021-02-23  1.添加：集中清理计算过程中产生的缓存。而不是边计算边清理缓存，这样会在多线程的计算中造成正在使用的数据被清理掉的问题。
+ *              v29.0 2021-03-24  1.添加：配合多线程任务组的改造，添加：准备添加的任务数量。解决：任务组误判任务组整体完成的问题。
  */
 public final class XSQLGroup implements XJavaID
 {
@@ -658,6 +659,7 @@ public final class XSQLGroup implements XJavaID
         XSQLGroupResult v_Ret       = io_XSQLGroupResult;
         TaskGroup       v_TaskGroup = newTaskGroupByThreads();
         
+        v_TaskGroup.addReadyTotalSize(this.xsqlNodes.size());
         for (int v_NodeIndex=0; v_NodeIndex<this.xsqlNodes.size(); v_NodeIndex++)
         {
             XSQLNode v_Node = this.xsqlNodes.get(v_NodeIndex);
@@ -1261,6 +1263,11 @@ public final class XSQLGroup implements XJavaID
                                 v_Ret.getReturns().put(v_Node.getQueryReturnID() ,v_QueryReturnPart);
                             }
                             
+                            if ( v_Node.isThread() )
+                            {
+                                v_TaskGroup.addReadyTotalSize(v_QueryRet.size());
+                            }
+                            
                             Map<String ,Object> v_RowPrevious = null;
                             for (int v_RowIndex=0; v_RowIndex<v_QueryRet.size(); v_RowIndex++)
                             {
@@ -1306,6 +1313,11 @@ public final class XSQLGroup implements XJavaID
                         }
                         else
                         {
+                            if ( v_Node.isThread() )
+                            {
+                                v_TaskGroup.addReadyTotalSize(v_QueryRet.size());
+                            }
+                            
                             Map<String ,Object> v_RowPrevious = null;
                             for (int v_RowIndex=0; v_RowIndex<v_QueryRet.size(); v_RowIndex++)
                             {
@@ -1364,6 +1376,11 @@ public final class XSQLGroup implements XJavaID
                                     v_Ret.getReturns().put(v_Node.getQueryReturnID() ,v_QueryReturnPart);
                                 }
                                 
+                                if ( v_Node.isThread() )
+                                {
+                                    v_TaskGroup.addReadyTotalSize(v_QueryRet.size());
+                                }
+                                
                                 Map<String ,Object> v_RowPrevious = null;
                                 for (int v_RowIndex=0; v_RowIndex<v_QueryRet.size(); v_RowIndex++)
                                 {
@@ -1414,6 +1431,11 @@ public final class XSQLGroup implements XJavaID
                             }
                             else
                             {
+                                if ( v_Node.isThread() )
+                                {
+                                    v_TaskGroup.addReadyTotalSize(v_QueryRet.size());
+                                }
+                                
                                 Map<String ,Object> v_RowPrevious = null;
                                 for (int v_RowIndex=0; v_RowIndex<v_QueryRet.size(); v_RowIndex++)
                                 {
@@ -1907,7 +1929,7 @@ public final class XSQLGroup implements XJavaID
             }
             
             long v_WaitCount = 0;
-            while ( !i_TaskGroup.isTaskGroupFinish() && !i_TaskGroup.isAllStop() ) 
+            do 
             {
                 // 一直等待并且的执行结果
                 try
@@ -1920,7 +1942,13 @@ public final class XSQLGroup implements XJavaID
                 }
                 $Logger.debug("WaitCount=" + (++v_WaitCount) + "  TaskSize=" + i_TaskGroup.size() + "  TaskFinishSize=" + i_TaskGroup.getFinishSize());
             }
-            $Logger.debug("Wait Finish.");
+            while ( !i_TaskGroup.isTaskGroupFinish() );  // && !i_TaskGroup.isAllStop()
+            $Logger.debug("WaitCount=" + (++v_WaitCount) + "  TaskSize=" + i_TaskGroup.size() + "  TaskFinishSize=" + i_TaskGroup.getFinishSize());
+            $Logger.debug("Wait Finish." + (i_TaskGroup.isAllStop() ? " Task Group is Stop." : ""));
+            if ( i_TaskGroup.isAllStop() )
+            {
+                v_WaitCount = 0;
+            }
             
             // 获取执行结果
             XSQLGroupTask v_Task = (XSQLGroupTask)i_TaskGroup.getTask(0);
@@ -1928,22 +1956,31 @@ public final class XSQLGroup implements XJavaID
             
             try
             {
+                XSQLGroupResult v_ErrorXGR = null;
+                
+                // 执行清理工作
                 for (int v_TaskIndex=0; v_TaskIndex<i_TaskGroup.size(); v_TaskIndex++)
                 {
                     v_Task = (XSQLGroupTask)i_TaskGroup.getTask(v_TaskIndex);
                     
                     if ( v_Task != null )
                     {
-                        if ( v_Task.getXsqlGroupResult() != null )
+                        if ( v_ErrorXGR == null && v_Task.getXsqlGroupResult() != null )
                         {
                             if ( !v_Task.getXsqlGroupResult().isSuccess() )
                             {
-                                return v_Task.getXsqlGroupResult();
+                                v_ErrorXGR = v_Task.getXsqlGroupResult();
                             }
                         }
                         
                         v_Task.clear();
                     }
+                }
+                
+                if ( v_ErrorXGR != null )
+                {
+                    // 有异常时返回
+                    return v_ErrorXGR;
                 }
             }
             finally
@@ -1991,7 +2028,7 @@ public final class XSQLGroup implements XJavaID
                     }
                     
                     long v_WaitCount = 0;
-                    while ( !v_TaskGroup.isTaskGroupFinish() && !v_TaskGroup.isAllStop() ) 
+                    do
                     {
                         // 一直等待并且的执行结果
                         try
@@ -2004,7 +2041,13 @@ public final class XSQLGroup implements XJavaID
                         }
                         $Logger.debug("WaitCount=" + (++v_WaitCount) + "  TaskSize=" + v_TaskGroup.size() + "  TaskFinishSize=" + v_TaskGroup.getFinishSize());
                     }
-                    $Logger.debug("Wait Finish.");
+                    while ( !v_TaskGroup.isTaskGroupFinish() );  // && !v_TaskGroup.isAllStop()
+                    $Logger.debug("WaitCount=" + (++v_WaitCount) + "  TaskSize=" + v_TaskGroup.size() + "  TaskFinishSize=" + v_TaskGroup.getFinishSize());
+                    $Logger.debug("Wait Finish." + (v_TaskGroup.isAllStop() ? " Task Group is Stop." : ""));
+                    if ( v_TaskGroup.isAllStop() )
+                    {
+                        v_WaitCount = 0;
+                    }
                     
                     // 获取执行结果
                     XSQLGroupTask v_Task = (XSQLGroupTask)v_TaskGroup.getTask(0);
@@ -2088,7 +2131,8 @@ public final class XSQLGroup implements XJavaID
     public XSQLGroupResult waitClouds(XSQLNode i_CloudWaitNode ,XSQLGroupResult i_XSQLGroupResult)
     {
         long v_Interval = Math.max(i_CloudWaitNode.getCloudWaitInterval() ,i_CloudWaitNode.getCloudExecInterval());
-        while ( i_CloudWaitNode.getCloudBusyCount() - i_CloudWaitNode.getCloudErrorCount() >= 1 )
+        
+        do
         {
             // 一直等待并且的执行结果
             try
@@ -2100,6 +2144,7 @@ public final class XSQLGroup implements XJavaID
                 // Nothing.
             }
         }
+        while ( i_CloudWaitNode.getCloudBusyCount() - i_CloudWaitNode.getCloudErrorCount() >= 1 );
         
         // 2018-02-22 还原各状态参数
         i_CloudWaitNode.setCloudBusyCount (0);
@@ -3161,10 +3206,10 @@ public final class XSQLGroup implements XJavaID
             catch (Throwable exce)
             {
                 // 多任务并发执行时，只要有一个任务异常，其它还在队列中等待执行的任务将就全部退出等待，将不再执行
-                this.finishTask();
+                this.xsqlGroupResult.setSuccess(false);
                 this.getTaskGroup().stopTasksNoExecute();
                 
-                $Logger.error(exce);
+                $Logger.error("XSQLGroupTask并发任务异常" ,exce);
             }
             finally
             {
@@ -3277,6 +3322,7 @@ public final class XSQLGroup implements XJavaID
             if ( xsqlNode.isThread() )
             {
                 taskGroup = xsqlGroup.newTaskGroupByThreads(xsqlNode ,xsqlRet ,xsqlParams);
+                taskGroup.addReadyTotalSize(1L);
             }
         }
         
@@ -3295,6 +3341,11 @@ public final class XSQLGroup implements XJavaID
         {
             // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
             xsqlRet = this.xsqlGroup.waitThreads(xsqlNode ,xsqlParams ,xsqlRet);
+            
+            if ( xsqlNode.isThread() )
+            {
+                taskGroup.addReadyTotalSize(-1L);
+            }
         }
         
         
@@ -3331,6 +3382,7 @@ public final class XSQLGroup implements XJavaID
                     {
                         // 多线程并发执行  Add 2017-02-22
                         XSQLGroupTask v_Task = new XSQLGroupTask(xsqlGroup ,xsqlNodeIndex ,xsqlParams ,xsqlRet ,xsqlDSGConns);
+                        taskGroup.addReadyTotalSize(1L);
                         taskGroup.addTaskAndStart(v_Task);
                     }
                     else
@@ -3368,6 +3420,7 @@ public final class XSQLGroup implements XJavaID
                     {
                         // 多线程并发执行  Add 2017-02-22
                         XSQLGroupTask v_Task = new XSQLGroupTask(xsqlGroup ,xsqlNodeIndex ,xsqlParams ,xsqlRet ,xsqlDSGConns);
+                        taskGroup.addReadyTotalSize(1L);
                         taskGroup.addTaskAndStart(v_Task);
                     }
                     else
