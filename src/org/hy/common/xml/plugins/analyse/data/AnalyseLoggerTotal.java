@@ -249,7 +249,7 @@ public class AnalyseLoggerTotal extends SerializableDef
                         v_Data.setCountNoError(   v_CountNoError);
                         v_Data.setRequestCount(   v_Method.getValue());
                         v_Data.setErrorFatalCount(v_ErrorCount);
-                        v_Data.setErrorFatalCount(v_WarnCount);
+                        v_Data.setWarnCount(      v_WarnCount);
                         v_Data.setLastTime(v_Logger.getRequestTime().get(v_Method.getKey()));
                         v_Data.setId(v_Data.getClassName() + v_Data.getMethodName() + v_Data.getLineNumber());
                         

@@ -2,6 +2,7 @@ package org.hy.common.xml;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
@@ -299,6 +300,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         Return<?>           v_Ret        = new Return<Object>().paramStr("");
         URL                 v_URL        = null;
         HttpURLConnection   v_URLConn    = null;
+        OutputStream        v_URLOut     = null;
         BufferedReader      v_Reader     = null;
         StringBuilder       v_RespBuffer = new StringBuilder();
         
@@ -358,16 +360,32 @@ public final class XHttp extends SerializableDef implements XJavaID
                 v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
                 v_URLConn.setRequestProperty("Cookie"       ,this.cookie.toString());
                 
-                if ( !Help.isNull(i_BodyData) )
+                v_URLOut = v_URLConn.getOutputStream();
+                if ( v_URLOut != null )
                 {
-                    v_URLConn.getOutputStream().write(i_BodyData.getBytes(this.getCharset()));
+                    if ( !Help.isNull(i_BodyData) )
+                    {
+                        v_URLOut.write(i_BodyData.getBytes(this.getCharset()));
+                    }
+                    else
+                    {
+                        v_URLOut.write(v_ParamsUrl.getBytes(this.getCharset()));
+                    }
+                    
+                    try
+                    {
+                        v_URLOut.flush();
+                        v_URLOut.close();
+                    }
+                    catch (Exception exce)
+                    {
+                        // Nothing.
+                    }
+                    finally
+                    {
+                        v_URLOut = null;
+                    }
                 }
-                else
-                {
-                    v_URLConn.getOutputStream().write(v_ParamsUrl.getBytes(this.getCharset()));
-                }
-                v_URLConn.getOutputStream().flush();
-                v_URLConn.getOutputStream().close();
             }
             else
             {
@@ -597,6 +615,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         Return<?>         v_Ret        = new Return<Object>().paramStr("");
         URL               v_URL        = null;
         HttpURLConnection v_URLConn    = null;
+        OutputStream      v_URLOut     = null;
         BufferedReader    v_Reader     = null;
         StringBuilder     v_RespBuffer = new StringBuilder();
         
@@ -663,17 +682,32 @@ public final class XHttp extends SerializableDef implements XJavaID
                 v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
                 v_URLConn.setRequestProperty("Cookie"       ,this.cookie.toString());
                 
-                if ( !Help.isNull(i_BodyData) )
+                v_URLOut = v_URLConn.getOutputStream();
+                if ( v_URLOut != null )
                 {
-                    v_URLConn.getOutputStream().write(i_BodyData.getBytes(this.getCharset()));
+                    if ( !Help.isNull(i_BodyData) )
+                    {
+                        v_URLOut.write(i_BodyData.getBytes(this.getCharset()));
+                    }
+                    else
+                    {
+                        v_URLOut.write(v_ParamsUrl.getBytes(this.getCharset()));
+                    }
+                    
+                    try
+                    {
+                        v_URLOut.flush();
+                        v_URLOut.close();
+                    }
+                    catch (Exception exce)
+                    {
+                        // Nothing.
+                    }
+                    finally
+                    {
+                        v_URLOut = null;
+                    }
                 }
-                else
-                {
-                    v_URLConn.getOutputStream().write(v_ParamsUrl.getBytes(this.getCharset()));
-                }
-                
-                v_URLConn.getOutputStream().flush();
-                v_URLConn.getOutputStream().close();
             }
             else
             {
@@ -913,6 +947,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         Return<?>         v_Ret        = new Return<Object>().paramStr("");
         URL               v_URL        = null;
         HttpURLConnection v_URLConn    = null;
+        OutputStream      v_URLOut     = null;
         BufferedReader    v_Reader     = null;
         StringBuilder     v_RespBuffer = new StringBuilder();
         
@@ -979,17 +1014,32 @@ public final class XHttp extends SerializableDef implements XJavaID
                 v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
                 v_URLConn.setRequestProperty("Cookie"       ,this.cookie.toString());
                 
-                if ( !Help.isNull(i_BodyData) )
+                v_URLOut = v_URLConn.getOutputStream();
+                if ( v_URLOut != null )
                 {
-                    v_URLConn.getOutputStream().write(i_BodyData.getBytes(this.getCharset()));
+                    if ( !Help.isNull(i_BodyData) )
+                    {
+                        v_URLOut.write(i_BodyData.getBytes(this.getCharset()));
+                    }
+                    else
+                    {
+                        v_URLOut.write(v_ParamsUrl.getBytes(this.getCharset()));
+                    }
+                    
+                    try
+                    {
+                        v_URLOut.flush();
+                        v_URLOut.close();
+                    }
+                    catch (Exception exce)
+                    {
+                        // Nothing.
+                    }
+                    finally
+                    {
+                        v_URLOut = null;
+                    }
                 }
-                else
-                {
-                    v_URLConn.getOutputStream().write(v_ParamsUrl.getBytes(this.getCharset()));
-                }
-                
-                v_URLConn.getOutputStream().flush();
-                v_URLConn.getOutputStream().close();
             }
             else
             {

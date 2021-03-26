@@ -3243,9 +3243,12 @@ public final class XSQLGroup implements XJavaID
             this.xsqlGroup       = null;
             this.xsqlGroupResult = null;
             this.dsgConns        = null;
-
-            this.params.clear();
-            this.params          = null;
+            
+            if ( this.params != null )
+            {
+                this.params.clear();
+            }
+            this.params = null;
         }
         
     }

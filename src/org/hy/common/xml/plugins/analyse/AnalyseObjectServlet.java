@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.hy.common.Date;
 import org.hy.common.Help;
-import org.hy.common.Return;
 import org.hy.common.StringHelp;
 import org.hy.common.xml.XJava;
 
@@ -126,9 +125,9 @@ public class AnalyseObjectServlet extends HttpServlet
     {
         i_Response.setContentType("text/html;charset=UTF-8");
         
-        Return<Date> v_SessionData = (Return<Date>)i_Request.getSession().getAttribute($SessionID);
-        String       v_BasePath    = i_Request.getScheme() + "://" + i_Request.getServerName() + ":" + i_Request.getServerPort() + i_Request.getContextPath();
-        String       v_RequestURL  = i_Request.getRequestURL().toString();
+        String v_SessionData = (String)i_Request.getSession().getAttribute($SessionID);
+        String v_BasePath    = i_Request.getScheme() + "://" + i_Request.getServerName() + ":" + i_Request.getServerPort() + i_Request.getContextPath();
+        String v_RequestURL  = i_Request.getRequestURL().toString();
         
         if ( !Help.isNull(i_Request.getQueryString()) )
         {
@@ -148,10 +147,7 @@ public class AnalyseObjectServlet extends HttpServlet
             // 登陆成功
             else
             {
-                v_SessionData = new Return<Date>();
-                v_SessionData.paramObj = new Date();
-                v_SessionData.paramStr = i_Request.getSession().getId();
-                
+                v_SessionData = i_Request.getSession().getId() + "@" + Date.getNowTime().getTime();
                 i_Request.getSession().setAttribute($SessionID ,v_SessionData);
             }
         }

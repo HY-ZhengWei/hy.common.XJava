@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.hy.common.xml.XJSON;
+import org.hy.common.xml.log.Logger;
 import org.hy.common.Date;
 import org.hy.common.Help;
 
@@ -24,6 +25,8 @@ import org.hy.common.Help;
  */
 public class AppMessage<O> implements Cloneable ,Serializable
 {
+    private static final Logger $Logger = Logger.getLogger(AppMessage.class ,true);
+    
     private static final long serialVersionUID = -7150988524339365341L;
 
 
@@ -326,6 +329,15 @@ public class AppMessage<O> implements Cloneable ,Serializable
      */
     public AppMessage<Object> clone()
     {
+        try
+        {
+            super.clone();
+        }
+        catch (CloneNotSupportedException exce)
+        {
+            $Logger.error(exce);
+        }
+        
         AppMessage<Object> v_Clone = new AppMessage<Object>();
         
         v_Clone.setSysid(     this.getSysid());
