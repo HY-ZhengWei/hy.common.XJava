@@ -15,6 +15,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -96,89 +97,89 @@ public final class XJava
 {
     private final static Logger                    $Logger                       = Logger.getLogger(XJava.class);
     
-	private final static String                    $XML_JAVA_DATATYPE_CHAR       = "char";
-	
-	private final static String                    $XML_JAVA_DATATYPE_BYTE       = "byte";
-	
-	private final static String                    $XML_JAVA_DATATYPE_SHORT      = "short";
-	
-	private final static String                    $XML_JAVA_DATATYPE_INT        = "int";
-	
-	private final static String                    $XML_JAVA_DATATYPE_LONG       = "long";
-	
-	private final static String                    $XML_JAVA_DATATYPE_BIGDECIMAL = "bigdecimal";
-	
-	private final static String                    $XML_JAVA_DATATYPE_DOUBLE     = "doulbe";
-	
-	private final static String                    $XML_JAVA_DATATYPE_FLOAT      = "float";
-	
-	private final static String                    $XML_JAVA_DATATYPE_BOOLEAN    = "boolean";
-	
-	private final static String                    $XML_JAVA_DATATYPE_STRING     = "string";
-	
-	private final static String                    $XML_JAVA_DATATYPE_DATE       = "date";
-	
-	private final static String                    $XML_JAVA_DATATYPE_OBJECT     = "object";
-	
-	private final static String                    $XML_JAVA_DATATYPE_CLASS      = "class";
-	
-	
-	
-	/** 导入功能的节点的标记 */
-	private final static String                    $XML_IMPORT                   = "import";
-	
-	/** 导入功能的 xml 节点名称标记 */
-	private final static String                    $XML_IMPORT_NAME              = "name";
-	
-	/** 导入功能的 name 对应的 Java 类 */
-	private final static String                    $XML_IMPORT_CLASS             = "class";
-	
-	/** 节点为 Map 类型的集合时，统一标记获取元素哪个方法为Map.key值 */
-	private final static String                    $XML_MAP_KEY                  = "key";
-	
-	/** 节点为 Map 类型的集合时，对于元素的添加方法名称 */
-	private final static String                    $XML_MAP_DEF_SETTER           = "put";
-	
-	/** 节点为 List 类型的集合时，对于元素的添加方法名称 */
-	private final static String                    $XML_LIST_DEF_SETTER          = "add";
-	
-	/** 构造器节点关键字。此关键字必须为构造节点的第一个子节点 */
-	private final static String                    $XML_OBJECT_CONSTRUCTOR       = "constructor";
-	
-	/** 节点对应的 Java 类 */
-	private final static String                    $XML_OBJECT_CLASS             = "class";
-	
-	/** 指定setter方法的节点标记 */
-	private final static String                    $XML_OBJECT_SETTER            = "setter";
-	
-	/** 
-	 * this关键字
-	 * 
-	 * 还有赋值功能。即 Bean v_Bean = v_Other 这样的功能
-	 */
-	private final static String                    $XML_OBJECT_THIS              = "this";
-	
-	/** 对象惟一属性的节点标记 */
-	private final static String                    $XML_OBJECT_ID                = "id";
-	
-	/** 引用对象的节点标记 */
-	private final static String                    $XML_OBJECT_REF               = "ref";
-	
-	/** 节点为调用方法Call节点标记 */
-	private final static String                    $XML_OBJECT_CALL              = "call";
-	
-	/** Call节点调用的方法名称 */
-	private final static String                    $XML_OBJECT_CALL_NAME         = "name";
-	
-	/** Call节点调用的方法后的返回结果的ID标记，此结果也将存在 $XML_OBJECTS 中 */
-	private final static String                    $XML_OBJECT_CALL_RETURNID     = "returnid";
-	
-	/** 
-	 * submit表示 TreeMap.TreeNode.nodeID 的值。
-	 * 将对于树目录的子树目录的全部TreeNode.nodeID及TreeNode.info存在Map中，
-	 * 再将Map传递(setter)给对象
-	 */
-	private final static String                    $XML_OBJECT_SUBMIT            = "submit";
+    private final static String                    $XML_JAVA_DATATYPE_CHAR       = "char";
+    
+    private final static String                    $XML_JAVA_DATATYPE_BYTE       = "byte";
+    
+    private final static String                    $XML_JAVA_DATATYPE_SHORT      = "short";
+    
+    private final static String                    $XML_JAVA_DATATYPE_INT        = "int";
+    
+    private final static String                    $XML_JAVA_DATATYPE_LONG       = "long";
+    
+    private final static String                    $XML_JAVA_DATATYPE_BIGDECIMAL = "bigdecimal";
+    
+    private final static String                    $XML_JAVA_DATATYPE_DOUBLE     = "doulbe";
+    
+    private final static String                    $XML_JAVA_DATATYPE_FLOAT      = "float";
+    
+    private final static String                    $XML_JAVA_DATATYPE_BOOLEAN    = "boolean";
+    
+    private final static String                    $XML_JAVA_DATATYPE_STRING     = "string";
+    
+    private final static String                    $XML_JAVA_DATATYPE_DATE       = "date";
+    
+    private final static String                    $XML_JAVA_DATATYPE_OBJECT     = "object";
+    
+    private final static String                    $XML_JAVA_DATATYPE_CLASS      = "class";
+    
+    
+    
+    /** 导入功能的节点的标记 */
+    private final static String                    $XML_IMPORT                   = "import";
+    
+    /** 导入功能的 xml 节点名称标记 */
+    private final static String                    $XML_IMPORT_NAME              = "name";
+    
+    /** 导入功能的 name 对应的 Java 类 */
+    private final static String                    $XML_IMPORT_CLASS             = "class";
+    
+    /** 节点为 Map 类型的集合时，统一标记获取元素哪个方法为Map.key值 */
+    private final static String                    $XML_MAP_KEY                  = "key";
+    
+    /** 节点为 Map 类型的集合时，对于元素的添加方法名称 */
+    private final static String                    $XML_MAP_DEF_SETTER           = "put";
+    
+    /** 节点为 List 类型的集合时，对于元素的添加方法名称 */
+    private final static String                    $XML_LIST_DEF_SETTER          = "add";
+    
+    /** 构造器节点关键字。此关键字必须为构造节点的第一个子节点 */
+    private final static String                    $XML_OBJECT_CONSTRUCTOR       = "constructor";
+    
+    /** 节点对应的 Java 类 */
+    private final static String                    $XML_OBJECT_CLASS             = "class";
+    
+    /** 指定setter方法的节点标记 */
+    private final static String                    $XML_OBJECT_SETTER            = "setter";
+    
+    /** 
+     * this关键字
+     * 
+     * 还有赋值功能。即 Bean v_Bean = v_Other 这样的功能
+     */
+    private final static String                    $XML_OBJECT_THIS              = "this";
+    
+    /** 对象惟一属性的节点标记 */
+    private final static String                    $XML_OBJECT_ID                = "id";
+    
+    /** 引用对象的节点标记 */
+    private final static String                    $XML_OBJECT_REF               = "ref";
+    
+    /** 节点为调用方法Call节点标记 */
+    private final static String                    $XML_OBJECT_CALL              = "call";
+    
+    /** Call节点调用的方法名称 */
+    private final static String                    $XML_OBJECT_CALL_NAME         = "name";
+    
+    /** Call节点调用的方法后的返回结果的ID标记，此结果也将存在 $XML_OBJECTS 中 */
+    private final static String                    $XML_OBJECT_CALL_RETURNID     = "returnid";
+    
+    /** 
+     * submit表示 TreeMap.TreeNode.nodeID 的值。
+     * 将对于树目录的子树目录的全部TreeNode.nodeID及TreeNode.info存在Map中，
+     * 再将Map传递(setter)给对象
+     */
+    private final static String                    $XML_OBJECT_SUBMIT            = "submit";
     
     /**
      * 表示是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
@@ -224,53 +225,53 @@ public final class XJava
      * 如：org.hy.common.xml
      */
     private final static String                    $XML_CLASSPATH                = "classpath:";
-	
+    
     /** 
      * 此为节点文本内容的关键字标记的集合。此集合中的key将自动替换为value
      *   1. classhome: 将为自动替换为classes的根目录。                   如：C:/xx/bin
      *   2. webhome: 将为自动替换为Web服务的根目录。                      如：C:/Tomcat/Webapps/Web项目名称/
      */
     private final static Map<String ,String>       $XML_Replace_Keys             = new LinkedHashMap<String ,String>();
-	
-	/** 标记有 id 的节点都将存入 $XML_OBJECTS 集合中的 TreeNode.info 中 */
-	private final static TreeMap<XJavaObject>      $XML_OBJECTS                  = new TreeMap<XJavaObject>();
-	
-	/** 
-	 * 专用于保存有限生命的对象实例。
-	 * 与 $XML_OBJECTS 互补，共同结成整个大对象池。
-	 * 即，XJava.getObject(...) 方法先从 $XML_OBJECTS 中获取，获取不到时，再从 $SessionMap 中获取。
-	 * 
-	 * $SessionMap 只负责运行过程中动态添加的对象，不对XML配置文件中的对象生效。
-	 */
-	private final static ExpireMap<String ,Object> $SessionMap                   = new ExpireMap<String ,Object>();
-	
-	/** 
-	 * TreeMap.TreeNode.orderByID的最大长度。
-	 * 此值决定着 XJava 能支持的树目录中同一层次中节点的数量 
+    
+    /** 标记有 id 的节点都将存入 $XML_OBJECTS 集合中的 TreeNode.info 中 */
+    private final static TreeMap<XJavaObject>      $XML_OBJECTS                  = new TreeMap<XJavaObject>();
+    
+    /** 
+     * 专用于保存有限生命的对象实例。
+     * 与 $XML_OBJECTS 互补，共同结成整个大对象池。
+     * 即，XJava.getObject(...) 方法先从 $XML_OBJECTS 中获取，获取不到时，再从 $SessionMap 中获取。
+     * 
+     * $SessionMap 只负责运行过程中动态添加的对象，不对XML配置文件中的对象生效。
+     */
+    private final static ExpireMap<String ,Object> $SessionMap                   = new ExpireMap<String ,Object>();
+    
+    /** 
+     * TreeMap.TreeNode.orderByID的最大长度。
+     * 此值决定着 XJava 能支持的树目录中同一层次中节点的数量 
      * 
      * 6 表示最大支持 999999 个对象实例
-	 */
-	private final static int                       $TREE_NODE_ORDERBYID_MAXLEN   = 6;
-	
-	
-	
-	/** Xml文件的路径 */
-	private URL                        xmlURL;
-	
+     */
+    private final static int                       $TREE_NODE_ORDERBYID_MAXLEN   = 6;
+    
+    
+    
+    /** Xml文件的路径 */
+    private URL                        xmlURL;
+    
     /** 表示解译xml文件的URL的路径（父目录路径） */
-	private String                     xmlClassPath;
-	
-	/** 解释每一次Xml文件后，生成 TreeMap 中首个父节点的父节点名，即TreeNode.orderByID的值 */
-	private String                     treeNodeRootKey;
-	
-	/** 包含对象的集合 */
-	private Map<String ,String>        imports;
-	
-	/** 解释类型。1：XML文件解释； 2：XML字符串解释； 3：注解Annotation */
-	private int                        parserType;
-	
-	/** XML字符串。只有当 parserType=2 时才生效。 */
-	private String                     xmlString;
+    private String                     xmlClassPath;
+    
+    /** 解释每一次Xml文件后，生成 TreeMap 中首个父节点的父节点名，即TreeNode.orderByID的值 */
+    private String                     treeNodeRootKey;
+    
+    /** 包含对象的集合 */
+    private Map<String ,String>        imports;
+    
+    /** 解释类型。1：XML文件解释； 2：XML字符串解释； 3：注解Annotation */
+    private int                        parserType;
+    
+    /** XML字符串。只有当 parserType=2 时才生效。 */
+    private String                     xmlString;
     
     /** 包名信息。只有当 parserType=3 时才生效。 */
     private List<String>               packageNames;
@@ -280,8 +281,8 @@ public final class XJava
     
     /** 本次解析的加密信息。用完立即释放 */
     private List<XJavaEncrypt>         encrypts;
-	
-	
+    
+    
     
     static
     {
@@ -290,102 +291,102 @@ public final class XJava
     }
     
     
-	
-	/**
-	 * 解释Xml文件，并且可以直接将Xml文件内容转为Java对象实例
-	 * 
-	 * @param i_ImportList
-	 * @param i_XmlURL
-	 * @param i_TreeNodeRootKey
-	 * @return
-	 * @throws Exception 
-	 */
-	public static Object parserXml(ListMap<String ,String> i_ImportList ,URL i_XmlURL ,String i_TreeNodeRootKey) throws Exception
-	{
-		XJava v_ParserXmlToJava = new XJava(i_XmlURL ,i_TreeNodeRootKey);
-		
-		return v_ParserXmlToJava.parserXml();
-	}
-	
-	
-	
-	/**
-	 * 解释Xml文件，并且可以直接将Xml文件内容转为Java对象实例
-	 * 
-	 * @param i_XmlURL
-	 * @param i_TreeNodeRootKey
-	 * @return
-	 * @throws Exception 
-	 */
-	public static Object parserXml(URL i_XmlURL ,String i_TreeNodeRootKey) throws Exception
-	{
-		XJava v_ParserXmlToJava = new XJava(i_XmlURL ,i_TreeNodeRootKey);
-		
-		return v_ParserXmlToJava.parserXml();
-	}
-	
-	
-	
-	/**
-	 * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
-	 * 
-	 * @author      ZhengWei(HY)
-	 * @createDate  2019-09-04
-	 * @version     v1.0
-	 *
-	 * @param i_XmlURL             XML配置文件的路径。可实现重写的相关功能
-	 * @param i_XMLString
-	 * @param i_ClassPath
-	 * @param i_TreeNodeRootKey
-	 * @return
-	 * @throws Exception
-	 */
+    
+    /**
+     * 解释Xml文件，并且可以直接将Xml文件内容转为Java对象实例
+     * 
+     * @param i_ImportList
+     * @param i_XmlURL
+     * @param i_TreeNodeRootKey
+     * @return
+     * @throws Exception 
+     */
+    public static Object parserXml(ListMap<String ,String> i_ImportList ,URL i_XmlURL ,String i_TreeNodeRootKey) throws Exception
+    {
+        XJava v_ParserXmlToJava = new XJava(i_XmlURL ,i_TreeNodeRootKey);
+        
+        return v_ParserXmlToJava.parserXml();
+    }
+    
+    
+    
+    /**
+     * 解释Xml文件，并且可以直接将Xml文件内容转为Java对象实例
+     * 
+     * @param i_XmlURL
+     * @param i_TreeNodeRootKey
+     * @return
+     * @throws Exception 
+     */
+    public static Object parserXml(URL i_XmlURL ,String i_TreeNodeRootKey) throws Exception
+    {
+        XJava v_ParserXmlToJava = new XJava(i_XmlURL ,i_TreeNodeRootKey);
+        
+        return v_ParserXmlToJava.parserXml();
+    }
+    
+    
+    
+    /**
+     * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-09-04
+     * @version     v1.0
+     *
+     * @param i_XmlURL             XML配置文件的路径。可实现重写的相关功能
+     * @param i_XMLString
+     * @param i_ClassPath
+     * @param i_TreeNodeRootKey
+     * @return
+     * @throws Exception
+     */
     public static Object parserXml(URL i_XmlURL ,String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey) throws Exception
     {
         XJava v_ParserXmlToJava = new XJava(i_XmlURL ,i_XMLString ,i_ClassPath ,i_TreeNodeRootKey);
         
         return v_ParserXmlToJava.parserXml();
     }
-	
-	
-	
-	/**
-	 * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
-	 * 
-	 * @param i_ImportList
-	 * @param i_XMLString
-	 * @param i_ClassPath
-	 * @param i_TreeNodeRootKey
-	 * @return
-	 * @throws Exception 
-	 */
-	public static Object parserXml(ListMap<String ,String> i_ImportList ,String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey) throws Exception
-	{
-		XJava v_ParserXmlToJava = new XJava(i_ImportList ,i_XMLString ,i_ClassPath ,i_TreeNodeRootKey);
-		
-		return v_ParserXmlToJava.parserXml();
-	}
-	
-	
-	
-	/**
-	 * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
-	 * 
-	 * @param i_XMLString
-	 * @param i_ClassPath
-	 * @param i_TreeNodeRootKey
-	 * @return
-	 * @throws Exception 
-	 */
-	public static Object parserXml(String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey) throws Exception
-	{
-		XJava v_ParserXmlToJava = new XJava(i_XMLString ,i_ClassPath ,i_TreeNodeRootKey);
-		
-		return v_ParserXmlToJava.parserXml();
-	}
-	
-	
-	
+    
+    
+    
+    /**
+     * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
+     * 
+     * @param i_ImportList
+     * @param i_XMLString
+     * @param i_ClassPath
+     * @param i_TreeNodeRootKey
+     * @return
+     * @throws Exception 
+     */
+    public static Object parserXml(ListMap<String ,String> i_ImportList ,String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey) throws Exception
+    {
+        XJava v_ParserXmlToJava = new XJava(i_ImportList ,i_XMLString ,i_ClassPath ,i_TreeNodeRootKey);
+        
+        return v_ParserXmlToJava.parserXml();
+    }
+    
+    
+    
+    /**
+     * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
+     * 
+     * @param i_XMLString
+     * @param i_ClassPath
+     * @param i_TreeNodeRootKey
+     * @return
+     * @throws Exception 
+     */
+    public static Object parserXml(String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey) throws Exception
+    {
+        XJava v_ParserXmlToJava = new XJava(i_XMLString ,i_ClassPath ,i_TreeNodeRootKey);
+        
+        return v_ParserXmlToJava.parserXml();
+    }
+    
+    
+    
     /**
      * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
      * 
@@ -609,26 +610,26 @@ public final class XJava
     {
         return $SessionMap;
     }
-	
-	
-	
-	/**
-	 * 按 id 值获取对象实例
-	 * 
-	 * 2017-01-16 Add $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
-	 * 
-	 * @param i_ID
-	 * @return
-	 */
-	public static Object getObject(String i_ID)
-	{
-		if ( i_ID == null )
-		{
-			return null;
-		}
-		else if ( $XML_OBJECTS.containsNodeID(i_ID) )
-		{
-			try
+    
+    
+    
+    /**
+     * 按 id 值获取对象实例
+     * 
+     * 2017-01-16 Add $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
+     * 
+     * @param i_ID
+     * @return
+     */
+    public static Object getObject(String i_ID)
+    {
+        if ( i_ID == null )
+        {
+            return null;
+        }
+        else if ( $XML_OBJECTS.containsNodeID(i_ID) )
+        {
+            try
             {
                 return $XML_OBJECTS.getByNodeID(i_ID).getInfo().getObject();
             }
@@ -637,16 +638,16 @@ public final class XJava
                 // 多数为Clone方法异常
                 throw new NullPointerException("[" + i_ID + "] is " + e.getMessage());
             }
-		}
-		else if ( $SessionMap.containsKey(i_ID) )
-		{
-		    return $SessionMap.get(i_ID);
-		}
-		else
-		{
-			return null;
-		}
-	}
+        }
+        else if ( $SessionMap.containsKey(i_ID) )
+        {
+            return $SessionMap.get(i_ID);
+        }
+        else
+        {
+            return null;
+        }
+    }
     
     
     
@@ -1257,150 +1258,150 @@ public final class XJava
         $SessionMap .remove      (i_ID);
     }
     
-	
-	
-	/**
-	 * 清空 XJava 解释过的所有实例化对象信息
-	 */
-	public static void clear()
-	{
-		$XML_OBJECTS.clear();
-		$SessionMap .clear();
-	}
-	
-	
-	
-	/**
-	 * 按树目录结构，获取子树目录中 XJava 解释过的所有实例化对象信息
-	 * 
-	 * @param i_NodeID
-	 * @return
-	 */
-	private static Map<String ,Object> getChildObjects(String i_NodeID)
-	{
-		Map<String ,Object>  v_Ret       = new Hashtable<String ,Object>();
-		TreeMap<XJavaObject> v_ChildNode = null;
-		
-		if ( i_NodeID == null )
-		{
-			return v_Ret;
-		}
-		
-		
-		try
-		{
-			v_ChildNode = $XML_OBJECTS.getChildTreeByNodeID(i_NodeID);
-		}
-		catch (Exception exce)
-		{
-			return v_Ret;
-		}
-		
-		
-		if ( v_ChildNode.size() >= 1 )
-		{
-			Iterator<TreeNode<XJavaObject>> v_Iterator = v_ChildNode.valuesNodeID();
-			
-			try
-			{
-				for ( ; v_Iterator.hasNext(); )
-				{
-					TreeNode<XJavaObject> v_TreeNode = v_Iterator.next();
-					
-					if ( v_TreeNode != null && v_TreeNode.getNodeID() != null && v_TreeNode.getInfo() != null )
-					{
-						// 此处待解决的问题是：当 submit 关键字的对象在 i_NodeID 之中时，
-						// sumbit 关键字所在对象也有 id 关键字，
-						// 但，此时的 id 关键字还没有已存入 $XML_OBJECTS 集合中时，
-						// v_TreeNode.getInfo() == null 的问题。
-						v_Ret.put(v_TreeNode.getNodeID() ,v_TreeNode.getInfo().getObject());
-					}
-				}
-			}
-			catch (Exception exce)
-			{
-				throw new RuntimeException("Submit node [" + i_NodeID + "] is exception.");
-			}
-		}
-		
-		return v_Ret;
-	}
-	
-	
-	
-	/**
-	 * 由外界主动设置ID的值，并添加到XJava中
-	 * 
-	 * @param i_ID
-	 * @param i_Object
-	 * @param i_IsNew
-	 */
-	private XJava(String i_ID ,Object i_Object ,boolean i_IsNew)
-	{
-	    if ( Help.isNull(i_ID) )
-	    {
-	        throw new NullPointerException("ID is null.");
-	    }
-	    
-	    if ( i_Object == null )
-	    {
-	        throw new NullPointerException("Object is null.");
-	    }
-	    
-	    TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(i_ID.trim() ,i_ID.trim());
+    
+    
+    /**
+     * 清空 XJava 解释过的所有实例化对象信息
+     */
+    public static void clear()
+    {
+        $XML_OBJECTS.clear();
+        $SessionMap .clear();
+    }
+    
+    
+    
+    /**
+     * 按树目录结构，获取子树目录中 XJava 解释过的所有实例化对象信息
+     * 
+     * @param i_NodeID
+     * @return
+     */
+    private static Map<String ,Object> getChildObjects(String i_NodeID)
+    {
+        Map<String ,Object>  v_Ret       = new Hashtable<String ,Object>();
+        TreeMap<XJavaObject> v_ChildNode = null;
+        
+        if ( i_NodeID == null )
+        {
+            return v_Ret;
+        }
+        
+        
+        try
+        {
+            v_ChildNode = $XML_OBJECTS.getChildTreeByNodeID(i_NodeID);
+        }
+        catch (Exception exce)
+        {
+            return v_Ret;
+        }
+        
+        
+        if ( v_ChildNode.size() >= 1 )
+        {
+            Iterator<TreeNode<XJavaObject>> v_Iterator = v_ChildNode.valuesNodeID();
+            
+            try
+            {
+                for ( ; v_Iterator.hasNext(); )
+                {
+                    TreeNode<XJavaObject> v_TreeNode = v_Iterator.next();
+                    
+                    if ( v_TreeNode != null && v_TreeNode.getNodeID() != null && v_TreeNode.getInfo() != null )
+                    {
+                        // 此处待解决的问题是：当 submit 关键字的对象在 i_NodeID 之中时，
+                        // sumbit 关键字所在对象也有 id 关键字，
+                        // 但，此时的 id 关键字还没有已存入 $XML_OBJECTS 集合中时，
+                        // v_TreeNode.getInfo() == null 的问题。
+                        v_Ret.put(v_TreeNode.getNodeID() ,v_TreeNode.getInfo().getObject());
+                    }
+                }
+            }
+            catch (Exception exce)
+            {
+                throw new RuntimeException("Submit node [" + i_NodeID + "] is exception.");
+            }
+        }
+        
+        return v_Ret;
+    }
+    
+    
+    
+    /**
+     * 由外界主动设置ID的值，并添加到XJava中
+     * 
+     * @param i_ID
+     * @param i_Object
+     * @param i_IsNew
+     */
+    private XJava(String i_ID ,Object i_Object ,boolean i_IsNew)
+    {
+        if ( Help.isNull(i_ID) )
+        {
+            throw new NullPointerException("ID is null.");
+        }
+        
+        if ( i_Object == null )
+        {
+            throw new NullPointerException("Object is null.");
+        }
+        
+        TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(i_ID.trim() ,i_ID.trim());
         
         v_TreeNode.setInfo(new XJavaObject(i_ID.trim() ,i_Object ,i_IsNew));
         
         $XML_OBJECTS.put(v_TreeNode);
-	}
-	
-	
-	
-	private XJava(URL i_XmlURL ,String i_TreeNodeRootKey)
-	{
-		this(new ListMap<String ,String>() ,i_XmlURL ,i_TreeNodeRootKey);
-	}
-	
-	
-	
-	private XJava(ListMap<String ,String> i_ImportList ,URL i_XmlURL ,String i_TreeNodeRootKey)
-	{
-		this.imports         = i_ImportList;
-		this.xmlURL          = i_XmlURL;
-		this.treeNodeRootKey = i_TreeNodeRootKey;
-		
-		this.xmlClassPath    = this.xmlURL.toString().replaceFirst(StringHelp.getFileName(this.xmlURL.getPath()) ,"");
-		this.parserType      = 1;
-		this.xmlString       = null;
+    }
+    
+    
+    
+    private XJava(URL i_XmlURL ,String i_TreeNodeRootKey)
+    {
+        this(new ListMap<String ,String>() ,i_XmlURL ,i_TreeNodeRootKey);
+    }
+    
+    
+    
+    private XJava(ListMap<String ,String> i_ImportList ,URL i_XmlURL ,String i_TreeNodeRootKey)
+    {
+        this.imports         = i_ImportList;
+        this.xmlURL          = i_XmlURL;
+        this.treeNodeRootKey = i_TreeNodeRootKey;
+        
+        this.xmlClassPath    = this.xmlURL.toString().replaceFirst(StringHelp.getFileName(this.xmlURL.getPath()) ,"");
+        this.parserType      = 1;
+        this.xmlString       = null;
         this.packageNames    = null;
         
         this.encrypts        = new ArrayList<XJavaEncrypt>();
         this.replaces        = new LinkedHashMap<String ,String>($XML_Replace_Keys);
         this.replaces.put($XML_CLASSPATH ,this.xmlClassPath);
-	}
-	
-	
-	
-	/**
-	 * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
-	 *
-	 * @author      ZhengWei(HY)
-	 * @createDate  2019-09-04
-	 * @version     v1.0
-	 *
-	 * @param i_XmlURL             XML配置文件的路径。可实现重写的相关功能
-	 * @param i_XMLString
-	 * @param i_ClassPath
-	 * @param i_TreeNodeRootKey
-	 */
+    }
+    
+    
+    
+    /**
+     * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
+     *
+     * @author      ZhengWei(HY)
+     * @createDate  2019-09-04
+     * @version     v1.0
+     *
+     * @param i_XmlURL             XML配置文件的路径。可实现重写的相关功能
+     * @param i_XMLString
+     * @param i_ClassPath
+     * @param i_TreeNodeRootKey
+     */
     private XJava(URL i_XmlURL ,String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey)
     {
         this(new ListMap<String ,String>() ,i_XMLString ,i_ClassPath ,i_TreeNodeRootKey);
         this.xmlURL = i_XmlURL;
     }
     
-	
-	
+    
+    
     /**
      * 解释Xml字符串，并且可以直接将Xml字符串转为Java对象实例
      * 
@@ -1410,28 +1411,28 @@ public final class XJava
      * @return
      * @throws Exception 
      */
-	private XJava(String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey)
-	{
-		this(new ListMap<String ,String>() ,i_XMLString ,i_ClassPath ,i_TreeNodeRootKey);
-	}
-	
-	
-	
-	private XJava(ListMap<String ,String> i_ImportList ,String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey)
-	{
-		this.imports         = i_ImportList;
-		this.xmlURL          = null;
-		this.treeNodeRootKey = i_TreeNodeRootKey;
-		
-		this.xmlClassPath    = Help.NVL(i_ClassPath);
-		this.parserType      = 2;
-		this.xmlString       = i_XMLString;
+    private XJava(String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey)
+    {
+        this(new ListMap<String ,String>() ,i_XMLString ,i_ClassPath ,i_TreeNodeRootKey);
+    }
+    
+    
+    
+    private XJava(ListMap<String ,String> i_ImportList ,String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey)
+    {
+        this.imports         = i_ImportList;
+        this.xmlURL          = null;
+        this.treeNodeRootKey = i_TreeNodeRootKey;
+        
+        this.xmlClassPath    = Help.NVL(i_ClassPath);
+        this.parserType      = 2;
+        this.xmlString       = i_XMLString;
         this.packageNames    = null;
         
         this.encrypts        = new ArrayList<XJavaEncrypt>();
         this.replaces        = new LinkedHashMap<String ,String>($XML_Replace_Keys);
         this.replaces.put($XML_CLASSPATH ,this.xmlClassPath);
-	}
+    }
     
     
     
@@ -2016,118 +2017,118 @@ public final class XJava
     }
     
     
-	
-	/**
-	 * 解释Xml文件，并且可以直接将Xml文件内容转为Java对象实例
-	 * 
-	 * @return
-	 * @throws Exception 
-	 */
-	private Object parserXml() throws Exception
-	{
-		DocumentBuilderFactory v_DocBuilderFactory = DocumentBuilderFactory.newInstance();   // 建立一个解析器工厂
-		DocumentBuilder        v_DocBuilder        = null;                                   // 从解析器工厂生产一个解析器对象
-		Document               v_Doc               = null;                                   // 解析器对具体的xml文档进行解析，得到文档对象
-		
-		try
-		{
-			v_DocBuilder = v_DocBuilderFactory.newDocumentBuilder();
-			if ( this.parserType == 1 )
-			{
-				v_Doc = v_DocBuilder.parse(this.xmlURL.toString());
-			}
-			else if ( this.parserType == 2 )
-			{
-				v_Doc = v_DocBuilder.parse(new InputSource(new StringReader(this.xmlString)));
-			}
-			else
-			{
-				return null;
-			}
-		}
-		catch (Exception exce)
-		{
-			exce.printStackTrace();
-			return null;
-		}
-		
-		
-		Node     v_RootNode = v_Doc.getChildNodes().item(0);
-		NodeList v_NodeList = v_RootNode.getChildNodes();
-		
-    	
-    	for (int v_NodeIndex=0; v_NodeIndex<v_NodeList.getLength(); v_NodeIndex++)
-    	{
-    		Node v_Node = v_NodeList.item(v_NodeIndex);
-    		
-    		if ( "#".equals(v_Node.getNodeName().substring(0 ,1)) )
-    		{
-    			// Nothing.   过滤空标记
-    		}
-    		else
-    		{
-	    		if ( $XML_IMPORT.equals(v_Node.getNodeName().trim().toLowerCase()) )
-	    		{
-	    			String v_Imprt_Name  = getNodeAttribute(v_Node ,$XML_IMPORT_NAME);
-	    			String v_Imprt_Class = getNodeAttribute(v_Node ,$XML_IMPORT_CLASS);
-	    			
-	    			if ( this.imports.containsKey(v_Imprt_Name) )
-	    			{
-	    				this.imports.remove(v_Imprt_Name);
-	    			}
-	    			this.imports.put(v_Imprt_Name ,v_Imprt_Class);
-	    		}
-	    		else
-	    		{
-	    			// 没有import元素就不解释数据。直到有import元素为止，丛import元素之后的位置开始解释
-	    			if ( this.imports.size() >= 1 )
-	    			{
-	    				if ( this.imports.containsKey(v_Node.getNodeName()) )
-	    				{
-	    					Class<?> v_Class    = null;
-	    					Object   v_Instance = null;
-	    					
-	    					try
-	    					{
-	    						v_Class    = Help.forName(this.imports.get(v_Node.getNodeName()));
-	    						v_Instance = v_Class.newInstance();
-	    					}
-	    					catch (Exception exce)
-	    					{
-	    						exce.printStackTrace();
-	    						return null;
-	    					}
-	    					
-	    					
-	    					this.setInstance(v_Class ,v_Instance ,v_Node ,new TreeNode<XJavaObject>(this.treeNodeRootKey));
-	    					
-	    					overWriteXml();
-	    					
-	    					return v_Instance;
-	    				}
-	    			}
-	    		}
-    		}
-    	}
-    	
-    	return null;
-	}
-	
-	
-	
-	/**
-	 * 重写XML。重写的原因主要是因为有对属性值的加密。
-	 * 
-	 * @author      ZhengWei(HY)
-	 * @createDate  2019-09-04
-	 * @version     v1.0
-	 *
-	 */
-	private void overWriteXml()
-	{
-	    try
-	    {
-    	    if ( this.xmlURL != null && !Help.isNull(this.encrypts) )
+    
+    /**
+     * 解释Xml文件，并且可以直接将Xml文件内容转为Java对象实例
+     * 
+     * @return
+     * @throws Exception 
+     */
+    private Object parserXml() throws Exception
+    {
+        DocumentBuilderFactory v_DocBuilderFactory = DocumentBuilderFactory.newInstance();   // 建立一个解析器工厂
+        DocumentBuilder        v_DocBuilder        = null;                                   // 从解析器工厂生产一个解析器对象
+        Document               v_Doc               = null;                                   // 解析器对具体的xml文档进行解析，得到文档对象
+        
+        try
+        {
+            v_DocBuilder = v_DocBuilderFactory.newDocumentBuilder();
+            if ( this.parserType == 1 )
+            {
+                v_Doc = v_DocBuilder.parse(this.xmlURL.toString());
+            }
+            else if ( this.parserType == 2 )
+            {
+                v_Doc = v_DocBuilder.parse(new InputSource(new StringReader(this.xmlString)));
+            }
+            else
+            {
+                return null;
+            }
+        }
+        catch (Exception exce)
+        {
+            exce.printStackTrace();
+            return null;
+        }
+        
+        
+        Node     v_RootNode = v_Doc.getChildNodes().item(0);
+        NodeList v_NodeList = v_RootNode.getChildNodes();
+        
+        
+        for (int v_NodeIndex=0; v_NodeIndex<v_NodeList.getLength(); v_NodeIndex++)
+        {
+            Node v_Node = v_NodeList.item(v_NodeIndex);
+            
+            if ( "#".equals(v_Node.getNodeName().substring(0 ,1)) )
+            {
+                // Nothing.   过滤空标记
+            }
+            else
+            {
+                if ( $XML_IMPORT.equals(v_Node.getNodeName().trim().toLowerCase(Locale.ENGLISH)) )
+                {
+                    String v_Imprt_Name  = getNodeAttribute(v_Node ,$XML_IMPORT_NAME);
+                    String v_Imprt_Class = getNodeAttribute(v_Node ,$XML_IMPORT_CLASS);
+                    
+                    if ( this.imports.containsKey(v_Imprt_Name) )
+                    {
+                        this.imports.remove(v_Imprt_Name);
+                    }
+                    this.imports.put(v_Imprt_Name ,v_Imprt_Class);
+                }
+                else
+                {
+                    // 没有import元素就不解释数据。直到有import元素为止，丛import元素之后的位置开始解释
+                    if ( this.imports.size() >= 1 )
+                    {
+                        if ( this.imports.containsKey(v_Node.getNodeName()) )
+                        {
+                            Class<?> v_Class    = null;
+                            Object   v_Instance = null;
+                            
+                            try
+                            {
+                                v_Class    = Help.forName(this.imports.get(v_Node.getNodeName()));
+                                v_Instance = v_Class.newInstance();
+                            }
+                            catch (Exception exce)
+                            {
+                                exce.printStackTrace();
+                                return null;
+                            }
+                            
+                            
+                            this.setInstance(v_Class ,v_Instance ,v_Node ,new TreeNode<XJavaObject>(this.treeNodeRootKey));
+                            
+                            overWriteXml();
+                            
+                            return v_Instance;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    
+    
+    /**
+     * 重写XML。重写的原因主要是因为有对属性值的加密。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2019-09-04
+     * @version     v1.0
+     *
+     */
+    private void overWriteXml()
+    {
+        try
+        {
+            if ( this.xmlURL != null && !Help.isNull(this.encrypts) )
             {
                 FileHelp      v_FileHelp = new FileHelp();
                 String        v_Content  = v_FileHelp.getContent(this.xmlURL ,"UTF-8" ,true);
@@ -2165,28 +2166,28 @@ public final class XJava
                     v_FileHelp.create(this.xmlURL ,v_Rows ,"UTF-8");
                 }
             }
-	    }
-	    catch (Exception exce)
-	    {
-	        exce.printStackTrace();
-	    }
-	}
-	
-	
-	
-	/**
-	 * 判断 IF    关键字
-	 * 判断 IFNot 关键字
-	 * 
-	 * @param i_IFObj
-	 * @param i_Value
-	 * @return
-	 */
-	private boolean key_IF(Object i_IFObj ,boolean i_Value)
-	{
-	    if ( i_IFObj == null )
+        }
+        catch (Exception exce)
         {
-	        return false;
+            exce.printStackTrace();
+        }
+    }
+    
+    
+    
+    /**
+     * 判断 IF    关键字
+     * 判断 IFNot 关键字
+     * 
+     * @param i_IFObj
+     * @param i_Value
+     * @return
+     */
+    private boolean key_IF(Object i_IFObj ,boolean i_Value)
+    {
+        if ( i_IFObj == null )
+        {
+            return false;
         }
         else if ( i_IFObj.getClass() == Boolean.class || i_IFObj.getClass() == boolean.class )
         {
@@ -2213,13 +2214,13 @@ public final class XJava
         {
             return false;
         }
-	    
-	    return false;
-	}
-	
-	
-	
-	/**
+        
+        return false;
+    }
+    
+    
+    
+    /**
      * 判断 IF    关键字
      * 判断 IFNot 关键字
      * 
@@ -2296,50 +2297,50 @@ public final class XJava
             return i_NodeValue;
         }
     }
-	
-	
-	
-	/**
-	 * 设置实例的值
-	 * 
-	 * @param i_SuperClass
-	 * @param io_SuperInstance
-	 * @param i_SuperNode
-	 * @param i_SuperTreeNode
-	 * @return
-	 * @throws Exception 
-	 */
+    
+    
+    
+    /**
+     * 设置实例的值
+     * 
+     * @param i_SuperClass
+     * @param io_SuperInstance
+     * @param i_SuperNode
+     * @param i_SuperTreeNode
+     * @return
+     * @throws Exception 
+     */
     private Object setInstance(Class<?> i_SuperClass ,Object io_SuperInstance ,Node i_SuperNode ,TreeNode<XJavaObject> i_SuperTreeNode) throws Exception
-	{
-		NodeList v_NodeList  = i_SuperNode.getChildNodes();
-		int      v_NodeIndex = 1;
-		
-		
-		// v_NodeIndex 为有效的节点序号
-		for (int v_Index=0; v_Index<v_NodeList.getLength(); v_Index++ ,v_NodeIndex++)
-		{
-			Node v_Node = v_NodeList.item(v_Index);
-	
-			if ( "#".equals(v_Node.getNodeName().substring(0 ,1)) )
-			{
-				// Nothing.   过滤空标记
-				v_NodeIndex--;
-			}
-			else
-			{
-				Class<?>              v_AttrClass         = null;
-				Object                v_AttrInstance      = null;
-				String                v_RefID             = getNodeAttribute(v_Node ,$XML_OBJECT_REF);
-				String                v_ClassName         = getNodeAttribute(v_Node ,$XML_OBJECT_CLASS);
-				String                v_ID                = getNodeAttribute(v_Node ,$XML_OBJECT_ID);
-				String                v_This              = getNodeAttribute(v_Node ,$XML_OBJECT_THIS);
-				String                v_If                = getNodeAttribute(v_Node ,$XML_OBJECT_IF);
-				String                v_IfNot             = getNodeAttribute(v_Node ,$XML_OBJECT_IFNOT);
-				String                v_TreeNodeOrderByID = StringHelp.lpad(v_NodeIndex ,$TREE_NODE_ORDERBYID_MAXLEN ,"0");
-				TreeNode<XJavaObject> v_TreeNode          = new TreeNode<XJavaObject>(v_TreeNodeOrderByID ,v_ID ,i_SuperTreeNode);
+    {
+        NodeList v_NodeList  = i_SuperNode.getChildNodes();
+        int      v_NodeIndex = 1;
+        
+        
+        // v_NodeIndex 为有效的节点序号
+        for (int v_Index=0; v_Index<v_NodeList.getLength(); v_Index++ ,v_NodeIndex++)
+        {
+            Node v_Node = v_NodeList.item(v_Index);
+    
+            if ( "#".equals(v_Node.getNodeName().substring(0 ,1)) )
+            {
+                // Nothing.   过滤空标记
+                v_NodeIndex--;
+            }
+            else
+            {
+                Class<?>              v_AttrClass         = null;
+                Object                v_AttrInstance      = null;
+                String                v_RefID             = getNodeAttribute(v_Node ,$XML_OBJECT_REF);
+                String                v_ClassName         = getNodeAttribute(v_Node ,$XML_OBJECT_CLASS);
+                String                v_ID                = getNodeAttribute(v_Node ,$XML_OBJECT_ID);
+                String                v_This              = getNodeAttribute(v_Node ,$XML_OBJECT_THIS);
+                String                v_If                = getNodeAttribute(v_Node ,$XML_OBJECT_IF);
+                String                v_IfNot             = getNodeAttribute(v_Node ,$XML_OBJECT_IFNOT);
+                String                v_TreeNodeOrderByID = StringHelp.lpad(v_NodeIndex ,$TREE_NODE_ORDERBYID_MAXLEN ,"0");
+                TreeNode<XJavaObject> v_TreeNode          = new TreeNode<XJavaObject>(v_TreeNodeOrderByID ,v_ID ,i_SuperTreeNode);
                 boolean               v_SuperInstance_New = false;    // 父类是否在本节点被实例化
                 boolean               v_ThisFun           = false;    // 是否为This赋值功能 
-				
+                
                 
                 // 真值才解释XJava
                 if ( !Help.isNull(v_If) )
@@ -2449,245 +2450,248 @@ public final class XJava
                     }
                 }
                 
-				
-				// 标记有 id 的节点都将存入 $XML_OBJECTS 集合中
-				if ( v_ID != null && !"".equals(v_ID.trim()) )
-				{
-					if ( $XML_OBJECTS.containsNodeID(v_ID) )
-					{
-					    // ID 与 This 两属性相同。
-					    // 类似于Java语言中下面的情况
-					    // String v_Name = "HY";
-					    // v_Name = v_Name;
-					    if ( v_ThisFun && v_ID.endsWith(v_This) )
-					    {
-					        // Nothing.
-					    }
-					    else
-					    {
-					        // ZhengWei(HY) Del 2016-01-04 删除下面的重复抛错，改为重复覆盖 
-					        // throw new Exception("ID[" + v_ID + "] is exist of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
-					        $XML_OBJECTS.put(v_TreeNode);
-					    }
-					}
-					else
-					{
-					    $XML_OBJECTS.put(v_TreeNode);
-					}
-				}
-				
-				
-				// 第一个子节点时
-				if ( v_NodeIndex == 1 )
-				{
-					// 构造器关键字
-					if ( $XML_OBJECT_CONSTRUCTOR.equalsIgnoreCase(v_Node.getNodeName()) )
-					{
-						if ( io_SuperInstance == null )
-						{
-							io_SuperInstance = this.constructor(i_SuperClass ,v_Node ,v_TreeNode);
+                
+                // 标记有 id 的节点都将存入 $XML_OBJECTS 集合中
+                if ( v_ID != null && !"".equals(v_ID.trim()) )
+                {
+                    if ( $XML_OBJECTS.containsNodeID(v_ID) )
+                    {
+                        // ID 与 This 两属性相同。
+                        // 类似于Java语言中下面的情况
+                        // String v_Name = "HY";
+                        // v_Name = v_Name;
+                        if ( v_ThisFun && v_ID.endsWith(v_This) )
+                        {
+                            // Nothing.
+                        }
+                        else
+                        {
+                            // ZhengWei(HY) Del 2016-01-04 删除下面的重复抛错，改为重复覆盖 
+                            // throw new Exception("ID[" + v_ID + "] is exist of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
+                            $XML_OBJECTS.put(v_TreeNode);
+                        }
+                    }
+                    else
+                    {
+                        $XML_OBJECTS.put(v_TreeNode);
+                    }
+                }
+                
+                
+                // 第一个子节点时
+                if ( v_NodeIndex == 1 )
+                {
+                    // 构造器关键字
+                    if ( $XML_OBJECT_CONSTRUCTOR.equalsIgnoreCase(v_Node.getNodeName()) )
+                    {
+                        if ( io_SuperInstance == null )
+                        {
+                            io_SuperInstance = this.constructor(i_SuperClass ,v_Node ,v_TreeNode);
                             v_SuperInstance_New = true;
-						}
-						else
-						{
-							// 实例已被构造，将不做任何处理
-						}
-						
-						continue;
-					}
-					else
-					{
-						// 父节点的Java类，不再简单的实例化，而是先判断是否有指定的构造器，如果没有的情况下，才简单的实例化。
-						if ( i_SuperClass != null && io_SuperInstance == null )
-						{
-							int v_SuperModifiers = i_SuperClass.getModifiers();
-							
-							// 判断父节点的Java类的是为接口、抽象类、静态类
-							if ( !Modifier.isInterface(v_SuperModifiers) 
-							  && !Modifier.isAbstract(v_SuperModifiers) 
-							  && !Modifier.isStatic(v_SuperModifiers) )
-							{
-								if ( i_SuperClass.getDeclaredConstructors().length >= 1 )
-								{
-									try
-									{
-										io_SuperInstance = i_SuperClass.newInstance();
+                        }
+                        else
+                        {
+                            // 实例已被构造，将不做任何处理
+                        }
+                        
+                        continue;
+                    }
+                    else
+                    {
+                        // 父节点的Java类，不再简单的实例化，而是先判断是否有指定的构造器，如果没有的情况下，才简单的实例化。
+                        if ( i_SuperClass != null && io_SuperInstance == null )
+                        {
+                            int v_SuperModifiers = i_SuperClass.getModifiers();
+                            
+                            // 判断父节点的Java类的是为接口、抽象类、静态类
+                            if ( !Modifier.isInterface(v_SuperModifiers) 
+                              && !Modifier.isAbstract(v_SuperModifiers) 
+                              && !Modifier.isStatic(v_SuperModifiers) )
+                            {
+                                if ( i_SuperClass.getDeclaredConstructors().length >= 1 )
+                                {
+                                    try
+                                    {
+                                        io_SuperInstance = i_SuperClass.newInstance();
                                         v_SuperInstance_New = true;
-									}
-									catch (Exception exce)
-									{
-										throw new ClassNotFoundException("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
-									}
-								}
-							}
-						}
-					}
-				}
-				
-				
-				// 当节点属性有引用关键字时
-				if ( v_RefID != null )
-				{
-					v_AttrInstance = this.getRefObject(io_SuperInstance ,v_Node ,v_RefID);
-					if ( v_AttrInstance != null )
-					{
-						v_AttrClass = v_AttrInstance.getClass();
-						
-						if ( "String".equalsIgnoreCase(v_Node.getNodeName()) )
-						{
-						    v_TreeNode.setInfo(new XJavaObject("" ,v_AttrInstance));
-						}
-					}
-					else
-					{
-					    throw new NullPointerException("RefID[" + v_RefID + "] instance object is not exist.");
-					}
-				}
-				
-				
-				// 当节点为Call时
-				if ( $XML_OBJECT_CALL.equalsIgnoreCase(v_Node.getNodeName()) )
-				{
-					if ( io_SuperInstance != null )
-					{
-						this.callMethod(io_SuperInstance ,v_Node ,v_TreeNode);
-					}
-				}
-				// 标记有 this 属性，以实现赋值功能
-				else if ( v_ThisFun )
-				{
-				    this.setInstance(v_AttrInstance.getClass() ,v_AttrInstance ,v_Node ,v_TreeNode);
-				}
-				// 当节点为类时 或是 String 类时
-				else if ( v_ClassName != null || this.imports.containsKey(v_Node.getNodeName()) || "String".equalsIgnoreCase(v_Node.getNodeName()) )
-				{
-					boolean       v_IsDefaultSetMethod = false;
-					MethodReflect v_Setter             = null;
-					
-					if ( v_ClassName == null )
-					{
-						if ( "String".equalsIgnoreCase(v_Node.getNodeName()) )
-						{
-							v_ClassName = "java.lang.String";
-						}
-						else
-						{
-							v_ClassName = this.imports.get(v_Node.getNodeName());
-						}
-					}
-					
-					if ( i_SuperClass != null )
-					{
-						String v_SuperSetMethodName = null;
-						
-						// 尝试获取指定的setter方法名称
-						try
-						{
-							v_SuperSetMethodName = getNodeAttribute(i_SuperNode ,$XML_OBJECT_SETTER);
-						}
-						catch (Exception exce)
-						{
-							v_SuperSetMethodName = null;
-						}
-						
-						
-						if ( v_SuperSetMethodName != null )
-						{
-							// 尝试获取指定的setter方法
-							try
-							{
-								v_Setter = new MethodReflect(io_SuperInstance ,v_SuperSetMethodName ,MethodReflect.$NormType_Setter);
-							}
-							catch (Exception exce)
-							{
-								throw new NoSuchMethodException("Setter method [" + v_SuperSetMethodName + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-							}
-						}
-						
-						
-						if ( v_Setter == null )
-						{
-							// 当没有指定的setter方法时，尝试获取默认的setter方法
-							try
-							{
-								v_Setter = new MethodReflect(io_SuperInstance ,v_Node.getNodeName() ,true ,MethodReflect.$NormType_Setter);
-							}
-							catch (Exception exce)
-							{
-								v_Setter = null;  // 允许出错，即允许没有默认的setter方法
-							}
-							v_IsDefaultSetMethod = true;
-						}
-					}
-					
-					
-					// 当Setter的参数又是一个对象实例时，并且指定setter方法时
-					if ( v_Setter != null && !v_IsDefaultSetMethod )
-					{
-						if ( v_AttrInstance == null )
-						{
-							try
-							{
-								v_AttrClass    = Help.forName(v_ClassName);
-								
-								// 这里也可以与下一个else if一样，不需要此句。
-								// 但必须实现 setter 节点支持定义入参的类型及入参个数
-								v_AttrInstance = v_AttrClass.newInstance();
-							}
-							catch (Exception exce)
-							{
-								throw new ClassNotFoundException("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-							}
-							
-							v_AttrInstance = this.setInstance(v_AttrClass ,v_AttrInstance ,v_Node ,v_TreeNode);
-						}
-						
-						try
-						{
-							v_Setter.invoke(v_AttrInstance);
-						}
-						catch (Exception exce)
-						{
-							throw new NoSuchMethodException("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-						}
-					}
-					// 当Setter的参数又是一个对象实例时，并且有默认的setter方法时
-					else if ( v_Setter != null && v_IsDefaultSetMethod )
-					{
-						if ( v_AttrInstance == null )
-						{
-							try
-							{
-								v_AttrClass = Help.forName(v_ClassName);
-							}
-							catch (Exception exce)
-							{
-								throw new ClassNotFoundException("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-							}
-							
-							v_AttrInstance = this.setInstance(v_AttrClass ,null ,v_Node ,v_TreeNode);
-						}
-						
-						try
-						{
-							v_Setter.invoke(v_AttrInstance);
-						}
-						catch (Exception exce)
-						{
-							throw new NoSuchMethodException("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-						}
-					}
-					// 没有指定的setter方法，也没有匹配到默认的setter方法
-					else
-					{
-						if ( v_AttrInstance == null )
-						{
-							try
-							{
-								v_AttrClass = Help.forName(v_ClassName);
-							}
-							catch (Exception exce)
-							{
+                                    }
+                                    catch (Exception exce)
+                                    {
+                                        throw new ClassNotFoundException("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                
+                // 当节点属性有引用关键字时
+                if ( v_RefID != null )
+                {
+                    v_AttrInstance = this.getRefObject(io_SuperInstance ,v_Node ,v_RefID);
+                    if ( v_AttrInstance != null )
+                    {
+                        v_AttrClass = v_AttrInstance.getClass();
+                        
+                        if ( "String".equalsIgnoreCase(v_Node.getNodeName()) )
+                        {
+                            v_TreeNode.setInfo(new XJavaObject("" ,v_AttrInstance));
+                        }
+                    }
+                    else
+                    {
+                        throw new NullPointerException("RefID[" + v_RefID + "] instance object is not exist.");
+                    }
+                }
+                
+                
+                // 当节点为Call时
+                if ( $XML_OBJECT_CALL.equalsIgnoreCase(v_Node.getNodeName()) )
+                {
+                    if ( io_SuperInstance != null )
+                    {
+                        this.callMethod(io_SuperInstance ,v_Node ,v_TreeNode);
+                    }
+                }
+                // 标记有 this 属性，以实现赋值功能
+                else if ( v_ThisFun )
+                {
+                    if ( v_AttrInstance != null )
+                    {
+                        this.setInstance(v_AttrInstance.getClass() ,v_AttrInstance ,v_Node ,v_TreeNode);
+                    }
+                }
+                // 当节点为类时 或是 String 类时
+                else if ( v_ClassName != null || this.imports.containsKey(v_Node.getNodeName()) || "String".equalsIgnoreCase(v_Node.getNodeName()) )
+                {
+                    boolean       v_IsDefaultSetMethod = false;
+                    MethodReflect v_Setter             = null;
+                    
+                    if ( v_ClassName == null )
+                    {
+                        if ( "String".equalsIgnoreCase(v_Node.getNodeName()) )
+                        {
+                            v_ClassName = "java.lang.String";
+                        }
+                        else
+                        {
+                            v_ClassName = this.imports.get(v_Node.getNodeName());
+                        }
+                    }
+                    
+                    if ( i_SuperClass != null )
+                    {
+                        String v_SuperSetMethodName = null;
+                        
+                        // 尝试获取指定的setter方法名称
+                        try
+                        {
+                            v_SuperSetMethodName = getNodeAttribute(i_SuperNode ,$XML_OBJECT_SETTER);
+                        }
+                        catch (Exception exce)
+                        {
+                            v_SuperSetMethodName = null;
+                        }
+                        
+                        
+                        if ( v_SuperSetMethodName != null )
+                        {
+                            // 尝试获取指定的setter方法
+                            try
+                            {
+                                v_Setter = new MethodReflect(io_SuperInstance ,v_SuperSetMethodName ,MethodReflect.$NormType_Setter);
+                            }
+                            catch (Exception exce)
+                            {
+                                throw new NoSuchMethodException("Setter method [" + v_SuperSetMethodName + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                            }
+                        }
+                        
+                        
+                        if ( v_Setter == null )
+                        {
+                            // 当没有指定的setter方法时，尝试获取默认的setter方法
+                            try
+                            {
+                                v_Setter = new MethodReflect(io_SuperInstance ,v_Node.getNodeName() ,true ,MethodReflect.$NormType_Setter);
+                            }
+                            catch (Exception exce)
+                            {
+                                v_Setter = null;  // 允许出错，即允许没有默认的setter方法
+                            }
+                            v_IsDefaultSetMethod = true;
+                        }
+                    }
+                    
+                    
+                    // 当Setter的参数又是一个对象实例时，并且指定setter方法时
+                    if ( v_Setter != null && !v_IsDefaultSetMethod )
+                    {
+                        if ( v_AttrInstance == null )
+                        {
+                            try
+                            {
+                                v_AttrClass    = Help.forName(v_ClassName);
+                                
+                                // 这里也可以与下一个else if一样，不需要此句。
+                                // 但必须实现 setter 节点支持定义入参的类型及入参个数
+                                v_AttrInstance = v_AttrClass.newInstance();
+                            }
+                            catch (Exception exce)
+                            {
+                                throw new ClassNotFoundException("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                            }
+                            
+                            v_AttrInstance = this.setInstance(v_AttrClass ,v_AttrInstance ,v_Node ,v_TreeNode);
+                        }
+                        
+                        try
+                        {
+                            v_Setter.invoke(v_AttrInstance);
+                        }
+                        catch (Exception exce)
+                        {
+                            throw new NoSuchMethodException("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                        }
+                    }
+                    // 当Setter的参数又是一个对象实例时，并且有默认的setter方法时
+                    else if ( v_Setter != null && v_IsDefaultSetMethod )
+                    {
+                        if ( v_AttrInstance == null )
+                        {
+                            try
+                            {
+                                v_AttrClass = Help.forName(v_ClassName);
+                            }
+                            catch (Exception exce)
+                            {
+                                throw new ClassNotFoundException("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                            }
+                            
+                            v_AttrInstance = this.setInstance(v_AttrClass ,null ,v_Node ,v_TreeNode);
+                        }
+                        
+                        try
+                        {
+                            v_Setter.invoke(v_AttrInstance);
+                        }
+                        catch (Exception exce)
+                        {
+                            throw new NoSuchMethodException("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                        }
+                    }
+                    // 没有指定的setter方法，也没有匹配到默认的setter方法
+                    else
+                    {
+                        if ( v_AttrInstance == null )
+                        {
+                            try
+                            {
+                                v_AttrClass = Help.forName(v_ClassName);
+                            }
+                            catch (Exception exce)
+                            {
                                 if ( v_ID != null )
                                 {
                                     throw new ClassNotFoundException("Exception of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]. ID is [" + v_ID + "]. Class is [" + v_ClassName + "]");
@@ -2696,63 +2700,63 @@ public final class XJava
                                 {
                                     throw new ClassNotFoundException("Exception of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]. Class is [" + v_ClassName + "]");
                                 }
-							}
-							
-							// 字符串类型特殊的对待
-							if ( String.class == v_AttrClass )
-							{
-								String v_NodeValue = getNodeTextContent(v_Node);
-								v_NodeValue = (String)this.encrypt(i_SuperNode ,v_Node ,v_NodeValue);
-								v_AttrInstance = v_AttrClass.getConstructor(String.class).newInstance(StringHelp.replaceAll(v_NodeValue ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath));
-							}
-							else
-							{
-								v_AttrInstance = this.setInstance(v_AttrClass ,null ,v_Node ,v_TreeNode);
-							}
-						}
-						
-						if ( io_SuperInstance == null )
-						{
-							// 此处必须返回，即无任何setter方法，并且父节点尚未实例化时，只允许存在一个实例化对象。
-							return v_AttrInstance;
-						}
-						else
-						{
-							// 当对象实例为List或Set集合
-							if ( io_SuperInstance instanceof Collection )
-							{
-								try 
-								{
-									Method v_Method = i_SuperClass.getMethod($XML_LIST_DEF_SETTER ,Object.class);
-									
-									v_Method.invoke(io_SuperInstance ,v_AttrInstance);
-								} 
-								catch (Exception exce) 
-								{
-									throw new NoSuchMethodException("Execute List method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-								}
-							}
-							// 当对象实例为Map集合
-							else if ( io_SuperInstance instanceof Map )
-							{
-								try 
-								{
-									String v_Key        = getNodeAttribute(i_SuperNode ,$XML_MAP_KEY);
-									Method v_AttrMethod = MethodReflect.getGetMethod(v_AttrClass , v_Key ,true);
-									if ( v_AttrMethod == null )
-									{
-										v_AttrMethod = MethodReflect.getGetMethod(v_AttrClass , v_Key ,false);
-									}
-									Object v_KeyValue   = v_AttrMethod.invoke(v_AttrInstance);
-									Method v_Method     = i_SuperClass.getMethod($XML_MAP_DEF_SETTER ,Object.class ,Object.class);
-									
-									v_Method.invoke(io_SuperInstance ,v_KeyValue ,v_AttrInstance);
-								} 
-								catch (Exception exce) 
-								{
-									throw new NoSuchMethodException("Execute Map method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-								}
-							}
+                            }
+                            
+                            // 字符串类型特殊的对待
+                            if ( String.class == v_AttrClass )
+                            {
+                                String v_NodeValue = getNodeTextContent(v_Node);
+                                v_NodeValue = (String)this.encrypt(i_SuperNode ,v_Node ,v_NodeValue);
+                                v_AttrInstance = v_AttrClass.getConstructor(String.class).newInstance(StringHelp.replaceAll(v_NodeValue ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath));
+                            }
+                            else
+                            {
+                                v_AttrInstance = this.setInstance(v_AttrClass ,null ,v_Node ,v_TreeNode);
+                            }
+                        }
+                        
+                        if ( io_SuperInstance == null )
+                        {
+                            // 此处必须返回，即无任何setter方法，并且父节点尚未实例化时，只允许存在一个实例化对象。
+                            return v_AttrInstance;
+                        }
+                        else
+                        {
+                            // 当对象实例为List或Set集合
+                            if ( io_SuperInstance instanceof Collection )
+                            {
+                                try 
+                                {
+                                    Method v_Method = i_SuperClass.getMethod($XML_LIST_DEF_SETTER ,Object.class);
+                                    
+                                    v_Method.invoke(io_SuperInstance ,v_AttrInstance);
+                                } 
+                                catch (Exception exce) 
+                                {
+                                    throw new NoSuchMethodException("Execute List method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                                }
+                            }
+                            // 当对象实例为Map集合
+                            else if ( io_SuperInstance instanceof Map )
+                            {
+                                try 
+                                {
+                                    String v_Key        = getNodeAttribute(i_SuperNode ,$XML_MAP_KEY);
+                                    Method v_AttrMethod = MethodReflect.getGetMethod(v_AttrClass ,v_Key ,true);
+                                    if ( v_AttrMethod == null )
+                                    {
+                                        v_AttrMethod = MethodReflect.getGetMethod(v_AttrClass , v_Key ,false);
+                                    }
+                                    Object v_KeyValue   = v_AttrMethod.invoke(v_AttrInstance);
+                                    Method v_Method     = i_SuperClass.getMethod($XML_MAP_DEF_SETTER ,Object.class ,Object.class);
+                                    
+                                    v_Method.invoke(io_SuperInstance ,v_KeyValue ,v_AttrInstance);
+                                } 
+                                catch (Exception exce) 
+                                {
+                                    throw new NoSuchMethodException("Execute Map method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                                }
+                            }
                             // 父节的实例类型与本节点的实例类型相同时，有可能其父类的Setter的参数又是一个对象实例
                             else if ( v_AttrInstance != null && v_AttrInstance.getClass().equals(io_SuperInstance.getClass()) )
                             {
@@ -2769,177 +2773,177 @@ public final class XJava
                             {
                                 throw new Exception("Unknown Class type.");
                             }
-						}
-						
-					}
-				}
-				// 使用setter方法设置对象实例的属性
-				else
-				{
-					if ( v_AttrInstance == null || v_RefID != null )
-					{
-						List<Method>        v_SetMethods = MethodReflect.getSetMethods(i_SuperClass, v_Node.getNodeName() ,true);
-						Object              v_ParamValue = null;
-						Map<String ,Object> v_SubmitMap  = getChildObjects(this.getNodeAttribute(v_Node ,$XML_OBJECT_SUBMIT));
-						
-						if ( v_RefID != null )
-						{
-							v_ParamValue = v_AttrInstance;
-						}
-						// 按树目录结构，获取子树目录中 XJava 解释过的所有实例化对象信息
-						else if ( !Help.isNull(v_SubmitMap) )
-						{
-							v_ParamValue = v_SubmitMap;
-						}
-						// 当节点没有明确说明Java类型时，但其节点下又有多个子节点时
-						else if ( getChildNodesSize(v_Node) >= 1 )
-						{
-							// 本节点 v_Node 在父节点有 setter 方法时，从setter方法的入参中获取本节点的Java的Class类型 
-							if ( !Help.isNull(v_SetMethods) )
-							{
-								try
-								{
-									v_AttrClass  = v_SetMethods.get(0).getParameterTypes()[0];
+                        }
+                        
+                    }
+                }
+                // 使用setter方法设置对象实例的属性
+                else
+                {
+                    if ( v_AttrInstance == null || v_RefID != null )
+                    {
+                        List<Method>        v_SetMethods = MethodReflect.getSetMethods(i_SuperClass, v_Node.getNodeName() ,true);
+                        Object              v_ParamValue = null;
+                        Map<String ,Object> v_SubmitMap  = getChildObjects(this.getNodeAttribute(v_Node ,$XML_OBJECT_SUBMIT));
+                        
+                        if ( v_RefID != null )
+                        {
+                            v_ParamValue = v_AttrInstance;
+                        }
+                        // 按树目录结构，获取子树目录中 XJava 解释过的所有实例化对象信息
+                        else if ( !Help.isNull(v_SubmitMap) )
+                        {
+                            v_ParamValue = v_SubmitMap;
+                        }
+                        // 当节点没有明确说明Java类型时，但其节点下又有多个子节点时
+                        else if ( getChildNodesSize(v_Node) >= 1 )
+                        {
+                            // 本节点 v_Node 在父节点有 setter 方法时，从setter方法的入参中获取本节点的Java的Class类型 
+                            if ( !Help.isNull(v_SetMethods) )
+                            {
+                                try
+                                {
+                                    v_AttrClass  = v_SetMethods.get(0).getParameterTypes()[0];
                                     v_ParamValue = this.setInstance(v_AttrClass ,v_AttrInstance ,v_Node ,v_TreeNode);
-								}
-								catch (Exception exce)
-								{
-									throw new InstantiationException("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].\n" + exce.getMessage());
-								}
-							}
-							else
-							{
-								throw new InstantiationException("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-							}
-						}
-						else
-						{
+                                }
+                                catch (Exception exce)
+                                {
+                                    throw new InstantiationException("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].\n" + exce.getMessage());
+                                }
+                            }
+                            else
+                            {
+                                throw new InstantiationException("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                            }
+                        }
+                        else
+                        {
                             v_ParamValue = getNodeTextContent(v_Node);
-							
-							// 当节点值不存在时
-							if ( v_ParamValue == null || "".equals(v_ParamValue) )
-							{
-								v_ParamValue = null;
-							}
-						}
-						
-						Object v_EncryptValue = this.encrypt(i_SuperNode ,v_Node ,v_ParamValue);
-						if ( Help.isNull(v_SetMethods) )
-						{
-						    // 对无Setter方法的成员属性赋值  ZhengWei(HY) Add 2017-11-24
-						    Field v_Field = FieldReflect.get(i_SuperClass ,v_Node.getNodeName());
-						    
-						    if ( v_Field != null )
-						    {
-						        try
-						        {
-						            FieldReflect.set(v_Field ,io_SuperInstance ,v_EncryptValue ,this.replaces);
-						        }
-						        catch (Exception exce)
-	                            {
-	                                throw new IllegalAccessException("Field setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + exce.getMessage());
-	                            }
-						    }
-						}
-						else
-						{
-						    Method v_SetMethod = null ;
-						    int    v_MSize     = v_SetMethods.size();
-						    if ( v_MSize > 1 )
-						    {
-						        // 尝试Setter方法重载时，方法参数类型的匹配 ZhengWei(HY) Add 2018-05-04
-						        for (int i=0; i<v_MSize; i++)
-    						    {
-    						        Method v_MTemp = v_SetMethods.get(i);
-    						        
-    						        if ( MethodReflect.isExtendImplement(v_ParamValue ,v_MTemp.getParameterTypes()[0]) )
-    						        {
-    						            v_SetMethod = v_MTemp;
-    						            break;
-    						        }
-    						    }
-						        
-						        if ( v_SetMethod == null )
-						        {
-						            if ( v_ParamValue.getClass().equals(String.class) )
-						            {
-						                Class<?> v_ParamClass = Help.getClass(v_ParamValue.toString());
-						                
-						                for (int i=0; i<v_MSize; i++)
-		                                {
-		                                    Method v_MTemp = v_SetMethods.get(i);
-		                                    
-		                                    if ( MethodReflect.isExtendImplement(v_ParamClass ,v_MTemp.getParameterTypes()[0]) )
-		                                    {
-		                                        v_SetMethod = v_MTemp;
-		                                        break;
-		                                    }
-		                                }
-						            }
-						            else
-						            {
-						                // Nothing. 暂时没有想好怎么处理
-						            }
-						        }
-						    }
-						    else
-						    {
-						        v_SetMethod = v_SetMethods.get(0);
-						    }
-						    
-							try
-							{
-							    MethodReflect.invokeSet(v_SetMethod ,io_SuperInstance ,v_EncryptValue ,this.replaces);
-							}
-							catch (Exception exce)
-							{
-							    String v_Msg = "";
-							    if ( null != exce.getCause()
-							      && null != exce.getCause().getMessage() )
-							    {
-							        v_Msg += exce.getCause().getMessage() + "\n";
-							    }
-							    throw new NoSuchMethodException("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + v_Msg + exce.getMessage());
-							}
-						}
-					}
-					
-				}
-			}
-		}
-		
-		
-		// 父节点解释出的Java类，不再简单的实例化，而是先判断是否有指定的构造器，如果没有的情况下，才简单的实例化。
-		// v_NodeIndex=1表示没有有效的子节点
-		if ( v_NodeIndex == 1 && i_SuperClass != null && io_SuperInstance == null )
-		{
-			int v_SuperModifiers = i_SuperClass.getModifiers();
-			
-			// 判断父节点的Java类的是为接口、抽象类、静态类
-			if ( !Modifier.isInterface(v_SuperModifiers) 
-			  && !Modifier.isAbstract(v_SuperModifiers) 
-			  && !Modifier.isStatic(v_SuperModifiers) )
-			{
-				if ( i_SuperClass.getDeclaredConstructors().length >= 1 )
-				{
-					try
-					{
-						io_SuperInstance = i_SuperClass.newInstance();
-					}
-					catch (Exception exce)
-					{
-						throw new ClassNotFoundException("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].\n" + exce.getMessage());
-					}
-				}
-			}
-		}
-		
-		
-		// 标记有 id 的节点都已存入 $XML_OBJECTS 集合中，此时将 i_SuperInstance 实例化对象 setInfo() 节点中。
-		if ( io_SuperInstance != null )
-		{
-			if ( i_SuperTreeNode != null && !Help.isNull(i_SuperTreeNode.getNodeID()) )
-			{
+                            
+                            // 当节点值不存在时
+                            if ( v_ParamValue == null || "".equals(v_ParamValue) )
+                            {
+                                v_ParamValue = null;
+                            }
+                        }
+                        
+                        Object v_EncryptValue = this.encrypt(i_SuperNode ,v_Node ,v_ParamValue);
+                        if ( Help.isNull(v_SetMethods) )
+                        {
+                            // 对无Setter方法的成员属性赋值  ZhengWei(HY) Add 2017-11-24
+                            Field v_Field = FieldReflect.get(i_SuperClass ,v_Node.getNodeName());
+                            
+                            if ( v_Field != null )
+                            {
+                                try
+                                {
+                                    FieldReflect.set(v_Field ,io_SuperInstance ,v_EncryptValue ,this.replaces);
+                                }
+                                catch (Exception exce)
+                                {
+                                    throw new IllegalAccessException("Field setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + exce.getMessage());
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Method v_SetMethod = null ;
+                            int    v_MSize     = v_SetMethods.size();
+                            if ( v_MSize > 1 )
+                            {
+                                // 尝试Setter方法重载时，方法参数类型的匹配 ZhengWei(HY) Add 2018-05-04
+                                for (int i=0; i<v_MSize; i++)
+                                {
+                                    Method v_MTemp = v_SetMethods.get(i);
+                                    
+                                    if ( MethodReflect.isExtendImplement(v_ParamValue ,v_MTemp.getParameterTypes()[0]) )
+                                    {
+                                        v_SetMethod = v_MTemp;
+                                        break;
+                                    }
+                                }
+                                
+                                if ( v_SetMethod == null )
+                                {
+                                    if ( v_ParamValue.getClass().equals(String.class) )
+                                    {
+                                        Class<?> v_ParamClass = Help.getClass(v_ParamValue.toString());
+                                        
+                                        for (int i=0; i<v_MSize; i++)
+                                        {
+                                            Method v_MTemp = v_SetMethods.get(i);
+                                            
+                                            if ( MethodReflect.isExtendImplement(v_ParamClass ,v_MTemp.getParameterTypes()[0]) )
+                                            {
+                                                v_SetMethod = v_MTemp;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // Nothing. 暂时没有想好怎么处理
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                v_SetMethod = v_SetMethods.get(0);
+                            }
+                            
+                            try
+                            {
+                                MethodReflect.invokeSet(v_SetMethod ,io_SuperInstance ,v_EncryptValue ,this.replaces);
+                            }
+                            catch (Exception exce)
+                            {
+                                String v_Msg = "";
+                                if ( null != exce.getCause()
+                                  && null != exce.getCause().getMessage() )
+                                {
+                                    v_Msg += exce.getCause().getMessage() + "\n";
+                                }
+                                throw new NoSuchMethodException("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + v_Msg + exce.getMessage());
+                            }
+                        }
+                    }
+                    
+                }
+            }
+        }
+        
+        
+        // 父节点解释出的Java类，不再简单的实例化，而是先判断是否有指定的构造器，如果没有的情况下，才简单的实例化。
+        // v_NodeIndex=1表示没有有效的子节点
+        if ( v_NodeIndex == 1 && i_SuperClass != null && io_SuperInstance == null )
+        {
+            int v_SuperModifiers = i_SuperClass.getModifiers();
+            
+            // 判断父节点的Java类的是为接口、抽象类、静态类
+            if ( !Modifier.isInterface(v_SuperModifiers) 
+              && !Modifier.isAbstract(v_SuperModifiers) 
+              && !Modifier.isStatic(v_SuperModifiers) )
+            {
+                if ( i_SuperClass.getDeclaredConstructors().length >= 1 )
+                {
+                    try
+                    {
+                        io_SuperInstance = i_SuperClass.newInstance();
+                    }
+                    catch (Exception exce)
+                    {
+                        throw new ClassNotFoundException("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].\n" + exce.getMessage());
+                    }
+                }
+            }
+        }
+        
+        
+        // 标记有 id 的节点都已存入 $XML_OBJECTS 集合中，此时将 i_SuperInstance 实例化对象 setInfo() 节点中。
+        if ( io_SuperInstance != null )
+        {
+            if ( i_SuperTreeNode != null && !Help.isNull(i_SuperTreeNode.getNodeID()) )
+            {
                 // 判断是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
                 String  v_IsNewValue = getNodeAttribute(i_SuperNode ,$XML_OBJECT_NEWOBJECT);
                 boolean v_IsNew      = false;
@@ -2949,12 +2953,12 @@ public final class XJava
                     v_IsNew = Boolean.parseBoolean(v_IsNewValue);
                 }
                     
-				i_SuperTreeNode.setInfo(new XJavaObject(i_SuperTreeNode.getNodeID() ,io_SuperInstance ,v_IsNew));
-			}
-		}
-		
-		return io_SuperInstance;
-	}
+                i_SuperTreeNode.setInfo(new XJavaObject(i_SuperTreeNode.getNodeID() ,io_SuperInstance ,v_IsNew));
+            }
+        }
+        
+        return io_SuperInstance;
+    }
     
     
     
@@ -3274,199 +3278,199 @@ public final class XJava
             }
         }
     }
-	
-	
-	
-	/**
-	 * 找到对应参数数量、参数类型的构造器
-	 * 
-	 * @param i_Class                 类Class类型
-	 * @param i_ParamClassList        方法入参的Class列表
-	 * @param i_ParamClassChangeList  方法入参的Class类型是否可变，即可以取Class类型的父Class类型
-	 * @return
-	 * 
-	 * @version     v2.0  2017-02-13  添加：对构造器的参数类型判定方法上，引用 MethodReflect.isExtendImplement(...) 方法提高识别的准确性。
-	 */
-	private Constructor<?> constructor_GetConstructor(Class<?> i_Class ,List<Class<?>> i_ParamClassList ,List<Boolean> i_ParamClassChangeList)
-	{
-		int               v_ParamSize       = i_ParamClassList.size();
-		Constructor<?> [] v_ConstructorList = i_Class.getDeclaredConstructors();
-		
-		
-		if ( v_ConstructorList.length == 0 )
-		{
-			return null;
-		}
-		else if ( v_ConstructorList.length == 1 )
-		{
-			return v_ConstructorList[0];
-		}
-		
-		
-		for (int i=0; i<v_ConstructorList.length; i++)
-		{
-			Constructor<?> v_Constructor = v_ConstructorList[i];
-			Class<?> []    v_ParamArr    = v_Constructor.getParameterTypes();
-			int            v_ParamIndex  = 0;
-			
-			if ( v_ParamArr.length == v_ParamSize )
-			{
-				for (; v_ParamIndex<v_ParamSize; v_ParamIndex++)
-				{
-					Class<?> v_ParamClass = v_ParamArr[v_ParamIndex];
-					
-					if ( v_ParamClass.equals(i_ParamClassList.get(v_ParamIndex)) )
-					{
-						// Nothing.  匹配成功
-					}
-					else if ( MethodReflect.isExtendImplement(i_ParamClassList.get(v_ParamIndex) ,v_ParamClass) )
-					{
-					    // Nothing.  匹配成功
-					}
-					else if ( i_ParamClassChangeList.get(v_ParamIndex) )
-					{
-						boolean v_MatchResult = this.constructor_ParamMatch(v_ParamClass ,i_ParamClassList.get(v_ParamIndex).getSuperclass());
-						
-						if ( !v_MatchResult )
-						{
-							v_ParamIndex = v_ParamSize + 99;
-						}
-					}
-					else
-					{
-						v_ParamIndex = v_ParamSize + 99;
-					}
-				}
-				
-				if ( v_ParamIndex == v_ParamSize )
-				{
-					return v_Constructor;
-				}
-			}
-		}
-		
-		
-		return null;
-	}
-	
-	
-	
-	/**
-	 * 匹配入参的Class类型与XML配置的Class类型是否相同。
-	 * 
-	 * 此方法对 i_Matcher 实现的所有接口的Class类型进行匹配操作。
-	 * 也会对 i_Matcher 的父类及父的所有接口的Class类型递归的进行匹配操作。
-	 * 只要有一个匹配成功的，立刻返回true。
-	 * 
-	 * @param i_ParamClass  入参Class类型
-	 * @param i_Matcher     XML配置的Class类型
-	 * @return
-	 */
-	private boolean constructor_ParamMatch(Class<?> i_ParamClass ,Class<?> i_Matcher)
-	{
-		return this.callMethod_ParamMatch(i_ParamClass ,i_Matcher);
-	}
-	
-	
-	
-	/**
-	 * 调用Call节点的方法
-	 * 
-	 * @param i_Obj
-	 * @param i_CallNode
-	 * @throws Exception
-	 */
+    
+    
+    
+    /**
+     * 找到对应参数数量、参数类型的构造器
+     * 
+     * @param i_Class                 类Class类型
+     * @param i_ParamClassList        方法入参的Class列表
+     * @param i_ParamClassChangeList  方法入参的Class类型是否可变，即可以取Class类型的父Class类型
+     * @return
+     * 
+     * @version     v2.0  2017-02-13  添加：对构造器的参数类型判定方法上，引用 MethodReflect.isExtendImplement(...) 方法提高识别的准确性。
+     */
+    private Constructor<?> constructor_GetConstructor(Class<?> i_Class ,List<Class<?>> i_ParamClassList ,List<Boolean> i_ParamClassChangeList)
+    {
+        int               v_ParamSize       = i_ParamClassList.size();
+        Constructor<?> [] v_ConstructorList = i_Class.getDeclaredConstructors();
+        
+        
+        if ( v_ConstructorList.length == 0 )
+        {
+            return null;
+        }
+        else if ( v_ConstructorList.length == 1 )
+        {
+            return v_ConstructorList[0];
+        }
+        
+        
+        for (int i=0; i<v_ConstructorList.length; i++)
+        {
+            Constructor<?> v_Constructor = v_ConstructorList[i];
+            Class<?> []    v_ParamArr    = v_Constructor.getParameterTypes();
+            int            v_ParamIndex  = 0;
+            
+            if ( v_ParamArr.length == v_ParamSize )
+            {
+                for (; v_ParamIndex<v_ParamSize; v_ParamIndex++)
+                {
+                    Class<?> v_ParamClass = v_ParamArr[v_ParamIndex];
+                    
+                    if ( v_ParamClass.equals(i_ParamClassList.get(v_ParamIndex)) )
+                    {
+                        // Nothing.  匹配成功
+                    }
+                    else if ( MethodReflect.isExtendImplement(i_ParamClassList.get(v_ParamIndex) ,v_ParamClass) )
+                    {
+                        // Nothing.  匹配成功
+                    }
+                    else if ( i_ParamClassChangeList.get(v_ParamIndex) )
+                    {
+                        boolean v_MatchResult = this.constructor_ParamMatch(v_ParamClass ,i_ParamClassList.get(v_ParamIndex).getSuperclass());
+                        
+                        if ( !v_MatchResult )
+                        {
+                            v_ParamIndex = v_ParamSize + 99;
+                        }
+                    }
+                    else
+                    {
+                        v_ParamIndex = v_ParamSize + 99;
+                    }
+                }
+                
+                if ( v_ParamIndex == v_ParamSize )
+                {
+                    return v_Constructor;
+                }
+            }
+        }
+        
+        
+        return null;
+    }
+    
+    
+    
+    /**
+     * 匹配入参的Class类型与XML配置的Class类型是否相同。
+     * 
+     * 此方法对 i_Matcher 实现的所有接口的Class类型进行匹配操作。
+     * 也会对 i_Matcher 的父类及父的所有接口的Class类型递归的进行匹配操作。
+     * 只要有一个匹配成功的，立刻返回true。
+     * 
+     * @param i_ParamClass  入参Class类型
+     * @param i_Matcher     XML配置的Class类型
+     * @return
+     */
+    private boolean constructor_ParamMatch(Class<?> i_ParamClass ,Class<?> i_Matcher)
+    {
+        return this.callMethod_ParamMatch(i_ParamClass ,i_Matcher);
+    }
+    
+    
+    
+    /**
+     * 调用Call节点的方法
+     * 
+     * @param i_Obj
+     * @param i_CallNode
+     * @throws Exception
+     */
     private void callMethod(Object i_Obj ,Node i_CallNode ,TreeNode<XJavaObject> i_TreeNode) throws Exception
-	{
-		if ( i_Obj == null )
-		{
-			return;
-		}
-		
-		String v_CallMethodName = this.getNodeAttribute(i_CallNode ,$XML_OBJECT_CALL_NAME);
-		
-		if ( v_CallMethodName == null )
-		{
-			return;
-		}
-		
-		
-		List<Class<?>> v_ParamClassList       = new ArrayList<Class<?>>();
-		List<Object>   v_ParamValueList       = new ArrayList<Object>();
-		List<Boolean>  v_ParamClassChangeList = new ArrayList<Boolean>();       // 方法入参的Class类型是否可变，即可以取Class类型的父Class类型
-		int            v_ParamCount           = 0;
-		NodeList       v_NodeList             = i_CallNode.getChildNodes();
-		for (int v_Index=0; v_Index<v_NodeList.getLength(); v_Index++)
-		{
-			Node v_ParamNode = v_NodeList.item(v_Index);
-			
-			if ( "#".equals(v_ParamNode.getNodeName().substring(0 ,1)) )
-			{
-				// Nothing.   过滤空标记
-			}
-			else
-			{
-				v_ParamCount++;
-				String   v_ParamClassName = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_CLASS);
-				Class<?> v_ParamClass     = null;
-				Object   v_ParamValue     = null;
-				String   v_RefID          = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_REF);
-				
-				
-				// 标记有Class节点属性的情况
-				if ( v_ParamClassName != null )
-				{
-					try
-					{
-						v_ParamClass = Help.forName(v_ParamClassName);
-						v_ParamClassChangeList.add(Boolean.FALSE);
-					}
-					catch (Exception exce)
-					{
-						throw exce;
-					}
-				}
-				// 节点名称为import指定的Class类型
-				else if ( this.imports.containsKey(v_ParamNode.getNodeName()) )
-				{
-					try
-					{
-						v_ParamClass = Help.forName(this.imports.get(v_ParamNode.getNodeName()));
-						v_ParamClassChangeList.add(Boolean.FALSE);
-					}
-					catch (Exception exce)
-					{
-						throw exce;
-					}
-				}
-				// 当节点属性有引用关键字时，获取调用方法的参数值
-				else if ( v_RefID != null )
-				{
-					v_ParamValue = this.getRefObject(i_Obj ,v_ParamNode ,v_RefID);
-					
-					if ( v_ParamValue != null )
-					{
-						v_ParamClass = v_ParamValue.getClass();
-						v_ParamClassChangeList.add(Boolean.TRUE);
-					}
-					else
-					{
-						throw new NullPointerException("Ref method [" + v_RefID + "] is't exist of Call Node[" + i_CallNode.getParentNode().getNodeName() + "." + i_CallNode.getNodeName() + "].");
-					}
-				}
-				else if ( $XML_JAVA_DATATYPE_CHAR.equalsIgnoreCase(v_ParamNode.getNodeName()) )
-				{
-					v_ParamClass = char.class;
-					v_ParamValue = getNodeTextContent(v_ParamNode).charAt(0);
-					v_ParamClassChangeList.add(Boolean.FALSE);
-				}
-				else if ( $XML_JAVA_DATATYPE_INT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
-				{
-					v_ParamClass = int.class;
-					v_ParamValue = Integer.valueOf(getNodeTextContent(v_ParamNode));
-					v_ParamClassChangeList.add(Boolean.FALSE);
-				}
-				else if ( $XML_JAVA_DATATYPE_LONG.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+    {
+        if ( i_Obj == null )
+        {
+            return;
+        }
+        
+        String v_CallMethodName = this.getNodeAttribute(i_CallNode ,$XML_OBJECT_CALL_NAME);
+        
+        if ( v_CallMethodName == null )
+        {
+            return;
+        }
+        
+        
+        List<Class<?>> v_ParamClassList       = new ArrayList<Class<?>>();
+        List<Object>   v_ParamValueList       = new ArrayList<Object>();
+        List<Boolean>  v_ParamClassChangeList = new ArrayList<Boolean>();       // 方法入参的Class类型是否可变，即可以取Class类型的父Class类型
+        int            v_ParamCount           = 0;
+        NodeList       v_NodeList             = i_CallNode.getChildNodes();
+        for (int v_Index=0; v_Index<v_NodeList.getLength(); v_Index++)
+        {
+            Node v_ParamNode = v_NodeList.item(v_Index);
+            
+            if ( "#".equals(v_ParamNode.getNodeName().substring(0 ,1)) )
+            {
+                // Nothing.   过滤空标记
+            }
+            else
+            {
+                v_ParamCount++;
+                String   v_ParamClassName = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_CLASS);
+                Class<?> v_ParamClass     = null;
+                Object   v_ParamValue     = null;
+                String   v_RefID          = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_REF);
+                
+                
+                // 标记有Class节点属性的情况
+                if ( v_ParamClassName != null )
+                {
+                    try
+                    {
+                        v_ParamClass = Help.forName(v_ParamClassName);
+                        v_ParamClassChangeList.add(Boolean.FALSE);
+                    }
+                    catch (Exception exce)
+                    {
+                        throw exce;
+                    }
+                }
+                // 节点名称为import指定的Class类型
+                else if ( this.imports.containsKey(v_ParamNode.getNodeName()) )
+                {
+                    try
+                    {
+                        v_ParamClass = Help.forName(this.imports.get(v_ParamNode.getNodeName()));
+                        v_ParamClassChangeList.add(Boolean.FALSE);
+                    }
+                    catch (Exception exce)
+                    {
+                        throw exce;
+                    }
+                }
+                // 当节点属性有引用关键字时，获取调用方法的参数值
+                else if ( v_RefID != null )
+                {
+                    v_ParamValue = this.getRefObject(i_Obj ,v_ParamNode ,v_RefID);
+                    
+                    if ( v_ParamValue != null )
+                    {
+                        v_ParamClass = v_ParamValue.getClass();
+                        v_ParamClassChangeList.add(Boolean.TRUE);
+                    }
+                    else
+                    {
+                        throw new NullPointerException("Ref method [" + v_RefID + "] is't exist of Call Node[" + i_CallNode.getParentNode().getNodeName() + "." + i_CallNode.getNodeName() + "].");
+                    }
+                }
+                else if ( $XML_JAVA_DATATYPE_CHAR.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = char.class;
+                    v_ParamValue = getNodeTextContent(v_ParamNode).charAt(0);
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
+                else if ( $XML_JAVA_DATATYPE_INT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = int.class;
+                    v_ParamValue = Integer.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
+                else if ( $XML_JAVA_DATATYPE_LONG.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = long.class;
                     v_ParamValue = Long.valueOf(getNodeTextContent(v_ParamNode));
@@ -3478,348 +3482,348 @@ public final class XJava
                     v_ParamValue = new BigDecimal(getNodeTextContent(v_ParamNode));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
-				else if ( $XML_JAVA_DATATYPE_DOUBLE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
-				{
-					v_ParamClass = double.class;
-					v_ParamValue = Double.valueOf(getNodeTextContent(v_ParamNode));
-					v_ParamClassChangeList.add(Boolean.FALSE);
-				}
-				else if ( $XML_JAVA_DATATYPE_FLOAT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                else if ( $XML_JAVA_DATATYPE_DOUBLE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = double.class;
+                    v_ParamValue = Double.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
+                else if ( $XML_JAVA_DATATYPE_FLOAT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = float.class;
                     v_ParamValue = Float.valueOf(getNodeTextContent(v_ParamNode));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
-				else if ( $XML_JAVA_DATATYPE_BOOLEAN.equalsIgnoreCase(v_ParamNode.getNodeName()) )
-				{
-					v_ParamClass = boolean.class;
-					v_ParamValue = Boolean.valueOf(getNodeTextContent(v_ParamNode));
-					v_ParamClassChangeList.add(Boolean.FALSE);
-				}
-				else if ( $XML_JAVA_DATATYPE_STRING.equalsIgnoreCase(v_ParamNode.getNodeName()) )
-				{
-					v_ParamClass = String.class;
-					v_ParamValue = getNodeTextContent(v_ParamNode);
-					if ( v_ParamValue != null )
-					{
-						v_ParamValue = StringHelp.replaceAll(v_ParamValue.toString() ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath);
-					}
-					v_ParamClassChangeList.add(Boolean.FALSE);
-				}
-				else if ( $XML_JAVA_DATATYPE_DATE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
-				{
-					v_ParamClass = Date.class;
-					v_ParamValue = new Date().setDate(getNodeTextContent(v_ParamNode));
-					v_ParamClassChangeList.add(Boolean.TRUE);
-				}
-				else if ( $XML_JAVA_DATATYPE_OBJECT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
-				{
-					v_ParamClass = Object.class;
-					v_ParamValue = getNodeTextContent(v_ParamNode);
-					v_ParamClassChangeList.add(Boolean.FALSE);
-				}
-				else if ( $XML_JAVA_DATATYPE_CLASS.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                else if ( $XML_JAVA_DATATYPE_BOOLEAN.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = boolean.class;
+                    v_ParamValue = Boolean.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
+                else if ( $XML_JAVA_DATATYPE_STRING.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = String.class;
+                    v_ParamValue = getNodeTextContent(v_ParamNode);
+                    if ( v_ParamValue != null )
+                    {
+                        v_ParamValue = StringHelp.replaceAll(v_ParamValue.toString() ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath);
+                    }
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
+                else if ( $XML_JAVA_DATATYPE_DATE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = Date.class;
+                    v_ParamValue = new Date().setDate(getNodeTextContent(v_ParamNode));
+                    v_ParamClassChangeList.add(Boolean.TRUE);
+                }
+                else if ( $XML_JAVA_DATATYPE_OBJECT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = Object.class;
+                    v_ParamValue = getNodeTextContent(v_ParamNode);
+                    v_ParamClassChangeList.add(Boolean.FALSE);
+                }
+                else if ( $XML_JAVA_DATATYPE_CLASS.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = Class.class;
                     v_ParamValue = Help.forName(getNodeTextContent(v_ParamNode));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
-				else if ( $XML_JAVA_DATATYPE_BYTE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                else if ( $XML_JAVA_DATATYPE_BYTE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = byte.class;
                     v_ParamValue = Byte.valueOf(getNodeTextContent(v_ParamNode));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
-				else if ( $XML_JAVA_DATATYPE_SHORT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                else if ( $XML_JAVA_DATATYPE_SHORT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = short.class;
                     v_ParamValue = Short.valueOf(getNodeTextContent(v_ParamNode));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
-				else
-				{
-					// 没有找到调用方法参数的Clss类型
-					throw new NullPointerException("Method param[" + v_ParamCount + "] Class Type is not find of Call Node[" + i_CallNode.getParentNode().getNodeName() + "." + i_CallNode.getNodeName() + "].");
-				}
-				
-				
-				v_ParamClassList.add(v_ParamClass);
-				
-				
-				if ( v_ParamValue == null )
-				{
-					// 当class属性与ref属性同时存在时
-					if ( v_RefID != null )
-					{
-						v_ParamValue = this.getRefObject(i_Obj ,v_ParamNode ,v_RefID);
-						
-						if ( v_ParamValue != null )
-						{
-							if ( v_ParamClass == null )
-							{
-								v_ParamClass = v_ParamValue.getClass();
-							}
-							
-							v_ParamValueList.add(v_ParamValue);
-						}
-						else
-						{
-							// 引用对象不存在
-							throw new NullPointerException("Ref method [" + v_RefID + "] is't exist of Call Node[" + i_CallNode.getParentNode().getNodeName() + "." + i_CallNode.getNodeName() + "].");
-						}
-					}
-					else
-					{
-						v_ParamValue = this.setInstance(v_ParamClass ,null ,v_ParamNode ,i_TreeNode);
-						
-						if ( v_ParamValue != null )
-						{
-							v_ParamValueList.add(v_ParamValue);
-						}
-						else
-						{
-							// 方法参数的值没有解释成功
-							throw new NullPointerException("Method param[" + v_ParamCount + "] is null of Call Node[" + i_CallNode.getParentNode().getNodeName() + "." + i_CallNode.getNodeName() + "].");
-						}
-					}
-				}
-				else
-				{
-					v_ParamValueList.add(v_ParamValue);
-				}
-			
-			}
-			
-		}
-		
-		
-		String    v_TrueCallMethodName = v_CallMethodName.trim();
-		Method    v_TrueCallMethod     = null;
-		Class<?>  v_TrueClass          = null;
-		Object    v_TrueObject         = null;
-		String [] v_CallMethodRefIDArr = v_TrueCallMethodName.replace("." ,"@").split("@");
-		String    v_ReturnID           = this.getNodeAttribute(i_CallNode ,$XML_OBJECT_CALL_RETURNID);
-		Object    v_ReturnValue        = null;
-		
-		
-		if ( v_ReturnID == null )
-		{
-			// Nothing.
-		}
-		else if ( v_ReturnID != null && "".equals(v_ReturnID.trim()) )
-		{
-			v_ReturnID = null;
-		}
-		else
-		{
-			v_ReturnID = v_ReturnID.trim();
-		}
-		
-		
-		// 判断Call方法的方法名称是有引用的情况。如果有引用的情况，则获取真实调用对象、Class类型及方法
-		if ( v_CallMethodRefIDArr.length > 1 )
-		{
-			String v_RefID = v_TrueCallMethodName.substring(0 ,v_TrueCallMethodName.length() - v_CallMethodRefIDArr[v_CallMethodRefIDArr.length - 1].length() - 1);
-			
-			v_TrueObject         = this.getRefObject(i_Obj ,i_CallNode ,v_RefID);
-			v_TrueClass          = v_TrueObject.getClass();
-			v_TrueCallMethodName = v_CallMethodRefIDArr[v_CallMethodRefIDArr.length - 1];
-		}
-		else
-		{
-			v_TrueObject = i_Obj;
-			v_TrueClass  = v_TrueObject.getClass();
-		}
-		
-		
-		if ( v_ParamClassList.size() == 0 )
-		{
-			v_TrueCallMethod = v_TrueClass.getMethod(v_TrueCallMethodName);
-			
-			if ( v_ReturnID != null )
-			{
-				Class<?> v_ReturnClass = v_TrueCallMethod.getReturnType();
-				
-				if ( v_ReturnClass != java.lang.Void.TYPE )
-				{
-					v_ReturnValue = v_TrueCallMethod.invoke(v_TrueObject);
-				}
-				// 无返回的方法
-				else
-				{
-					v_TrueCallMethod.invoke(v_TrueObject);
-				}
-			}
-			else
-			{
-				v_TrueCallMethod.invoke(v_TrueObject);
-			}
-		}
-		else
-		{	
-			v_TrueCallMethod = this.callMethod_GetMethod(v_TrueClass 
-					                                    ,v_TrueCallMethodName 
-					                                    ,v_ParamClassList
-					                                    ,v_ParamClassChangeList);
-			
-			if ( v_TrueCallMethod != null )
-			{
-				if ( v_ReturnID != null )
-				{
-					Class<?> v_ReturnClass = v_TrueCallMethod.getReturnType();
-					
-					if ( v_ReturnClass != java.lang.Void.TYPE  )
-					{
-						v_ReturnValue = v_TrueCallMethod.invoke(v_TrueObject ,v_ParamValueList.toArray());
-					}
-					// 无返回的方法
-					else
-					{
-						v_TrueCallMethod.invoke(v_TrueObject ,v_ParamValueList.toArray());
-					}
-				}
-				else
-				{
-					v_TrueCallMethod.invoke(v_TrueObject ,v_ParamValueList.toArray());
-				}
-			}
-			else
-			{
-				// 没有匹配到对应的方法
-				throw new java.lang.NoSuchMethodException("No such method[" + v_CallMethodName + "] of Call Node[" + i_CallNode.getParentNode().getNodeName() + "." + i_CallNode.getNodeName() + "].");
-			}
-		}
-		
-		
-		// Call节点调用的方法后的返回结果的ID标记，此结果也将存在 $XML_OBJECTS 中
-		if ( v_ReturnID != null )
-		{
-			TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(i_TreeNode.getOrderByID() ,v_ReturnID ,i_TreeNode.getSuper() ,new XJavaObject(v_ReturnID ,v_ReturnValue));
-			
-			if ( $XML_OBJECTS.containsNodeID(v_ReturnID) )
-			{
-				throw new Exception("Call returnID[" + v_ReturnID + "] is exist of Node[" + i_CallNode.getParentNode().getNodeName() + "." + i_CallNode.getNodeName() + "].");
-			}
-			
-			$XML_OBJECTS.put(v_TreeNode);
-		}
-	}
-	
-	
-	
-	/**
-	 * 找到对应参数数量、参数类型对应的方法对象
-	 * 
-	 * @param i_Class                 类Class类型
-	 * @param i_MethodName            方法名称
-	 * @param i_ParamClassList        方法入参的Class列表
-	 * @param i_ParamClassChangeList  方法入参的Class类型是否可变，即可以取Class类型的父Class类型
-	 * @return
-	 */
-	private Method callMethod_GetMethod(Class<?> i_Class ,String i_MethodName ,List<Class<?>> i_ParamClassList ,List<Boolean> i_ParamClassChangeList)
-	{
-		int          v_ParamSize  = i_ParamClassList.size();
-		List<Method> v_MethodList = MethodReflect.getMethods(i_Class ,i_MethodName ,v_ParamSize);
-		
-		
-		if ( v_MethodList.size() == 0 )
-		{
-			return null;
-		}
-		else if ( v_MethodList.size() == 1 )
-		{
-			return v_MethodList.get(0);
-		}
-		
-		
-		for (int i=0; i<v_MethodList.size(); i++)
-		{
-			Method      v_Method     = v_MethodList.get(i);
-			Class<?> [] v_ParamArr   = v_Method.getParameterTypes();
-			int         v_ParamIndex = 0;
-			
-			if ( v_ParamArr.length == v_ParamSize )
-			{
-				for (; v_ParamIndex<v_ParamSize; v_ParamIndex++)
-				{
-					Class<?> v_ParamClass = v_ParamArr[v_ParamIndex];
-					
-					if ( v_ParamClass.equals(i_ParamClassList.get(v_ParamIndex)) )
-					{
-						// Nothing.  匹配成功
-					}
-					else if ( i_ParamClassChangeList.get(v_ParamIndex) )
-					{
-						boolean v_MatchResult = this.callMethod_ParamMatch(v_ParamClass ,i_ParamClassList.get(v_ParamIndex).getSuperclass());
-						
-						if ( !v_MatchResult )
-						{
-							v_ParamIndex = v_ParamSize + 99;
-						}
-					}
-					else
-					{
-						v_ParamIndex = v_ParamSize + 99;
-					}
-				}
-				
-				if ( v_ParamIndex == v_ParamSize )
-				{
-					return v_Method;
-				}
-			}
-		}
-		
-		
-		return null;
-	}
-	
-	
-	
-	/**
-	 * 匹配入参的Class类型与XML配置的Class类型是否相同。
-	 * 
-	 * 此方法对 i_Matcher 实现的所有接口的Class类型进行匹配操作。
-	 * 也会对 i_Matcher 的父类及父的所有接口的Class类型递归的进行匹配操作。
-	 * 只要有一个匹配成功的，立刻返回true。
-	 * 
-	 * @param i_ParamClass  入参Class类型
-	 * @param i_Matcher     XML配置的Class类型
-	 * @return
-	 */
-	private boolean callMethod_ParamMatch(Class<?> i_ParamClass ,Class<?> i_Matcher)
-	{
-		if ( i_Matcher == null )
-		{
-			return false;
-		}
-		else if ( i_ParamClass.equals(i_Matcher) )
-		{
-			return true;
-		}
-		else
-		{
-			Class<?> [] v_MatcherInterfaceClassArr = i_Matcher.getInterfaces();
-			
-			for (int i=0; i<v_MatcherInterfaceClassArr.length; i++)
-			{
-				if ( i_ParamClass.equals(v_MatcherInterfaceClassArr[i]) )
-				{
-					return true;
-				}
-			}
-			
-			return this.callMethod_ParamMatch(i_ParamClass ,i_Matcher.getSuperclass());
-		}
-	}
-	
-	
-	
-	/**
-	 * 获取对象引用实例的方法全路径返回的实例对象
-	 * 例如　v_RefID = "xxx.toString.toUpperCase" 时，
-	 *      v_RefObjectID 即为 "xxx"，
-	 *      v_MethodURL   即为 "toString.toUpperCase"。
+                else
+                {
+                    // 没有找到调用方法参数的Clss类型
+                    throw new NullPointerException("Method param[" + v_ParamCount + "] Class Type is not find of Call Node[" + i_CallNode.getParentNode().getNodeName() + "." + i_CallNode.getNodeName() + "].");
+                }
+                
+                
+                v_ParamClassList.add(v_ParamClass);
+                
+                
+                if ( v_ParamValue == null )
+                {
+                    // 当class属性与ref属性同时存在时
+                    if ( v_RefID != null )
+                    {
+                        v_ParamValue = this.getRefObject(i_Obj ,v_ParamNode ,v_RefID);
+                        
+                        if ( v_ParamValue != null )
+                        {
+                            if ( v_ParamClass == null )
+                            {
+                                v_ParamClass = v_ParamValue.getClass();
+                            }
+                            
+                            v_ParamValueList.add(v_ParamValue);
+                        }
+                        else
+                        {
+                            // 引用对象不存在
+                            throw new NullPointerException("Ref method [" + v_RefID + "] is't exist of Call Node[" + i_CallNode.getParentNode().getNodeName() + "." + i_CallNode.getNodeName() + "].");
+                        }
+                    }
+                    else
+                    {
+                        v_ParamValue = this.setInstance(v_ParamClass ,null ,v_ParamNode ,i_TreeNode);
+                        
+                        if ( v_ParamValue != null )
+                        {
+                            v_ParamValueList.add(v_ParamValue);
+                        }
+                        else
+                        {
+                            // 方法参数的值没有解释成功
+                            throw new NullPointerException("Method param[" + v_ParamCount + "] is null of Call Node[" + i_CallNode.getParentNode().getNodeName() + "." + i_CallNode.getNodeName() + "].");
+                        }
+                    }
+                }
+                else
+                {
+                    v_ParamValueList.add(v_ParamValue);
+                }
+            
+            }
+            
+        }
+        
+        
+        String    v_TrueCallMethodName = v_CallMethodName.trim();
+        Method    v_TrueCallMethod     = null;
+        Class<?>  v_TrueClass          = null;
+        Object    v_TrueObject         = null;
+        String [] v_CallMethodRefIDArr = v_TrueCallMethodName.replace("." ,"@").split("@");
+        String    v_ReturnID           = this.getNodeAttribute(i_CallNode ,$XML_OBJECT_CALL_RETURNID);
+        Object    v_ReturnValue        = null;
+        
+        
+        if ( v_ReturnID == null )
+        {
+            // Nothing.
+        }
+        else if ( v_ReturnID != null && "".equals(v_ReturnID.trim()) )
+        {
+            v_ReturnID = null;
+        }
+        else
+        {
+            v_ReturnID = v_ReturnID.trim();
+        }
+        
+        
+        // 判断Call方法的方法名称是有引用的情况。如果有引用的情况，则获取真实调用对象、Class类型及方法
+        if ( v_CallMethodRefIDArr.length > 1 )
+        {
+            String v_RefID = v_TrueCallMethodName.substring(0 ,v_TrueCallMethodName.length() - v_CallMethodRefIDArr[v_CallMethodRefIDArr.length - 1].length() - 1);
+            
+            v_TrueObject         = this.getRefObject(i_Obj ,i_CallNode ,v_RefID);
+            v_TrueClass          = v_TrueObject.getClass();
+            v_TrueCallMethodName = v_CallMethodRefIDArr[v_CallMethodRefIDArr.length - 1];
+        }
+        else
+        {
+            v_TrueObject = i_Obj;
+            v_TrueClass  = v_TrueObject.getClass();
+        }
+        
+        
+        if ( v_ParamClassList.size() == 0 )
+        {
+            v_TrueCallMethod = v_TrueClass.getMethod(v_TrueCallMethodName);
+            
+            if ( v_ReturnID != null )
+            {
+                Class<?> v_ReturnClass = v_TrueCallMethod.getReturnType();
+                
+                if ( v_ReturnClass != java.lang.Void.TYPE )
+                {
+                    v_ReturnValue = v_TrueCallMethod.invoke(v_TrueObject);
+                }
+                // 无返回的方法
+                else
+                {
+                    v_TrueCallMethod.invoke(v_TrueObject);
+                }
+            }
+            else
+            {
+                v_TrueCallMethod.invoke(v_TrueObject);
+            }
+        }
+        else
+        {   
+            v_TrueCallMethod = this.callMethod_GetMethod(v_TrueClass 
+                                                        ,v_TrueCallMethodName 
+                                                        ,v_ParamClassList
+                                                        ,v_ParamClassChangeList);
+            
+            if ( v_TrueCallMethod != null )
+            {
+                if ( v_ReturnID != null )
+                {
+                    Class<?> v_ReturnClass = v_TrueCallMethod.getReturnType();
+                    
+                    if ( v_ReturnClass != java.lang.Void.TYPE  )
+                    {
+                        v_ReturnValue = v_TrueCallMethod.invoke(v_TrueObject ,v_ParamValueList.toArray());
+                    }
+                    // 无返回的方法
+                    else
+                    {
+                        v_TrueCallMethod.invoke(v_TrueObject ,v_ParamValueList.toArray());
+                    }
+                }
+                else
+                {
+                    v_TrueCallMethod.invoke(v_TrueObject ,v_ParamValueList.toArray());
+                }
+            }
+            else
+            {
+                // 没有匹配到对应的方法
+                throw new java.lang.NoSuchMethodException("No such method[" + v_CallMethodName + "] of Call Node[" + i_CallNode.getParentNode().getNodeName() + "." + i_CallNode.getNodeName() + "].");
+            }
+        }
+        
+        
+        // Call节点调用的方法后的返回结果的ID标记，此结果也将存在 $XML_OBJECTS 中
+        if ( v_ReturnID != null )
+        {
+            TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(i_TreeNode.getOrderByID() ,v_ReturnID ,i_TreeNode.getSuper() ,new XJavaObject(v_ReturnID ,v_ReturnValue));
+            
+            if ( $XML_OBJECTS.containsNodeID(v_ReturnID) )
+            {
+                throw new Exception("Call returnID[" + v_ReturnID + "] is exist of Node[" + i_CallNode.getParentNode().getNodeName() + "." + i_CallNode.getNodeName() + "].");
+            }
+            
+            $XML_OBJECTS.put(v_TreeNode);
+        }
+    }
+    
+    
+    
+    /**
+     * 找到对应参数数量、参数类型对应的方法对象
+     * 
+     * @param i_Class                 类Class类型
+     * @param i_MethodName            方法名称
+     * @param i_ParamClassList        方法入参的Class列表
+     * @param i_ParamClassChangeList  方法入参的Class类型是否可变，即可以取Class类型的父Class类型
+     * @return
+     */
+    private Method callMethod_GetMethod(Class<?> i_Class ,String i_MethodName ,List<Class<?>> i_ParamClassList ,List<Boolean> i_ParamClassChangeList)
+    {
+        int          v_ParamSize  = i_ParamClassList.size();
+        List<Method> v_MethodList = MethodReflect.getMethods(i_Class ,i_MethodName ,v_ParamSize);
+        
+        
+        if ( v_MethodList.size() == 0 )
+        {
+            return null;
+        }
+        else if ( v_MethodList.size() == 1 )
+        {
+            return v_MethodList.get(0);
+        }
+        
+        
+        for (int i=0; i<v_MethodList.size(); i++)
+        {
+            Method      v_Method     = v_MethodList.get(i);
+            Class<?> [] v_ParamArr   = v_Method.getParameterTypes();
+            int         v_ParamIndex = 0;
+            
+            if ( v_ParamArr.length == v_ParamSize )
+            {
+                for (; v_ParamIndex<v_ParamSize; v_ParamIndex++)
+                {
+                    Class<?> v_ParamClass = v_ParamArr[v_ParamIndex];
+                    
+                    if ( v_ParamClass.equals(i_ParamClassList.get(v_ParamIndex)) )
+                    {
+                        // Nothing.  匹配成功
+                    }
+                    else if ( i_ParamClassChangeList.get(v_ParamIndex) )
+                    {
+                        boolean v_MatchResult = this.callMethod_ParamMatch(v_ParamClass ,i_ParamClassList.get(v_ParamIndex).getSuperclass());
+                        
+                        if ( !v_MatchResult )
+                        {
+                            v_ParamIndex = v_ParamSize + 99;
+                        }
+                    }
+                    else
+                    {
+                        v_ParamIndex = v_ParamSize + 99;
+                    }
+                }
+                
+                if ( v_ParamIndex == v_ParamSize )
+                {
+                    return v_Method;
+                }
+            }
+        }
+        
+        
+        return null;
+    }
+    
+    
+    
+    /**
+     * 匹配入参的Class类型与XML配置的Class类型是否相同。
+     * 
+     * 此方法对 i_Matcher 实现的所有接口的Class类型进行匹配操作。
+     * 也会对 i_Matcher 的父类及父的所有接口的Class类型递归的进行匹配操作。
+     * 只要有一个匹配成功的，立刻返回true。
+     * 
+     * @param i_ParamClass  入参Class类型
+     * @param i_Matcher     XML配置的Class类型
+     * @return
+     */
+    private boolean callMethod_ParamMatch(Class<?> i_ParamClass ,Class<?> i_Matcher)
+    {
+        if ( i_Matcher == null )
+        {
+            return false;
+        }
+        else if ( i_ParamClass.equals(i_Matcher) )
+        {
+            return true;
+        }
+        else
+        {
+            Class<?> [] v_MatcherInterfaceClassArr = i_Matcher.getInterfaces();
+            
+            for (int i=0; i<v_MatcherInterfaceClassArr.length; i++)
+            {
+                if ( i_ParamClass.equals(v_MatcherInterfaceClassArr[i]) )
+                {
+                    return true;
+                }
+            }
+            
+            return this.callMethod_ParamMatch(i_ParamClass ,i_Matcher.getSuperclass());
+        }
+    }
+    
+    
+    
+    /**
+     * 获取对象引用实例的方法全路径返回的实例对象
+     * 例如　v_RefID = "xxx.toString.toUpperCase" 时，
+     *      v_RefObjectID 即为 "xxx"，
+     *      v_MethodURL   即为 "toString.toUpperCase"。
      *      
      * 1. 支持 this.静态常量
      * 2. 支持 this.方法全名称
@@ -3828,94 +3832,94 @@ public final class XJava
      * 5. 支持 XJava节点标记<import>引用.静态常量
      * 6. 支持 XJava节点标记<import>引用.方法全名称
      * 7. 支持 java.sql.Types.VARCHAR 这样的静态常量全路径解释
-	 * 
-	 * @param i_RefID
-	 * @return
-	 * @throws Exception
-	 */
-	private Object getRefObject(Object i_This ,Node i_Node ,String i_RefID) throws Exception
-	{
-		String [] v_RefIDArr    = i_RefID.trim().replace("." ,"@").split("@");
-		String    v_RefObjectID = v_RefIDArr[0];
-		Object    v_RetObj      = null;
-		
-		
-		if ( $XML_OBJECT_THIS.equalsIgnoreCase(v_RefObjectID) )
-		{
-			if ( i_This == null )
-			{
-				throw new NullPointerException("Ref url[" + i_RefID + "] not use 'this' keyword of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].");
-			}
-			else if ( v_RefIDArr.length >= 2 )
-			{
-				// 尝试获取类的静态属性
-				try
-				{
-					v_RetObj = i_This.getClass().getDeclaredField(v_RefIDArr[1]).get(i_This);
-				}
-				catch (Exception exce)
-				{
-					v_RetObj = null;
-				}
-				
-				if ( v_RetObj != null )
-				{
-					if ( v_RefIDArr.length == 2 )
-					{
-						// 只获取类的静态属性 
-						return v_RetObj;
-					}
-					else
-					{
-						// 获取类的静态属性的对象的子方法
-						String v_MethodURL = i_RefID.substring(v_RefIDArr[0].length() + 1 + v_RefIDArr[1].length() + 1);
-						return getRefObject(v_RetObj ,i_Node ,"this." + v_MethodURL);
-					}
-				}
-				else
-				{
-					// 尝试获取类的静态属性失败时，其后代码尝试获取getter方法
-					v_RetObj = i_This;
-				}
-			}
-			else
-			{
-				// 获取 this 本身时
-				v_RetObj = i_This;
-			}
-		}
-		else
-		{
-			v_RetObj = getObject(v_RefObjectID);
-		}
-		
-		
-		if ( v_RetObj != null )
-		{
-			if ( v_RefIDArr.length >= 2 )
-			{
-				String        v_MethodURL = i_RefID.substring(v_RefObjectID.length() + 1);
-				MethodReflect v_Getter    = null;
-				
-				try
-				{
-					v_Getter = new MethodReflect(v_RetObj ,v_MethodURL ,MethodReflect.$NormType_Getter);
-				}
-				catch (Exception exce)
-				{
+     * 
+     * @param i_RefID
+     * @return
+     * @throws Exception
+     */
+    private Object getRefObject(Object i_This ,Node i_Node ,String i_RefID) throws Exception
+    {
+        String [] v_RefIDArr    = i_RefID.trim().replace("." ,"@").split("@");
+        String    v_RefObjectID = v_RefIDArr[0];
+        Object    v_RetObj      = null;
+        
+        
+        if ( $XML_OBJECT_THIS.equalsIgnoreCase(v_RefObjectID) )
+        {
+            if ( i_This == null )
+            {
+                throw new NullPointerException("Ref url[" + i_RefID + "] not use 'this' keyword of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].");
+            }
+            else if ( v_RefIDArr.length >= 2 )
+            {
+                // 尝试获取类的静态属性
+                try
+                {
+                    v_RetObj = i_This.getClass().getDeclaredField(v_RefIDArr[1]).get(i_This);
+                }
+                catch (Exception exce)
+                {
+                    v_RetObj = null;
+                }
+                
+                if ( v_RetObj != null )
+                {
+                    if ( v_RefIDArr.length == 2 )
+                    {
+                        // 只获取类的静态属性 
+                        return v_RetObj;
+                    }
+                    else
+                    {
+                        // 获取类的静态属性的对象的子方法
+                        String v_MethodURL = i_RefID.substring(v_RefIDArr[0].length() + 1 + v_RefIDArr[1].length() + 1);
+                        return getRefObject(v_RetObj ,i_Node ,"this." + v_MethodURL);
+                    }
+                }
+                else
+                {
+                    // 尝试获取类的静态属性失败时，其后代码尝试获取getter方法
+                    v_RetObj = i_This;
+                }
+            }
+            else
+            {
+                // 获取 this 本身时
+                v_RetObj = i_This;
+            }
+        }
+        else
+        {
+            v_RetObj = getObject(v_RefObjectID);
+        }
+        
+        
+        if ( v_RetObj != null )
+        {
+            if ( v_RefIDArr.length >= 2 )
+            {
+                String        v_MethodURL = i_RefID.substring(v_RefObjectID.length() + 1);
+                MethodReflect v_Getter    = null;
+                
+                try
+                {
+                    v_Getter = new MethodReflect(v_RetObj ,v_MethodURL ,MethodReflect.$NormType_Getter);
+                }
+                catch (Exception exce)
+                {
                     v_Getter = null;
-				}
-				
+                }
+                
                 if ( v_Getter != null )
                 {
-    				try
-    				{
-    					v_RetObj = v_Getter.invoke();
-    				}
-    				catch (Exception exce)
-    				{
-    					throw new NoSuchMethodException("Ref url[" + i_RefID + "] is exception of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].\n" + exce.getMessage());
-    				}
+                    try
+                    {
+                        v_RetObj = v_Getter.invoke();
+                    }
+                    catch (Exception exce)
+                    {
+                        throw new NoSuchMethodException("Ref url[" + i_RefID + "] is exception of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].\n" + exce.getMessage());
+                    }
                 }
                 else
                 {
@@ -3928,10 +3932,10 @@ public final class XJava
                         throw new NoSuchMethodException("Ref url[" + i_RefID + "] is exception of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].");
                     }
                 }
-			}
-		}
-		else
-		{
+            }
+        }
+        else
+        {
             // 获取XJava节点标记<import>引用的相关静态常量及方法
             if ( v_RefIDArr.length >= 2 && this.imports.containsKey(v_RefObjectID) )
             {
@@ -3993,86 +3997,86 @@ public final class XJava
                 }
             }
             
-			throw new NoSuchMethodException("Ref url[" + i_RefID + "] is't exist of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].");
-		}
+            throw new NoSuchMethodException("Ref url[" + i_RefID + "] is't exist of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].");
+        }
 
-		return v_RetObj;
-	}
-	
-	
-	
-	/**
-	 * 获取节点的属性值
-	 * 
-	 * @param i_Node
-	 * @param i_AttributeName
-	 * @return
-	 */
-	private String getNodeAttribute(Node i_Node ,String i_AttributeName)
-	{
-		NamedNodeMap v_NameNodeMap = i_Node.getAttributes();
-		
-		for (int v_Index=0; v_Index<v_NameNodeMap.getLength(); v_Index++)
-		{
-			Node v_NodeAttr = v_NameNodeMap.item(v_Index);
-			
-			if ( i_AttributeName.equals(v_NodeAttr.getNodeName().toLowerCase()) )
-			{
-				return v_NodeAttr.getNodeValue();
-			}
-		}
-		
-		return null;
-	}
-	
-	
-	
-	/**
-	 * 获取节点有效的子节点数量
-	 * 
-	 * @param i_Node
-	 * @return
-	 */
-	private int getChildNodesSize(Node i_Node)
-	{
-		int      v_Size     = 0;
-		NodeList v_NodeList = i_Node.getChildNodes();
-		
-		for (int i=0; i<v_NodeList.getLength(); i++)
-		{
-			Node v_ChildNode = v_NodeList.item(i);
-			if ( "#".equals(v_ChildNode.getNodeName().substring(0 ,1)) )
-			{
-				// Nothing.   过滤空标记
-			}
-			else
-			{
-				v_Size++;
-			}
-		}
-		
-		return v_Size;
-	}
-	
-	
-	
-	/**
-	 * 1. 深克隆：当构造一个新的实例时，实现了 java.lang.Cloneable接口，则调用克隆clone()方法克隆对象
-	 * 2. 深克隆：当构造一个新的实例时，继承了 org.hy.common.xml.SerializableDef 类时，则调用克隆clone(Object)方法克隆对象
+        return v_RetObj;
+    }
+    
+    
+    
+    /**
+     * 获取节点的属性值
+     * 
+     * @param i_Node
+     * @param i_AttributeName
+     * @return
+     */
+    private String getNodeAttribute(Node i_Node ,String i_AttributeName)
+    {
+        NamedNodeMap v_NameNodeMap = i_Node.getAttributes();
+        
+        for (int v_Index=0; v_Index<v_NameNodeMap.getLength(); v_Index++)
+        {
+            Node v_NodeAttr = v_NameNodeMap.item(v_Index);
+            
+            if ( i_AttributeName.equals(v_NodeAttr.getNodeName().toLowerCase(Locale.ENGLISH)) )
+            {
+                return v_NodeAttr.getNodeValue();
+            }
+        }
+        
+        return null;
+    }
+    
+    
+    
+    /**
+     * 获取节点有效的子节点数量
+     * 
+     * @param i_Node
+     * @return
+     */
+    private int getChildNodesSize(Node i_Node)
+    {
+        int      v_Size     = 0;
+        NodeList v_NodeList = i_Node.getChildNodes();
+        
+        for (int i=0; i<v_NodeList.getLength(); i++)
+        {
+            Node v_ChildNode = v_NodeList.item(i);
+            if ( "#".equals(v_ChildNode.getNodeName().substring(0 ,1)) )
+            {
+                // Nothing.   过滤空标记
+            }
+            else
+            {
+                v_Size++;
+            }
+        }
+        
+        return v_Size;
+    }
+    
+    
+    
+    /**
+     * 1. 深克隆：当构造一个新的实例时，实现了 java.lang.Cloneable接口，则调用克隆clone()方法克隆对象
+     * 2. 深克隆：当构造一个新的实例时，继承了 org.hy.common.xml.SerializableDef 类时，则调用克隆clone(Object)方法克隆对象
      * 3. 浅克隆：当构造一个新的实例时，如果没有clone()方法，则通过无参数的构造器new一个实例，再依次newObject.setter(oldObject.getter())
-	 * 
-	 * @author      ZhengWei(HY)
+     * 
+     * @author      ZhengWei(HY)
      * @createDate  2013-08-10
-	 * @version     v1.0
-	 *              v2.0  2017-01-16  添加：深克隆：当构造一个新的实例时，继承了 org.hy.common.xml.SerializableDef 类时，则调用克隆clone(Object)方法克隆对象
-	 *
-	 * @param i_Instance
-	 * @return
-	 * @throws NoSuchMethodException
-	 */
-	public static Object clone(Object i_Instance) throws NoSuchMethodException
-	{
-	    // 1. 深克隆：实现了 java.lang.Cloneable接口，则调用克隆clone()方法克隆对象
+     * @version     v1.0
+     *              v2.0  2017-01-16  添加：深克隆：当构造一个新的实例时，继承了 org.hy.common.xml.SerializableDef 类时，则调用克隆clone(Object)方法克隆对象
+     *
+     * @param i_Instance
+     * @return
+     * @throws NoSuchMethodException
+     */
+    public static Object clone(Object i_Instance) throws NoSuchMethodException
+    {
+        // 1. 深克隆：实现了 java.lang.Cloneable接口，则调用克隆clone()方法克隆对象
         Class<?> [] v_Inferfaces = i_Instance.getClass().getInterfaces();
         String      v_ErrorInfo  = null;
         
@@ -4164,7 +4168,7 @@ public final class XJava
         {
             throw new NoSuchMethodException("XJava object setter(getter()) exception." + v_ErrorInfo + "\n" + exce.getMessage());
         }
-	}
+    }
     
     
     
@@ -4264,5 +4268,5 @@ public final class XJava
         }
         
     }
-	
+    
 }

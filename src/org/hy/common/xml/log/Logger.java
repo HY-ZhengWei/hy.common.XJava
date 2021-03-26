@@ -1,5 +1,7 @@
 package org.hy.common.xml.log;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -621,6 +623,7 @@ public class Logger
     {
         FileHelp      v_FileHelp = new FileHelp();
         StringBuilder v_Buffer   = new StringBuilder();
+        InputStream   v_LogInput = null;
         
         try
         {
@@ -629,24 +632,28 @@ public class Logger
                 String v_LoggerName = i_Log.getClass().getName();
                 if ( "org.slf4j.helpers.NOPLogger".equalsIgnoreCase(v_LoggerName) )
                 {
+                    v_LogInput = Logger.class.getResourceAsStream("SFL4J_NoLogger.txt");
                     v_Buffer.append("Loading logger is SLF4J ,but not any implementation (").append(Date.getNowTime().getFullMilli()).append(")\n");
-                    v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("SFL4J_NoLogger.txt") ,"UTF-8" ,true));
+                    v_Buffer.append(v_FileHelp.getContent(v_LogInput ,"UTF-8" ,true));
                 }
                 else if ( "ch.qos.logback.classic.Logger".equalsIgnoreCase(v_LoggerName) )
                 {
+                    v_LogInput = Logger.class.getResourceAsStream("SFL4J_Logback.txt");
                     v_Buffer.append("Loading logger is SLF4J & Logback (").append(Date.getNowTime().getFullMilli()).append(")\n");
-                    v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("SFL4J_Logback.txt") ,"UTF-8" ,true));
+                    v_Buffer.append(v_FileHelp.getContent(v_LogInput ,"UTF-8" ,true));
                 }
                 else if ( "org.apache.logging.slf4j.Log4jLogger".equalsIgnoreCase(v_LoggerName) )
                 {
+                    v_LogInput = Logger.class.getResourceAsStream("SFL4J_Log4J.txt");
                     v_Buffer.append("Loading logger is SLF4J & Log4J (").append(Date.getNowTime().getFullMilli()).append(")\n");
-                    v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("SFL4J_Log4J.txt") ,"UTF-8" ,true));
+                    v_Buffer.append(v_FileHelp.getContent(v_LogInput ,"UTF-8" ,true));
                 }
             }
             else if ( $LogType == $LogType_Log4J )
             {
+                v_LogInput = Logger.class.getResourceAsStream("Log4J.txt");
                 v_Buffer.append("Loading logger is Log4J " + $LogVersion + ".x (").append(Date.getNowTime().getFullMilli()).append(")\n");
-                v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("Log4J.txt") ,"UTF-8" ,true));
+                v_Buffer.append(v_FileHelp.getContent(v_LogInput ,"UTF-8" ,true));
             }
             else if ( i_Log != null )
             {
@@ -654,13 +661,30 @@ public class Logger
             }
             else 
             {
+                v_LogInput = Logger.class.getResourceAsStream("NoLogger.txt");
                 v_Buffer.append("Loading logger is not any implementation (").append(Date.getNowTime().getFullMilli()).append(")\n");
-                v_Buffer.append(v_FileHelp.getContent(Logger.class.getResourceAsStream("NoLogger.txt") ,"UTF-8" ,true));
+                v_Buffer.append(v_FileHelp.getContent(v_LogInput ,"UTF-8" ,true));
             }
         }
         catch (Exception exce)
         {
             exce.printStackTrace();
+        }
+        finally
+        {
+            if ( v_LogInput != null )
+            {
+                try
+                {
+                    v_LogInput.close();
+                }
+                catch (IOException exce)
+                {
+                    // Nothing.
+                }
+                
+                v_LogInput = null;
+            }
         }
         
         System.out.print(v_Buffer.toString());

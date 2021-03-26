@@ -247,7 +247,7 @@ public class AnalyseBase extends Analyse
         }
         catch (Exception exce)
         {
-            exce.printStackTrace();
+            $Logger.error(exce);
         }
         
         if ( Help.isNull(v_StartMenusJson) )
@@ -614,7 +614,7 @@ public class AnalyseBase extends Analyse
         }
         catch (Exception exce)
         {
-            exce.printStackTrace();
+            $Logger.error(exce);
             return exce.getMessage();
         }
         
@@ -1397,6 +1397,7 @@ public class AnalyseBase extends Analyse
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             return exce.toString();
         }
     }
@@ -1644,7 +1645,7 @@ public class AnalyseBase extends Analyse
             }
             catch (Exception exce)
             {
-                exce.printStackTrace();
+                $Logger.error(exce);
             }
         }
         
@@ -1807,7 +1808,7 @@ public class AnalyseBase extends Analyse
         }
         catch (Exception exce)
         {
-            exce.printStackTrace();
+            $Logger.error(exce);
         }
         
         return StringHelp.replaceAll(this.getTemplateShowXSQLRefTable()
@@ -1957,7 +1958,7 @@ public class AnalyseBase extends Analyse
         }
         catch (Exception exce)
         {
-            exce.printStackTrace();
+            $Logger.error(exce);
         }
         
         return StringHelp.replaceAll(this.getTemplateShowXSQLTablesRef()
@@ -2134,7 +2135,7 @@ public class AnalyseBase extends Analyse
         }
         catch (Exception exce)
         {
-            exce.printStackTrace();
+            $Logger.error(exce);
             return "{\"error\":\"" + StringHelp.replaceAll(exce.toString() ,"\"" ,"'") + "\"}";
         }
     }
@@ -2246,7 +2247,7 @@ public class AnalyseBase extends Analyse
             }
             catch (Exception exce)
             {
-                exce.printStackTrace();
+                $Logger.error(exce);
                 return v_RetInfo.paramStr(exce.toString());
             }
         }

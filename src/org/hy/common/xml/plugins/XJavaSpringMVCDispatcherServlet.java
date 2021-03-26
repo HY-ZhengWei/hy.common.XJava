@@ -1,5 +1,8 @@
 package org.hy.common.xml.plugins;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.hy.common.file.FileHelp;
 import org.springframework.web.servlet.DispatcherServlet;
 
@@ -49,15 +52,36 @@ public class XJavaSpringMVCDispatcherServlet extends DispatcherServlet
         
         this.setContextClass(XJavaSpringMVCAnnotationConfigServletWebServerApplicationContext.class);
         
+        InputStream v_Input = null;
         try
         {
             FileHelp v_FileHelp = new FileHelp();
-            String v_SpringMVC_XJava = v_FileHelp.getContent(this.getClass().getResourceAsStream("SpringMVC-XJava.txt") ,"UTF-8" ,true);
+            v_Input = this.getClass().getResourceAsStream("SpringMVC-XJava.txt");
+            
+            String v_SpringMVC_XJava = v_FileHelp.getContent(v_Input ,"UTF-8" ,true);
             System.out.println(v_SpringMVC_XJava);
         }
         catch (Exception exce)
         {
             // Nothing.
+        }
+        finally
+        {
+            if ( v_Input != null )
+            {
+                try
+                {
+                    v_Input.close();
+                }
+                catch (IOException exce)
+                {
+                    // Nothing.
+                }
+                finally
+                {
+                    v_Input = null;
+                }
+            }
         }
     }
     

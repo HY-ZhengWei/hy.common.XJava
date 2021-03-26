@@ -1,6 +1,8 @@
 package org.hy.common.xml;
 
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
@@ -297,12 +299,13 @@ public final class XHttp extends SerializableDef implements XJavaID
             throw new NullPointerException("XHttp ip is null.");
         }
         
-        Return<?>           v_Ret        = new Return<Object>().paramStr("");
-        URL                 v_URL        = null;
-        HttpURLConnection   v_URLConn    = null;
-        OutputStream        v_URLOut     = null;
-        BufferedReader      v_Reader     = null;
-        StringBuilder       v_RespBuffer = new StringBuilder();
+        Return<?>         v_Ret        = new Return<Object>().paramStr("");
+        URL               v_URL        = null;
+        HttpURLConnection v_URLConn    = null;
+        OutputStream      v_URLOut     = null;
+        InputStream       v_URLInput   = null;
+        BufferedReader    v_Reader     = null;
+        StringBuilder     v_RespBuffer = new StringBuilder();
         
         try
         {
@@ -453,15 +456,14 @@ public final class XHttp extends SerializableDef implements XJavaID
             }
             
             
-            v_Reader = new BufferedReader(new InputStreamReader(v_URLConn.getInputStream() ,this.getCharset()));
+            v_URLInput = v_URLConn.getInputStream();
+            v_Reader   = new BufferedReader(new InputStreamReader(v_URLInput ,this.getCharset()));
             String v_LineData = "";
             
             while ( (v_LineData = v_Reader.readLine()) != null ) 
             {   
                 v_RespBuffer.append(v_LineData);
             }  
-            
-            v_Reader.close();
         }
         catch (Exception exce)
         {
@@ -470,18 +472,47 @@ public final class XHttp extends SerializableDef implements XJavaID
         }
         finally
         {
+            if ( v_URLOut != null )
+            {
+                try
+                {
+                    v_URLOut.flush();
+                    v_URLOut.close();
+                }
+                catch (IOException exce)
+                {
+                    // Nothing.
+                }
+                
+                v_URLOut = null;
+            }
+            
             if ( v_Reader != null )
             {
                 try
                 {
                     v_Reader.close();
                 }
-                catch (Exception exce)
+                catch (IOException exce)
                 {
                     // Nothing.
                 }
                 
                 v_Reader = null;
+            }
+            
+            if ( v_URLInput != null )
+            {
+                try
+                {
+                    v_URLInput.close();
+                }
+                catch (IOException exce)
+                {
+                    
+                }
+                
+                v_URLInput = null;
             }
             
             v_URLConn = null;
@@ -616,6 +647,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         URL               v_URL        = null;
         HttpURLConnection v_URLConn    = null;
         OutputStream      v_URLOut     = null;
+        InputStream       v_URLInput   = null;
         BufferedReader    v_Reader     = null;
         StringBuilder     v_RespBuffer = new StringBuilder();
         
@@ -781,15 +813,14 @@ public final class XHttp extends SerializableDef implements XJavaID
                 }
             }
             
-            v_Reader = new BufferedReader(new InputStreamReader(v_URLConn.getInputStream() ,this.getCharset()));
+            v_URLInput = v_URLConn.getInputStream();
+            v_Reader   = new BufferedReader(new InputStreamReader(v_URLInput ,this.getCharset()));
             String v_LineData = "";
             
             while ( (v_LineData = v_Reader.readLine()) != null ) 
             {   
                 v_RespBuffer.append(v_LineData);
             }
-            
-            v_Reader.close();
         }
         catch (Exception exce)
         {
@@ -798,18 +829,47 @@ public final class XHttp extends SerializableDef implements XJavaID
         }
         finally
         {
+            if ( v_URLOut != null )
+            {
+                try
+                {
+                    v_URLOut.flush();
+                    v_URLOut.close();
+                }
+                catch (IOException exce)
+                {
+                    // Nothing.
+                }
+                
+                v_URLOut = null;
+            }
+            
             if ( v_Reader != null )
             {
                 try
                 {
                     v_Reader.close();
                 }
-                catch (Exception exce)
+                catch (IOException exce)
                 {
                     // Nothing.
                 }
                 
                 v_Reader = null;
+            }
+            
+            if ( v_URLInput != null )
+            {
+                try
+                {
+                    v_URLInput.close();
+                }
+                catch (IOException exce)
+                {
+                    
+                }
+                
+                v_URLInput = null;
             }
             
             v_URLConn = null;
@@ -948,6 +1008,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         URL               v_URL        = null;
         HttpURLConnection v_URLConn    = null;
         OutputStream      v_URLOut     = null;
+        InputStream       v_URLInput   = null;
         BufferedReader    v_Reader     = null;
         StringBuilder     v_RespBuffer = new StringBuilder();
         
@@ -1107,15 +1168,14 @@ public final class XHttp extends SerializableDef implements XJavaID
             }
             
             
-            v_Reader = new BufferedReader(new InputStreamReader(v_URLConn.getInputStream() ,this.getCharset()));
+            v_URLInput = v_URLConn.getInputStream();
+            v_Reader   = new BufferedReader(new InputStreamReader(v_URLInput ,this.getCharset()));
             String v_LineData = "";
             
             while ( (v_LineData = v_Reader.readLine()) != null ) 
             {   
                 v_RespBuffer.append(v_LineData);
             }  
-            
-            v_Reader.close();
         }
         catch (Exception exce)
         {
@@ -1124,18 +1184,47 @@ public final class XHttp extends SerializableDef implements XJavaID
         }
         finally
         {
+            if ( v_URLOut != null )
+            {
+                try
+                {
+                    v_URLOut.flush();
+                    v_URLOut.close();
+                }
+                catch (IOException exce)
+                {
+                    // Nothing.
+                }
+                
+                v_URLOut = null;
+            }
+            
             if ( v_Reader != null )
             {
                 try
                 {
                     v_Reader.close();
                 }
-                catch (Exception exce)
+                catch (IOException exce)
                 {
                     // Nothing.
                 }
                 
                 v_Reader = null;
+            }
+            
+            if ( v_URLInput != null )
+            {
+                try
+                {
+                    v_URLInput.close();
+                }
+                catch (IOException exce)
+                {
+                    
+                }
+                
+                v_URLInput = null;
             }
             
             v_URLConn = null;
@@ -1221,6 +1310,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         
         URL               v_URL        = null;
         HttpURLConnection v_URLConn    = null;
+        InputStream       v_URLInput   = null;
         BufferedReader    v_Reader     = null;
         StringBuilder     v_RespBuffer = new StringBuilder();
         
@@ -1262,15 +1352,14 @@ public final class XHttp extends SerializableDef implements XJavaID
             v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
             
             
-            v_Reader = new BufferedReader(new InputStreamReader(v_URLConn.getInputStream() ,"UTF-8"));
+            v_URLInput = v_URLConn.getInputStream();
+            v_Reader   = new BufferedReader(new InputStreamReader(v_URLInput ,"UTF-8"));
             String v_LineData = "";
             
             while ( (v_LineData = v_Reader.readLine()) != null ) 
             {   
                 v_RespBuffer.append(v_LineData);
             }  
-            
-            v_Reader.close();
         }
         catch (Exception exce)
         {
@@ -1285,12 +1374,26 @@ public final class XHttp extends SerializableDef implements XJavaID
                 {
                     v_Reader.close();
                 }
-                catch (Exception exce)
+                catch (IOException exce)
                 {
                     // Nothing.
                 }
                 
                 v_Reader = null;
+            }
+            
+            if ( v_URLInput != null )
+            {
+                try
+                {
+                    v_URLInput.close();
+                }
+                catch (IOException exce)
+                {
+                    
+                }
+                
+                v_URLInput = null;
             }
             
             v_URLConn = null;

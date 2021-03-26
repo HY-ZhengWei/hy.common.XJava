@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.sql.CallableStatement;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Locale;
 
 import org.hy.common.Date;
 import org.hy.common.InterconnectMap;
@@ -422,7 +423,7 @@ public final class XSQLCallParam
             throw new NullPointerException("Call parameter JDBC type is null.");
         }
         
-        String v_SetMethodName = i_SetMethodName.trim().toLowerCase();
+        String v_SetMethodName = i_SetMethodName.trim().toLowerCase(Locale.ENGLISH);
         
         if ( !v_SetMethodName.startsWith("set") )
         {
@@ -464,7 +465,7 @@ public final class XSQLCallParam
             throw new NullPointerException("Call parameter JDBC type is null.");
         }
         
-        String v_GetMethodName = i_GetMethodName.trim().toLowerCase();
+        String v_GetMethodName = i_GetMethodName.trim().toLowerCase(Locale.ENGLISH);
         
         if ( !v_GetMethodName.startsWith("get") )
         {

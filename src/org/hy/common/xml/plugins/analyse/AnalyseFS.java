@@ -65,7 +65,7 @@ public class AnalyseFS extends Analyse
     public static final String    $CloudLock = ".cloudlock";
     
     /** 允许对比查看文件内容的文件类型 */
-    public static final String [] $DiffTypes = new String[]{".xml" ,".txt" ,".json"    ,".ini"  ,".inf" ,".properties"
+    private static final String[] $DiffTypes = new String[]{".xml" ,".txt" ,".json"    ,".ini"  ,".inf" ,".properties"
                                                            ,".log" ,".out" ,".mf"      ,".md"
                                                            ,".js"  ,".jsp" ,".css"     ,".htm" ,".html" ,".ftl" ,".svg" ,".map"
                                                            ,".sh"  ,".bat" ,".profile" ,".policy"};
@@ -1055,8 +1055,11 @@ public class AnalyseFS extends Analyse
                                                                       + v_File.toString() + "\"");
                 }
                 
-                System.out.println("-- " + Date.getNowTime().getFullMilli() + " 执行[" + v_File.toString() + "]命令文件");
-                Help.print(v_Ret);
+                $Logger.debug("执行[" + v_File.toString() + "]命令文件");
+                if ( v_Ret != null )
+                {
+                    Help.print(v_Ret);
+                }
                 
                 return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
             }
@@ -1791,7 +1794,10 @@ public class AnalyseFS extends Analyse
                         
                         if ( Help.isNull(v_FBSize) )
                         {
-                            v_IsLocalSame = v_FSize.equals(StringHelp.getComputeUnit(v_MyFileSize));
+                            if ( v_FSize != null )
+                            {
+                                v_IsLocalSame = v_FSize.equals(StringHelp.getComputeUnit(v_MyFileSize));
+                            }
                         }
                         else
                         {

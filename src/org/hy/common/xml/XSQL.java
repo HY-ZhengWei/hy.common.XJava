@@ -3,6 +3,7 @@ package org.hy.common.xml;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
@@ -4872,7 +4873,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (Exception exce)
         {
             String v_SQLError = "";
-            if ( v_XSQLError != null )
+            if ( v_XSQLError != null && v_XSQLError.content != null )
             {
                 v_SQLError = v_XSQLError.content.getSQL(v_ParamObj ,v_XSQLError.getDataSourceGroup());
             }
@@ -5135,33 +5136,45 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 int v_CLobIndex = 0;
                 for (int v_ColIndex=1; v_ColIndex<=v_ColCount; v_ColIndex++)
                 {
-                    int v_ColType = v_ResultSet.getMetaData().getColumnType(v_ColIndex);
-                    if ( Types.CLOB  == v_ColType 
-                      || Types.NCLOB == v_ColType )
-                    {
-                        // 获取数据流
-                        CLOB v_CLob = (CLOB)v_ResultSet.getClob(v_ColCount);
-                        v_Output = v_CLob.getCharacterOutputStream();
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                    
-                    v_Output.write(Help.NVL(i_ClobTexts[v_CLobIndex++]));
-                    
                     try
                     {
-                        v_Output.flush();
-                        v_Output.close();
+                        int v_ColType = v_ResultSet.getMetaData().getColumnType(v_ColIndex);
+                        if ( Types.CLOB  == v_ColType 
+                          || Types.NCLOB == v_ColType )
+                        {
+                            // 获取数据流
+                            CLOB v_CLob = (CLOB)v_ResultSet.getClob(v_ColCount);
+                            v_Output = v_CLob.getCharacterOutputStream();
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                        
+                        v_Output.write(Help.NVL(i_ClobTexts[v_CLobIndex++]));
                     }
                     catch (Exception exce)
                     {
                         $Logger.error(exce);
                         exce.printStackTrace();
                     }
-                    
-                    v_Output = null;
+                    finally
+                    {
+                        if ( v_Output != null )
+                        {
+                            try
+                            {
+                                v_Output.flush();
+                                v_Output.close();
+                            }
+                            catch (IOException exce)
+                            {
+                                // Nothing.
+                            }
+                        }
+                        
+                        v_Output = null;
+                    }
                 }
                 
                 Date v_EndTime = Date.getNowTime();
@@ -6787,7 +6800,6 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (Throwable exce)
         {
             $Logger.error(exce);
-            throw new RuntimeException(exce.getMessage());
         }
         finally
         {
@@ -6805,7 +6817,6 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (Throwable exce)
         {
             $Logger.error(exce);
-            throw new RuntimeException(exce.getMessage());
         }
         finally
         {
@@ -6823,7 +6834,6 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         catch (Throwable exce)
         {
             $Logger.error(exce);
-            throw new RuntimeException(exce.getMessage());
         }
         finally
         {

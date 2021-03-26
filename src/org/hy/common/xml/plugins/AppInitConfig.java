@@ -1,11 +1,14 @@
 package org.hy.common.xml.plugins;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.hy.common.xml.XJava;
@@ -484,7 +487,7 @@ public class AppInitConfig
                                 for (File v_ChildFile : v_ChildFilesList)
                                 {
                                     if (  v_ChildFile.isHidden()
-                                      || (v_ChildFile.isFile() && !v_ChildFile.getName().toLowerCase().endsWith(".xml")) )
+                                      || (v_ChildFile.isFile() && !v_ChildFile.getName().toLowerCase(Locale.ENGLISH).endsWith(".xml")) )
                                     {
                                         continue;
                                     }
@@ -523,16 +526,18 @@ public class AppInitConfig
                         }
                         else
                         {
+                            InputStream v_XmlInput = null;
                             try
                             {
                                 if ( !Help.isNull(i_XmlRootPath) )
                                 {
                                     // ZhengWei(HY) Edit 2017-10-27 i_XmlRootPath处原先的传值为：""
-                                    XJava.parserXml(new File(v_FFullName).toURI().toURL()    ,v_FileHelp.getContent(v_FFullName                                      ,this.enCode) ,i_XmlRootPath          ,v_XmlName);
+                                    XJava.parserXml(new File(v_FFullName).toURI().toURL()    ,v_FileHelp.getContent(v_FFullName ,this.enCode) ,i_XmlRootPath          ,v_XmlName);
                                 }
                                 else
                                 {
-                                    XJava.parserXml(this.getClass().getResource(v_FFullName) ,v_FileHelp.getContent(this.getClass().getResourceAsStream(v_FFullName) ,this.enCode) ,this.xjavaXmlClassPath ,v_XmlName);
+                                    v_XmlInput = this.getClass().getResourceAsStream(v_FFullName);
+                                    XJava.parserXml(this.getClass().getResource(v_FFullName) ,v_FileHelp.getContent(v_XmlInput  ,this.enCode) ,this.xjavaXmlClassPath ,v_XmlName);
                                 }
                                 
                                 v_OK++;
@@ -550,6 +555,24 @@ public class AppInitConfig
                                 log(v_Param.getValue() ,LogType.$Error);
                                 exce.printStackTrace();
                             }
+                            finally
+                            {
+                                if ( v_XmlInput != null )
+                                {
+                                    try
+                                    {
+                                        v_XmlInput.close();
+                                    }
+                                    catch (IOException exce)
+                                    {
+                                        // Nothing.
+                                    }
+                                    finally
+                                    {
+                                        v_XmlInput = null;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -558,6 +581,7 @@ public class AppInitConfig
                     for (int i=0; i<i_Params.size(); i++)
                     {
                         v_Param = i_Params.get(i);
+                        InputStream v_XmlInput = null;
                         
                         try
                         {
@@ -568,7 +592,8 @@ public class AppInitConfig
                             }
                             else
                             {
-                                XJava.parserXml(v_FileHelp.getXD(this.getClass().getResourceAsStream(Help.NVL(this.xmlClassPath) + i_XDName) ,v_Param.getValue() ,this.enCode) ,this.xjavaXmlClassPath ,v_Param.getValue());
+                                v_XmlInput = this.getClass().getResourceAsStream(Help.NVL(this.xmlClassPath) + i_XDName);
+                                XJava.parserXml(v_FileHelp.getXD(v_XmlInput ,v_Param.getValue() ,this.enCode) ,this.xjavaXmlClassPath ,v_Param.getValue());
                             }
                             v_OK++;
                             v_XFileNames.put(v_Param.getValue() ,this);
@@ -584,6 +609,24 @@ public class AppInitConfig
                             // 异常时，继续加载后面的配置文件  2019-02-27 Add
                             log(v_Param.getValue() ,LogType.$Error);
                             exce.printStackTrace();
+                        }
+                        finally
+                        {
+                            if ( v_XmlInput != null )
+                            {
+                                try
+                                {
+                                    v_XmlInput.close();
+                                }
+                                catch (IOException exce)
+                                {
+                                    // Nothing.
+                                }
+                                finally
+                                {
+                                    v_XmlInput = null;
+                                }
+                            }
                         }
                     }
                 }
@@ -632,7 +675,7 @@ public class AppInitConfig
             return;
         }
         
-        if ( i_PackageName.trim().toLowerCase().endsWith(".xml") )
+        if ( i_PackageName.trim().toLowerCase(Locale.ENGLISH).endsWith(".xml") )
         {
             List<Param> v_Params = new ArrayList<Param>();
             Param       v_Param  = new Param();
@@ -769,7 +812,7 @@ public class AppInitConfig
             return;
         }
         
-        if ( i_PackageName.trim().toLowerCase().endsWith(".xml") )
+        if ( i_PackageName.trim().toLowerCase(Locale.ENGLISH).endsWith(".xml") )
         {
             List<Param> v_Params = new ArrayList<Param>();
             Param       v_Param  = new Param();
@@ -809,7 +852,7 @@ public class AppInitConfig
         }
         
         String v_XDName = i_XDName;
-        if ( v_XDName.trim().toLowerCase().endsWith(".xml") )
+        if ( v_XDName.trim().toLowerCase(Locale.ENGLISH).endsWith(".xml") )
         {
             List<Param> v_Params = new ArrayList<Param>();
             Param       v_Param  = new Param();
@@ -821,7 +864,7 @@ public class AppInitConfig
             this.init(null ,v_Params ,i_PackageName);
             return;
         }
-        else if ( !v_XDName.trim().toLowerCase().endsWith(".xd") )
+        else if ( !v_XDName.trim().toLowerCase(Locale.ENGLISH).endsWith(".xd") )
         {
             v_XDName += ".xd";
         }

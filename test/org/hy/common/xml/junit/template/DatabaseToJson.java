@@ -2,8 +2,10 @@ package org.hy.common.xml.junit.template;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.hy.common.Date;
@@ -52,16 +54,68 @@ public class DatabaseToJson extends AppInitConfig
         
         this.init("dbType.transform.xml");
         
+        InputStream v_JsonInput1 = null;
+        InputStream v_JsonInput2 = null;
+        InputStream v_JsonInput3 = null;
         try
         {
             FileHelp v_FileHelp = new FileHelp();
-            $Template_Java      = v_FileHelp.getContent(this.getClass().getResourceAsStream("java.01.class.tjava")     ,"UTF-8" ,true);
-            $Template_Attribute = v_FileHelp.getContent(this.getClass().getResourceAsStream("java.02.attribute.tjava") ,"UTF-8" ,true);
-            $Template_Method    = v_FileHelp.getContent(this.getClass().getResourceAsStream("java.03.method.tjava")    ,"UTF-8" ,true);
+            
+            v_JsonInput1 = this.getClass().getResourceAsStream("java.01.class.tjava");
+            v_JsonInput2 = this.getClass().getResourceAsStream("java.02.attribute.tjava");
+            v_JsonInput3 = this.getClass().getResourceAsStream("java.03.method.tjava");
+            
+            $Template_Java      = v_FileHelp.getContent(v_JsonInput1 ,"UTF-8" ,true);
+            $Template_Attribute = v_FileHelp.getContent(v_JsonInput2 ,"UTF-8" ,true);
+            $Template_Method    = v_FileHelp.getContent(v_JsonInput3 ,"UTF-8" ,true);
         }
         catch (Exception exce)
         {
             exce.printStackTrace();
+        }
+        finally
+        {
+            if ( v_JsonInput1 != null )
+            {
+                try
+                {
+                    v_JsonInput1.close();
+                }
+                catch (IOException exce)
+                {
+                    // Nothing.
+                }
+                
+                v_JsonInput1 = null;
+            }
+            
+            if ( v_JsonInput2 != null )
+            {
+                try
+                {
+                    v_JsonInput2.close();
+                }
+                catch (IOException exce)
+                {
+                    // Nothing.
+                }
+                
+                v_JsonInput2 = null;
+            }
+            
+            if ( v_JsonInput3 != null )
+            {
+                try
+                {
+                    v_JsonInput3.close();
+                }
+                catch (IOException exce)
+                {
+                    // Nothing.
+                }
+                
+                v_JsonInput3 = null;
+            }
         }
     }
     
@@ -155,7 +209,7 @@ public class DatabaseToJson extends AppInitConfig
                 for (File v_JsonFile : v_ChildFiles)
                 {
                     String v_JsonName = v_JsonFile.getName();
-                    if ( v_JsonName.toLowerCase().endsWith(".json") )
+                    if ( v_JsonName.toLowerCase(Locale.ENGLISH).endsWith(".json") )
                     {
                         jsonToJava(v_JsonFile.toString() ,i_JavaFolder + Help.getSysPathSeparator() + v_JsonName.substring(0 ,v_JsonName.length()-5) + ".java");
                     }
