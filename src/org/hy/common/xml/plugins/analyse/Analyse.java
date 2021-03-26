@@ -1,5 +1,6 @@
 package org.hy.common.xml.plugins.analyse;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Map;
@@ -124,7 +125,26 @@ public class Analyse
         String      v_PackageName = i_Package.replaceAll("\\." ,"/");
         InputStream v_InputStream = this.getClass().getResourceAsStream("/" + v_PackageName + "/" + i_FileName);
         
-        return v_FileHelp.getContent(v_InputStream ,"UTF-8");
+        try
+        {
+            return v_FileHelp.getContent(v_InputStream ,"UTF-8");
+        }
+        finally
+        {
+            if ( v_InputStream != null )
+            {
+                try
+                {
+                    v_InputStream.close();
+                }
+                catch (IOException exce)
+                {
+                    // Nothing.
+                }
+                
+                v_InputStream = null;
+            }
+        }
     }
     
     

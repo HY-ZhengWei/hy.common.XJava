@@ -170,7 +170,7 @@ public class AnalyseBase extends Analyse
         
         // 给登陆的URL带上一个r参数
         String v_LoginPath = i_LoginPath;
-        if ( v_LoginPath.indexOf("?") >= 0 )
+        if ( v_LoginPath.indexOf('?') >= 0 )
         {
             if ( v_LoginPath.indexOf("&r=") < 0 && v_LoginPath.indexOf("?r=") < 0 )
             {

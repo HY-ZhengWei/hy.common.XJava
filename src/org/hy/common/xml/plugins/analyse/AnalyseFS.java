@@ -954,7 +954,7 @@ public class AnalyseFS extends Analyse
     {
         $Logger.debug("集群执行命令：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
         
-        String             v_HIP     = "";
+        StringBuilder      v_HIP     = new StringBuilder();
         int                v_ExecRet = 0;
         List<ClientSocket> v_Servers = Cluster.getClusters();
         
@@ -981,11 +981,11 @@ public class AnalyseFS extends Analyse
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
                         {
-                            if ( !Help.isNull(v_HIP) )
+                            if ( v_HIP.length() >= 1 )
                             {
-                                v_HIP += ",";
+                                v_HIP.append(",");
                             }
-                            v_HIP += v_Item.getKey().getHostName();
+                            v_HIP.append(v_Item.getKey().getHostName());
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                         {
@@ -996,11 +996,11 @@ public class AnalyseFS extends Analyse
                 }
                 else
                 {
-                    if ( !Help.isNull(v_HIP) )
+                    if ( v_HIP.length() >= 1 )
                     {
-                        v_HIP += ",";
+                        v_HIP.append(",");
                     }
-                    v_HIP += v_Item.getKey().getHostName();
+                    v_HIP.append(v_Item.getKey().getHostName());
                 }
             }
         }
@@ -1011,7 +1011,7 @@ public class AnalyseFS extends Analyse
         }
         else
         {
-            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP.toString() + "'}" ,"'" ,"\"");
         }
     }
     
@@ -1278,7 +1278,7 @@ public class AnalyseFS extends Analyse
     {
         $Logger.debug("集群压缩文件：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
         
-        String             v_HIP     = "";
+        StringBuilder      v_HIP     = new StringBuilder();
         int                v_ExecRet = 0;
         List<ClientSocket> v_Servers = Cluster.getClusters();
         
@@ -1305,11 +1305,11 @@ public class AnalyseFS extends Analyse
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
                         {
-                            if ( !Help.isNull(v_HIP) )
+                            if ( v_HIP.length() >= 1 )
                             {
-                                v_HIP += ",";
+                                v_HIP.append(",");
                             }
-                            v_HIP += v_Item.getKey().getHostName();
+                            v_HIP.append(v_Item.getKey().getHostName());
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                         {
@@ -1319,11 +1319,11 @@ public class AnalyseFS extends Analyse
                 }
                 else
                 {
-                    if ( !Help.isNull(v_HIP) )
+                    if ( v_HIP.length() >= 1 )
                     {
-                        v_HIP += ",";
+                        v_HIP.append(",");
                     }
-                    v_HIP += v_Item.getKey().getHostName();
+                    v_HIP.append(v_Item.getKey().getHostName());
                 }
             }
         }
@@ -1334,7 +1334,7 @@ public class AnalyseFS extends Analyse
         }
         else
         {
-            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP.toString() + "'}" ,"'" ,"\"");
         }
     }
     
@@ -1512,7 +1512,7 @@ public class AnalyseFS extends Analyse
     {
         $Logger.debug("集群创建目录：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
         
-        String             v_HIP     = "";
+        StringBuilder      v_HIP     = new StringBuilder();
         int                v_ExecRet = 0;
         List<ClientSocket> v_Servers = Cluster.getClusters();
         
@@ -1539,11 +1539,11 @@ public class AnalyseFS extends Analyse
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
                         {
-                            if ( !Help.isNull(v_HIP) )
+                            if ( v_HIP.length() >= 1 )
                             {
-                                v_HIP += ",";
+                                v_HIP.append(",");
                             }
-                            v_HIP += v_Item.getKey().getHostName();
+                            v_HIP.append(v_Item.getKey().getHostName());
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                         {
@@ -1554,11 +1554,11 @@ public class AnalyseFS extends Analyse
                 }
                 else
                 {
-                    if ( !Help.isNull(v_HIP) )
+                    if ( v_HIP.length() >= 1 )
                     {
-                        v_HIP += ",";
+                        v_HIP.append(",");
                     }
-                    v_HIP += v_Item.getKey().getHostName();
+                    v_HIP.append(v_Item.getKey().getHostName());
                 }
             }
         }
@@ -1569,7 +1569,7 @@ public class AnalyseFS extends Analyse
         }
         else
         {
-            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP.toString() + "'}" ,"'" ,"\"");
         }
     }
     
@@ -1888,7 +1888,7 @@ public class AnalyseFS extends Analyse
     {
         $Logger.debug("集群查看系统时间");
         
-        String              v_HIP     = "";
+        StringBuilder       v_HIP     = new StringBuilder();
         int                 v_ExecRet = 0;
         List<ClientSocket>  v_Servers = Cluster.getClusters();
         Map<String ,String> v_Times   = new HashMap<String ,String>();  
@@ -1914,11 +1914,11 @@ public class AnalyseFS extends Analyse
                 {
                     v_Times.put(v_Item.getKey().getHostName() ,"异常");
                     
-                    if ( !Help.isNull(v_HIP) )
+                    if ( v_HIP.length() >= 1 )
                     {
-                        v_HIP += ",";
+                        v_HIP.append(",");
                     }
-                    v_HIP += v_Item.getKey().getHostName();
+                    v_HIP.append(v_Item.getKey().getHostName());
                 }
             }
         }
@@ -1946,7 +1946,7 @@ public class AnalyseFS extends Analyse
         }
         else
         {
-            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP + "'}" ,"'" ,"\"");
+            return StringHelp.replaceAll("{'retCode':'1','retHIP':'" + v_HIP.toString() + "'}" ,"'" ,"\"");
         }
     }
     

@@ -1,7 +1,9 @@
 package org.hy.common.xml.plugins;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.hy.common.file.FileHelp;
-import org.springframework.boot.ApplicationContextFactory;
 import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
 
 
@@ -56,15 +58,35 @@ public class XJavaSpringAnnotationConfigServletWebServerApplicationContext exten
     {
         super(new XJavaSpringObjectFactotry());
         
+        InputStream v_TxtInput = null;
+        
         try
         {
-            FileHelp v_FileHelp = new FileHelp();
-            String v_SpringBoot_XJava = v_FileHelp.getContent(this.getClass().getResourceAsStream("SpringBoot-XJava.txt") ,"UTF-8" ,true);
+            v_TxtInput = this.getClass().getResourceAsStream("SpringBoot-XJava.txt");
+            
+            FileHelp v_FileHelp         = new FileHelp();
+            String   v_SpringBoot_XJava = v_FileHelp.getContent(v_TxtInput ,"UTF-8" ,true);
             System.out.println(v_SpringBoot_XJava);
         }
         catch (Exception exce)
         {
             // Nothing.
+        }
+        finally
+        {
+            if ( v_TxtInput != null )
+            {
+                try
+                {
+                    v_TxtInput.close();
+                }
+                catch (IOException exce)
+                {
+                    // Nothing.
+                }
+                
+                v_TxtInput = null;
+            }
         }
     }
     

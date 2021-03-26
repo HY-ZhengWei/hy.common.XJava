@@ -18,7 +18,6 @@ import java.util.List;
  * 
  * 注：此类已被 MethodComparator 代替
  */
-@Deprecated
 public class MethodOrder implements Comparable<MethodOrder>
 {
     private Method method;
@@ -80,14 +79,14 @@ public class MethodOrder implements Comparable<MethodOrder>
     }
     
     
-    
+    @Deprecated
     public MethodOrder()
     {
         
     }
     
     
-    
+    @Deprecated
     public MethodOrder(Method i_Method)
     {
         this.method = i_Method;

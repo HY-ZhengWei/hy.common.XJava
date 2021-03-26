@@ -1,5 +1,6 @@
 package org.hy.common.xml.plugins;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Hashtable;
@@ -44,20 +45,20 @@ public abstract class BaseInterface
      */
     private   int     rtype;
     
-	/**
-	 * XD文件中的资源是否被加载过
-	 */
-	private   boolean isInit;
+    /**
+     * XD文件中的资源是否被加载过
+     */
+    private   boolean isInit;
     
     protected String  classPath;
-	
-	
-	
-	public BaseInterface()
-	{
+    
+    
+    
+    public BaseInterface()
+    {
         this.rtype  = 0;
-		this.isInit = false;
-	}
+        this.isInit = false;
+    }
     
     
     
@@ -66,72 +67,91 @@ public abstract class BaseInterface
         this.rtype  = i_RType;
         this.isInit = false;
     }
-	
-	
-	
-	/**
-	 * 加载(初始化)XJava资源
-	 */
-	protected synchronized void init()
-	{
-		if ( this.isInit ) 
-		{
-			return;
-		}
+    
+    
+    
+    /**
+     * 加载(初始化)XJava资源
+     */
+    protected synchronized void init()
+    {
+        if ( this.isInit ) 
+        {
+            return;
+        }
         
         if ( this.getXClass() != null && $IsInit.containsKey(this.getXClass()) )
         {
             return;
         }
-		
-		
-		FileHelp v_FileHelp = new FileHelp();
-		
-		try 
-		{
+        
+        
+        FileHelp    v_FileHelp = new FileHelp();
+        InputStream v_XDInput  = null;
+        
+        try 
+        {
             this.isInit = true;
             $IsInit.put(this.getXClass() ,Boolean.TRUE);
             
             if ( this.rtype == 1 )
             {
-                XJava.parserXml(this.getXDUrl() ,v_FileHelp.getContent(this.getXD() ,this.getCharEncoding()) ,this.getClassPath() ,this.getNamingSpace());
+                v_XDInput = this.getXD();
+                XJava.parserXml(this.getXDUrl() ,v_FileHelp.getContent(v_XDInput ,this.getCharEncoding()) ,this.getClassPath() ,this.getNamingSpace());
             }
             else
             {
-                XJava.parserXml(v_FileHelp.getXD(this.getXD() ,this.getXDRName() ,this.getCharEncoding()) ,this.getClassPath() ,this.getNamingSpace());
+                v_XDInput = this.getXD();
+                XJava.parserXml(v_FileHelp.getXD(v_XDInput ,this.getXDRName() ,this.getCharEncoding()) ,this.getClassPath() ,this.getNamingSpace());
             }
-		} 
-		catch (Exception e) 
-		{
-			throw new RuntimeException(e);
-		}
-	}
-	
-	
-	
-	/**
-	 * 获取规范化的XJava对象的元类型
-	 * 
-	 * 只要重写了这一个方法。
-	 * 
-	 * 其它方法就不用重写了，特别是：getXD()、getXDRName()、getNamingSpace()
-	 * 
-	 * @return
-	 */
+        } 
+        catch (Exception e) 
+        {
+            throw new RuntimeException(e);
+        }
+        finally
+        {
+            if ( v_XDInput != null )
+            {
+                try
+                {
+                    v_XDInput.close();
+                }
+                catch (IOException exce)
+                {
+                    // Nothing
+                }
+                
+                v_XDInput = null;
+            }
+        }
+    }
+    
+    
+    
+    /**
+     * 获取规范化的XJava对象的元类型
+     * 
+     * 只要重写了这一个方法。
+     * 
+     * 其它方法就不用重写了，特别是：getXD()、getXDRName()、getNamingSpace()
+     * 
+     * @return
+     */
     protected Class<?> getXClass()
-	{
-		return null;
-	}
-	
-	
-	
-	/**
-	 * 获取XD文件
-	 * 
-	 * @return
-	 */
+    {
+        return null;
+    }
+    
+    
+    
+    /**
+     * 获取XD文件
+     * 
+     * @return
+     */
     protected InputStream getXD()
-	{
+    {
         String v_EName = ".x";
         if ( this.rtype == 1 )
         {
@@ -141,7 +161,7 @@ public abstract class BaseInterface
         {
             return this.getXClass().getResourceAsStream(this.getXClass().getSimpleName() + v_EName + "d");
         }
-	}
+    }
     
     
     
@@ -166,52 +186,52 @@ public abstract class BaseInterface
             return this.getXClass().getResource(this.getXClass().getSimpleName() + v_EName + "d");
         }
     }
-	
-	
-	
-	/**
-	 * 获取XD文件中的资源名
-	 * 
-	 * @return
-	 */
+    
+    
+    
+    /**
+     * 获取XD文件中的资源名
+     * 
+     * @return
+     */
     protected String getXDRName()
-	{
-		return this.getXClass().getSimpleName() + ".xml";
-	}
-	
-	
-	
-	/**
-	 * 获取命名空间
-	 * 
-	 * @return
-	 */
+    {
+        return this.getXClass().getSimpleName() + ".xml";
+    }
+    
+    
+    
+    /**
+     * 获取命名空间
+     * 
+     * @return
+     */
     protected String getNamingSpace()
-	{
-		return this.getXClass().getSimpleName();
-	}
-	
-	
-	
-	/**
-	 * 获取编码名称
-	 * 
-	 * @return
-	 */
+    {
+        return this.getXClass().getSimpleName();
+    }
+    
+    
+    
+    /**
+     * 获取编码名称
+     * 
+     * @return
+     */
     protected String getCharEncoding()
-	{
-		return "UTF-8";
-	}
-	
-	
-	
-	/**
-	 * 获取ClassPath
-	 * 
-	 * @return
-	 */
+    {
+        return "UTF-8";
+    }
+    
+    
+    
+    /**
+     * 获取ClassPath
+     * 
+     * @return
+     */
     protected synchronized String getClassPath()
-	{
+    {
         if ( this.classPath == null )
         {
             String v_EName = ".x";
@@ -231,22 +251,22 @@ public abstract class BaseInterface
         {
             return this.classPath;
         }
-	}
-	
-	
-	
-	/**
-	 * 获取XJava对象
-	 * 
-	 * @param i_XObjectName
-	 * @return
-	 */
+    }
+    
+    
+    
+    /**
+     * 获取XJava对象
+     * 
+     * @param i_XObjectName
+     * @return
+     */
     protected Object getObject(String i_XObjectName)
-	{
-		this.init();
-		return XJava.getObject(i_XObjectName);
-	}
-	
+    {
+        this.init();
+        return XJava.getObject(i_XObjectName);
+    }
+    
     
     
     /**

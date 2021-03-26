@@ -326,7 +326,7 @@ public final class XHttp extends SerializableDef implements XJavaID
                         v_ParamsUrl = StringHelp.encode(v_ParamsUrl ,this.getCharset() ,$NotInString);
                     }
                     
-                    if ( this.haveQuestionMark && v_URLParamStr.indexOf("?") < 0 )
+                    if ( this.haveQuestionMark && v_URLParamStr.indexOf('?') < 0 )
                     {
                         v_URLParamStr = v_URLParamStr + "?";
                     }
@@ -384,10 +384,8 @@ public final class XHttp extends SerializableDef implements XJavaID
                     {
                         // Nothing.
                     }
-                    finally
-                    {
-                        v_URLOut = null;
-                    }
+                    
+                    v_URLOut = null;
                 }
             }
             else
@@ -402,7 +400,7 @@ public final class XHttp extends SerializableDef implements XJavaID
                 }
                 
                 String v_URLParamStr = this.getUrl();
-                if ( this.haveQuestionMark && v_URLParamStr.indexOf("?") < 0 )
+                if ( this.haveQuestionMark && v_URLParamStr.indexOf('?') < 0 )
                 {
                     v_URLParamStr = v_URLParamStr + "?";
                 }
@@ -446,7 +444,7 @@ public final class XHttp extends SerializableDef implements XJavaID
                     if ( v_Key.equalsIgnoreCase("set-cookie") )
                     {
                         String v_CookieVal = v_URLConn.getHeaderField(v_KeyIndex);
-                        v_CookieVal = v_CookieVal.substring(0 ,v_CookieVal.indexOf(";") > -1 ? v_CookieVal.indexOf(";") : v_CookieVal.length() - 1);
+                        v_CookieVal = v_CookieVal.substring(0 ,v_CookieVal.indexOf(';') > -1 ? v_CookieVal.indexOf(';') : v_CookieVal.length() - 1);
                         v_SessionID = v_SessionID + v_CookieVal + ";";
                         
                         String [] v_CookieArr = v_CookieVal.split("=");
@@ -670,7 +668,7 @@ public final class XHttp extends SerializableDef implements XJavaID
                         v_ParamsUrl = StringHelp.encode(v_ParamsUrl ,this.getCharset() ,$NotInString);
                     }
                     
-                    if ( this.haveQuestionMark && v_URLParamStr.indexOf("?") < 0 )
+                    if ( this.haveQuestionMark && v_URLParamStr.indexOf('?') < 0 )
                     {
                         v_URLParamStr = v_URLParamStr + "?";
                     }
@@ -735,10 +733,8 @@ public final class XHttp extends SerializableDef implements XJavaID
                     {
                         // Nothing.
                     }
-                    finally
-                    {
-                        v_URLOut = null;
-                    }
+                    
+                    v_URLOut = null;
                 }
             }
             else
@@ -753,7 +749,7 @@ public final class XHttp extends SerializableDef implements XJavaID
                 }
                 
                 String v_URLParamStr = this.getUrl();
-                if ( this.haveQuestionMark && v_URLParamStr.indexOf("?") < 0 )
+                if ( this.haveQuestionMark && v_URLParamStr.indexOf('?') < 0 )
                 {
                     v_URLParamStr = v_URLParamStr + "?";
                 }
@@ -804,7 +800,7 @@ public final class XHttp extends SerializableDef implements XJavaID
                     if ( v_Key.equalsIgnoreCase("set-cookie") )
                     {
                         String v_CookieVal = v_URLConn.getHeaderField(v_KeyIndex);
-                        v_CookieVal = v_CookieVal.substring(0 ,v_CookieVal.indexOf(";") > -1 ? v_CookieVal.indexOf(";") : v_CookieVal.length() - 1);
+                        v_CookieVal = v_CookieVal.substring(0 ,v_CookieVal.indexOf(';') > -1 ? v_CookieVal.indexOf(';') : v_CookieVal.length() - 1);
                         v_SessionID = v_SessionID + v_CookieVal + ";";
                         
                         String [] v_CookieArr = v_CookieVal.split("=");
@@ -1031,7 +1027,7 @@ public final class XHttp extends SerializableDef implements XJavaID
                         v_ParamsUrl = StringHelp.encode(v_ParamsUrl ,this.getCharset() ,$NotInString);
                     }
                     
-                    if ( this.haveQuestionMark && v_URLParamStr.indexOf("?") < 0 )
+                    if ( this.haveQuestionMark && v_URLParamStr.indexOf('?') < 0 )
                     {
                         v_URLParamStr = v_URLParamStr + "?";
                     }
@@ -1096,10 +1092,8 @@ public final class XHttp extends SerializableDef implements XJavaID
                     {
                         // Nothing.
                     }
-                    finally
-                    {
-                        v_URLOut = null;
-                    }
+                    
+                    v_URLOut = null;
                 }
             }
             else
@@ -1114,7 +1108,7 @@ public final class XHttp extends SerializableDef implements XJavaID
                 }
                 
                 String v_URLParamStr = this.getUrl();
-                if ( this.haveQuestionMark && v_URLParamStr.indexOf("?") < 0 )
+                if ( this.haveQuestionMark && v_URLParamStr.indexOf('?') < 0 )
                 {
                     v_URLParamStr = v_URLParamStr + "?";
                 }
@@ -1158,7 +1152,7 @@ public final class XHttp extends SerializableDef implements XJavaID
                     if ( v_Key.equalsIgnoreCase("set-cookie") )
                     {
                         String v_CookieVal = v_URLConn.getHeaderField(v_KeyIndex);
-                        v_CookieVal = v_CookieVal.substring(0 ,v_CookieVal.indexOf(";") > -1 ? v_CookieVal.indexOf(";") : v_CookieVal.length() - 1);
+                        v_CookieVal = v_CookieVal.substring(0 ,v_CookieVal.indexOf(';') > -1 ? v_CookieVal.indexOf(';') : v_CookieVal.length() - 1);
                         v_SessionID = v_SessionID + v_CookieVal + ";";
                         
                         String [] v_CookieArr = v_CookieVal.split("=");
@@ -1319,7 +1313,7 @@ public final class XHttp extends SerializableDef implements XJavaID
             String [] v_Params = i_FullURL.split("\\?");
             if ( v_Params.length >= 2 )
             {
-                String v_ParamStr = i_FullURL.substring(i_FullURL.indexOf("?"));
+                String v_ParamStr = i_FullURL.substring(i_FullURL.indexOf('?'));
                 if ( i_IsToUnicode )
                 {
                     v_URL = new URL(v_Params[0] + StringHelp.escape_toUnicode(v_ParamStr ,$NotInString));
@@ -1667,8 +1661,8 @@ public final class XHttp extends SerializableDef implements XJavaID
             }
             else
             {
-                int v_IndexOf     = v_Ret.indexOf(">");
-                int v_LastIndexOf = v_Ret.lastIndexOf("<");
+                int v_IndexOf     = v_Ret.indexOf('>');
+                int v_LastIndexOf = v_Ret.lastIndexOf('<');
                 if ( v_IndexOf >= 0 && v_LastIndexOf > v_IndexOf )
                 {
                     return v_Ret.substring(v_IndexOf + 1 ,v_LastIndexOf);

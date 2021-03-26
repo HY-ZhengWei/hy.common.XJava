@@ -5152,6 +5152,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                         }
                         
                         v_Output.write(Help.NVL(i_ClobTexts[v_CLobIndex++]));
+                        v_Output.close();
                     }
                     catch (Exception exce)
                     {

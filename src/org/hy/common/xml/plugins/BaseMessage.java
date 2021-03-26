@@ -7,7 +7,7 @@ import org.hy.common.xml.XHttp;
 import org.hy.common.xml.XJSON;
 import org.hy.common.xml.XJSONObject;
 import org.hy.common.xml.XJava;
-
+import org.hy.common.xml.log.Logger;
 import org.hy.common.Help;
 import org.hy.common.Return;
 import org.hy.common.StringHelp;
@@ -26,6 +26,8 @@ import org.hy.common.StringHelp;
  */
 public abstract class BaseMessage
 {   
+    private static final Logger $Logger = Logger.getLogger(BaseMessage.class ,true);
+    
     private XJSON xjson;
     
     
@@ -72,15 +74,15 @@ public abstract class BaseMessage
             
             if ( this.isDebug() )
             {
-                System.out.println("请求报文: " + v_XHttp.getRequestInfo(v_Msg));
+                $Logger.info("请求报文: " + v_XHttp.getRequestInfo(v_Msg));
                 // System.out.println("响应报文: " + v_XHttp.getResponseInfo());
                 if ( v_Response.get() )
                 {
-                    System.out.println("响应报文: " + StringHelp.unescape_toUnicode(v_Response.paramStr));
+                    $Logger.info("响应报文: " + StringHelp.unescape_toUnicode(v_Response.paramStr));
                 }
                 else
                 {
-                    System.out.println("响应报文: " + StringHelp.unescape_toUnicode(v_Response.exception.getMessage()));
+                    $Logger.info("响应报文: " + StringHelp.unescape_toUnicode(v_Response.exception.getMessage()));
                 }
             }
             
