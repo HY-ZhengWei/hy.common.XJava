@@ -2948,7 +2948,7 @@ public final class XJava
                 String  v_IsNewValue = getNodeAttribute(i_SuperNode ,$XML_OBJECT_NEWOBJECT);
                 boolean v_IsNew      = false;
                 
-                if ( v_IsNewValue != null && !"".equals(v_IsNewValue.trim()) )
+                if ( !Help.isNull(v_IsNewValue) )
                 {
                     v_IsNew = Boolean.parseBoolean(v_IsNewValue);
                 }

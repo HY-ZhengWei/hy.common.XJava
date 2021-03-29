@@ -874,7 +874,7 @@ public final class XJSON
                         }
                         else if ( Class.class == v_ParamClass )
                         {
-                            if ( v_Value != null && !"".equals(v_Value.toString().trim()) )
+                            if ( !Help.isNull(v_Value) )
                             {
                                 v_Method.invoke(v_NewObj ,Help.forName(v_Value.toString()));
                             }
