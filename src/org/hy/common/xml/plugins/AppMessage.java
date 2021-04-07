@@ -327,7 +327,7 @@ public class AppMessage<O> implements Cloneable ,Serializable
     /**
      * 不克隆 Body 属性
      */
-    protected final AppMessage<Object> clone()
+    public final AppMessage<Object> clone()
     {
         try
         {
