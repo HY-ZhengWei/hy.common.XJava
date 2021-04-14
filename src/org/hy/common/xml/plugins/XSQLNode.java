@@ -10,9 +10,11 @@ import org.hy.common.MethodReflect;
 import org.hy.common.StringHelp;
 import org.hy.common.XJavaID;
 import org.hy.common.db.DBCondition;
+import org.hy.common.db.DBSQL;
 import org.hy.common.net.ClientSocket;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -76,35 +78,41 @@ import org.hy.common.xml.XSQL;
  *              v15.1 2018-08-10  1.剥离：将节点是否允许执行的条件，剥离到org.hy.common.db.DBCondition类中共用。
  *              v16.0 2019-08-13  1.添加：$Type_ExecuteCommit类型，可实现执行后立即提交本次操作的节点。主要用于多线程的同时，也保证精准的XSQL统计。
  *              v17.0 2020-06-02  1.添加：支持规则引擎，对执行入参、返回结果、XJava对象池中的数据使用规则引擎。
+ *              v17.0 2021-04-14  1.添加：判定及提示，当XSQL的类型与XSQLNode的类型不一致时，给于警告。
+ *                                       预防查询SQL按数据库执行节点处理的人为配置异常。
  */
 public class XSQLNode implements XJavaID
 {
-    /** 
+    private static Logger $Logger = Logger.getLogger(XSQLNode.class ,true);
+    
+    
+    
+    /**
      * 节点类型：查询。
      * 
-     * 即查询数据，并将查询结果做为其它节点(XSQLNode)的查询参数 
+     * 即查询数据，并将查询结果做为其它节点(XSQLNode)的查询参数
      */
     public static final String  $Type_Query                      = "Query";
     
-    /** 
+    /**
      * 节点类型： 执行（DML）。如Insert、Update、Delete等
      * 
      *  即执行数据库操作，不获取操作结果。执行参数由外界或其它查询类型的节点(XSQLNode)提供
      */
     public static final String  $Type_ExecuteUpdate              = "DMLExecute";
     
-    /** 
+    /**
      * 执行后立即提交，并且只提交本次连接上的操作。并不对整个XSQL组做提交动作。
      * 
      * 与 $Type_ExecuteUpdate 类型一样，但 this.freeConnection 为 true。
      */
     public static final String  $Type_ExecuteCommit              = "DMLExecuteCommit";
     
-    /** 
+    /**
      * 节点类型： 执行（包含DML、DDL、DCL、TCL）
      * 
      *  即执行数据库操作，不获取操作结果。执行参数由外界或其它查询类型的节点(XSQLNode)提供。
-     *  
+     * 
      *  注意：此类型的数据库连接与freeConnection同义，不再由XSQL组控制及管理。每次执行均使用独立的数据库连接。
      *       也因此，在云计算时，建议高并发的更新操作(Insert、Update、Delete)均使用此类型
      */
@@ -112,14 +120,14 @@ public class XSQLNode implements XJavaID
     
     /**
      * 节点类型：执行Java代码
-     *  
+     * 
      *   即执行Java代码，主要用于对查询结果集的二次加工处理等操作。
      *   相关针对性属性有：
      *     1. xid
      *     2. methodName
      *     3. cloudServers      云计算
      *     4. cloudServersList  云计算
-     *     
+     * 
      * 方法的定义模板 @see org.hy.common.xml.plugins.XSQLGroupExecuteJava
      */
     public static final String  $Type_ExecuteJava                = "ExecuteJava";
@@ -143,9 +151,9 @@ public class XSQLNode implements XJavaID
      *  2. 与 $Type_Query 一样，同样控制其后XSQL节点的循环次数
      *  3. 参数类型必须为：List、Set、Map(会通过Hetp.toList()转为List)
      *  4. 也可是入参的某一个集合属性，当做查询结果来用。
-     *  
+     * 
      *  配合属性为：this.collectionID
-     *  
+     * 
      *  相关失效的属性有：
      *    1. this.lastOnce
      *    2. this.returnID
@@ -164,7 +172,7 @@ public class XSQLNode implements XJavaID
      *   2. 与 $Type_ExecuteUpdate 类似，是它的批量操作。
      *   3. 参数类型必须为：List、Set、Map(会通过Hetp.toList()转为List)
      *   4. 也可是入参的某一个集合属性，当做查询结果来用。
-     *   
+     * 
      *   配合属性为：this.collectionID
      */
     public static final String  $Type_CollectionToExecuteUpdate  = "CollectionToExecuteUpdate";
@@ -204,13 +212,13 @@ public class XSQLNode implements XJavaID
     
     /**
      * 专用于执行类型的XSQL节点。
-     * 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作。默认为：false 
+     * 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作。默认为：false
      */
     private boolean                      afterCommit;
     
-    /** 
+    /**
      * 专用于查询类型的XSQL节点。
-     * 除获取查询结果集的首条记录外，每获取结果集一条记录前，对上一条记录产生的一系列数据库操作，做一次统一提交操作。 
+     * 除获取查询结果集的首条记录外，每获取结果集一条记录前，对上一条记录产生的一系列数据库操作，做一次统一提交操作。
      * 默认为：false
      */
     private boolean                      perAfterCommit;
@@ -226,14 +234,14 @@ public class XSQLNode implements XJavaID
      */
     private boolean                      noUpdateRollbacks;
     
-    /** 
+    /**
      * 在整个组合XSQLGroup的最后执行，并只执行一次。就算查询节点查无数据(无检查条件的情况下)，也会被执行。
      * 即，标记为lastOnce=true的节点，不在查询类型XSQL节点的循环之中执行。
      * 默认为：false
      */
     private boolean                      lastOnce;
     
-    /** 
+    /**
      * 返回查询结果集
      * 
      * 专用于查询类型的XSQL节点。
@@ -277,14 +285,14 @@ public class XSQLNode implements XJavaID
      * 专用于查询类型的XSQL节点。
      * 查询结果集的标示ID。区分大小写。多个相同标示ID，会相互覆盖。
      *   当 this.returnID 有值时，this.queryReturnID 将失效（不起作用）。
-     *   
+     * 
      * 此类查询XSQL节点为控制其后节点执行次数的节点，与 this.returnID 刚好相反。
      * 默认为：null
      * 
      * 将查询XSQL节点每次循环遍历出的每一行记录，用 PartitionMap<String ,Object> 类型的行转列保存的数据结构，并返回查询结果集。
-     *   PartitionMap.分区为：  数据库表的字段名称 
+     *   PartitionMap.分区为：  数据库表的字段名称
      *   PartitionMap.行记录为：数据库表字段对应的数值
-     *   
+     * 
      * 可应用于：在循环中多次生成数个主键ID，并将所有生成的主键ID统一返回的功能。
      * 
      * 2017-05-17 准备放弃this.queryReturnID属性，只少是不再建议使用此属性。
@@ -292,7 +300,7 @@ public class XSQLNode implements XJavaID
      */
     private String                       queryReturnID;
     
-    /** 
+    /**
      * 实现XSQLGroup组中嵌套另一个XSQLGroup组嵌套执行的功能。
      * 
      * 如果将 XSQLGroup组，比喻为Java方法，那嵌套另一个XSQLGroup组，就相当于Java方法中调用另一个方法。
@@ -305,7 +313,7 @@ public class XSQLNode implements XJavaID
     /** 注解说明。当开启日志模式(XSQLGroup.isLog)时，此注解说明也会被同时输出。 */
     private String                       comment;
     
-    /** 
+    /**
      * 异常时是否继续执行。默认是：false。
      * 
      * errorContinue与retryCount两属性可同时生效，在重试次数retryCount用尽时，
@@ -346,10 +354,10 @@ public class XSQLNode implements XJavaID
      * 
      * 云计算服务器的列表，可以包含自己。
      * 
-     * 注1：所有通讯数据对象及关联对象，均须实际序列化接口java.io.Serializable。 
+     * 注1：所有通讯数据对象及关联对象，均须实际序列化接口java.io.Serializable。
      * 注2：methodName方法入参形式与本地执行Java方法不同。方法形式如下：
      *     public boolean 方法名称(Map<String ,Object> i_Params) {}
-     *        
+     * 
      *     入参i_Params与XSQLGroupExecuteJava.executeJava_XSQLNode()方法中的io_Params入参相同，但只是只读的。
      */
     private String                       cloudServers;
@@ -402,17 +410,17 @@ public class XSQLNode implements XJavaID
      */
     private long                         cloudExecInterval;
     
-    /** 
+    /**
      * XJava对象标识
      *    构建XSQLNode对象实例时，xid标记的对象实例，可以是不存在的（或尚未构建的）。
-     *    只要在执行时存在就OK了 
+     *    只要在执行时存在就OK了
      */
     private String                       xid;
     
-    /** 
+    /**
      * XJava对象执行的方法名
      *      方法的定义形式为：详见org.hy.common.xml.plugins.XSQLGroupExecuteJava
-     *      
+     * 
      * 默认名称为：executes。方便云计算时，执行云端的XSQL组，只须用户配置xid即可。
      */
     private String                       methodName;
@@ -461,7 +469,7 @@ public class XSQLNode implements XJavaID
      *     节点A发起多线程，并在节点A "等待(this.threadWait=this)" 时，
      *     节点A发起的多线程均执行完成(包括节点A控制循环内的节点)后，
      *     才继续执行节点A控制的循环外的下一个节点。
-     *     
+     * 
      * 事前等待：
      *     节点A发起多线程，并且节点A "不等待(this.threadWait=null)" ，
      *     设置在节点B处等待节点A(节点B.threadWait=节点)时，
@@ -494,7 +502,7 @@ public class XSQLNode implements XJavaID
      * 
      * 只对 $Type_ExecuteUpdate、$Type_Execute、$Type_CollectionToExecuteUpdate 三个类型有效。
      * 
-     * 默认为：false，即：由XSQLroup控制及管理数据库连接 
+     * 默认为：false，即：由XSQLroup控制及管理数据库连接
      */
     private boolean                      freeConnection;
     
@@ -502,7 +510,7 @@ public class XSQLNode implements XJavaID
      * 对于查询语句有两种使用数据库连接的方式
      *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
      *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，做到读、写在同一个事务中进行。
-     *   
+     * 
      * 只对 $Type_Query 类型有效。
      */
     private boolean                      oneConnection;
@@ -571,7 +579,7 @@ public class XSQLNode implements XJavaID
     /**
      * 设置：节点类型。默认为：执行类型（包含DML、DDL、DCL、TCL）
      * 
-     * @param i_Type 
+     * @param i_Type
      */
     public void setType(String i_Type)
     {
@@ -583,6 +591,33 @@ public class XSQLNode implements XJavaID
         else
         {
             this.type = i_Type;
+        }
+        
+        if ( this.sql == null || this.sql.getContent() == null )
+        {
+            return;
+        }
+        
+        int v_SQLType = this.sql.getContent().getSQLType();
+        if ( v_SQLType == DBSQL.$DBSQL_TYPE_UNKNOWN )
+        {
+            return;
+        }
+        else if ( v_SQLType == DBSQL.$DBSQL_TYPE_SELECT )
+        {
+            if ( !XSQLNode.$Type_Query.equals(this.type) && !XSQLNode.$Type_CollectionToQuery.equals(this.type) )
+            {
+                $Logger.warn("XSQLNode(" + Help.NVL(this.getXJavaID() ,this.sql.getXJavaID()) + ") is not Query Node.");
+            }
+        }
+        else if ( v_SQLType == DBSQL.$DBSQL_TYPE_INSERT
+               || v_SQLType == DBSQL.$DBSQL_TYPE_DELETE
+               || v_SQLType == DBSQL.$DBSQL_TYPE_UPDATE )
+        {
+            if ( XSQLNode.$Type_Query.equals(this.type) || XSQLNode.$Type_CollectionToQuery.equals(this.type) )
+            {
+                $Logger.warn("XSQLNode(" + Help.NVL(this.getXJavaID() ,this.sql.getXJavaID()) + ") is not Execute Node.");
+            }
         }
     }
 
@@ -601,7 +636,7 @@ public class XSQLNode implements XJavaID
     /**
      * 设置：操作SQL对象
      * 
-     * @param sql 
+     * @param sql
      */
     public void setSql(XSQL sql)
     {
@@ -632,7 +667,7 @@ public class XSQLNode implements XJavaID
      * 
      * 形式为带占位符的Fel条件，如：:c01=='1' && :c02=='2'
      * 
-     * @param i_Condition 
+     * @param i_Condition
      */
     public void setCondition(String i_Condition)
     {
@@ -686,7 +721,7 @@ public class XSQLNode implements XJavaID
      * 
      * 当为 true 时，检查只影响自己这个节点，不影响其它及其后的节点。
      * 
-     * @param noPassContinue 
+     * @param noPassContinue
      */
     public void setNoPassContinue(boolean noPassContinue)
     {
@@ -708,7 +743,7 @@ public class XSQLNode implements XJavaID
     /**
      * 设置：执行本节点前，对之前的所有XSQL节点进行统一提交操作。默认为：false
      * 
-     * @param beforeCommit 
+     * @param beforeCommit
      */
     public void setBeforeCommit(boolean beforeCommit)
     {
@@ -732,7 +767,7 @@ public class XSQLNode implements XJavaID
      * 设置：专用于执行类型的XSQL节点。
      * 执行本节点后，对之前(及本节点)的所有XSQL节点进行统一提交操作。默认为：false
      * 
-     * @param afterCommit 
+     * @param afterCommit
      */
     public void setAfterCommit(boolean afterCommit)
     {
@@ -743,7 +778,7 @@ public class XSQLNode implements XJavaID
 
     /**
      * 获取：专用于查询类型的XSQL节点。
-     * 除获取查询结果集的首条记录外，每获取结果集一条记录前，对上一条记录产生的一系列数据库操作，做一次统一提交操作。 
+     * 除获取查询结果集的首条记录外，每获取结果集一条记录前，对上一条记录产生的一系列数据库操作，做一次统一提交操作。
      * 默认为：false
      */
     public boolean isPerAfterCommit()
@@ -755,10 +790,10 @@ public class XSQLNode implements XJavaID
     
     /**
      * 设置：专用于查询类型的XSQL节点。
-     * 除获取查询结果集的首条记录外，每获取结果集一条记录前，对上一条记录产生的一系列数据库操作，做一次统一提交操作。 
+     * 除获取查询结果集的首条记录外，每获取结果集一条记录前，对上一条记录产生的一系列数据库操作，做一次统一提交操作。
      * 默认为：false
      * 
-     * @param perAfterCommit 
+     * @param perAfterCommit
      */
     public void setPerAfterCommit(boolean perAfterCommit)
     {
@@ -792,7 +827,7 @@ public class XSQLNode implements XJavaID
      * 
      * 默认为：false
      * 
-     * @param perAfterCommit 
+     * @param perAfterCommit
      */
     public void setNoUpdateRollbacks(boolean i_NoUpdateRollbacks)
     {
@@ -818,7 +853,7 @@ public class XSQLNode implements XJavaID
      * 即，标记为lastOnce=true的节点，不在查询类型XSQL节点的循环之中执行。
      * 默认为：false
      * 
-     * @param lastOnce 
+     * @param lastOnce
      */
     public void setLastOnce(boolean lastOnce)
     {
@@ -864,7 +899,7 @@ public class XSQLNode implements XJavaID
      * 
      * 建议与 this.lastOnce 属性配合使用。如果在控制类循环的查询SQL中，会被执行多次 Map.put(this.returnID ,结果集)。
      * 
-     * @param returnID 
+     * @param returnID
      */
     public void setReturnID(String returnID)
     {
@@ -894,7 +929,7 @@ public class XSQLNode implements XJavaID
      *   3. 其它查询结果集还是采用覆盖方式。
      * 默认为：false（覆盖方式）
      * 
-     * @param isReturnAppend 
+     * @param isReturnAppend
      */
     public void setReturnAppend(boolean returnAppend)
     {
@@ -930,7 +965,7 @@ public class XSQLNode implements XJavaID
      * 
      * ZhengWei(HY) Add 2017-05-17
      * 
-     * @param returnQuery 
+     * @param returnQuery
      */
     public void setReturnQuery(boolean returnQuery)
     {
@@ -945,14 +980,14 @@ public class XSQLNode implements XJavaID
      * 专用于查询类型的XSQL节点。
      * 查询结果集的标示ID。区分大小写。多个相同标示ID，会相互覆盖。
      *   当 this.returnID 有值时，this.queryReturnID 将失效（不起作用）。
-     *   
+     * 
      * 此类查询XSQL节点为控制其后节点执行次数的节点，与 this.returnID 刚好相反。
      * 默认为：null
      * 
      * 将查询XSQL节点每次循环遍历出的每一行记录，用 PartitionMap<String ,Object> 类型的行转列保存的数据结构，并返回查询结果集。
-     *   PartitionMap.分区为：  数据库表的字段名称 
+     *   PartitionMap.分区为：  数据库表的字段名称
      *   PartitionMap.行记录为：数据库表字段对应的数值
-     *   
+     * 
      * 可应用于：在循环中多次生成数个主键ID，并将所有生成的主键ID统一返回的功能。
      */
     public String getQueryReturnID()
@@ -968,17 +1003,17 @@ public class XSQLNode implements XJavaID
      * 专用于查询类型的XSQL节点。
      * 查询结果集的标示ID。区分大小写。多个相同标示ID，会相互覆盖。
      *   当 this.returnID 有值时，this.queryReturnID 将失效（不起作用）。
-     *   
+     * 
      * 此类查询XSQL节点为控制其后节点执行次数的节点，与 this.returnID 刚好相反。
      * 默认为：null
      * 
      * 将查询XSQL节点每次循环遍历出的每一行记录，用 PartitionMap<String ,Object> 类型的行转列保存的数据结构，并返回查询结果集。
-     *   PartitionMap.分区为：  数据库表的字段名称 
+     *   PartitionMap.分区为：  数据库表的字段名称
      *   PartitionMap.行记录为：数据库表字段对应的数值
-     *   
+     * 
      * 可应用于：在循环中多次生成数个主键ID，并将所有生成的主键ID统一返回的功能。
      * 
-     * @param queryReturnID 
+     * @param queryReturnID
      */
     public void setQueryReturnID(String queryReturnID)
     {
@@ -1010,7 +1045,7 @@ public class XSQLNode implements XJavaID
      * 当 sqlGroup 生效(不为空)时，只有 this.condition、this.noPassContinue 两个属性依然有作用。
      * 其它属性全部都将失效，包括 this.sql 也同时失效。
      * 
-     * @param sqlGroup 
+     * @param sqlGroup
      */
     public void setSqlGroup(XSQLGroup sqlGroup)
     {
@@ -1022,6 +1057,7 @@ public class XSQLNode implements XJavaID
     /**
      * 获取：注解说明。当开启日志模式(XSQLGroup.isLog)时，此注解说明也会被同时输出。
      */
+    @Override
     public String getComment()
     {
         return comment;
@@ -1032,8 +1068,9 @@ public class XSQLNode implements XJavaID
     /**
      * 设置：注解说明。当开启日志模式(XSQLGroup.isLog)时，此注解说明也会被同时输出。
      * 
-     * @param comment 
+     * @param comment
      */
+    @Override
     public void setComment(String comment)
     {
         this.comment = comment;
@@ -1048,11 +1085,11 @@ public class XSQLNode implements XJavaID
      * 
      * 云计算服务器的列表，可以包含自己。
      * 
-     * 注1：所有通讯数据对象及关联对象，均须实际序列化接口java.io.Serializable。 
+     * 注1：所有通讯数据对象及关联对象，均须实际序列化接口java.io.Serializable。
      * 注2：methodName方法入参形式与本地执行Java方法不同。方法形式如下：
      *     public boolean 方法名称(Map<String ,Object> i_Params) {}
-     *        
-     *     入参i_Params与XSQLGroupExecuteJava.executeJava_XSQLNode()方法中的io_Params入参相同，但只是只读的。 
+     * 
+     *     入参i_Params与XSQLGroupExecuteJava.executeJava_XSQLNode()方法中的io_Params入参相同，但只是只读的。
      */
     public String getCloudServers()
     {
@@ -1081,10 +1118,10 @@ public class XSQLNode implements XJavaID
      * 
      * 云计算服务器的列表，可以包含自己。
      * 
-     * 注1：所有通讯数据对象及关联对象，均须实际序列化接口java.io.Serializable。 
+     * 注1：所有通讯数据对象及关联对象，均须实际序列化接口java.io.Serializable。
      * 注2：methodName方法入参形式与本地执行Java方法不同。方法形式如下：
      *     public boolean 方法名称(Map<String ,Object> i_Params) {}
-     *        
+     * 
      *     入参i_Params与XSQLGroupExecuteJava.executeJava_XSQLNode()方法中的io_Params入参相同，但只是只读的。
      */
     public void setCloudServers(String cloudServers)
@@ -1116,7 +1153,7 @@ public class XSQLNode implements XJavaID
     
     
     
-    /** 
+    /**
      * 异常时是否继续执行。默认是：false。
      * 
      * errorContinue与retryCount两属性可同时生效，在重试次数retryCount用尽时，
@@ -1133,7 +1170,7 @@ public class XSQLNode implements XJavaID
     
 
 
-    /** 
+    /**
      * 异常时是否继续执行。默认是：false。
      * 
      * errorContinue与retryCount两属性可同时生效，在重试次数retryCount用尽时，
@@ -1179,7 +1216,7 @@ public class XSQLNode implements XJavaID
      * 
      * 默认为5 * 1000 = 5秒
      * 
-     * @param retryInterval 
+     * @param retryInterval
      */
     public void setRetryInterval(long retryInterval)
     {
@@ -1209,7 +1246,7 @@ public class XSQLNode implements XJavaID
      * 
      * 默认为：0次
      * 
-     * @param retryCount 
+     * @param retryCount
      */
     public void setRetryCount(int retryCount)
     {
@@ -1239,7 +1276,7 @@ public class XSQLNode implements XJavaID
      * 
      * 默认为：3次
      * 
-     * @param cloudRetryCount 
+     * @param cloudRetryCount
      */
     public void setCloudRetryCount(int cloudRetryCount)
     {
@@ -1261,7 +1298,7 @@ public class XSQLNode implements XJavaID
     /**
      * 设置：云服务计算异常的服务器数量。当异常时，其服务器仍然标记为"繁忙"
      * 
-     * @param cloudErrorCount 
+     * @param cloudErrorCount
      */
     public synchronized void setCloudErrorCount(int cloudErrorCount)
     {
@@ -1283,7 +1320,7 @@ public class XSQLNode implements XJavaID
     /**
      * 设置：云服务正在运算（或繁忙）的服务器数量
      * 
-     * @param cloudBusyCount 
+     * @param cloudBusyCount
      */
     public synchronized void setCloudBusyCount(int cloudBusyCount)
     {
@@ -1376,7 +1413,7 @@ public class XSQLNode implements XJavaID
     /**
      * 设置：* 等待哪个节点上的云服务计算完成
      * 
-     * @param cloudWait 
+     * @param cloudWait
      */
     public void setCloudWait(XSQLNode cloudWait)
     {
@@ -1410,7 +1447,7 @@ public class XSQLNode implements XJavaID
      * 
      * 默认为5 * 1000 = 5秒
      * 
-     * @param cloudWaitInterval 
+     * @param cloudWaitInterval
      */
     public void setCloudWaitInterval(long cloudWaitInterval)
     {
@@ -1440,7 +1477,7 @@ public class XSQLNode implements XJavaID
      * 
      * 默认为 66毫秒
      * 
-     * @param cloudExecInterval 
+     * @param cloudExecInterval
      */
     public void setCloudExecInterval(long cloudExecInterval)
     {
@@ -1466,7 +1503,7 @@ public class XSQLNode implements XJavaID
      *      构建XSQLNode对象实例时，xid标记的对象实例，可以是不存在的（或尚未构建的）。
      *      只要在执行时存在就OK了
      * 
-     * @param xid 
+     * @param xid
      */
     public void setXid(String xid)
     {
@@ -1480,7 +1517,7 @@ public class XSQLNode implements XJavaID
     /**
      * 获取：XJava对象执行的方法名
      *      方法的定义形式为：详见org.hy.common.xml.plugins.XSQLGroupExecuteJava
-     *      
+     * 
      * 默认名称为：executes。方便云计算时，执行云端的XSQL组，只须用户配置xid即可。
      */
     public String getMethodName()
@@ -1493,10 +1530,10 @@ public class XSQLNode implements XJavaID
     /**
      * 设置：XJava对象执行的方法名
      *      方法的定义形式为：详见org.hy.common.xml.plugins.XSQLGroupExecuteJava
-     *        
+     * 
      * 默认名称为：executes。方便云计算时，执行云端的XSQL组，只须用户配置xid即可。
-     *        
-     * @param methodName 
+     * 
+     * @param methodName
      */
     public void setMethodName(String methodName)
     {
@@ -1627,7 +1664,7 @@ public class XSQLNode implements XJavaID
             }
             else if ( Help.isNull(this.methodName) )
             {
-                throw new NullPointerException("XSQLNode.getMethodName() is null."); 
+                throw new NullPointerException("XSQLNode.getMethodName() is null.");
             }
             else
             {
@@ -1692,7 +1729,7 @@ public class XSQLNode implements XJavaID
         
         if ( Help.isNull(this.methodName) )
         {
-            throw new NullPointerException("XSQLNode.getMethodName() is null."); 
+            throw new NullPointerException("XSQLNode.getMethodName() is null.");
         }
         
         this.xjavaIntance = XJava.getObject(this.xid.trim());
@@ -1711,7 +1748,7 @@ public class XSQLNode implements XJavaID
                 if ( v_Methods[i].getParameterTypes().length == 3 )
                 {
                     if ( XSQLGroupControl.class.equals(v_Methods[i].getParameterTypes()[0])
-                      && Map.class.equals(v_Methods[i].getParameterTypes()[1]) 
+                      && Map.class.equals(v_Methods[i].getParameterTypes()[1])
                       && Map.class.equals(v_Methods[i].getParameterTypes()[2]) )
                     {
                         if ( v_Methods[i].getReturnType() != null )
@@ -1810,7 +1847,7 @@ public class XSQLNode implements XJavaID
      * 
      * 默认值是：false
      * 
-     * @param clear 
+     * @param clear
      */
     public void setClear(boolean clear)
     {
@@ -1861,7 +1898,7 @@ public class XSQLNode implements XJavaID
      *     节点A发起多线程，并在节点A "等待(this.threadWait=this)" 时，
      *     节点A发起的多线程均执行完成(包括节点A控制循环内的节点)后，
      *     才继续执行节点A控制的循环外的下一个节点。
-     *     
+     * 
      * 事前等待：
      *     节点A发起多线程，并且节点A "不等待(this.threadWait=null)" ，
      *     设置在节点B处等待节点A(节点B.threadWait=节点)时，
@@ -1887,7 +1924,7 @@ public class XSQLNode implements XJavaID
      *     节点A发起多线程，并在节点A "等待(this.threadWait=this)" 时，
      *     节点A发起的多线程均执行完成(包括节点A控制循环内的节点)后，
      *     才继续执行节点A控制的循环外的下一个节点。
-     *     
+     * 
      * 事前等待：
      *     节点A发起多线程，并且节点A "不等待(this.threadWait=null)" ，
      *     设置在节点B处等待节点A(节点B.threadWait=节点)时，
@@ -1899,7 +1936,7 @@ public class XSQLNode implements XJavaID
      * 
      * 默认值：null。当 this.thread 设置为真时，自动设置 this.threadWait = this。
      * 
-     * @param i_ThreadWait 
+     * @param i_ThreadWait
      */
     public void setThreadWait(boolean i_ThreadWait)
     {
@@ -1918,7 +1955,7 @@ public class XSQLNode implements XJavaID
      *     节点A发起多线程，并在节点A "等待(this.threadWait=this)" 时，
      *     节点A发起的多线程均执行完成(包括节点A控制循环内的节点)后，
      *     才继续执行节点A控制的循环外的下一个节点。
-     *     
+     * 
      * 事前等待：
      *     节点A发起多线程，并且节点A "不等待(this.threadWait=null)" ，
      *     设置在节点B处等待节点A(节点B.threadWait=节点)时，
@@ -1930,7 +1967,7 @@ public class XSQLNode implements XJavaID
      * 
      * 默认值：null。当 this.thread 设置为真时，自动设置 this.threadWait = this。
      * 
-     * @param i_ThreadWait 
+     * @param i_ThreadWait
      */
     public void setThreadWait(XSQLNode i_ThreadWait)
     {
@@ -1960,7 +1997,7 @@ public class XSQLNode implements XJavaID
      * 
      * 默认为0值，表示取时间间隔为：ThreadPool.getIntervalTime() * 3
      * 
-     * @param threadWaitInterval 
+     * @param threadWaitInterval
      */
     public void setThreadWaitInterval(long threadWaitInterval)
     {
@@ -2000,7 +2037,7 @@ public class XSQLNode implements XJavaID
      * 
      * 只对 $Type_ExecuteUpdate、$Type_Execute、$Type_CollectionToExecuteUpdate 三个类型有效。
      * 
-     * @param freeConnection 
+     * @param freeConnection
      */
     public void setFreeConnection(boolean freeConnection)
     {
@@ -2013,7 +2050,7 @@ public class XSQLNode implements XJavaID
      * 获取：对于查询语句有两种使用数据库连接的方式
      *   1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
      *   2. 读写同事务：查询SQL与更新修改SQL共用一个连接，做到读、写在同一个事务中进行。
-     *   
+     * 
      * 只对 $Type_Query 类型有效。
      */
     public boolean isOneConnection()
@@ -2030,7 +2067,7 @@ public class XSQLNode implements XJavaID
      * 
      * 只对 $Type_Query 类型有效。
      * 
-     * @param oneConnection 
+     * @param oneConnection
      */
     public void setOneConnection(boolean oneConnection)
     {
@@ -2052,7 +2089,7 @@ public class XSQLNode implements XJavaID
     /**
      * 设置：是否采用大数据模式控制循环遍历
      * 
-     * @param bigData 
+     * @param bigData
      */
     public void setBigData(boolean bigData)
     {
@@ -2074,7 +2111,7 @@ public class XSQLNode implements XJavaID
     /**
      * 设置：是否断言(assert)调试
      * 
-     * @param debug 
+     * @param debug
      */
     public void setDebug(boolean debug)
     {
@@ -2088,6 +2125,7 @@ public class XSQLNode implements XJavaID
      * 
      * @param i_XJavaID
      */
+    @Override
     public void setXJavaID(String i_XJavaID)
     {
         this.nodeXJavaID = i_XJavaID;
@@ -2100,6 +2138,7 @@ public class XSQLNode implements XJavaID
      * 
      * @return
      */
+    @Override
     public String getXJavaID()
     {
         return this.nodeXJavaID;

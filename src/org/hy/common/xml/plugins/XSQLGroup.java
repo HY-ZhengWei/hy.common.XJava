@@ -58,7 +58,7 @@ import org.hy.common.xml.log.Logger;
  *   特点20：查询SQL语句有两种使用数据库连接的方式
  *           1. 读写分离：每一个查询SQL均占用一个新的连接，所有的更新修改SQL共用一个连接。this.oneConnection = false，默认值。
  *           2. 读写同事务：查询SQL与更新修改SQL共用一个连接，做到读、写在同一个事务中进行。
- *   
+ * 
  *   注意01：查询类型XSQL节点的查询结果使用List<Object>结构保存。List元素也可以是Map类型的。如果元素是JavaBean，是会被内部自动转为Map的。
  *   注意02：XSQL中占位符的命名，无大小写要求。但那怕是为了一点点儿的性能，都写成大写的要好些（或前后关系中写法一致）。
  *   注意03：节点检查条件的占位符命名无大小写要求。
@@ -70,11 +70,11 @@ import org.hy.common.xml.log.Logger;
  *               但节点C不能修改A、B两节点的所有参数（原先是可以的，但只对Java基本类型有效）。
  *          这样做的好处是：当节点C退出循环时，B节点的参数信息不会受到影响，同时，每个节点均可以有相同名称的变量。
  *                        从此将支持递归嵌套循环。
- *          
- *   
+ * 
+ * 
  *   XSQL组执行的Java方法的定义模板 @see org.hy.common.xml.plugins.XSQLGroupExecuteJava
- *   
- *   
+ * 
+ * 
  * 此类的原始构想来源于：2013-12-16开发的名为DBTask（数据库任务执行程序）的程序。
  * 本类比起DBTask而言，功能单一，但更加专注，去掉了Mail、FTP、File、系统命令等相关复杂操作。
  * 
@@ -149,7 +149,7 @@ import org.hy.common.xml.log.Logger;
  *              v21.1 2018-05-03  1.添加：线程等待功能，在原先事后等待的基础上，新添加事前等待。建议人：马龙。
  *              v22.0 2018-06-03  1.添加：XSQL组线程：在XSQLNode节点线程类型的基础上，新添加XSQL组线程类型。平行、平等关系的XSQL节点的执行方式。
  *                                       建议人：马龙。
- *              v22.1 2018-06-28  1.修正：在XSQL组执行异常时，未清空所有创建的多任务组中的任务信息。 
+ *              v22.1 2018-06-28  1.修正：在XSQL组执行异常时，未清空所有创建的多任务组中的任务信息。
  *              v23.0 2018-06-30  1.添加：异常时是否继续执行的功能errorContinue。并能与retryCount异常时重试功能配合使用。
  *                                2.添加：能从任一层次的循环中，获取之前任一层次的循环信息。
  *              v23.1 2018-07-26  1.优化：及时释放资源，自动的GC太慢了。
@@ -183,7 +183,7 @@ public final class XSQLGroup implements XJavaID
     /** 用于执行Java节点：执行查询SQL的结果集大小的变量名称 */
     public  static final String      $Param_RowSize     = "RowSize_";
     
-    /** 
+    /**
      * 用于执行Java节点：执行查询SQL的结果集当前数据的上一条数据的变量名称
      *   1. 此变量名称对应的数据有可能为空，因为第0条前没有上一条数据
      *   2. 此变量名称对应的数据对象类型为：Map<String ,Object> ，都被统一转换了。
@@ -191,10 +191,10 @@ public final class XSQLGroup implements XJavaID
      */
     public  static final String      $Param_RowPrevious = "RowPrevious_";
     
-    /** 
+    /**
      * 用于执行Java节点：执行查询SQL的结果集当前数据的下一条数据的变量名称
      *   1. 此变量名称对应的数据有可能为空，因为最后一条后没有下一条数据
-     *   2. 此变量名称对应的数据对象类型为：SQL结果XSQLResult中定义的类型 
+     *   2. 此变量名称对应的数据对象类型为：SQL结果XSQLResult中定义的类型
      *   3. 此变量名称对应的数据对象为修改后，是会影响其后执行的执行参数的。即，不只能处理当前数据，还能处理下一条数据
      */
     public  static final String      $Param_RowNext     = "RowNext_";
@@ -238,7 +238,7 @@ public final class XSQLGroup implements XJavaID
      * 当发起多线程时，XSQL组是否等待所有XSQLNode节点都执行完成后才退出XSQL组。
      * 
      * 等待类型为：事后等待。
-     *     
+     * 
      * 与 thread、threadWaitInterval 配置使用。
      * 
      * 默认值：true。
@@ -257,7 +257,7 @@ public final class XSQLGroup implements XJavaID
     /** 是否打印执行轨迹日志。默认为：false */
     private boolean                  isLog;
     
-    /** 
+    /**
      * 是否自动提交。默认为： true
      * 
      * 当为false时，须外界手工执行提交或回滚，及关闭数据库连接。
@@ -458,7 +458,7 @@ public final class XSQLGroup implements XJavaID
      * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
      * 
      * @param i_Values          占位符SQL的填充集合。
-     * @return                  
+     * @return
      */
     public XSQLGroupResult executes(Map<String ,Object> i_Values)
     {
@@ -563,7 +563,7 @@ public final class XSQLGroup implements XJavaID
      * @param io_Params           执行或查询参数
      * @param io_DSGConns         数据库连接池控制(提交、回滚、关闭)集合
      * @param io_XSQLGroupResult  执行结果
-     * @return                  
+     * @return
      */
     private XSQLGroupResult executeGroup(Map<String ,Object> io_Params ,Map<DataSourceGroup ,XConnection> io_DSGConns ,XSQLGroupResult io_XSQLGroupResult)
     {
@@ -664,7 +664,7 @@ public final class XSQLGroup implements XJavaID
         {
             XSQLNode v_Node = this.xsqlNodes.get(v_NodeIndex);
             
-            if ( !v_Node.isLastOnce() 
+            if ( !v_Node.isLastOnce()
              || ( XSQLNode.$Type_Query            .equals(v_Node.getType()) && Help.isNull(v_Node.getReturnID()) )
              ||   XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
             {
@@ -733,7 +733,7 @@ public final class XSQLGroup implements XJavaID
             this.commits(io_DSGConns ,v_Ret.getExecSumCount());
         }
         
-        v_Ret = v_Node.getSqlGroup().executeGroup(io_Params ,io_DSGConns ,v_Ret); 
+        v_Ret = v_Node.getSqlGroup().executeGroup(io_Params ,io_DSGConns ,v_Ret);
         
         // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
         v_Ret = waitThreads(v_Node ,io_Params ,v_Ret);
@@ -785,7 +785,7 @@ public final class XSQLGroup implements XJavaID
             
             debug(v_Node);
             
-            if ( !v_Node.isLastOnce() 
+            if ( !v_Node.isLastOnce()
               || ( XSQLNode.$Type_Query            .equals(v_Node.getType()) && Help.isNull(v_Node.getReturnID()) )
               ||   XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
             {
@@ -972,7 +972,7 @@ public final class XSQLGroup implements XJavaID
                     {
                         v_ExecRet = v_Node.executeRule(io_Params ,v_Ret.getReturns());
                     }
-                    else 
+                    else
                     {
                         v_ExecRet = v_Node.executeJava(new XSQLGroupControl(this ,io_DSGConns ,v_Ret.getExecSumCount()) ,io_Params ,v_Ret.getReturns());
                     }
@@ -1013,7 +1013,7 @@ public final class XSQLGroup implements XJavaID
                 v_RetryCount--;
             } while ( !v_Ret.isSuccess() && v_RetryCount > 0 );
             
-            if ( !v_Ret.isSuccess() ) 
+            if ( !v_Ret.isSuccess() )
             {
                 // 异常时是否继续执行 ZhengWei(HY) Add 2018-06-30
                 if ( v_Node.isErrorContinue() )
@@ -1102,12 +1102,12 @@ public final class XSQLGroup implements XJavaID
             return v_Ret;
         }
         
-        if ( XSQLNode.$Type_Query            .equals(v_Node.getType()) 
+        if ( XSQLNode.$Type_Query            .equals(v_Node.getType())
           || XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
         {
             // 控制其后节点循环执行的查询
             if (    Help.isNull(v_Node.getReturnID())
-               || (!Help.isNull(v_Node.getReturnID()) && v_Node.isReturnQuery()) 
+               || (!Help.isNull(v_Node.getReturnID()) && v_Node.isReturnQuery())
                || XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
             {
                 List<Object> v_QueryRet = null;
@@ -1141,7 +1141,7 @@ public final class XSQLGroup implements XJavaID
                         }
                         else if ( v_Node.isBigData() )
                         {
-                            XSQLGroupBigData v_XSQLBigData = new XSQLGroupBigData(this 
+                            XSQLGroupBigData v_XSQLBigData = new XSQLGroupBigData(this
                                                                                  ,v_NodeIndex
                                                                                  ,v_Node
                                                                                  ,io_Params
@@ -1220,7 +1220,7 @@ public final class XSQLGroup implements XJavaID
                     v_RetryCount--;
                 } while ( !v_Ret.isSuccess() && v_RetryCount > 0 );
                 
-                if ( !v_Ret.isSuccess() ) 
+                if ( !v_Ret.isSuccess() )
                 {
                     // 异常时是否继续执行 ZhengWei(HY) Add 2018-06-30
                     if ( v_Node.isErrorContinue() )
@@ -1574,7 +1574,7 @@ public final class XSQLGroup implements XJavaID
                     v_RetryCount--;
                 } while ( !v_Ret.isSuccess() && v_RetryCount > 0 );
                 
-                if ( !v_Ret.isSuccess() ) 
+                if ( !v_Ret.isSuccess() )
                 {
                     // 异常时是否继续执行 ZhengWei(HY) Add 2018-06-30
                     if ( v_Node.isErrorContinue() )
@@ -1728,7 +1728,7 @@ public final class XSQLGroup implements XJavaID
                     {
                         v_ExecRet = v_Node.executeRule(io_Params ,v_Ret.getReturns());
                     }
-                    else 
+                    else
                     {
                         // $Type_ExecuteJava
                         v_ExecRet = v_Node.executeJava(new XSQLGroupControl(this ,io_DSGConns ,v_Ret.getExecSumCount()) ,io_Params ,v_Ret.getReturns());
@@ -1773,7 +1773,7 @@ public final class XSQLGroup implements XJavaID
                 v_RetryCount--;
             } while ( !v_Ret.isSuccess() && v_RetryCount > 0 );
             
-            if ( !v_Ret.isSuccess() ) 
+            if ( !v_Ret.isSuccess() )
             {
                 // 异常时是否继续执行 ZhengWei(HY) Add 2018-06-30
                 if ( v_Node.isErrorContinue() )
@@ -1799,7 +1799,7 @@ public final class XSQLGroup implements XJavaID
      * 如："RowIndex"已存时，变为"RowIndex1"，同时在此之前递归判定"RowIndex1"是否存在，如果存在也同样名称+1处理。
      * 
      * 好处是：能从任一层次的循环中，获取之前任一层次的循环信息。
-     *  
+     * 
      * @author      ZhengWei(HY)
      * @createDate  2018-06-30
      * @version     v1.0
@@ -1929,7 +1929,7 @@ public final class XSQLGroup implements XJavaID
             }
             
             long v_WaitCount = 0;
-            do 
+            do
             {
                 // 一直等待并且的执行结果
                 try
@@ -1985,7 +1985,7 @@ public final class XSQLGroup implements XJavaID
             }
             finally
             {
-                // 清空的多任务组中的任务信息  ZhengWei(HY) Add 2018-06-28 
+                // 清空的多任务组中的任务信息  ZhengWei(HY) Add 2018-06-28
                 try
                 {
                     i_TaskGroup.clear();
@@ -2084,7 +2084,7 @@ public final class XSQLGroup implements XJavaID
                     }
                     finally
                     {
-                        // 清空的多任务组中的任务信息  ZhengWei(HY) Add 2018-06-28 
+                        // 清空的多任务组中的任务信息  ZhengWei(HY) Add 2018-06-28
                         try
                         {
                             v_TaskGroup.clear();
@@ -2596,7 +2596,7 @@ public final class XSQLGroup implements XJavaID
             {
                 v_Buffer.append(i_Node.getSql().getXJavaID()).append("：");
             }
-            else 
+            else
             {
                 if ( !Help.isNull(i_Node.getXJavaID()) )
                 {
@@ -2625,7 +2625,7 @@ public final class XSQLGroup implements XJavaID
      */
     private void logErrorContinue(XSQLNode i_Node ,Map<String ,Object> i_Params ,int i_NodeIndex ,XSQLGroupResult i_XSQLGroupResult)
     {
-        System.err.println(logMake(i_Node ,i_Params ,i_NodeIndex) 
+        System.err.println(logMake(i_Node ,i_Params ,i_NodeIndex)
                           + "\n" + Help.NVL(i_XSQLGroupResult.getException().getMessage())
                           + "\n\nError Continue：To forge ahead.");
     }
@@ -2758,7 +2758,7 @@ public final class XSQLGroup implements XJavaID
     /**
      * 设置：执行SQL节点的集合
      * 
-     * @param xsqlNodes 
+     * @param xsqlNodes
      */
     public void setXsqlNodes(List<XSQLNode> xsqlNodes)
     {
@@ -2811,7 +2811,7 @@ public final class XSQLGroup implements XJavaID
      * 当发起多线程时，XSQL组是否等待所有XSQLNode节点都执行完成后才退出XSQL组。
      * 
      * 等待类型为：事后等待。
-     *     
+     * 
      * 与 thread、threadWaitInterval 配置使用。
      * 
      * 默认值：true。
@@ -2827,7 +2827,7 @@ public final class XSQLGroup implements XJavaID
      * 当发起多线程时，XSQL组是否等待所有XSQLNode节点都执行完成后才退出XSQL组。
      * 
      * 等待类型为：事后等待。
-     *     
+     * 
      * 与 thread、threadWaitInterval 配置使用。
      * 
      * 默认值：true。
@@ -2870,7 +2870,7 @@ public final class XSQLGroup implements XJavaID
     /**
      * 获取：等待哪个节点上的云服务计算完成。与XSQLNode.cloudWait同义
      *      但，此属性表示XSQL组整体完成前的最后等待哪个节点上的云服务计算。
-     *      
+     * 
      *      在所有lastOnce标记的XSQL节点执行之前执行此等待操作。
      */
     public XSQLNode getCloudWait()
@@ -2883,10 +2883,10 @@ public final class XSQLGroup implements XJavaID
     /**
      * 设置：等待哪个节点上的云服务计算完成。与XSQLNode.cloudWait同义
      *      但，此属性表示XSQL组整体完成前的最后等待哪个节点上的云服务计算。
-     *      
+     * 
      *      在所有lastOnce标记的XSQL节点执行之前执行此等待操作。
      * 
-     * @param cloudWait 
+     * @param cloudWait
      */
     public void setCloudWait(XSQLNode cloudWait)
     {
@@ -2908,7 +2908,7 @@ public final class XSQLGroup implements XJavaID
     /**
      * 设置：是否打印执行轨迹日志。默认为：false
      * 
-     * @param isLog 
+     * @param isLog
      */
     public XSQLGroup setLog(boolean isLog)
     {
@@ -2975,7 +2975,7 @@ public final class XSQLGroup implements XJavaID
      *           2. afterCommit    操作节点后提交；
      *           3. perAfterCommit 每获取结果集一条记录前提交。
      * 
-     * @param isAutoCommit 
+     * @param isAutoCommit
      */
     public void setAutoCommit(boolean isAutoCommit)
     {
@@ -2987,6 +2987,7 @@ public final class XSQLGroup implements XJavaID
     /**
      * 获取：注释。可用于日志的输出等帮助性的信息
      */
+    @Override
     public String getComment()
     {
         return comment;
@@ -2997,8 +2998,9 @@ public final class XSQLGroup implements XJavaID
     /**
      * 设置：注释。可用于日志的输出等帮助性的信息
      * 
-     * @param comment 
+     * @param comment
      */
+    @Override
     public void setComment(String comment)
     {
         this.comment = comment;
@@ -3007,7 +3009,7 @@ public final class XSQLGroup implements XJavaID
     
     
     /**
-     * 针对具体XSQL节点的Java断言调试功能。方面问题的定位。
+     * 针对具体XSQL节点的Java断言调试功能。方便问题的定位。
      * 
      * 在XSQL节点准备开始执行前触发。
      * 
@@ -3032,6 +3034,7 @@ public final class XSQLGroup implements XJavaID
      * 
      * @param i_XJavaID
      */
+    @Override
     public void setXJavaID(String i_XJavaID)
     {
         this.xJavaID = i_XJavaID;
@@ -3044,6 +3047,7 @@ public final class XSQLGroup implements XJavaID
      * 
      * @return
      */
+    @Override
     public String getXJavaID()
     {
         return this.xJavaID;
@@ -3158,7 +3162,7 @@ public final class XSQLGroup implements XJavaID
         }
         
         
-        public XSQLGroupTask(XSQLGroup i_XSQLGroup ,int i_SuperNodeIndex ,Map<String ,Object> i_Params ,XSQLGroupResult i_XSQLGroupResult ,Map<DataSourceGroup ,XConnection> io_DSGConns) 
+        public XSQLGroupTask(XSQLGroup i_XSQLGroup ,int i_SuperNodeIndex ,Map<String ,Object> i_Params ,XSQLGroupResult i_XSQLGroupResult ,Map<DataSourceGroup ,XConnection> io_DSGConns)
         {
             super("XSQLGroupTask");
             
@@ -3181,9 +3185,9 @@ public final class XSQLGroup implements XJavaID
                     return;
                 }
 
-                this.xsqlGroupResult = this.xsqlGroup.executeGroup(this.superNodeIndex 
-                                                                  ,this.params 
-                                                                  ,this.xsqlGroupResult 
+                this.xsqlGroupResult = this.xsqlGroup.executeGroup(this.superNodeIndex
+                                                                  ,this.params
+                                                                  ,this.xsqlGroupResult
                                                                   ,this.dsgConns);
                 if ( !this.xsqlGroupResult.isSuccess() )
                 {
@@ -3258,7 +3262,7 @@ public final class XSQLGroup implements XJavaID
     
     
     /**
-     * 大数据循环处理类 
+     * 大数据循环处理类
      *
      * @author      ZhengWei(HY)
      * @createDate  2018-01-18
@@ -3311,6 +3315,7 @@ public final class XSQLGroup implements XJavaID
          * @version     v1.0
          *
          */
+        @Override
         @SuppressWarnings("unchecked")
         public void before()
         {
@@ -3340,6 +3345,7 @@ public final class XSQLGroup implements XJavaID
          *
          * @param i_IsSucceed  循环遍历是否成功。未成功即出现异常。
          */
+        @Override
         public void finish(boolean i_sSucceed)
         {
             // 如果是多线程并有等待标识时，一直等待并且的执行结果  Add 2018-01-24
@@ -3354,7 +3360,7 @@ public final class XSQLGroup implements XJavaID
         
         
         /**
-         * 大数据一行一处理方法 
+         * 大数据一行一处理方法
          * 
          * @author      ZhengWei(HY)
          * @createDate  2018-01-17
