@@ -13,7 +13,7 @@ import org.hy.common.Busway;
 import org.hy.common.Counter;
 import org.hy.common.Date;
 import org.hy.common.Help;
-import org.hy.common.Max; 
+import org.hy.common.Max;
 import org.hy.common.MethodReflect;
 import org.hy.common.Queue;
 import org.hy.common.Return;
@@ -44,10 +44,10 @@ import org.hy.common.xml.plugins.analyse.data.AnalyseDBTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseDSGTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseJobTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseLoggerTotal;
-import org.hy.common.xml.plugins.analyse.data.LoggerReport;
 import org.hy.common.xml.plugins.analyse.data.AnalyseThreadPoolTotal;
 import org.hy.common.xml.plugins.analyse.data.ClusterReport;
 import org.hy.common.xml.plugins.analyse.data.DataSourceGroupReport;
+import org.hy.common.xml.plugins.analyse.data.LoggerReport;
 import org.hy.common.xml.plugins.analyse.data.WindowsApp;
 import org.hy.common.xml.plugins.analyse.data.XSQLGroupTree;
 import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
@@ -69,7 +69,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *                                添加：集群执行对象方法
  *                                添加：查看集群服务列表
  *              v4.0  2017-01-22  添加：查看集群数据库访问量的概要统计数据
- *                                添加：查看集群数据库组合SQL访问量的概要统计数据 
+ *                                添加：查看集群数据库组合SQL访问量的概要统计数据
  *                                添加：查看集群查看XSQL对象执行错误的SQL语句
  *              v5.0  2017-01-25  添加：跨域的单点登陆 和 集群的单点登陆功能
  *              v6.0  2017-03-01  添加：查看前缀匹配的对象列表页面，添加显示对象.toString()的信息。
@@ -83,7 +83,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v10.0 2018-03-01  添加：本机定时任务运行情况。之前合并在 "查看前缀匹配的对象列表" 任务中
  *              v11.0 2018-03-05  添加：本机数据库连接池组使用情况。之前合并在 "查看前缀匹配的对象列表" 任务中
  *                                添加：集群数据库连接池组使用情况。之前合并在 "查看前缀匹配的对象列表" 任务中
- *                                添加：重置数据库访问量的概要统计数据 
+ *                                添加：重置数据库访问量的概要统计数据
  *                                添加：重置数据库组合SQL访问量的概要统计数据
  *              v12.0 2018-07-26  添加：查看创建数据库对象列表
  *              v13.0 2018-09-10  添加：显示XSQLGroup树目录流程图
@@ -109,7 +109,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *                                      XSQL组监控的定时刷新
  *              v22.3 2021-01-15  修正：执行Java方法时，防止方法不存的异常。
  *                                修正：执行Java方法时，防止Json格式的字符无法正常显示的问题
- *                                      
+ * 
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -142,11 +142,11 @@ public class AnalyseBase extends Analyse
      * @param  i_LogonPath       登录的URL。如：http://127.0.0.1:80/hy/../analyseObject  (可选：附加用户输入的参数)
      * @return
      */
-    public String login(String i_LogonPath)
+    public String login(String i_LogonPath ,String i_HttpBasePath ,String i_HttpBasePage)
     {
         String v_Content = this.getTemplateLogon();
         
-        return StringHelp.replaceAll(v_Content ,":LoginPath" ,i_LogonPath);
+        return StringHelp.replaceAll(v_Content ,new String[]{":LoginPath" ,":HttpBasePath" ,":HttpBasePage"} ,new String[] {i_LogonPath ,i_HttpBasePath ,i_HttpBasePage});
     }
     
     
@@ -184,7 +184,7 @@ public class AnalyseBase extends Analyse
         
         if ( Help.isNull(v_Servers) )
         {
-            return this.login(v_LoginPath);
+            return this.login(v_LoginPath ,v_LoginPath ,v_LoginPath);
         }
         
         String v_RequestURL = i_RequestURL.split("//")[1].split("/")[0];
@@ -192,13 +192,13 @@ public class AnalyseBase extends Analyse
         
         for (ClientSocket v_Server : v_Servers)
         {
-            v_Buffer.append(StringHelp.replaceAll(v_Content 
-                                                 ,":BasePath" 
+            v_Buffer.append(StringHelp.replaceAll(v_Content
+                                                 ,":BasePath"
                                                  ,StringHelp.replaceAll(v_RequestURL ,":IPPort" ,v_Server.getHostName() + ":" + i_ServerPort)));
         }
         
-        return StringHelp.replaceAll(this.getTemplateLogonSSO() 
-                                    ,new String[]{":LoginPath" ,":Content"} 
+        return StringHelp.replaceAll(this.getTemplateLogonSSO()
+                                    ,new String[]{":LoginPath" ,":Content"}
                                     ,new String[]{v_LoginPath  ,v_Buffer.toString()});
     }
     
@@ -324,13 +324,13 @@ public class AnalyseBase extends Analyse
 //        StringBuilder v_Buffer  = new StringBuilder();
 //        int           v_Index   = 0;
 //        String        v_Content = this.getTemplateShowObjectsContent();
-//        
-//        v_Buffer.append(StringHelp.replaceAll(v_Content 
-//                ,new String[]{":No" 
-//                             ,":Name" 
+//
+//        v_Buffer.append(StringHelp.replaceAll(v_Content
+//                ,new String[]{":No"
+//                             ,":Name"
 //                             ,":Info"
-//                             ,":OperateURL" 
-//                             ,":OperateTitle"} 
+//                             ,":OperateURL"
+//                             ,":OperateTitle"}
 //                ,new String[]{String.valueOf(++v_Index)
 //                             ,"系统启动时间"
 //                             ,$ServerStartTime.getFull()
@@ -338,12 +338,12 @@ public class AnalyseBase extends Analyse
 //                             ,""
 //                             })
 //                );
-//        
+//
 //        for (Param v_Item : v_Objects)
 //        {
 //            String v_URL     = "";
 //            String v_Command = "";
-//            
+//
 //            if ( !Help.isNull(v_Item.getValue()) )
 //            {
 //                if ( Help.NVL(v_Item.getValue()).trim().toLowerCase().startsWith("javascript:") )
@@ -356,13 +356,13 @@ public class AnalyseBase extends Analyse
 //                }
 //                v_Command = "查看详情";
 //            }
-//            
-//            v_Buffer.append(StringHelp.replaceAll(v_Content 
-//                                                 ,new String[]{":No" 
-//                                                              ,":Name" 
+//
+//            v_Buffer.append(StringHelp.replaceAll(v_Content
+//                                                 ,new String[]{":No"
+//                                                              ,":Name"
 //                                                              ,":Info"
-//                                                              ,":OperateURL" 
-//                                                              ,":OperateTitle"} 
+//                                                              ,":OperateURL"
+//                                                              ,":OperateTitle"}
 //                                                 ,new String[]{String.valueOf(++v_Index)
 //                                                              ,v_Item.getName()
 //                                                              ,Help.NVL(v_Item.getComment())
@@ -371,7 +371,7 @@ public class AnalyseBase extends Analyse
 //                                                              })
 //                           );
 //        }
-//        
+//
 //        return StringHelp.replaceAll(this.getTemplateShowObjects()
 //                                    ,new String[]{":Title"  ,":Column01Title" ,":Column02Title"  ,":HttpBasePath" ,":HttpValuePath"  ,":Content"}
 //                                    ,new String[]{"分析中心" ,"功能"            ,"说明"            ,i_BasePath      ,i_ObjectValuePath ,v_Buffer.toString()});
@@ -1035,7 +1035,7 @@ public class AnalyseBase extends Analyse
                 
                 if ( i_Cluster )
                 {
-                    v_OperateURL += "&cluster=Y"; 
+                    v_OperateURL += "&cluster=Y";
                 }
             }
             else
@@ -1189,7 +1189,7 @@ public class AnalyseBase extends Analyse
     
     
     /**
-     * 获取数据库访问量的概要统计数据 
+     * 获取数据库访问量的概要统计数据
      * 
      * @author      ZhengWei(HY)
      * @createDate  2017-01-20
@@ -1275,7 +1275,7 @@ public class AnalyseBase extends Analyse
     
     
     /**
-     * 重置数据库访问量的概要统计数据 
+     * 重置数据库访问量的概要统计数据
      * 
      * @author      ZhengWei(HY)
      * @createDate  2018-03-05
@@ -1391,8 +1391,8 @@ public class AnalyseBase extends Analyse
                 v_Content = "{}";
             }
             
-            return StringHelp.replaceAll(this.getTemplateShowObject() 
-                                        ,new String[]{":HttpBasePath" ,":TitleInfo"      ,":XJavaObjectID" ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3" ,":OperateURL4" ,":OperateTitle4" ,":OperateURL5" ,":OperateTitle5"} 
+            return StringHelp.replaceAll(this.getTemplateShowObject()
+                                        ,new String[]{":HttpBasePath" ,":TitleInfo"      ,":XJavaObjectID" ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3" ,":OperateURL4" ,":OperateTitle4" ,":OperateURL5" ,":OperateTitle5"}
                                         ,new String[]{i_BasePath      ,"执行异常的SQL语句" ,i_XSQLXID        ,v_Content  ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle});
         }
         catch (Exception exce)
@@ -1512,14 +1512,14 @@ public class AnalyseBase extends Analyse
                 v_Command02 = "详情";
             }
             
-            v_Buffer.append(StringHelp.replaceAll(v_Content 
-                                                 ,new String[]{":No" 
-                                                              ,":Name" 
+            v_Buffer.append(StringHelp.replaceAll(v_Content
+                                                 ,new String[]{":No"
+                                                              ,":Name"
                                                               ,":Info"
-                                                              ,":OperateURL01" 
+                                                              ,":OperateURL01"
                                                               ,":OperateTitle01"
-                                                              ,":OperateURL02" 
-                                                              ,":OperateTitle02"} 
+                                                              ,":OperateURL02"
+                                                              ,":OperateTitle02"}
                                                  ,new String[]{String.valueOf(++v_Index)
                                                               ,"<font color='gray'>" + v_XSQL.getDataSourceGroup().getXJavaID() + ".</font><b>" + v_XSQL.getCreateObjectName() + "</b>"
                                                               ,Help.NVL(v_XSQL.getComment())
@@ -1632,11 +1632,11 @@ public class AnalyseBase extends Analyse
                 }
                 
                 
-                v_Buffer.append(StringHelp.replaceAll(v_Content 
-                                ,new String[]{":No" 
+                v_Buffer.append(StringHelp.replaceAll(v_Content
+                                ,new String[]{":No"
                                              ,":OprName"
-                                             ,":OprTime" 
-                                             ,":OprStatus"} 
+                                             ,":OprTime"
+                                             ,":OprStatus"}
                                 ,new String[]{String.valueOf(++v_Index)
                                              ,v_XSQL.getCreateObjectName() + "  " + Help.NVL(v_XSQL.getComment())
                                              ,Date.getNowTime().getFullMilli()
@@ -1661,11 +1661,11 @@ public class AnalyseBase extends Analyse
                       + "删除异常 " + (v_TotalCount - v_DropCount) + " 个对象；";
         }
         
-        v_Buffer.append(StringHelp.replaceAll(v_Content 
-                       ,new String[]{":No" 
+        v_Buffer.append(StringHelp.replaceAll(v_Content
+                       ,new String[]{":No"
                                     ,":OprName"
-                                    ,":OprTime" 
-                                    ,":OprStatus"} 
+                                    ,":OprTime"
+                                    ,":OprStatus"}
                        ,new String[]{String.valueOf(++v_Index)
                                     ,"合计：" + v_SumInfo
                                     ,Date.getNowTime().getFullMilli()
@@ -1692,7 +1692,7 @@ public class AnalyseBase extends Analyse
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?DSG=Y
      * @param  i_DSGID           数据库连接池的XID
-     * @param  i_Sort            排序类型 
+     * @param  i_Sort            排序类型
      * @return
      */
     public String showXSQLRefTable(String i_BasePath ,String i_ObjectValuePath ,String i_DSGID ,String i_Sort)
@@ -1828,7 +1828,7 @@ public class AnalyseBase extends Analyse
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?DSG=Y
      * @param  i_DSGID           数据库连接池的XID
-     * @param  i_Sort            排序类型 
+     * @param  i_Sort            排序类型
      * @return
      */
     public String showXSQLTablesRef(String i_BasePath ,String i_ObjectValuePath ,String i_DSGID ,String i_Sort)
@@ -1982,7 +1982,7 @@ public class AnalyseBase extends Analyse
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject
-     * @param  i_XJavaObjectID   对象标识ID 
+     * @param  i_XJavaObjectID   对象标识ID
      * @param  i_CallMethod      对象方法的全名称（可为空）
      * @param  i_CallParams      对象方法的执行参数（可为空）
      * @param  i_Cluster         是否为集群
@@ -2059,11 +2059,11 @@ public class AnalyseBase extends Analyse
                     v_OperateTitle5 = "关闭日志";
                 }
                 
-                return StringHelp.replaceAll(this.getTemplateShowObject() 
-                                            ,new String[]{":HttpBasePath" ,":TitleInfo"  ,":XJavaObjectID" ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3" ,":OperateURL4"  ,":OperateTitle4" ,":OperateURL5" ,":OperateTitle5"} 
+                return StringHelp.replaceAll(this.getTemplateShowObject()
+                                            ,new String[]{":HttpBasePath" ,":TitleInfo"  ,":XJavaObjectID" ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3" ,":OperateURL4"  ,":OperateTitle4" ,":OperateURL5" ,":OperateTitle5"}
                                             ,new String[]{i_BasePath      ,"对象信息"     ,i_XJavaObjectID  ,v_Content  ,v_OperateURL1  ,v_OperateTitle1  ,v_OperateURL2  ,v_OperateTitle2  ,v_OperateURL3  ,v_OperateTitle3  ,v_OperateURL4   ,v_OperateTitle4  ,v_OperateURL5  ,v_OperateTitle5});
             }
-            // 功能2. 执行对象方法 
+            // 功能2. 执行对象方法
             else
             {
                 List<Object> v_CallParams = new ArrayList<Object>();
@@ -2123,8 +2123,8 @@ public class AnalyseBase extends Analyse
                         return "Execute method is " + i_XJavaObjectID + "." + i_CallMethod + "() is not exists.";
                     }
                     
-                    return StringHelp.replaceAll(this.getTemplateShowObject() 
-                                                ,new String[]{":HttpBasePath" ,":TitleInfo"    ,":XJavaObjectID"                                           ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3" ,":OperateURL4" ,":OperateTitle4" ,":OperateURL5" ,":OperateTitle5"} 
+                    return StringHelp.replaceAll(this.getTemplateShowObject()
+                                                ,new String[]{":HttpBasePath" ,":TitleInfo"    ,":XJavaObjectID"                                           ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3" ,":OperateURL4" ,":OperateTitle4" ,":OperateURL5" ,":OperateTitle5"}
                                                 ,new String[]{i_BasePath      ,"对象方法执行结果" ,i_XJavaObjectID + "." + v_Methods.get(0).getName() + "()"  ,v_Content  ,""});
                 }
                 else
@@ -2150,7 +2150,7 @@ public class AnalyseBase extends Analyse
      * @version     v1.0
      *              v2.0  2020-01-16  添加：支持带参数的方法执行
      *
-     * @param  i_XJavaObjectID   对象标识ID 
+     * @param  i_XJavaObjectID   对象标识ID
      * @param  i_CallMethod      对象方法的全名称（可为空）
      * @param  i_CallParams      对象方法的参数对象（可为空）
      * @param  i_Cluster         是否为集群
@@ -2189,7 +2189,7 @@ public class AnalyseBase extends Analyse
             {
                 
                 XSQLGroup v_GXSQ   = null;
-                boolean   v_OldLog = false; 
+                boolean   v_OldLog = false;
                 if ( XSQLGroup.class.equals(v_Object.getClass()) )
                 {
                     // 当为XSQL组时，自动打开日志模式
@@ -2361,9 +2361,9 @@ public class AnalyseBase extends Analyse
         }
         
         return StringHelp.replaceAll(this.getTemplateShowExecuteMethod()
-                                    ,new String[]{":HttpBasePath" 
-                                                 ,":xid"                    
-                                                 ,":call"                 
+                                    ,new String[]{":HttpBasePath"
+                                                 ,":xid"
+                                                 ,":call"
                                                  ,":PType1"
                                                  ,":PType2"
                                                  ,":PType3"
@@ -2376,8 +2376,8 @@ public class AnalyseBase extends Analyse
                                                  ,":PValue5"
                                                  ,":ShowDefaultParamNo"
                                                  }
-                                    ,new String[]{i_BasePath      
-                                                 ,Help.NVL(i_XJavaObjectID) 
+                                    ,new String[]{i_BasePath
+                                                 ,Help.NVL(i_XJavaObjectID)
                                                  ,Help.NVL(i_CallMethod)
                                                  ,v_Param1[0]
                                                  ,v_Param2[0]
@@ -2414,7 +2414,7 @@ public class AnalyseBase extends Analyse
     {
         $Logger.debug("查看对象列表：" + i_XIDPrefix );
         
-        Map<String ,Object>  v_Objects      = (Map<String ,Object>)XJava.getObjects(i_XIDPrefix);
+        Map<String ,Object>  v_Objects      = XJava.getObjects(i_XIDPrefix);
         StringBuilder        v_Buffer       = new StringBuilder();
         int                  v_Index        = 0;
         String               v_Content      = this.getTemplateShowObjectsContent();
@@ -2449,12 +2449,12 @@ public class AnalyseBase extends Analyse
                 }
             }
             
-            v_Buffer.append(StringHelp.replaceAll(v_Content 
-                                                 ,new String[]{":No" 
-                                                              ,":Name" 
+            v_Buffer.append(StringHelp.replaceAll(v_Content
+                                                 ,new String[]{":No"
+                                                              ,":Name"
                                                               ,":Info"
-                                                              ,":OperateURL" 
-                                                              ,":OperateTitle"} 
+                                                              ,":OperateURL"
+                                                              ,":OperateTitle"}
                                                  ,new String[]{String.valueOf(++v_Index)
                                                               ,v_Item.getKey()
                                                               ,v_Info
@@ -2503,14 +2503,14 @@ public class AnalyseBase extends Analyse
             {
                 if ( !Help.isNull(v_XFile) )
                 {
-                    v_Buffer.append(StringHelp.replaceAll(v_Content 
-                                                         ,new String[]{":No" 
-                                                                      ,":Name" 
+                    v_Buffer.append(StringHelp.replaceAll(v_Content
+                                                         ,new String[]{":No"
+                                                                      ,":Name"
                                                                       ,":OperTime"
-                                                                      ,":OperateURL1" 
+                                                                      ,":OperateURL1"
                                                                       ,":OperateTitle1"
-                                                                      ,":OperateURL2" 
-                                                                      ,":OperateTitle2"} 
+                                                                      ,":OperateURL2"
+                                                                      ,":OperateTitle2"}
                                                          ,new String[]{String.valueOf(++v_Index)
                                                                       ,v_XFile
                                                                       ,v_XFileTime.get(v_XFile).getFull()
@@ -2574,7 +2574,7 @@ public class AnalyseBase extends Analyse
                 
                 return Date.getNowTime().getFullMilli() + ": Has completed re loading, please check the console log.";
             }
-            // 集群重新加载 
+            // 集群重新加载
             else
             {
                 StringBuilder v_Ret = new StringBuilder();
@@ -2913,8 +2913,8 @@ public class AnalyseBase extends Analyse
                                  .replaceAll(":RunStatus" ,"-")
                                  .replaceAll(":LastTime"  ,"-")
                                  .replaceAll(":ExecCount" ,v_TotalExecCount + "")
-                                 .replaceAll(":TaskDesc"  ,"Total: "             + v_Total.getThreadCount() 
-                                                         + "  Idle: "            + v_Total.getIdleThreadCount() 
+                                 .replaceAll(":TaskDesc"  ,"Total: "             + v_Total.getThreadCount()
+                                                         + "  Idle: "            + v_Total.getIdleThreadCount()
                                                          + "  Active: "          + v_Total.getActiveThreadCount()
                                                          + "  Queue wait task: " + v_Total.getWaitTaskCount())
                        );
@@ -3106,16 +3106,16 @@ public class AnalyseBase extends Analyse
         {
             if ( Help.isNull(v_Jobs.getDisasterRecoverys()) )
             {
-                v_Buffer.append(StringHelp.replaceAll(v_Content 
-                                                    ,new String[]{":No" 
-                                                                 ,":JobServer" 
+                v_Buffer.append(StringHelp.replaceAll(v_Content
+                                                    ,new String[]{":No"
+                                                                 ,":JobServer"
                                                                  ,":StartTime"
                                                                  ,":GetMasterTime"
-                                                                 ,":Master" 
-                                                                 ,":Slave"} 
+                                                                 ,":Master"
+                                                                 ,":Slave"}
                                                     ,new String[]{String.valueOf(++v_Index)
                                                                  ,"<font color='green'>正常</font>"
-                                                                + StringHelp.lpad("" ,4 ,"&nbsp;") 
+                                                                + StringHelp.lpad("" ,4 ,"&nbsp;")
                                                                 + "127.0.0.1"
                                                                  ,Help.isNull(v_Jobs.getStartTime())  ? "未启动" : v_Jobs.getStartTime() .getFull()
                                                                  ,Help.isNull(v_Jobs.getMasterTime()) ? "-"      : v_Jobs.getMasterTime().getFull()
@@ -3129,16 +3129,16 @@ public class AnalyseBase extends Analyse
                 List<JobDisasterRecoveryReport> v_Reports = v_Jobs.disasterRecoveryChecks();
                 for (JobDisasterRecoveryReport v_Report : v_Reports)
                 {
-                    v_Buffer.append(StringHelp.replaceAll(v_Content 
-                                                         ,new String[]{":No" 
-                                                                      ,":JobServer" 
+                    v_Buffer.append(StringHelp.replaceAll(v_Content
+                                                         ,new String[]{":No"
+                                                                      ,":JobServer"
                                                                       ,":StartTime"
                                                                       ,":GetMasterTime"
-                                                                      ,":Master" 
-                                                                      ,":Slave"} 
+                                                                      ,":Master"
+                                                                      ,":Slave"}
                                                          ,new String[]{String.valueOf(++v_Index)
-                                                                      ,(v_Report.isOK() ? "<font color='green'>正常</font>" : "<font color='red'>异常</font>") 
-                                                                     + StringHelp.lpad("" ,4 ,"&nbsp;") 
+                                                                      ,(v_Report.isOK() ? "<font color='green'>正常</font>" : "<font color='red'>异常</font>")
+                                                                     + StringHelp.lpad("" ,4 ,"&nbsp;")
                                                                      + v_Report.getHostName() + ":" + v_Report.getPort()
                                                                       ,Help.isNull(v_Report.getStartTime())  ? "未启动" : v_Report.getStartTime() .getFull()
                                                                       ,Help.isNull(v_Report.getMasterTime()) ? "-"      : v_Report.getMasterTime().getFull()
@@ -3151,13 +3151,13 @@ public class AnalyseBase extends Analyse
         }
         else
         {
-            v_Buffer.append(StringHelp.replaceAll(v_Content 
-                                                ,new String[]{":No" 
-                                                             ,":JobServer" 
+            v_Buffer.append(StringHelp.replaceAll(v_Content
+                                                ,new String[]{":No"
+                                                             ,":JobServer"
                                                              ,":StartTime"
                                                              ,":GetMasterTime"
-                                                             ,":Master" 
-                                                             ,":Slave"} 
+                                                             ,":Master"
+                                                             ,":Slave"}
                                                 ,new String[]{String.valueOf(++v_Index)
                                                              ,"-"
                                                              ,"-"
@@ -3349,12 +3349,12 @@ public class AnalyseBase extends Analyse
      * @param  i_Timer            定时刷新的时长（单位：毫秒）
      * @return
      */
-    public String analyseLogger(String  i_BasePath 
-                               ,String  i_ReLoadPath 
-                               ,boolean i_Cluster 
+    public String analyseLogger(String  i_BasePath
+                               ,String  i_ReLoadPath
+                               ,boolean i_Cluster
                                ,boolean i_ShowEveryOne
-                               ,String  i_TotalType 
-                               ,String  i_SortType 
+                               ,String  i_TotalType
+                               ,String  i_SortType
                                ,String  i_FilterClassName
                                ,String  i_Timer)
     {
@@ -3505,8 +3505,8 @@ public class AnalyseBase extends Analyse
         for (LoggerReport v_Report : v_TotalList)
         {
             Map<String ,String> v_RKey      = new HashMap<String ,String>();
-            boolean             v_IsRunning = v_Report.getCountNoError() >= 2 
-                                           && v_Report.getRequestCount() >= 1 
+            boolean             v_IsRunning = v_Report.getCountNoError() >= 2
+                                           && v_Report.getRequestCount() >= 1
                                            && (v_Report.getRequestCount() - v_Report.getWarnCount() - v_Report.getErrorFatalCount()) % v_Report.getCountNoError() > 0;
             
             v_RKey.put(":No"              ,String.valueOf(++v_Index));
@@ -3641,7 +3641,7 @@ public class AnalyseBase extends Analyse
     
     
     /**
-     * 重置日志引擎的监控的统计数据 
+     * 重置日志引擎的监控的统计数据
      * 
      * @author      ZhengWei(HY)
      * @createDate  2020-06-20

@@ -8,9 +8,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.hy.common.Date;
+import org.hy.common.ExpireMap;
 import org.hy.common.Help;
+import org.hy.common.Return;
 import org.hy.common.StringHelp;
+import org.hy.common.xml.XJSON;
 import org.hy.common.xml.XJava;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -30,11 +34,11 @@ import org.hy.common.xml.XJava;
     </servlet>
     <servlet-mapping>
         <servlet-name>AnalyseObjectServlet</servlet-name>
-        <url-pattern>/analyses/analyseObject</url-pattern>
+        <url-pattern>/analyses/analyseObject/*</url-pattern>
     </servlet-mapping>
  * 
  * 功能1：查看前缀匹配的对象列表                http://IP:Port/WebService/../analyseObject?xid=XJavaIDPrefix*
- * 功能2：查看对象信息                          http://IP:Port/WebService/../analyseObject?xid=XJavaID         
+ * 功能2：查看对象信息                          http://IP:Port/WebService/../analyseObject?xid=XJavaID
  * 功能3：执行对象方法                          http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称
  * 功能4：执行对象方法的配置页面（带方法参数） http://IP:Port/WebService/../analyseObject?execute=Y
  * 功能5：集群顺次执行对象方法                  http://IP:Port/WebService/../analyseObject?xid=XJavaID&call=方法全名称&cluster=Y
@@ -76,7 +80,7 @@ import org.hy.common.xml.XJava;
  *                                添加：查看集群服务列表
  *              v3.0  2018-02-11  添加：删除并重建数据库对象
  *              v4.0  2018-02-27  添加：本机线程池运行情况
- *                                添加：集群线程池运行情况 
+ *                                添加：集群线程池运行情况
  *              v5.0  2018-02-28  添加：本机定时任务运行情况。之前合并在 "查看前缀匹配的对象列表" 任务中
  *              v6.0  2018-03-11  添加：Web文件资源管理器（支持集群）
  *              v7.0  2018-07-26  添加：查看创建数据库对象列表
@@ -86,19 +90,33 @@ import org.hy.common.xml.XJava;
  *              v11.0 2019-06-14  添加：查看表的关系图
  *              v12.0 2020-01-21  添加：执行对象方法的配置页面（带方法参数）
  *              v13.0 2020-06-15  添加：查看日志引擎分析（按类名、按方法、按日志代码行）
- *              
+ * 
  */
 public class AnalyseObjectServlet extends HttpServlet
 {
 
     private static final long   serialVersionUID = -6165884390221056380L;
     
+    
+    
+    private static final Logger               $Logger      = Logger.getLogger(AnalyseBase.class);
+    
     /** 登陆的Session会话ID标识，标识着是否登陆成功 */
-    public  static final String $SessionID       = "$XJAVA$";
+    public  static final String               $SessionID   = "$XJAVA$";
     
-    private AnalyseBase         analyse;
+    /** 登录失败次数Map.key 为Session会话ID，Map.value为登录失败次数 */
+    private static ExpireMap<String ,Integer> $LoginCounts = null;
     
-    private AnalyseFS           analyseFS;
+    /** 登录验证码Map.key 为Session会话ID，Map.value为验证码 */
+    private static ExpireMap<String ,String>  $PasswdCheck = null;
+    
+    
+    
+    private CheckImageUtil checkImageUtil;
+    
+    private AnalyseBase    analyse;
+    
+    private AnalyseFS      analyseFS;
     
     
     
@@ -116,18 +134,158 @@ public class AnalyseObjectServlet extends HttpServlet
         {
             this.analyseFS = new AnalyseFS();
         }
+        this.checkImageUtil = new CheckImageUtil();
     }
     
     
     
-    @SuppressWarnings("unchecked")
-    public void doGet(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException 
+    /**
+     * 获取登录失败次数对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-05-25
+     * @version     v1.0
+     * 
+     * @return
+     */
+    private synchronized ExpireMap<String ,Integer> getLoginCounts()
     {
-        i_Response.setContentType("text/html;charset=UTF-8");
+        if ( $LoginCounts == null )
+        {
+            $LoginCounts = new ExpireMap<String ,Integer>();
+        }
         
-        String v_SessionData = (String)i_Request.getSession().getAttribute($SessionID);
+        return $LoginCounts;
+    }
+    
+    
+    
+    /**
+     * 登录验证码Map.key 为Session会话ID，Map.value为验证码
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-05-26
+     * @version     v1.0
+     * 
+     * @return
+     */
+    private synchronized ExpireMap<String ,String> getPasswdCheck()
+    {
+        if ( $PasswdCheck == null )
+        {
+            $PasswdCheck = new ExpireMap<String ,String>();
+        }
+        
+        return $PasswdCheck;
+    }
+    
+    
+    
+    /**
+     * 生成图片验证信息
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-05-20
+     * @version     v1.0
+     * 
+     * @param i_Request
+     * @return           返回 Return 对象的 Json字符串
+     */
+    private String getCheckImage(HttpServletRequest i_Request)
+    {
+        String         v_SessionID = i_Request.getSession().getId();
+        Return<String> v_Ret       = new Return<String>(true);
+        
+        try
+        {
+            int v_X = Help.random(70 ,385 - 70);
+            int v_Y = Help.random(70 ,378 - 70);
+            String [] v_ImageDatas = checkImageUtil.makeCheckImage(v_X ,v_Y);
+            
+            v_Ret.setParamStr(v_ImageDatas[0]);
+            v_Ret.setParamObj(v_ImageDatas[1]);
+            v_Ret.setParamInt(v_Y);
+            
+            $PasswdCheck.put(v_SessionID ,v_X + "" + v_Y ,12);
+        }
+        catch (Exception exce)
+        {
+            $Logger.error("图片验证码" ,exce);
+            v_Ret.set(false);
+        }
+        
+        String v_RetJson = "{}";
+        try
+        {
+            XJSON v_XJson = new XJSON();
+            
+            v_RetJson = v_XJson.toJson(v_Ret).toJSONString();
+        }
+        catch (Exception exce)
+        {
+            $Logger.error("图片验证码" ,exce);
+        }
+        
+        return v_RetJson;
+    }
+    
+    
+    
+    @Override
+    public void doGet(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException
+    {
         String v_BasePath    = i_Request.getScheme() + "://" + i_Request.getServerName() + ":" + i_Request.getServerPort() + i_Request.getContextPath();
-        String v_RequestURL  = i_Request.getRequestURL().toString();
+        String v_RequestPage = i_Request.getRequestURL().toString();
+        String v_RequestURL  = v_RequestPage;
+        
+        if ( v_RequestURL.indexOf("/windows/") >= 0 )
+        {
+            if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".css") )
+            {
+                i_Response.setContentType("text/css;charset=UTF-8");
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".js") )
+            {
+                i_Response.setContentType("application/x-javascript;charset=UTF-8");
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".png" ,".jpg" ,".png" ,".gif" ,".bmp") )
+            {
+                i_Response.setContentType("image/*");
+                i_Response.getOutputStream().write(this.analyse.getTemplateContentBytes(v_RequestURL.split("/windows/")[1] ,"org.hy.common.xml.plugins.analyse.windows"));
+                return;
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".svg") )
+            {
+                i_Response.setContentType("text/xml;charset=UTF-8");
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".eot") )
+            {
+                i_Response.setContentType("application/vnd.ms-fontobject");
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".ttf") )
+            {
+                i_Response.setContentType("application/x-font-ttf");
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".woff2") )
+            {
+                i_Response.setContentType("application/x-font-woff2");
+            }
+            else if ( StringHelp.isContains(v_RequestURL.toLowerCase() ,".woff") )
+            {
+                i_Response.setContentType("application/x-font-woff");
+            }
+            
+            i_Response.getWriter().println(this.analyse.getTemplateContent(v_RequestURL.split("/windows/")[1] ,"org.hy.common.xml.plugins.analyse.windows"));
+            return;
+        }
+        
+        
+        // 上面是图片、js、css等资源处理
+        // 下面是页面内容处理
+        
+        
+        i_Response.setContentType("text/html;charset=UTF-8");
+        String v_SessionData = (String)i_Request.getSession().getAttribute($SessionID);
         
         if ( !Help.isNull(i_Request.getQueryString()) )
         {
@@ -137,11 +295,59 @@ public class AnalyseObjectServlet extends HttpServlet
         // 验证登录
         if ( null == v_SessionData )
         {
-            String v_Password = i_Request.getParameter("password");
+            i_Response.setHeader("Cache-Control"      ,"no-cache, no-store, must-revalidate");
+            i_Response.setHeader("This-Header-Is-Set" ,"no-cache, no-store, must-revalidate");
+            i_Response.setHeader("Expires"            ,"0");
             
-            if ( Help.isNull(v_Password) || !this.getPassword().equals(StringHelp.md5(v_Password ,StringHelp.$MD5_Type_Hex)) )
+            
+            // 获取图片验证码
+            if ( v_RequestURL.indexOf("/getCheckImage.page") > 0 )
             {
-                i_Response.getWriter().println(this.analyse.login(v_RequestURL));
+                i_Response.setContentType("application/json;charset=UTF-8");
+                i_Response.getWriter().println(getCheckImage(i_Request));
+                return;
+            }
+            
+            String v_SID     = i_Request.getSession().getId();
+            Integer v_LCount = getLoginCounts().get(v_SID);
+            if ( v_LCount != null && v_LCount >= 3 )
+            {
+                // 账户被锁定中的提示
+                i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage));
+                return;
+            }
+            
+            String v_Password = i_Request.getParameter("password");
+            String v_CheckPwd = i_Request.getParameter("checkPWD");
+            String v_CachePwd = getPasswdCheck().get(v_SID);
+            if ( Help.isNull(v_Password) || !Help.isNumber(v_CheckPwd) || !Help.isNumber(v_CachePwd) )
+            {
+                i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage));
+                return;
+            }
+            
+            // 验证图片验证码和密码
+            long v_CheckPwdValue = Long.parseLong(v_CheckPwd);
+            long v_CachePwdValue = Long.parseLong(v_CachePwd);
+            if ( Math.abs(v_CheckPwdValue - v_CachePwdValue) > 5
+              || !this.getPassword().equals(StringHelp.md5(v_Password ,StringHelp.$MD5_Type_Hex)) )
+            {
+                if ( v_LCount == null || v_LCount <= 0 )
+                {
+                    getLoginCounts().put(v_SID ,1 ,60 * 30);
+                }
+                else if ( v_LCount < 3 )
+                {
+                    getLoginCounts().put(v_SID ,v_LCount + 1 ,60 * 30);
+                }
+                else
+                {
+                    // 锁定账户的提示
+                    i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage));
+                    return;
+                }
+                
+                i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage));
                 return;
             }
             // 登陆成功
@@ -301,13 +507,13 @@ public class AnalyseObjectServlet extends HttpServlet
                 String v_Timer           = Help.NVL(i_Request.getParameter("Timer"));
                 String v_ShowEveryOne    = Help.NVL(i_Request.getParameter("ShowEveryOne"));
                 
-                i_Response.getWriter().println(this.analyse.analyseLogger(v_BasePath 
-                                                                         ,i_Request.getRequestURL().toString() 
-                                                                         ,"Y".equalsIgnoreCase(v_Cluster) 
-                                                                         ,"Y".equalsIgnoreCase(v_ShowEveryOne) 
-                                                                         ,v_TotalType 
+                i_Response.getWriter().println(this.analyse.analyseLogger(v_BasePath
+                                                                         ,i_Request.getRequestURL().toString()
+                                                                         ,"Y".equalsIgnoreCase(v_Cluster)
+                                                                         ,"Y".equalsIgnoreCase(v_ShowEveryOne)
+                                                                         ,v_TotalType
                                                                          ,v_Sort
-                                                                         ,v_FilterClassName 
+                                                                         ,v_FilterClassName
                                                                          ,v_Timer));
             }
             else if ( Help.isNull(v_XFile) && "Y".equalsIgnoreCase(v_Cluster) )
@@ -339,7 +545,8 @@ public class AnalyseObjectServlet extends HttpServlet
     
     
     
-    public void doPost(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException 
+    @Override
+    public void doPost(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException
     {
         this.doGet(i_Request ,i_Response);
     }

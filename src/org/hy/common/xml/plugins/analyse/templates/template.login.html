@@ -4,30 +4,258 @@
 <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
  
 <title>Login</title>
+
+<script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery.min.js"></script>
+<script type="text/javascript" charset="utf-8" src=":HttpBasePath/jquery/jquery-ui.min.js"></script>
+<script type="text/javascript" charset="utf-8" src=":HttpBasePath/d3/d3.min.js"></script>
+
+<link rel="stylesheet" href=":HttpBasePath/jquery/jquery-ui.min.css" />
+
 <style type="text/css"> 
 
+    .commonDialog {
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5); 
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: -999999;
+        opacity: 0;
+    }
+    
+    .commonDialogContentBar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .commonDialogContent {
+        position: absolute;
+        width: 400px;
+        height: 460px;
+        background-color: rgba(255,255,255,1); 
+        border: 1px solid rgba(79,79,79);
+        border-radius: 10px;
+    }
+    
+    #checkImage {
+        margin-top: 6px; 
+        margin-left: 6px;
+        width: 385px;
+        height: 378px;
+    }
+    
+    #checkImageArea {
+        margin-top: 6px;
+        margin-left: 6px;
+        position: absolute;
+        top: 0px; 
+        left: 0px;
+    }
+    
+    #checkImageSlider {
+        margin-top: 10px;
+        margin-left: 16px;
+        margin-right: 60px; 
+    }
+    
+    #checkImageSliderHandle {
+        width: 62px;
+        height: 1.6em;
+        top: 50%;
+        margin-top: -.8em;
+        text-align: center;
+        line-height: 1.6em;
+    }
+    
+    #checkImageCountDownBar {
+        position: absolute;
+        top: 390px; 
+        right: 17px; 
+    }
+    
+    #checkImageTooltip {
+        position: absolute;
+        top: 425px;
+        left: 17px; 
+    }
+    
 </style>
-
-<script>
-	function f_Submit(event)
-	{
-		var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
-   		if ( keyCode == 13 ) 
-		{
-   			document.getElementById("form").submit();
-		}
-	}
-</script>
 
 </head>
 <body onload="javascript:document.getElementById('password').focus();">
+
     <div style="height:700px; width:500px; margin:0 auto;">
-    	<div style="padding-top:300px; padding-left:130px">
-    		<form id="form" action=":LoginPath" method="post">
-	            <label for="textfield">Password:</label>
-	            <input type="password" name="password" id="password" onKeyUp="f_Submit(event);">
+        <div style="padding-top:300px; padding-left:130px">
+            <form id="form" action=":LoginPath" method="post">
+                <label for="textfield">Password:</label>
+                <input type="password" id="password" name="password" onKeyUp="f_Submit(event);">
+                <input type="hidden"   id="checkPWD" name="checkPWD">
+                <input style='display:none' />
             </form>
         </div>
     </div>
+    
+    
+    
+    <div id="checkImageBar" class="commonDialog">
+        
+        <div class="commonDialogContentBar">
+            <div class="commonDialogContent">
+                <img id="checkImage"     src=":HttpBasePage/windows/image/CheckImageLoading.gif"></img>
+                <img id="checkImageArea" src=":HttpBasePage/windows/image/CheckImageTemplateBlank.png"></img>
+                
+                <div id="checkImageSlider">
+                    <div id="checkImageSliderHandle" class="ui-slider-handle"></div>
+                </div>
+                
+                <div id="checkImageCountDownBar"> </div>
+                
+                <div id="checkImageTooltip">请拖动滑块到正确的位置</div>
+            </div>
+        </div>
+        
+    </div> 
+
+
+
+<script>
+    var v_CImageY         = 0;
+    var v_CImageTimer     = null;
+    var v_CImageCountDown = -1;
+    var v_SliderHandle    = $("#checkImageSliderHandle");
+    var v_SliderOption    = {
+        min: 0,
+        max: 385 - 62,
+        step: 1,
+        value: 0,
+        create: function() 
+        {
+            v_SliderHandle.text("");
+        },
+        slide: function(event, ui) 
+        {
+            d3.select("#checkImageArea").style("left" ,ui.value + "px"); 
+        },
+        change: function( event, ui ) 
+        {
+            if ( ui.value > 0 )
+            {
+                d3.select("#checkPWD").property("value" ,ui.value + v_CImageY);
+                document.getElementById("form").submit();
+            }
+        }
+    };
+    
+    
+    
+    $(function() 
+    { 
+        $("#checkImageSlider").slider(v_SliderOption);
+    });
+    
+    
+    
+    function CImageCountDown()
+    {
+        v_CImageCountDown--;
+        
+        if ( v_CImageCountDown >= 0 )
+        {
+            d3.select("#checkImageCountDownBar").html(v_CImageCountDown + "秒");
+        }
+        else
+        {
+            v_CImageCountDown = -1;
+            if ( v_CImageTimer != null )
+            { 
+                v_CImageTimer.stop();
+            }
+                            
+            d3.select("#checkImageBar") .style("z-index" ,-999999).style("opacity" ,0);
+            d3.select("#checkImage")    .attr("src" ,":HttpBasePage/windows/image/CheckImageLoading.gif");
+            d3.select("#checkImageArea").attr("src" ,":HttpBasePage/windows/image/CheckImageTemplateBlank.png");
+        }
+    }
+    
+
+    
+    d3.selectAll(".commonDialog").on("click" ,function()
+    {
+        v_CImageCountDown = -1;
+        if ( v_CImageTimer != null )
+        { 
+            v_CImageTimer.stop();
+        }
+                        
+        d3.select("#checkImageBar") .style("z-index" ,-999999).style("opacity" ,0);
+        d3.select("#checkImage")    .attr("src" ,":HttpBasePage/windows/image/CheckImageLoading.gif");
+        d3.select("#checkImageArea").attr("src" ,":HttpBasePage/windows/image/CheckImageTemplateBlank.png");
+    });
+    
+    
+    
+    d3.selectAll(".commonDialogContent").on("click" ,function()
+    {
+        d3.event.stopPropagation();
+    });
+    
+    
+    
+    function openCheckImageDialog()
+    {
+        d3.select("#checkImageBar") .style("z-index" ,999999).style("opacity" ,1);
+        d3.select("#checkImage")    .attr("src" ,":HttpBasePage/windows/image/CheckImageLoading.gif");
+        d3.select("#checkImageArea").attr("src" ,":HttpBasePage/windows/image/CheckImageTemplateBlank.png").style("top" ,"0px").style("left" ,"0px");
+        d3.select(".commonDialogContent").style("top"  ,(document.body.clientHeight - 460) / 2 + "px");
+        d3.select(".commonDialogContent").style("left" ,(document.body.clientWidth  - 400) / 2 + "px");
+        
+        $.post(":HttpBasePage/getCheckImage.page?r=" + (new Date()).getTime() ,{}
+                ,function(i_Data)
+                {
+                    if ( i_Data && i_Data.value )
+                    {
+                        v_CImageY = i_Data.paramInt;
+                        d3.select("#checkImage")    .attr("src"  ,"data:image/png;base64," + i_Data.paramStr);
+                        d3.select("#checkImageArea").attr("src"  ,"data:image/png;base64," + i_Data.paramObj);
+                        d3.select("#checkImageArea").style("top" ,v_CImageY + "px").style("left" ,"0px");
+                        
+                        $("#checkImageSlider").slider(v_SliderOption);
+                        
+                        v_CImageCountDown = -1;
+                        if ( v_CImageTimer != null )
+                        { 
+                            v_CImageTimer.stop();
+                        }
+                        
+                        v_CImageCountDown = 11;
+                        d3.select("#checkImageCountDownBar").html(v_CImageCountDown + "秒");
+                        CImageCountDown();
+                        v_CImageTimer = d3.interval(CImageCountDown ,1000);
+                    }
+                }
+            );
+    }
+    
+    
+    
+    function f_Submit(event)
+    {
+        var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+        if ( keyCode == 13 ) 
+        {
+            openCheckImageDialog();
+        }
+    }
+    
+    
+</script>
+
 </body>
 </html>

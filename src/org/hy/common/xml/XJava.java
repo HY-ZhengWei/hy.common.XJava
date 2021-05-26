@@ -21,14 +21,6 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import com.sun.istack.internal.logging.Logger;
-
 import org.hy.common.ClassInfo;
 import org.hy.common.ClassReflect;
 import org.hy.common.Date;
@@ -55,6 +47,13 @@ import org.hy.common.xml.annotation.Xjava;
 import org.hy.common.xml.plugins.AppInterface;
 import org.hy.common.xml.plugins.XRule;
 import org.hy.common.xml.plugins.XSQLGroup;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
+import com.sun.istack.internal.logging.Logger;
 
 
 
@@ -70,14 +69,14 @@ import org.hy.common.xml.plugins.XSQLGroup;
  * 
  * 注：Xml配置文件类型与"注解 Annotation"可以同时运用在项目中。
  * 
- * @author      ZhengWei(HY) 
+ * @author      ZhengWei(HY)
  * @createDate  2012-09-13
  * @version     v1.0
  *              v1.1  2015-10-27  添加：XJava给对象赋值时，入参是Java元类型(Class.class)的功能
  *              v1.2  2016-02-16  添加：填充Web服务根目录的标记 "webhome:"
  *              v1.3  2017-01-16  添加：$SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
  *              v1.4  2017-02-13  修正：对构造器的参数类型判定方法上，引用 MethodReflect.isExtendImplement(...) 方法提高识别的准确性。
- *              v1.5  2017-10-31  添加：支持枚举名称的匹配 
+ *              v1.5  2017-10-31  添加：支持枚举名称的匹配
  *              v1.6  2017-11-23  添加：支持注解赋值时，对无Setter方法的成员属性赋值，即使是private属性也能赋值。
  *                                     当成员属性有Setter方法时，用Setter方法优先。
  *              v1.7  2017-11-24  添加：支持XML赋值时，对无Setter方法的成员属性赋值，即使是private属性也能赋值。
@@ -152,7 +151,7 @@ public final class XJava
     /** 指定setter方法的节点标记 */
     private final static String                    $XML_OBJECT_SETTER            = "setter";
     
-    /** 
+    /**
      * this关键字
      * 
      * 还有赋值功能。即 Bean v_Bean = v_Other 这样的功能
@@ -174,7 +173,7 @@ public final class XJava
     /** Call节点调用的方法后的返回结果的ID标记，此结果也将存在 $XML_OBJECTS 中 */
     private final static String                    $XML_OBJECT_CALL_RETURNID     = "returnid";
     
-    /** 
+    /**
      * submit表示 TreeMap.TreeNode.nodeID 的值。
      * 将对于树目录的子树目录的全部TreeNode.nodeID及TreeNode.info存在Map中，
      * 再将Map传递(setter)给对象
@@ -194,7 +193,7 @@ public final class XJava
      */
     private final static String                    $XML_OBJECT_ENCRYPT           = "encrypt";
     
-    /** 
+    /**
      * 真值才解释XJava。
      * 
      * 与Ref关键字类似，但比其多一个功能，就是 if="xx" 时，xx不是引用对象时，当字符串处理，
@@ -202,8 +201,8 @@ public final class XJava
      */
     private final static String                    $XML_OBJECT_IF                = "if";
     
-    /** 
-     * 假值才解释XJava 
+    /**
+     * 假值才解释XJava
      * 
      * 与Ref关键字类似，但比其多一个功能，就是 if="xx" 时，xx不是引用对象时，当字符串处理，
      * 即可以写成 if="true"
@@ -219,14 +218,14 @@ public final class XJava
     /** if 关键字的对比分割符 */
     private final static String                    $XML_OBJECT_IF_EQUALS         = "==";
     
-    /** 
+    /**
      * 此为节点文本内容的关键字标记。表示解译xml文件的URL的路径（父目录路径）。
      * 如果节点文本内容中出现 classpath: 将为自动替换为解译xml文件的URL的路径（父目录路径）。
      * 如：org.hy.common.xml
      */
     private final static String                    $XML_CLASSPATH                = "classpath:";
     
-    /** 
+    /**
      * 此为节点文本内容的关键字标记的集合。此集合中的key将自动替换为value
      *   1. classhome: 将为自动替换为classes的根目录。                   如：C:/xx/bin
      *   2. webhome: 将为自动替换为Web服务的根目录。                      如：C:/Tomcat/Webapps/Web项目名称/
@@ -236,7 +235,7 @@ public final class XJava
     /** 标记有 id 的节点都将存入 $XML_OBJECTS 集合中的 TreeNode.info 中 */
     private final static TreeMap<XJavaObject>      $XML_OBJECTS                  = new TreeMap<XJavaObject>();
     
-    /** 
+    /**
      * 专用于保存有限生命的对象实例。
      * 与 $XML_OBJECTS 互补，共同结成整个大对象池。
      * 即，XJava.getObject(...) 方法先从 $XML_OBJECTS 中获取，获取不到时，再从 $SessionMap 中获取。
@@ -245,9 +244,9 @@ public final class XJava
      */
     private final static ExpireMap<String ,Object> $SessionMap                   = new ExpireMap<String ,Object>();
     
-    /** 
+    /**
      * TreeMap.TreeNode.orderByID的最大长度。
-     * 此值决定着 XJava 能支持的树目录中同一层次中节点的数量 
+     * 此值决定着 XJava 能支持的树目录中同一层次中节点的数量
      * 
      * 6 表示最大支持 999999 个对象实例
      */
@@ -299,7 +298,7 @@ public final class XJava
      * @param i_XmlURL
      * @param i_TreeNodeRootKey
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     public static Object parserXml(ListMap<String ,String> i_ImportList ,URL i_XmlURL ,String i_TreeNodeRootKey) throws Exception
     {
@@ -316,7 +315,7 @@ public final class XJava
      * @param i_XmlURL
      * @param i_TreeNodeRootKey
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     public static Object parserXml(URL i_XmlURL ,String i_TreeNodeRootKey) throws Exception
     {
@@ -358,7 +357,7 @@ public final class XJava
      * @param i_ClassPath
      * @param i_TreeNodeRootKey
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     public static Object parserXml(ListMap<String ,String> i_ImportList ,String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey) throws Exception
     {
@@ -376,7 +375,7 @@ public final class XJava
      * @param i_ClassPath
      * @param i_TreeNodeRootKey
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     public static Object parserXml(String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey) throws Exception
     {
@@ -393,7 +392,7 @@ public final class XJava
      * @param i_XMLString
      * @param i_TreeNodeRootKey
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     public static Object parserXml(String i_XMLString ,String i_TreeNodeRootKey) throws Exception
     {
@@ -409,7 +408,7 @@ public final class XJava
      * 
      * @param i_PackageName  包名称
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     public static void parserAnnotation() throws Exception
     {
@@ -423,7 +422,7 @@ public final class XJava
      * 
      * @param i_PackageName  包名称。也可为类的全路径
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     public static void parserAnnotation(String i_PackageName) throws Exception
     {
@@ -442,7 +441,7 @@ public final class XJava
      * 
      * @param i_PackageNames  包名称集合。也可为类的全路径集合
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     public static void parserAnnotation(List<String> i_PackageNames) throws Exception
     {
@@ -944,7 +943,7 @@ public final class XJava
      * 注意：本方法不能简单的调用 getObjects(String ,false) 来实现。
      *      这两种实现的区别在于 getObjects(String) 是按每种不同的自有属性来获取实例的。
      *      即，有的对象是新实例，有的不是新实例
-     *      
+     * 
      * 2017-01-16 Add $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
      * 
      * @param i_IDPrefix  ID 标识符的前缀(区分大小写)
@@ -1093,7 +1092,7 @@ public final class XJava
                     v_TreeNode = $XML_OBJECTS.getByNodeID(v_ID);
                     
                     if ( null    != v_TreeNode.getInfo()
-                      && null    != v_TreeNode.getInfo().getObject() 
+                      && null    != v_TreeNode.getInfo().getObject()
                       && i_Class == v_TreeNode.getInfo().getObject().getClass() )
                     {
                         v_Objs.put(v_ID ,v_TreeNode.getInfo().getObject());
@@ -1154,7 +1153,7 @@ public final class XJava
                     v_TreeNode = $XML_OBJECTS.getByNodeID(v_ID);
                     
                     if ( null    != v_TreeNode.getInfo()
-                      && null    != v_TreeNode.getInfo().getObject() 
+                      && null    != v_TreeNode.getInfo().getObject()
                       && i_Class == v_TreeNode.getInfo().getObject().getClass() )
                     {
                         v_Objs.put(v_ID ,v_TreeNode.getInfo().getObject(i_IsNew));
@@ -1409,7 +1408,7 @@ public final class XJava
      * @param i_ClassPath
      * @param i_TreeNodeRootKey
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     private XJava(String i_XMLString ,String i_ClassPath ,String i_TreeNodeRootKey)
     {
@@ -1490,7 +1489,7 @@ public final class XJava
      * 解释"注解 Annotation"，转为Java对象实例
      * 
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     private void parserAnnotations() throws Exception
     {
@@ -1636,7 +1635,7 @@ public final class XJava
         }
         
         
-        // ref "方法"注解功能的实现 
+        // ref "方法"注解功能的实现
         v_ClassInfos = v_Annotations.get(ElementType.METHOD);
         if ( !Help.isNull(v_ClassInfos) )
         {
@@ -1670,7 +1669,7 @@ public final class XJava
                     }
                     else
                     {
-                        v_Object = getObject(v_AnnoID.id()); 
+                        v_Object = getObject(v_AnnoID.id());
                     }
                     
                     
@@ -1680,7 +1679,7 @@ public final class XJava
                         {
                             Method v_Method    = v_ClassInfo.getMethods().get(x);
                             Xjava  v_AnnoRef   = v_Method.getAnnotation(Xjava.class);
-                            Object v_ObjectRef = null; 
+                            Object v_ObjectRef = null;
                             
                             if ( v_Method.getParameterTypes().length != 1 )
                             {
@@ -1742,7 +1741,7 @@ public final class XJava
         }
         
         
-        // ref "属性"注解功能的实现 
+        // ref "属性"注解功能的实现
         v_ClassInfos = v_Annotations.get(ElementType.FIELD);
         if ( !Help.isNull(v_ClassInfos) )
         {
@@ -1776,7 +1775,7 @@ public final class XJava
                     }
                     else
                     {
-                        v_Object = getObject(v_AnnoID.id()); 
+                        v_Object = getObject(v_AnnoID.id());
                     }
                     
                     if ( v_Object != null )
@@ -1786,7 +1785,7 @@ public final class XJava
                             Field  v_Field     = v_ClassInfo.getFields().get(x);
                             Method v_Method    = MethodReflect.getSetMethod(v_ClassInfo.getClassObj() ,v_Field.getName() ,true);
                             Xjava  v_AnnoRef   = v_Field.getAnnotation(Xjava.class);
-                            Object v_ObjectRef = null; 
+                            Object v_ObjectRef = null;
                             
                             // 无命名注解
                             if ( Help.isNull(v_AnnoRef.ref()) )
@@ -1895,7 +1894,7 @@ public final class XJava
             return;
         }
         
-        String                            v_AppIFsXID     = "AppInterfaces"; 
+        String                            v_AppIFsXID     = "AppInterfaces";
         String                            v_AppMKXID      = "AppMsgKeySSID";
         List<ClassInfo>                   v_XRequests     = ClassReflect.getAnnotationMethods(i_Classes ,XRequest.class);
         Map<String ,AppInterface>         v_AppInterfaces = (Map<String ,AppInterface>)XJava.getObject(v_AppIFsXID);
@@ -1952,7 +1951,7 @@ public final class XJava
             }
             else
             {
-                v_Object = getObject(v_AnnoID.id()); 
+                v_Object = getObject(v_AnnoID.id());
                 v_XID    = v_AnnoID.id();
             }
             
@@ -2022,7 +2021,7 @@ public final class XJava
      * 解释Xml文件，并且可以直接将Xml文件内容转为Java对象实例
      * 
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     private Object parserXml() throws Exception
     {
@@ -2137,15 +2136,25 @@ public final class XJava
                 
                 for (int v_RI=0; v_RI<v_Rows.length; v_RI++)
                 {
-                    String v_Row = v_Rows[v_RI];
+                    String v_Row          = v_Rows[v_RI];
+                    int    v_EncryptIndex = v_Row.indexOf($XML_OBJECT_ENCRYPT);
+                    int    v_CommendS     = v_Row.indexOf("<!--");
+                    int    v_CommendE     = v_Row.lastIndexOf("-->");
                     
-                    if ( v_Row.indexOf($XML_OBJECT_ENCRYPT) >= 0 )
+                    if ( v_EncryptIndex >= 0 && !(v_CommendS < v_EncryptIndex && v_EncryptIndex < v_CommendE) )
                     {
                         XJavaEncrypt v_XJE  = this.encrypts.get(v_Index);
                         int          v_OldS = v_Row.indexOf("<"  + v_XJE.getNodeName() + " ");
                         int          v_OldE = v_Row.indexOf("</" + v_XJE.getNodeName() + ">") + ("</" + v_XJE.getNodeName() + ">").length();
-                        String       v_Old  = v_Row.substring(v_OldS ,v_OldE);
-                        String       v_New  = "<" + v_XJE.getNodeName() + " " + $XML_OBJECT_ENCRYPT + "=\"" + v_XJE.getEncrypt() + "\">" + $XML_OBJECT_ENCRYPT + ":" + v_XJE.getValueEncrypt() + "</" + v_XJE.getNodeName() + ">";
+                        
+                        if ( v_OldS < 0 || v_OldE < 0 )
+                        {
+                            $Logger.warning("overWriteXml is not find. " + v_XJE.getSuperID() + ":" + v_XJE.getNodeName() + ":" + ":" + v_XJE.getValue() + ":" + v_Row);
+                            continue;
+                        }
+                        
+                        String v_Old = v_Row.substring(v_OldS ,v_OldE);
+                        String v_New = "<" + v_XJE.getNodeName() + " " + $XML_OBJECT_ENCRYPT + "=\"" + v_XJE.getEncrypt() + "\">" + $XML_OBJECT_ENCRYPT + ":" + v_XJE.getValueEncrypt() + "</" + v_XJE.getNodeName() + ">";
                         
                         if ( v_Row.indexOf(v_Old) >= 0 )
                         {
@@ -2308,7 +2317,7 @@ public final class XJava
      * @param i_SuperNode
      * @param i_SuperTreeNode
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     private Object setInstance(Class<?> i_SuperClass ,Object io_SuperInstance ,Node i_SuperNode ,TreeNode<XJavaObject> i_SuperTreeNode) throws Exception
     {
@@ -2339,7 +2348,7 @@ public final class XJava
                 String                v_TreeNodeOrderByID = StringHelp.lpad(v_NodeIndex ,$TREE_NODE_ORDERBYID_MAXLEN ,"0");
                 TreeNode<XJavaObject> v_TreeNode          = new TreeNode<XJavaObject>(v_TreeNodeOrderByID ,v_ID ,i_SuperTreeNode);
                 boolean               v_SuperInstance_New = false;    // 父类是否在本节点被实例化
-                boolean               v_ThisFun           = false;    // 是否为This赋值功能 
+                boolean               v_ThisFun           = false;    // 是否为This赋值功能
                 
                 
                 // 真值才解释XJava
@@ -2466,7 +2475,7 @@ public final class XJava
                         }
                         else
                         {
-                            // ZhengWei(HY) Del 2016-01-04 删除下面的重复抛错，改为重复覆盖 
+                            // ZhengWei(HY) Del 2016-01-04 删除下面的重复抛错，改为重复覆盖
                             // throw new Exception("ID[" + v_ID + "] is exist of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
                             $XML_OBJECTS.put(v_TreeNode);
                         }
@@ -2504,8 +2513,8 @@ public final class XJava
                             int v_SuperModifiers = i_SuperClass.getModifiers();
                             
                             // 判断父节点的Java类的是为接口、抽象类、静态类
-                            if ( !Modifier.isInterface(v_SuperModifiers) 
-                              && !Modifier.isAbstract(v_SuperModifiers) 
+                            if ( !Modifier.isInterface(v_SuperModifiers)
+                              && !Modifier.isAbstract(v_SuperModifiers)
                               && !Modifier.isStatic(v_SuperModifiers) )
                             {
                                 if ( i_SuperClass.getDeclaredConstructors().length >= 1 )
@@ -2725,13 +2734,13 @@ public final class XJava
                             // 当对象实例为List或Set集合
                             if ( io_SuperInstance instanceof Collection )
                             {
-                                try 
+                                try
                                 {
                                     Method v_Method = i_SuperClass.getMethod($XML_LIST_DEF_SETTER ,Object.class);
                                     
                                     v_Method.invoke(io_SuperInstance ,v_AttrInstance);
-                                } 
-                                catch (Exception exce) 
+                                }
+                                catch (Exception exce)
                                 {
                                     throw new NoSuchMethodException("Execute List method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
                                 }
@@ -2739,7 +2748,7 @@ public final class XJava
                             // 当对象实例为Map集合
                             else if ( io_SuperInstance instanceof Map )
                             {
-                                try 
+                                try
                                 {
                                     String v_Key        = getNodeAttribute(i_SuperNode ,$XML_MAP_KEY);
                                     Method v_AttrMethod = MethodReflect.getGetMethod(v_AttrClass ,v_Key ,true);
@@ -2751,8 +2760,8 @@ public final class XJava
                                     Method v_Method     = i_SuperClass.getMethod($XML_MAP_DEF_SETTER ,Object.class ,Object.class);
                                     
                                     v_Method.invoke(io_SuperInstance ,v_KeyValue ,v_AttrInstance);
-                                } 
-                                catch (Exception exce) 
+                                }
+                                catch (Exception exce)
                                 {
                                     throw new NoSuchMethodException("Execute Map method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
                                 }
@@ -2798,7 +2807,7 @@ public final class XJava
                         // 当节点没有明确说明Java类型时，但其节点下又有多个子节点时
                         else if ( getChildNodesSize(v_Node) >= 1 )
                         {
-                            // 本节点 v_Node 在父节点有 setter 方法时，从setter方法的入参中获取本节点的Java的Class类型 
+                            // 本节点 v_Node 在父节点有 setter 方法时，从setter方法的入参中获取本节点的Java的Class类型
                             if ( !Help.isNull(v_SetMethods) )
                             {
                                 try
@@ -2920,8 +2929,8 @@ public final class XJava
             int v_SuperModifiers = i_SuperClass.getModifiers();
             
             // 判断父节点的Java类的是为接口、抽象类、静态类
-            if ( !Modifier.isInterface(v_SuperModifiers) 
-              && !Modifier.isAbstract(v_SuperModifiers) 
+            if ( !Modifier.isInterface(v_SuperModifiers)
+              && !Modifier.isAbstract(v_SuperModifiers)
               && !Modifier.isStatic(v_SuperModifiers) )
             {
                 if ( i_SuperClass.getDeclaredConstructors().length >= 1 )
@@ -3184,7 +3193,7 @@ public final class XJava
                 else if ( $XML_JAVA_DATATYPE_CLASS.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = Class.class;
-                    v_ParamValue = (String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode));
+                    v_ParamValue = encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_BYTE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
@@ -3262,8 +3271,8 @@ public final class XJava
             return i_ConstructorClass.newInstance();
         }
         else
-        {   
-            v_Constructor = this.constructor_GetConstructor(i_ConstructorClass 
+        {
+            v_Constructor = this.constructor_GetConstructor(i_ConstructorClass
                                                            ,v_ParamClassList
                                                            ,v_ParamClassChangeList);
             
@@ -3660,9 +3669,9 @@ public final class XJava
             }
         }
         else
-        {   
-            v_TrueCallMethod = this.callMethod_GetMethod(v_TrueClass 
-                                                        ,v_TrueCallMethodName 
+        {
+            v_TrueCallMethod = this.callMethod_GetMethod(v_TrueClass
+                                                        ,v_TrueCallMethodName
                                                         ,v_ParamClassList
                                                         ,v_ParamClassChangeList);
             
@@ -3824,7 +3833,7 @@ public final class XJava
      * 例如　v_RefID = "xxx.toString.toUpperCase" 时，
      *      v_RefObjectID 即为 "xxx"，
      *      v_MethodURL   即为 "toString.toUpperCase"。
-     *      
+     * 
      * 1. 支持 this.静态常量
      * 2. 支持 this.方法全名称
      * 3. 支持 RefID.静态常量
@@ -3866,7 +3875,7 @@ public final class XJava
                 {
                     if ( v_RefIDArr.length == 2 )
                     {
-                        // 只获取类的静态属性 
+                        // 只获取类的静态属性
                         return v_RetObj;
                     }
                     else
@@ -4184,7 +4193,7 @@ public final class XJava
      * 3. 浅克隆：当构造一个新的实例时，如果没有clone()方法，则通过无参数的构造器new一个实例，再依次newObject.setter(oldObject.getter())
      * 
      * @author      ZhengWei(HY)
-     * @version     v1.0  
+     * @version     v1.0
      * @createDate  2013-08-10
      */
     class XJavaObject
@@ -4192,7 +4201,7 @@ public final class XJava
         /** XJava构造出的对象实例 */
         private Object object;
         
-        /** 
+        /**
          * 是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
          * 
          * XJava默认构造出的对象为"单例"

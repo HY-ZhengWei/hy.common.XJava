@@ -1,0 +1,871 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="sqls"            class="java.util.ArrayList" />
+    <import name="dataSource"      class="com.mchange.v2.c3p0.ComboPooledDataSource" />
+    <import name="dataSourceGroup" class="org.hy.common.db.DataSourceGroup" />
+    <import name="xparam"          class="java.util.Hashtable" />
+    <import name="item"            class="org.hy.common.app.Param" />
+
+
+
+    <!-- 数据库配置信息 -->
+    <sqls>
+
+        <!-- mysql drools  add by WL  OA 数据库 -->
+        <dataSource id="DS_OA_EMP" >
+            <driverClass>com.mysql.cj.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:QSeeZzZMzesxB7n6eYP0kh+8JtrYXxtea9LZh/k2QqFvR9FtoXiGiCRDMAJanfK1kftbIAkzs3Yg
+Nt1hlpd2N/ABN/3S6Qbtx2NmRZK1iCEdqX0wfQZNvXTeIgNue8OAhuuuLASalj6gUEmqIxrEcw==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:VAOuh3dHY8w=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:IIsZy+ZDGJoGbw9Sv7GyKbXixR2Y+Ghe</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>2</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 OA  -->
+        <dataSourceGroup id="DSG_OA_EMP">
+            <call name="add">
+                <dataSource ref="DS_OA_EMP"/>
+            </call>
+        </dataSourceGroup>
+
+        <!-- mysql drools  add by malong -->
+        <dataSource id="DS_rule" >
+            <driverClass>com.mysql.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:LeuRJa7bJqROKMaKtAW3hK9exUcWA3iwS9lq9Yz5GHXbL/FCRZZ2TRlg3zMaOdQ/GnXi9P5sLyNm
+QjTZZweR8IsNlJQqbdoBRSQ7i2bNGac=</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:RVJ4WCjEzKo=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:k2LynLm8ehOcUajRJ3Fm1Q==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>2</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 report  -->
+        <dataSourceGroup id="DSG_rule">
+            <call name="add">
+                <dataSource ref="DS_rule"/>
+            </call>
+        </dataSourceGroup>
+
+        <!--mysql ByWL bcs 抽取变更合同数据-->
+        <dataSource id="DS_BCS" >
+            <driverClass>com.mysql.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:v0D3fbaKRZB6hUR2EsP+OQeri/jEEVbd5kr+4DDj3MiTcecbTXqh36kPUPbV4uQeMgtFDqK9Y64Z
+ju1KA3Pwhcx8/+nBI6FPChkuRDBtq46SH7skZJWZBA==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:8mjgsJC8GRg=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:rUKrl1R3mTFXlTHLQqFhfw==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>2</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        <dataSourceGroup id="DSG_BCS">
+            <call name="add">
+                <dataSource ref="DS_BCS"/>
+            </call>
+        </dataSourceGroup>
+
+        <dataSource id="DS_avplanCalccloud" >
+            <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:/h0s4QZ4xPf+DlOaAJVsVrzJdHkv0JUM6sT5dfGAP3sCq/a4DCby7A==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:CmLjJQRFlmKrx5wwzJ0GCA==</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:KU79fGnKTzgaI/fDh3dBlQ==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>100000</checkoutTimeout>
+        </dataSource>
+
+        <!-- 数据库连接池组 -->
+        <dataSourceGroup id="DSG_Avplan_calccloud">
+            <call name="add">
+                <dataSource ref="DS_avplanCalccloud" />
+            </call>
+        </dataSourceGroup>
+
+        
+        <dataSource id="DS_avplan03" >
+            <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:iGf2Fbv165VnzYx7ojfMKb2+vCAXtWEo/BW0Bv7gAdEk+Y0h7JAJCA==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:GhBKrEnffSw=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:dyABcMV5tWo=</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        
+                <!-- 数据库连接池组 -->
+        <dataSourceGroup id="DSG_brpdasai">
+            <call name="add">
+                <dataSource ref="DS_avplan03" />
+            </call>
+        </dataSourceGroup>
+    
+        <!-- MySQL数据库 -->
+        <dataSource id="DS_brp01">
+                <driverClass>com.mysql.cj.jdbc.Driver</driverClass>
+                <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:KOpE5FsUU7A5CRb3Ay0MMhdpEwFSugjMTR82kzL8vtvsthuCqHIxddaVwxlCjA1kgNpU/K2ahfC4
+Ke67DEMOs4+zfEp2tv/HRc4SVxHTj5g=</jdbcUrl>
+                <user encrypt="org.hy.common.StringHelp">encrypt:vM8hNLl6Ta4=</user>
+                <password encrypt="org.hy.common.StringHelp">encrypt:9gwLv//I5u3gRS9Nq/nZIA==</password>
+                <maxPoolSize>10</maxPoolSize>
+                <initialPoolSize>2</initialPoolSize>
+                <checkoutTimeout>10000</checkoutTimeout>
+            </dataSource>
+        
+        <!-- SQL Server数据库 -->
+        <dataSource id="DS_brp01" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:nmtInlusrn0dxstmfrzFJCLxVbIAk50MZOsisYmXdISUOSJkaon3uAN7y6GpD6/maMtYK2ecAk8=</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:lLvMEDTrkeY=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:gaTAGHBnAxwzZRzkvy959g==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        
+
+        <!-- 数据库连接池组 -->
+        <dataSourceGroup id="DSG_brp">
+            <call name="add">
+                <dataSource ref="DS_brp01" />
+            </call>
+        </dataSourceGroup>
+        
+        <!-- SQL Server数据库 -->
+        <dataSource id="DS_sms01" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:B8O34QJcPe6yNNq645hiuMvhQEaiXNRHARthSEz0qPV8lutp6VIsoYEuPe3bB+TsQlhYR9oUn9iH
+rpZqnueCSg==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:iowW/hn1sX0=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:8NHm8c6oaFhRxwSIoFuO1Q==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        
+        <!-- 数据库连接池组 -->
+        <dataSourceGroup id="DSG_sms">
+            <call name="add">
+                <dataSource ref="DS_sms01" />
+            </call>
+        </dataSourceGroup>
+        
+        <!-- oracle数据库 -->
+        <dataSource id="DS_avplan01" >
+            <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:WPN+7szago9HDN6WnwT5bpteFjZJb/plIyHXdRW1y2FLEhWbLt5rrg==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:H0BzT/FCWPw=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:CdmJbZaBJAs=</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+
+        <!-- 数据库连接池组 -->
+        <dataSourceGroup id="DSG_Avplan">
+            <call name="add">
+                <dataSource ref="DS_avplan01" />
+            </call>
+        </dataSourceGroup>
+        <!-- SQL Server数据库 sang  考勤数据源-->
+        <dataSource id="DS_Work">
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:+kNpv1IHqjLiHcSItXuLPMyUodobPQ/2bKxoQI/Zw371rUtfUj2TZGuCoVRyLBbzIEcRUen6ZGIz
+DRmud+LJcQ==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:OMe+ghUAAYo=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:wizrz/1WfIc=</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 -->
+        <dataSourceGroup id="DSG_Work">
+            <call name="add">
+                <dataSource ref="DS_Work" />
+            </call>
+        </dataSourceGroup>
+        
+        <!-- SQL Server数据库 cpd (合同履约文档管理系统) add by malong -->
+        <dataSource id="DS_cpd1" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:iM/WZok4aIgRPLR43fsIquVDgGKkFAvy5u6rVLTy+gfPLQKyeGxblwcaHg20P1UOKVnxS3UT3Ag=</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:iwHoLzmUU5I=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:LiClRXAoJVTx/JRGTs/aAg==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        
+        <!-- 数据库连接池组 cpd (合同履约文档管理系统) -->
+        <dataSourceGroup id="DSG_cpd">
+            <call name="add">
+                <dataSource ref="DS_cpd1" />
+            </call>
+        </dataSourceGroup>
+
+        <dataSource id="DS_PMP" >
+            <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:hDurJaaFPMUqMTn3pK6e6TldR1zbmLSRUjNfMpPt5B8fqNtjbGz5xYmjLFJoBRMLccw0ApRMx0Ex
+smGsKOFi5Mul4dRJvfOPBnAVaDuHebQo6KOBEFr9h039Sp1LQCul</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:VtB23v5arC0=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:nZBhpQI9F5Y=</password>
+            <filters>stat,wall,log4j2</filters>
+            <initialSize>5</initialSize>
+            <minIdle>5</minIdle>
+            <maxActive>20</maxActive>
+            <maxWait>60000</maxWait>
+            <timeBetweenEvictionRunsMillis>60000</timeBetweenEvictionRunsMillis>
+            <minEvictableIdleTimeMillis>300000</minEvictableIdleTimeMillis>
+            <validationQuery>SELECT 1</validationQuery>
+            <testWhileIdle>true</testWhileIdle>
+            <testOnBorrow>false</testOnBorrow>
+            <testOnReturn>false</testOnReturn>
+            <poolPreparedStatements>true</poolPreparedStatements>
+            <maxPoolPreparedStatementPerConnectionSize>20</maxPoolPreparedStatementPerConnectionSize>
+        </dataSource>
+
+
+        <!-- 数据库连接池组 -->
+        <dataSourceGroup id="DSG_PMP">
+            <call name="add">
+                <dataSource ref="DS_PMP" />
+            </call>
+        </dataSourceGroup>
+
+
+        <!-- SQL Server report  add by malong -->
+        <dataSource id="DS_msg" >
+            <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:M0DSnk8ZrWy6COKQgpDQsJV7ix/1GDAcotleMWr18cVaVvZuls2nmw==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:sLi0Wsxq+R0=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:oq5nIHKoOeEwAq4UwxTjMA==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 report  -->
+        <dataSourceGroup id="DSG_msg">
+            <call name="add">
+                <dataSource ref="DS_msg"/>
+            </call>
+        </dataSourceGroup>
+        <!-- SQL Server report  add by malong -->
+        <dataSource id="DS_report" >
+            <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:n3B+TZsxaTFBRWyKnYnRPjmD9VCOY7hwgkVfgTmEbaVEsang1qeqKQ==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:+Qdf7n//ZgLD3CuZihKhIw==</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:lF7zve/u6r3pCWsYV9imNQ==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 report  -->
+        <dataSourceGroup id="DSG_report">
+            <call name="add">
+                <dataSource ref="DS_report"/>
+            </call>
+        </dataSourceGroup>
+        <!-- SQL Server数据库MES(制造执行系统) add by LHao -->
+        <dataSource id="DS_mes01" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:dctBfCIxjLMSuIv80daNxgUh5KH6Zu2pC3GAnWDQSqCDYO2i9xfRL02ol8vKwy6FZwR9gtNf3knZ
+uFqFIWx9pA==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:tSterRpXv1A=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:uo525oTe2H+lO3JCeA/0Ow==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 MES (制造执行系统) -->
+        <dataSourceGroup id="DSG_mes">
+            <call name="add">
+                <dataSource ref="DS_mes01" />
+            </call>
+        </dataSourceGroup>
+
+        <!-- SQL Server数据库 snms add by zy -->
+        <dataSource id="DS_snms" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:oaR8TBfnFdw47nm52V71741PjX4ZrUjAAX98tQce5Qr0IpGkdk+vXctIxV/aWhe7gVjNuNbr+K9U
+ziuKIt2pAA==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:9QNGgr5hWU4=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:0G3c+JwSpOI=</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 snms -->
+        <dataSourceGroup id="DSG_snms">
+            <call name="add">
+                <dataSource ref="DS_snms" />
+            </call>
+        </dataSourceGroup>
+
+        <!-- SQL Server数据库MIM(计量器具管理系统) add by LHao -->
+        <dataSource id="DS_mim01" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:R252ruSd1unjkYYsFUZSCsHtseiHVKJgnKzjwSbCe9YXxFB7Uc2utSaMcO0BPglNWu2lCKDvnrg=</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:kBl124uTNus=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:3BwK/gvZ4r0RCUyQrwzXMg==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 MIM (计量器具管理系统) -->
+        <dataSourceGroup id="DSG_mim">
+            <call name="add">
+                <dataSource ref="DS_mim01" />
+            </call>
+        </dataSourceGroup>
+
+        <!-- SQL Server数据库 pqm -->
+        <dataSource id="DS_pqmDB01" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:/kyvFYrCAp+SJNvHqCyt3DyfrU7PWeeqGEfHoLJP2XqlYWOl3tbLXkhmCsw5DEe1EKHr7FppXf0=</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:4KeeD2pk9dY=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:IBgzAF4n6pLXUf/Bvf027w==</password>
+            <maxPoolSize>2000</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+
+        <!-- 数据库连接池组 pqm -->
+        <dataSourceGroup id="DS_pqmDB">
+            <call name="add">
+                <dataSource ref="DS_pqmDB01" />
+            </call>
+        </dataSourceGroup>
+
+        <!-- SQL Server数据库 capmsplan (wy基本数据库 sqlserver2000) add by malong -->
+        <dataSource id="DS_capmsplan1" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:XTQtl8M+/bjuY8JdFoyr86incMGhGSclG0sD6WuqBsVJ8W96P5t5kDkt8gGfU5I5w+xA/Ako3iPV
+JAZQVMnwvg==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:nFAIbL5cZig=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:khskY5kWOuasG6nPF6jRug==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        
+        <!-- 数据库连接池组 capmsplan (wy基本数据库 sqlserver2000) -->
+        <dataSourceGroup id="DSG_capmsplan">
+            <call name="add">
+                <dataSource ref="DS_capmsplan1" />
+            </call>
+        </dataSourceGroup> 
+        
+        <!-- SQL Server  MiddleWare add by xubo -->
+        <dataSource id="DS_middle" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+        <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:S4LVZmvSeNbiDHFfCG2ugk9Df1BwODCjb8NbYMmR6k1DHXRMPqT1MpLpfaXJOPhrahXIM3BJGXzq
+lDCbQ0smOA==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:XFTSICmGKKQ=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:/LjK3aDDpsL14aWt6Aqm1A==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组  middleWare -->
+        <dataSourceGroup id="DSG_middle">
+            <call name="add">
+                <dataSource ref="DS_middle"/>
+            </call>
+        </dataSourceGroup>
+
+        
+                
+        <!-- SQL Server数据库 xxDB (合同评审) add by 杨东 -->
+        <dataSource id="DS_xxDB1" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:s4QqiHvDCad2RvMro9V8E4HrGoeptQ1AWQhOCAaDsBefzcEPNmV7ov+Q1APHf6BWkckCMXS70eM=</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:699m+1jrtRU=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:OQARCC2TjrtbgKLI17O/Og==</password>
+            <maxPoolSize>2000</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        
+        <!-- 数据库连接池组 xxDB -->
+        <dataSourceGroup id="DSG_xxDB">
+            <call name="add">
+                <dataSource ref="DS_xxDB1" />
+            </call>
+        </dataSourceGroup>
+                
+        <!-- SQL Server数据库 productInfoDB (产品信息数据库) add by 李浩 -->
+        <dataSource id="DS_productInfoDB" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:L4JEYUeRcOSWsV+jkfr5cqY9ufYsgRDMw6d2vznmQxVh2IAr00NYLsoJTxVO3VlzV17gIsvfKJzJ
+Zt4OZFmOvblAB8OZTBut</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:2kMAPaEfeQA=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:SndZZtf6bvmK7tn6POKW1g==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        
+        <!-- 数据库连接池组 productInfoDB -->
+        <dataSourceGroup id="DSG_productInfoDB">
+            <call name="add">
+                <dataSource ref="DS_productInfoDB" />
+            </call>
+        </dataSourceGroup>
+        
+        
+        <!-- SQL Server数据库 xxDB (用户数据同步) add by 高晓静 -->
+        <dataSource id="DS_mss1" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:15YbXS7DAKklsVSOpmjPE9ZYRWUscJLmUY8hiQNRJwUuDvKzICSH++A/5AFl/fTatmMLFUEFH+M=</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:M1Er5S7ivTQ=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:y60ypN9VrrhysYSPNzmYjw==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        
+        <!-- 数据库连接池组 xxDB -->
+        <dataSourceGroup id="DSG_mss">
+            <call name="add">
+                <dataSource ref="DS_mss1" />
+            </call>
+        </dataSourceGroup>
+        
+        
+        
+        <!-- SQL Server数据库 xxDB (用户数据同步) add by 高晓静 -->
+        <dataSource id="DS_LogWeb" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:0hP9rKnhCPLgA1bZUTYCnmnOmApDXi8AUvUbeag7BBm5NIJMhklSvKhB4xBJxKwkiTupCvHUHtpN
+48qPV/VWDA==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:RCa0aRQU47w=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:RKvEhSZEaIOLT+4Aq9TmMw==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        
+        <!-- 数据库连接池组 xxDB -->
+        <dataSourceGroup id="DSG_LogWeb">
+            <call name="add">
+                <dataSource ref="DS_LogWeb" />
+            </call>
+        </dataSourceGroup>
+        
+        <!-- SQL Server数据库 MES_APS (mes系统与Aps系统对接数据库) add by lihao -->
+        <dataSource id="DS_MES_APS" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:JUfwhhtrGBCmuNdLWKkyQkJz7Ccd8+kj3QM7/6i/iGu72bKTpoDGny7D5pJn7PG7s5tyqx/1+2B8
+nWt/qG6axQ==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:3TuEAbHMXUY=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:Uo9OyCWY2K93r1TSGtOKkQ==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        
+        <!-- 数据库连接池组 MES_APS -->
+        <dataSourceGroup id="DSG_MES_APS">
+            <call name="add">
+                <dataSource ref="DS_MES_APS" />
+            </call>
+        </dataSourceGroup>
+        
+                <!-- SQL Server report  add by malong -->
+        <dataSource id="DS_calccloud_oracle" >
+            <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:Gg7u+6WopbItN1lL/QbDdktNDflUIghkHzCt6bNwu9nUbScZHI3HlQ==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:/uTn1DHVjKWAwMUSK9ZW7g==</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:PuojKr3/aj8N+d4TCpoY+Q==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>5</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 report  -->
+        <dataSourceGroup id="DSG_calccloud_oracle">
+            <call name="add">
+                <dataSource ref="DS_calccloud_oracle"/>
+            </call>
+        </dataSourceGroup>
+        <!-- SQL Server数据库 warehouse  add by dxl -->
+        <dataSource id="DS_WARE_HOUSE" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:KRbgwZL6gWwjX1eWGIYhEC+VPnBiDtJ9E425x2fFTfWOMCz6T3SI6IZ3f0anKkZJLP/zrTrfJVU9
+JoneUghM+Q==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:fr6qaUcWqYs=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:tIE+MlWrzmc9Dh9ZHQc9Zw==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+        
+        <!-- 数据库连接池组 _WARE_HOUSE -->
+        <dataSourceGroup id="DSG_WARE_HOUSE">
+            <call name="add">
+                <dataSource ref="DS_WARE_HOUSE" />
+            </call>
+        </dataSourceGroup>
+        
+        
+        <!-- SQL Server数据库 YPN ADD 2017-11-01-->
+        <dataSource id="DS_webdata01" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:CBn6X55HDY/wbjYi6/SWdrnrYPwM8waa/hUSxVyDph63SVOSkdp9ua9tD2EO8e0XSXlitxaIRWtu
++ybx4ANXTA==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:qM1xvCyDoNM=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:J9uCO1qTzekHUVo1PBn9ww==</password>
+            <maxPoolSize>2000</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>10000</checkoutTimeout>
+        </dataSource>
+
+        <!-- 数据库连接池组 YPN ADD 2017-11-01 -->
+        <dataSourceGroup id="DSG_webdata">
+            <call name="add">
+                <dataSource ref="DS_webdata01" />
+            </call>
+        </dataSourceGroup>
+        
+        <!-- 数据库连接池组 capmsplan (wy基本数据库 sqlserver2000) -->
+        <dataSourceGroup id="DSG_brpcapmsplan">
+            <call name="add">
+                <dataSource ref="DS_capmsplan1" />
+            </call>
+        </dataSourceGroup>
+
+
+        <dataSource id="DS_dnc_mes">
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:teV78vNI4smX8onkDxB3cOCg9LhkUr4ZL0rJMhnz1iF8qx0gpV/X4ulWo0wmq6sUwb8QakwZ3UB0
+ZL38Y80nBA==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:DffKccauVwQ=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:rU8H2G4Kqgv/TPLuXjsSzA==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        
+        <dataSourceGroup id="DSG_dnc_mes">
+            <call name="add">
+                <dataSource ref="DS_dnc_mes" />
+            </call>
+        </dataSourceGroup>
+
+
+
+        <!-- SQL Server数据库 xxDB (合同评审) add by 杨东 -->
+        <dataSource id="DS_xxDB1" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:s4QqiHvDCad2RvMro9V8E4HrGoeptQ1AWQhOCAaDsBefzcEPNmV7ov+Q1APHf6BWkckCMXS70eM=</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:699m+1jrtRU=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:OQARCC2TjrtbgKLI17O/Og==</password>
+            <maxPoolSize>2000</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+
+        <!-- 数据库连接池组 xxDB -->
+        <dataSourceGroup id="DSG_xxDB">
+            <call name="add">
+                <dataSource ref="DS_xxDB1" />
+            </call>
+        </dataSourceGroup>
+
+
+        <!-- SQL Server数据库 xxDB (用户数据同步) add by 高晓静 -->
+        <dataSource id="DS_mss1" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:15YbXS7DAKklsVSOpmjPE9ZYRWUscJLmUY8hiQNRJwUuDvKzICSH++A/5AFl/fTatmMLFUEFH+M=</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:M1Er5S7ivTQ=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:y60ypN9VrrhysYSPNzmYjw==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+
+        <!-- 数据库连接池组 xxDB -->
+        <dataSourceGroup id="DSG_mss">
+            <call name="add">
+                <dataSource ref="DS_mss1" />
+            </call>
+        </dataSourceGroup>
+
+
+
+        <!-- SQL Server数据库 xxDB (用户数据同步) add by 高晓静 -->
+        <dataSource id="DS_LogWeb" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:0hP9rKnhCPLgA1bZUTYCnmnOmApDXi8AUvUbeag7BBm5NIJMhklSvKhB4xBJxKwkiTupCvHUHtpN
+48qPV/VWDA==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:RCa0aRQU47w=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:RKvEhSZEaIOLT+4Aq9TmMw==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+
+        <!-- 数据库连接池组 xxDB -->
+        <dataSourceGroup id="DSG_LogWeb">
+            <call name="add">
+                <dataSource ref="DS_LogWeb" />
+            </call>
+        </dataSourceGroup>
+
+        <!-- SQL Server数据库 MES_APS (mes系统与Aps系统对接数据库) add by lihao -->
+        <dataSource id="DS_MES_APS" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:JUfwhhtrGBCmuNdLWKkyQkJz7Ccd8+kj3QM7/6i/iGu72bKTpoDGny7D5pJn7PG7s5tyqx/1+2B8
+nWt/qG6axQ==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:3TuEAbHMXUY=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:Uo9OyCWY2K93r1TSGtOKkQ==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+
+        <!-- 数据库连接池组 MES_APS -->
+        <dataSourceGroup id="DSG_MES_APS">
+            <call name="add">
+                <dataSource ref="DS_MES_APS" />
+            </call>
+        </dataSourceGroup>
+        <!-- SQL Server数据库 warehouse  add by dxl -->
+        <dataSource id="DS_WARE_HOUSE" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:KRbgwZL6gWwjX1eWGIYhEC+VPnBiDtJ9E425x2fFTfWOMCz6T3SI6IZ3f0anKkZJLP/zrTrfJVU9
+JoneUghM+Q==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:fr6qaUcWqYs=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:tIE+MlWrzmc9Dh9ZHQc9Zw==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+
+        <!-- 数据库连接池组 _WARE_HOUSE -->
+        <dataSourceGroup id="DSG_WARE_HOUSE">
+            <call name="add">
+                <dataSource ref="DS_WARE_HOUSE" />
+            </call>
+        </dataSourceGroup>
+
+        <!-- SQL Server数据库 casting  add by dxl -->
+        <dataSource id="DS_CASTING" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:IzJrDv24qBmlh6M25pdPr3FvXApg/vXY5BJWYEtitYKLM7WnnYhugsREHBnii1u4sE3DdLLAaKvF
+FHrg4HRzMw==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:fl7DnMg33aI=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:VE6hl7zf16ZrtZxVtmRIhQ==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+
+        <!-- 数据库连接池组 _WARE_HOUSE -->
+        <dataSourceGroup id="DSG_CASTING">
+            <call name="add">
+                <dataSource ref="DS_CASTING" />
+            </call>
+        </dataSourceGroup>
+
+        <!-- SQL Server数据库 YPN ADD 2017-11-01-->
+        <dataSource id="DS_webdata01" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:CBn6X55HDY/wbjYi6/SWdrnrYPwM8waa/hUSxVyDph63SVOSkdp9ua9tD2EO8e0XSXlitxaIRWtu
++ybx4ANXTA==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:qM1xvCyDoNM=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:J9uCO1qTzekHUVo1PBn9ww==</password>
+            <maxPoolSize>2000</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+
+        <!-- 数据库连接池组 YPN ADD 2017-11-01 -->
+        <dataSourceGroup id="DSG_webdata">
+            <call name="add">
+                <dataSource ref="DS_webdata01" />
+            </call>
+        </dataSourceGroup>
+
+        <!-- SQL Server report  add by malong -->
+        <dataSource id="DS_report" >
+            <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:n3B+TZsxaTFBRWyKnYnRPjmD9VCOY7hwgkVfgTmEbaVEsang1qeqKQ==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:+Qdf7n//ZgLD3CuZihKhIw==</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:lF7zve/u6r3pCWsYV9imNQ==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 report  -->
+        <dataSourceGroup id="DSG_report">
+            <call name="add">
+                <dataSource ref="DS_report"/>
+            </call>
+        </dataSourceGroup>
+
+
+
+            <!-- SQL Server数据库 pscm -->
+        <dataSource id="DS_pscm" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:N1bunLcGricym6zeyaJ3Qtydqy41/Be8z3Oew3TXsKOuKE2t+CfurcB4dtoiKczWp2BK516yeFM=</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:Ln7kBB+cJf8=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:1KtLZXqIhGo+Sy6St1O3UQ==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 pscm  -->
+        <dataSourceGroup id="DSG_pscm">
+            <call name="add">
+                <dataSource ref="DS_pscm"/>
+            </call>
+        </dataSourceGroup>
+
+        <dataSource id="DS_pscmLS" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:IOTxfZkrkTW+Lmed7xO2StdJVCuaHc7Mryh8LWlYvapJpF53GgpjWxZOreH5C3/fEcCiL6u9n07D
+xIiLJxa7Gg==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:OmN8esZcoh8=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:UqcZoEjv49sUVrECsxaUVw==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 pscm  -->
+        <dataSourceGroup id="DSG_pscmLS">
+            <call name="add">
+                <dataSource ref="DS_pscmLS"/>
+            </call>
+        </dataSourceGroup>
+          <!-- SQL Server数据库 plan -->
+         <dataSource id="DS_plan" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:zxrBpoTV43qduWsVTJF/9n7GF2G7sG8QQIpCjRsFLg6wZVLLckv2JYD2FZVZGyz1VhU/7j6OParD
+4ToHflWmBA==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:/olF6OpHlZs=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:x3jf16HIL6lEBYqDcRbobQ==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 plan  -->
+            <dataSourceGroup id="DSG_plan">
+            <call name="add">
+                <dataSource ref="DS_plan"/>
+            </call>
+        </dataSourceGroup>
+        
+                <!-- oracle数据库 -->
+        <dataSource id="DS_avplanplmlog01" >
+            <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:iyeJu56Tmpia0J1xwCUTyPLjUp9C1fkAGgSVoOVumH+w6Tq2r9Z2Fw==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:C36mzoCvhUU=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:rbfpIZQAEWQ=</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>100000</checkoutTimeout>
+        </dataSource>
+
+        <!-- 数据库连接池组 -->
+        <dataSourceGroup id="DSG_avplanplmlog">
+            <call name="add">
+                <dataSource ref="DS_avplanplmlog01" />
+            </call>
+        </dataSourceGroup>
+        <!-- DNC数据库 -->
+            <dataSource id="DS_dnc_mes">
+            <driverClass>com.mysql.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:xo3GzUyKWdcujZ64UGihXz7mM95YJYPIOlZtyChn7nLj9J/I446TsaBLidL3YtIy7HyQnl7LEikz
+x576YCAE5KBV/OfpMe5mSQ3MFsqQQawOlCR7eHplktEpdGs+kM/w</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:2V1vypzeJtk=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:I5aWPoVpItWEZFy5sGMcgg==</password>
+            <maxPoolSize>10</maxPoolSize>
+            <initialPoolSize>2</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+
+        <dataSourceGroup id="DSG_dnc_mes">
+            <call name="add">
+                <dataSource ref="DS_dnc_mes" />
+            </call>
+        </dataSourceGroup>
+        
+        
+        
+        
+        <!-- 数据库连接池组 MES 热处理炉数据库连接池  -->
+        <dataSource id="DS_MES_HT" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:070nlxaSnvcvk09cf5FaHXMmNiwN21gA5j7LmHEWU9Mo/gQGA8tUTdB/MasEfpLElwsj0b0ZomVX
+lS51CaukscZwsrUe6Epd</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:/yVn0NOkpqw=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:dJmrlWVXp52oLNteB4SqzQ==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 MES 热处理炉数据库连接池  -->
+        <dataSourceGroup id="DSG_MES_HT">
+            <call name="add">
+                <dataSource ref="DS_MES_HT"/>
+            </call>
+        </dataSourceGroup>
+        
+        <!-- mysql drools  add by lihao 包装发运数据库-->
+        <dataSource id="DS_packing_delivery" >
+            <driverClass>com.mysql.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:+i1zl5f1CroZ5FbnSKQpSyBj8NB8TgFapeP4YvwHOOxGutQoLY0SrT3Iad9CceJJS84DrhDzx4mg
+8u8SQctZkCYIsiHbRnfJggEZnMr3ObQukb1BBM0gFbGzU5EibVgr0bhSx7vIDe0=</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:6xSTpXfOgu4=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:uJlr30NVEYW7dpwbGaGlqg==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>2</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        
+        <!-- 数据库连接池组 包装发运数据库 -->
+        <dataSourceGroup id="DSG_packing_delivery">
+            <call name="add">
+                <dataSource ref="DS_packing_delivery"/>
+            </call>
+        </dataSourceGroup>
+         
+
+        <dataSource id="DS_pmp_II" >
+           <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
+           <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:Lu49xCJXcfgtDRbTmtPYn9sDf0acGrxNrOHtG8oiL6R61QmWvDQ27A==</jdbcUrl>
+           <user encrypt="org.hy.common.StringHelp">encrypt:1z6cwHPybwFDz7Y12XWFbA==</user>
+           <password encrypt="org.hy.common.StringHelp">encrypt:GCLf/kxLQrbeQMqHOJjHug==</password>
+           <maxPoolSize>300</maxPoolSize>
+           <initialPoolSize>1</initialPoolSize>
+           <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 report  -->
+        <dataSourceGroup id="DSG_pmp_II">
+           <call name="add">
+              <dataSource ref="DS_pmp_II"/>
+           </call>
+        </dataSourceGroup>
+        
+        <!-- sqlserver add by malong 泛微OA-->
+        <dataSource id="DS_OA" >
+            <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+            <jdbcUrl encrypt="org.hy.common.StringHelp">encrypt:W3YO/ZgUWgLjamA/DGthUB/bk11UgVEutbakN43YRSAOgYWLvIw58rS0tcxiCYieNG13JPdfVPZ+
+Cp2QgDOD+A==</jdbcUrl>
+            <user encrypt="org.hy.common.StringHelp">encrypt:TlzbKfnd/40=</user>
+            <password encrypt="org.hy.common.StringHelp">encrypt:rMDHY+L5jK06xAZS06jD8A==</password>
+            <maxPoolSize>100</maxPoolSize>
+            <initialPoolSize>1</initialPoolSize>
+            <checkoutTimeout>30000</checkoutTimeout>
+        </dataSource>
+        <!-- 数据库连接池组 包装发运数据库  -->
+        <dataSourceGroup id="DSG_OA">
+            <call name="add">
+                <dataSource ref="DS_OA"/>
+            </call>
+        </dataSourceGroup>
+    </sqls>
+    
+</config>

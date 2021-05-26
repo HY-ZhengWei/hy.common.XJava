@@ -25,18 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.hy.common.app.Param;
-import org.hy.common.db.DBConditions;
-import org.hy.common.db.DBSQL;
-import org.hy.common.db.DataSourceGroup;
-import org.hy.common.xml.event.BLobListener;
-import org.hy.common.xml.event.DefaultBLobEvent;
-import org.hy.common.xml.log.Logger;
-import org.hy.common.xml.plugins.XRule;
-
-import oracle.sql.BLOB;
-import oracle.sql.CLOB;
-
 import org.hy.common.Busway;
 import org.hy.common.ByteHelp;
 import org.hy.common.CycleNextList;
@@ -48,7 +36,18 @@ import org.hy.common.Return;
 import org.hy.common.StaticReflect;
 import org.hy.common.StringHelp;
 import org.hy.common.XJavaID;
+import org.hy.common.app.Param;
+import org.hy.common.db.DBConditions;
+import org.hy.common.db.DBSQL;
+import org.hy.common.db.DataSourceGroup;
 import org.hy.common.xml.event.BLobEvent;
+import org.hy.common.xml.event.BLobListener;
+import org.hy.common.xml.event.DefaultBLobEvent;
+import org.hy.common.xml.log.Logger;
+import org.hy.common.xml.plugins.XRule;
+
+import oracle.sql.BLOB;
+import oracle.sql.CLOB;
 
 
 
@@ -69,16 +68,16 @@ import org.hy.common.xml.event.BLobEvent;
  * 3. 对结果集输出字段转为Java实例，有过滤功能。
  *    A. 可按字段名称过滤;
  *    B. 可按字段位置过滤。
- *    
+ * 
  * 4. 针对超大结果集做特殊的转换优化，类似于PL/SQL的分页功能。同样也有过滤功能。
  *    A. 可按字段名称过滤;
  *    B. 可按字段位置过滤。
- *    
+ * 
  * 5. 有数据库连接池组功能
  * 
  * 6. Oracle数据库中BLob大字段的操作(写入、读取)
  *    并有简单加密(转码)功能。
- *    
+ * 
  * 7. 支持存储过程及数据库函数的调用
  * 
  * 8. 支持批量执行DML操作
@@ -89,7 +88,7 @@ import org.hy.common.xml.event.BLobEvent;
  * 
  * @author      ZhengWei(HY)
  * @createDate  2012-11-12
- * @version     v1.0  
+ * @version     v1.0
  *              v2.0  2016-02-19  添加：游标的分页查询功能（可通用于所有数据库）。
  *              v3.0  2016-07-05  添加：SQL执行日志。默认只保留1000条执行过的SQL语句。
  *              v4.0  2016-08-16  添加：最后执行时间点的记录。
@@ -134,11 +133,11 @@ import org.hy.common.xml.event.BLobEvent;
  *              v15.0 2019-02-18  添加：对外界提供一种可自行定制的XSQL异常处理的机制。
  *                                     有对所有XSQL异常统一处理的能力。
  *              v16.0 2019-03-20  添加：统计项ioRowCount读写行数。查询结果的行数或写入数据库的记录数。
- *                                优化：数据库记录翻译为Java对象的性能优化。 
+ *                                优化：数据库记录翻译为Java对象的性能优化。
  *              v16.1 2019-03-22  添加：queryXSQLData()等一系列方法。在返回查询结果的同时，也返回其它更多的信息。
  *              v17.0 2019-05-15  添加：Log4j2的日志输出。建议人：李浩、张宇
  *              v18.0 2019-12-25  添加：预编译支持NULL值的写入。发现人：张宇
- *              v19.0 2020-05-26  添加：执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎 
+ *              v19.0 2020-05-26  添加：执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎
  *                                添加：执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。
  *              v20.0 2020-06-24  添加：通过日志引擎规范输出日志
  */
@@ -196,7 +195,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     
-    /** 
+    /**
      * 通用分区XSQL标示记录（确保只操作一次，而不是重复执行替换操作）
      * Map.key   为数据库类型 + "_" + XSQL.getObjectID()
      * Map.value 为 XSQL
@@ -211,8 +210,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /** XJava池中对象的ID标识 */
     private String                         xjavaID;
     
-    /** 
-     * 多个平行、平等的数据库的负载数据库集合 
+    /**
+     * 多个平行、平等的数据库的负载数据库集合
      * 
      * 实现多个平行、平等的数据库的负载均衡（简单级的）。
      * 目前建议只用在查询SQL上，当多个相同数据的数据库（如主备数据库），
@@ -221,7 +220,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     private CycleNextList<DataSourceGroup> dataSourceGroups;
     
-    /** 
+    /**
      * 数据库连接的域。
      * 
      * 它可与 this.dataSourceGroup 同时存在值，但 this.domain 的优先级高。
@@ -244,7 +243,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /** 自定义事件的监听器集合--文件拷贝 */
     private Collection<BLobListener>       blobListeners;
     
-    /** 
+    /**
      * SQL类型。
      * 
      * N: 增、删、改、查的普通SQL语句  (默认值)
@@ -254,7 +253,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     private String                         type;
     
-    /** 
+    /**
      * 创建对象的名称。如表名称。
      * 
      * 此属性为动作方法，即this.setCreate(...)时，将尝试创建对象(当对象不存在时)。
@@ -267,7 +266,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /** 大数据字段类型(如,CLob)的字段名称，多个字段名称间用逗号，分隔。只用于Insert、Update语句 */
     private String                         lobName;
     
-    /** 
+    /**
      * 写入大数据字段类型(如,CLob)的所在行的查询条件SQL片段(不包含WHERE关键字)。只用于Insert、Update语句。
      */
     private String                         lobWheres;
@@ -284,7 +283,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /** 当调用存储过程或函数时的输出参数的个数 */
     private int                            callParamOutCount;
     
-    /** 
+    /**
      * 批量执行 Insert、Update、Delete 时，达到提交的提交点
      * 
      * 当>=1时，才有效，即分次提交
@@ -310,9 +309,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /** 请求成功，并成功返回次数 */
     private long                           successCount;
     
-    /** 
+    /**
      * 请求成功，并成功返回的累计用时时长。
-     * 用的是Double，而不是long，因为在批量执行时。为了精度，会出现小数 
+     * 用的是Double，而不是long，因为在批量执行时。为了精度，会出现小数
      */
     private double                         successTimeLen;
     
@@ -330,13 +329,13 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     private Date                           executeTime;
     
     /** 注释。可用于日志的输出等帮助性的信息 */
-    private String                         comment; 
+    private String                         comment;
     
     /** 可自行定制的XSQL异常处理机制 */
     private XSQLError                      error;
     
-    /** 
-     * 执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎 
+    /**
+     * 执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎
      * 
      * 优先级：触发的优先级高于“XSQL条件”
      * 
@@ -344,14 +343,13 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     private XRule                          beforeRule;
     
-    /** 
+    /**
      * 执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。
      * 
      * 优先级：触发的优先级高于“XSQL应用级触发器”
      * 
-     * 注1：无入参的不触发执行。
-     * 注2：只用于查询返回的XSQL。
-     * 注3：getCount() 等简单数据结构的也不触发执行。
+     * 注1：只用于查询返回的XSQL。
+     * 注2：getCount() 等简单数据结构的也不触发执行。
      */
     private XRule                          afterRule;
     
@@ -965,7 +963,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
      * @param i_Values           占位符SQL的填充集合。
-     * @param i_Conn  
+     * @param i_Conn
      * @return
      */
     public Object query(Map<String ,?> i_Values ,Connection i_Conn)
@@ -986,7 +984,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @version     v1.0
      * 
      * @param i_Values           占位符SQL的填充集合。
-     * @param i_Conn  
+     * @param i_Conn
      * @return
      */
     public XSQLData queryXSQLData(Map<String ,?> i_Values ,Connection i_Conn)
@@ -3012,7 +3010,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 
      * @param i_Values           占位符SQL的填充集合。
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     public long getSQLCount(Map<String ,?> i_Values)
     {
@@ -3064,7 +3062,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 
      * @param i_Obj              占位符SQL的填充对象。
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     public long getSQLCount(Object i_Obj)
     {
@@ -3190,7 +3188,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             v_Resultset = v_Statement.executeQuery(i_SQL);
             log(i_SQL);
             
-            if ( v_Resultset.next() ) 
+            if ( v_Resultset.next() )
             {
                 v_SQLCount = v_Resultset.getLong(1);
             }
@@ -3217,16 +3215,16 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /**
      * 根据写入大数据的SQL语法(如下)，创建一个XSQL对象。
      * 
-     *    SELECT  clobColumn 
-     *      FROM  tablename 
-     *     WHERE  id = 1 
+     *    SELECT  clobColumn
+     *      FROM  tablename
+     *     WHERE  id = 1
      *       FOR  UPDATE
      * 
      * @author      ZhengWei(HY)
      * @createDate  2018-07-18
      * @version     v1.0
      *
-     * @return  返回创建XSQL对象实例，对应的XJava标记 
+     * @return  返回创建XSQL对象实例，对应的XJava标记
      */
     private String createLobXSQL()
     {
@@ -3238,7 +3236,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             return null;
         }
         
-        String v_SQL = StringHelp.replaceAll(v_Template.getValue() 
+        String v_SQL = StringHelp.replaceAll(v_Template.getValue()
                                             ,new String[]{":TableName"                        ,":LobName"   ,":IdWheres"}
                                             ,new String[]{this.getContent().getSqlTableName() ,this.lobName ,this.lobWheres});
         
@@ -3931,7 +3929,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             }
             
             v_Conn       = i_Conn == null ? this.getConnection(v_DSG) : i_Conn;
-            v_AutoCommit = v_Conn.getAutoCommit();  
+            v_AutoCommit = v_Conn.getAutoCommit();
             v_Conn.setAutoCommit(false);
             v_Statement  = v_Conn.createStatement();
             
@@ -4053,9 +4051,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @param i_Value        填充的数值
      * @param i_ValueClass   填充数据的类型。可用于填充数据为NULL的判定情况
      * @throws SQLException
-     * @throws InvocationTargetException 
-     * @throws IllegalAccessException 
-     * @throws IllegalArgumentException 
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
      */
     private void preparedStatementSetValue(PreparedStatement io_PStatement ,int i_ParamIndex ,Object i_Value ,Class<?> i_ValueClass) throws SQLException, IllegalArgumentException, IllegalAccessException, InvocationTargetException
     {
@@ -4167,7 +4165,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 io_PStatement.setTimestamp(i_ParamIndex ,(new Date((java.util.Date)i_Value)).getSQLTimestamp());
             }
         }
-        // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15 
+        // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15
         else if ( v_Class == Timestamp.class )
         {
             if ( i_Value == null )
@@ -4201,7 +4199,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             String     v_Value      = i_Value.toString();
             boolean    v_Continue   = true;
             
-            // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配 
+            // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配
             for (Enum<?> v_Enum : v_EnumValues)
             {
                 if ( v_Value.equalsIgnoreCase(v_Enum.toString()) )
@@ -4213,7 +4211,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             
             if ( v_Continue )
             {
-                // ZhengWei(HY) Add 2018-05-08  支持枚举名称的匹配 
+                // ZhengWei(HY) Add 2018-05-08  支持枚举名称的匹配
                 for (Enum<?> v_Enum : v_EnumValues)
                 {
                     if ( v_Value.equalsIgnoreCase(v_Enum.name()) )
@@ -4226,7 +4224,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             
             if ( v_Continue )
             {
-                // 尝试用枚举值匹配 
+                // 尝试用枚举值匹配
                 if ( Help.isNumber(v_Value) )
                 {
                     int v_IntValue = Integer.parseInt(v_Value.trim());
@@ -4464,7 +4462,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             }
             
             v_Conn       = i_Conn == null ? this.getConnection(v_DSG) : i_Conn;
-            v_AutoCommit = v_Conn.getAutoCommit();  
+            v_AutoCommit = v_Conn.getAutoCommit();
             v_Conn.setAutoCommit(false);
             v_SQL        = this.content.getPreparedSQL().getSQL();
             v_PStatement = v_Conn.prepareStatement(v_SQL);
@@ -4497,7 +4495,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                             }
                         }
                         
-                        v_PStatement.addBatch(); 
+                        v_PStatement.addBatch();
                     }
                 }
                 
@@ -4661,7 +4659,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 注: 1. 支持多种不同SQL语句的执行
      *     2. 支持不同类型的多个不同数据库的操作
      *     3. 如果要有顺序的执行，请java.util.LinkedHashMap
-     *     
+     * 
      * 重点注意：2014-12-04
      *         建议入参使用 TablePartition。为什么呢？
      *         原因是，Hashtable.put() 同样的key多次，只保存一份value。
@@ -4690,7 +4688,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 注: 1. 支持多种不同SQL语句的执行
      *     2. 支持不同类型的多个不同数据库的操作
      *     3. 如果要有顺序的执行，请java.util.LinkedHashMap
-     *     
+     * 
      * 重点注意：2014-12-04
      *         建议入参使用 TablePartition。为什么呢？
      *         原因是，Hashtable.put() 同样的key多次，只保存一份value。
@@ -5049,43 +5047,43 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     /**
      * 针对数据库的CLob类型的填充数据的操作。
-     * 可以简单理解为Update语句的操作 
+     * 可以简单理解为Update语句的操作
      * 
      * 写入Clob方法1（本类实现的方法）：
      *    Oracle中Clob数据类型是不能够直接插入的，但是可以通过流的形式对Clob类型数据写入或者读取。
      *    INSERT INTO tablename
      *               (
-     *                id 
+     *                id
      *               ,clobColumn
-     *               ) 
+     *               )
      *        VALUES (
      *                1
      *               ,EMPTY_CLOB()
      *               );
-     *    
-     *    SELECT  clobColumn 
-     *      FROM  tablename 
-     *     WHERE  id = 1 
+     * 
+     *    SELECT  clobColumn
+     *      FROM  tablename
+     *     WHERE  id = 1
      *       FOR  UPDATE
-     *    
+     * 
      * 写入Clob方法2：
      *    通过TO_CLOB将字符转为clob类型，每个转换的参数不能超过2000个字符，多个部分通过连接符 || 连接
      *    INSERT INTO tablename
      *               (
-     *                varcharColumn 
+     *                varcharColumn
      *               ,clobColumn
-     *               ) 
+     *               )
      *        VALUES (
      *                'string part'
      *               ,TO_CLOB('clob chars part1 ') || TO_CLOB('clob chars part2')
      *               );
-     *               
+     * 
      * @author      ZhengWei(HY)
      * @createDate  2018-07-01
      * @version     v1.0
      *              v2.0  2018-07-25  支持多个长文本信息的写入
      * 
-     * @param i_SQL              带有Clob字段的查询SQL语句 
+     * @param i_SQL              带有Clob字段的查询SQL语句
      *                           1. CLob类型必须在SELECT语句的第一个输出字段的位置
      *                           2. 对于Oracle数据库，必须有 FOR UPDATE 关键字
      *                           3. 只操作首条数据记录
@@ -5139,7 +5137,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                     try
                     {
                         int v_ColType = v_ResultSet.getMetaData().getColumnType(v_ColIndex);
-                        if ( Types.CLOB  == v_ColType 
+                        if ( Types.CLOB  == v_ColType
                           || Types.NCLOB == v_ColType )
                         {
                             // 获取数据流
@@ -5352,26 +5350,26 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     /**
      * 针对数据库的BLob类型的填充数据的操作。
-     * 可以简单理解为Update语句的操作 
+     * 可以简单理解为Update语句的操作
      * 
      * 写入Blob方法：
      *    Oracle中Blob数据类型是不能够直接插入的，但是可以通过流的形式对Blob类型数据写入或者读取。
      *    INSERT INTO tablename
      *               (
-     *                id 
+     *                id
      *               ,blobColumn
-     *               ) 
+     *               )
      *        VALUES (
      *                1
      *               ,EMPTY_BLOB()
      *               );
-     *    
-     *    SELECT  blobColumn 
-     *      FROM  tablename 
-     *     WHERE  id = 1 
+     * 
+     *    SELECT  blobColumn
+     *      FROM  tablename
+     *     WHERE  id = 1
      *       FOR  UPDATE
      * 
-     * @param i_SQL              带有Blob字段的查询SQL语句 
+     * @param i_SQL              带有Blob字段的查询SQL语句
      *                           1. BLob类型必须在SELECT语句的第一个输出字段的位置
      *                           2. 对于Oracle数据库，必须有 FOR UPDATE 关键字
      *                           3. 只操作首条数据记录
@@ -5438,8 +5436,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 
                 if ( this.blobSafe )
                 {
-                    while ( (v_DataLen = v_Input.read(v_ByteBuffer)) != -1 ) 
-                    {   
+                    while ( (v_DataLen = v_Input.read(v_ByteBuffer)) != -1 )
+                    {
                         v_Output.write(ByteHelp.xorMV(v_ByteBuffer ,0 ,v_DataLen) ,0 ,v_DataLen);
                         
                         v_BLobingSize += v_DataLen;
@@ -5450,8 +5448,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 }
                 else
                 {
-                    while ( (v_DataLen = v_Input.read(v_ByteBuffer)) != -1 ) 
-                    {   
+                    while ( (v_DataLen = v_Input.read(v_ByteBuffer)) != -1 )
+                    {
                         v_Output.write(v_ByteBuffer ,0 ,v_DataLen);
                         
                         v_BLobingSize += v_DataLen;
@@ -5661,7 +5659,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /**
      * 针对数据库的BLob类型转换成文件并保存
      * 
-     * @param i_SQL              常规SQL语句 
+     * @param i_SQL              常规SQL语句
      * @param io_SaveFile        保存的文件对象（如果文件已存，会被覆盖保存）
      *                           1. BLob类型必须在SELECT语句的第一个输出字段的位置
      *                           2. 只操作首条数据记录
@@ -5724,8 +5722,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                     
                     if ( this.blobSafe )
                     {
-                        while ( (v_DataLen = v_Input.read(v_ByteBuffer)) != -1 ) 
-                        {   
+                        while ( (v_DataLen = v_Input.read(v_ByteBuffer)) != -1 )
+                        {
                             v_Output.write(ByteHelp.xorMV(v_ByteBuffer ,0 ,v_DataLen) ,0 ,v_DataLen);
                             
                             v_BLobingSize += v_DataLen;
@@ -5736,8 +5734,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                     }
                     else
                     {
-                        while ( (v_DataLen = v_Input.read(v_ByteBuffer)) != -1 ) 
-                        {   
+                        while ( (v_DataLen = v_Input.read(v_ByteBuffer)) != -1 )
+                        {
                             v_Output.write(v_ByteBuffer ,0 ,v_DataLen);
                             
                             v_BLobingSize += v_DataLen;
@@ -6343,7 +6341,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      *                                如果输出类型为游标，则每个游标都按XJava的概念直接转为实例对象。
      *          4. 当调用函数时，当无输出参数时，返回函数的返回值。
      *          5. 当调用函数时，除自身返回值外还有一个或多个输出参数时，将每个输出值依次添加到List集合中，再将List集合返回。
-     *                        List集合的首个元素为函数自身的返回值。  
+     *                        List集合的首个元素为函数自身的返回值。
      */
     @SuppressWarnings("resource")
     public Object call(Object i_ParamObj)
@@ -6942,7 +6940,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         Iterator<BLobListener> v_Iter       = this.blobListeners.iterator();
         boolean                v_IsContinue = true;
 
-        while ( v_IsContinue && v_Iter.hasNext() ) 
+        while ( v_IsContinue && v_Iter.hasNext() )
         {
             v_IsContinue = v_Iter.next().blobBefore(i_Event);
         }
@@ -6960,9 +6958,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     private boolean notifyBLobingListeners(BLobEvent i_Event)
     {
         Iterator<BLobListener> v_Iter       = this.blobListeners.iterator();
-        boolean                v_IsContinue = true; 
+        boolean                v_IsContinue = true;
 
-        while ( v_IsContinue && v_Iter.hasNext() ) 
+        while ( v_IsContinue && v_Iter.hasNext() )
         {
             v_IsContinue = v_Iter.next().blobProcess(i_Event);
         }
@@ -6981,7 +6979,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     {
         Iterator<BLobListener> v_Iter = this.blobListeners.iterator();
 
-        while ( v_Iter.hasNext() ) 
+        while ( v_Iter.hasNext() )
         {
             v_Iter.next().blobAfter(i_Event);
         }
@@ -7016,14 +7014,14 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     
-    public XSQLResult getResult() 
+    public XSQLResult getResult()
     {
         return result;
     }
     
     
     
-    public void setResult(XSQLResult i_Result) 
+    public void setResult(XSQLResult i_Result)
     {
         this.result = i_Result;
         
@@ -7040,14 +7038,14 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     
-    public DBSQL getContent() 
+    public DBSQL getContent()
     {
         return this.content;
     }
     
     
     
-    public void setContent(String i_SQLText) 
+    public void setContent(String i_SQLText)
     {
         this.content.setSqlText(i_SQLText);
         this.isAllowExecutesSplit(i_SQLText);
@@ -7075,14 +7073,14 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     
-    public DBSQL getContentDB() 
+    public DBSQL getContentDB()
     {
         return this.content;
     }
     
     
     
-    public void setContentDB(DBSQL i_DBSQL) 
+    public void setContentDB(DBSQL i_DBSQL)
     {
         this.content = i_DBSQL;
         
@@ -7377,7 +7375,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 在高并发的情况下，提高整体查询速度，查询锁、查询阻塞等问题均能得到一定的解决。
      * 在高并发的情况下，突破数据库可分配的连接数量，会话数量将翻数倍（与数据库个数有正相关的关系
      * 
-     * @param i_DataSourceGroup 
+     * @param i_DataSourceGroup
      */
     public void setDataSourceGroup(DataSourceGroup i_DataSourceGroup)
     {
@@ -7490,7 +7488,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         }
         
         return false;
-    } 
+    }
     
     
     
@@ -7527,7 +7525,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /**
      * 设置：大数据字段类型(如,CLob)的字段名称，多个字段名称间用逗号，分隔。只用于Insert、Update语句
      * 
-     * @param lobName 
+     * @param lobName
      */
     public void setLobName(String lobName)
     {
@@ -7549,7 +7547,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /**
      * 设置：写入大数据字段类型(如,CLob)的所在行的查询条件SQL片段(不包含WHERE关键字)。只用于Insert、Update语句。
      * 
-     * @param lobWheres 
+     * @param lobWheres
      */
     public void setLobWheres(String lobWheres)
     {
@@ -7577,7 +7575,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 它可与 this.dataSourceGroup 同时存在值，但 this.domain 的优先级高。
      * 当"域"存在时，使用域的数据库连接池组。其它情况，使用默认的数据库连接池组。
      * 
-     * @param domain 
+     * @param domain
      */
     public void setDomain(XSQLDomain domain)
     {
@@ -7591,6 +7589,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 
      * @param i_XJavaID
      */
+    @Override
     public void setXJavaID(String i_XJavaID)
     {
         this.xjavaID = i_XJavaID;
@@ -7603,6 +7602,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 
      * @return
      */
+    @Override
     public String getXJavaID()
     {
         return this.xjavaID;
@@ -7623,7 +7623,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /**
      * 设置：XSQL的触发器
      * 
-     * @param trigger 
+     * @param trigger
      */
     public void setTrigger(XSQLTrigger trigger)
     {
@@ -7632,21 +7632,21 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 
 
-    public boolean isBlobSafe() 
+    public boolean isBlobSafe()
     {
         return blobSafe;
     }
     
     
     
-    public void setBlobSafe(boolean blobSafe) 
+    public void setBlobSafe(boolean blobSafe)
     {
         this.blobSafe = blobSafe;
     }
     
     
     
-    /** 
+    /**
      * SQL类型。
      * 
      * N: 增、删、改、查的普通SQL语句  (默认值)
@@ -7661,7 +7661,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
 
 
     
-    /** 
+    /**
      * SQL类型。
      * 
      * N: 增、删、改、查的普通SQL语句  (默认值)
@@ -7722,6 +7722,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /**
      * 获取：注释。可用于日志的输出等帮助性的信息
      */
+    @Override
     public String getComment()
     {
         return comment;
@@ -7732,8 +7733,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /**
      * 设置：注释。可用于日志的输出等帮助性的信息
      * 
-     * @param comment 
+     * @param comment
      */
+    @Override
     public void setComment(String comment)
     {
         this.comment = comment;
@@ -7775,7 +7777,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             }
         }
         
-        $Logger.error("\n-- Error time:    " + Date.getNowTime().getFull() 
+        $Logger.error("\n-- Error time:    " + Date.getNowTime().getFull()
                     + "\n-- Error XSQL ID: " + v_XJavaID
                     + "\n-- Error SQL:     " + i_SQL ,i_Exce);
         
@@ -7797,7 +7799,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /**
      * 设置：可自行定制的XSQL异常处理机制
      * 
-     * @param error 
+     * @param error
      */
     public void setError(XSQLError error)
     {
@@ -7866,9 +7868,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 
      * 优先级：触发的优先级高于“XSQL应用级触发器”
      * 
-     * 注1：无入参的不触发执行。
-     * 注2：只用于查询返回的XSQL。
-     * 注3：getCount() 等简单数据结构的也不触发执行。
+     * 注1：只用于查询返回的XSQL。
+     * 注2：getCount() 等简单数据结构的也不触发执行。
      */
     public XRule getAfterRule()
     {
@@ -7884,7 +7885,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 
      * 注：无入参的不触发执行。
      * 
-     * @param i_BeforeRule 
+     * @param i_BeforeRule
      */
     public void setBeforeRule(XRule i_BeforeRule)
     {
@@ -7898,11 +7899,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 
      * 优先级：触发的优先级高于“XSQL应用级触发器”
      * 
-     * 注1：无入参的不触发执行。
-     * 注2：只用于查询返回的XSQL。
-     * 注3：getCount() 等简单数据结构的也不触发执行。
+     * 注1：只用于查询返回的XSQL。
+     * 注2：getCount() 等简单数据结构的也不触发执行。
      * 
-     * @param i_AfterRule 
+     * @param i_AfterRule
      */
     public void setAfterRule(XRule i_AfterRule)
     {
@@ -8067,6 +8067,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     
+    @Override
     public int compareTo(XSQL i_XSQL)
     {
         if ( i_XSQL == null )
@@ -8091,7 +8092,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     它会在元素还有用，但集合对象本身没有用时，释放元素对象
     
     一些与finalize相关的方法，由于一些致命的缺陷，已经被废弃了
-    protected void finalize() throws Throwable 
+    protected void finalize() throws Throwable
     {
         this.dataSourceGroup = null;
         this.content         = null;

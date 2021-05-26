@@ -4,11 +4,12 @@
 
   <groupId>org</groupId>
   <artifactId>hy.common.xjava</artifactId>
-  <version>4.1.1</version>
+  <version>4.1.2</version>
   <packaging>jar</packaging>
 
   <name>hy.common.xjava</name>
   <url>https://github.com/HY-ZhengWei/XJava</url>
+  <!-- https://gitee.com/HY-ZhengWei/XJava  -->
   
   <developers>
     <developer>
@@ -32,6 +33,7 @@
     </dependency>
     
     <!-- https://github.com/HY-ZhengWei/hy.common.db -->
+    <!-- https://gitee.com/HY-ZhengWei/hy.common.db -->
     <dependency>
         <groupId>org</groupId>
         <artifactId>hy.common.db</artifactId>
@@ -39,6 +41,7 @@
     </dependency>
     
     <!-- https://github.com/HY-ZhengWei/hy.common.tpool -->
+    <!-- https://gitee.com/HY-ZhengWei/hy.common.tpool -->
     <dependency>
         <groupId>org</groupId>
         <artifactId>hy.common.tpool</artifactId>
@@ -46,6 +49,7 @@
     </dependency>
     
     <!-- https://github.com/HY-ZhengWei/hy.common.license -->
+    <!-- https://gitee.com/HY-ZhengWei/hy.common.license -->
     <dependency>
         <groupId>org</groupId>
         <artifactId>hy.common.license</artifactId>

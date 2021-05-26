@@ -38,7 +38,7 @@ import net.minidev.json.parser.JSONParser;
  *   3. 可选择性的只对getter\setter方法成对的属性转Json或转Java。
  *   4. 对NULL值是否生成Json字符串，也有控制属性。
  *   5. 可四舍五入小数，可控制保留小数位数。
- *   
+ * 
  * 
  * 主要功能1：解释Java对象成为JSON
  * 主要功能2：解释JSON字符串成为Java实例对象
@@ -63,46 +63,46 @@ import net.minidev.json.parser.JSONParser;
  * 14.支持格式化Json字符串
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0  
+ * @version     v1.0
  * @createDate  2013-08-13
  *              2017-08-18  V2.0  修复：对于对象的getClass()方法，不进行转Json处理。
  *              2017-08-30  V3.0  修复：对于Json字符串去除回车符\n，特别是最后一个回车符会影响net.minidev.json.JSONObject的解释出错。
  *                                     发现人：李浩
- *              2018-05-08  V3.1  添加：支持枚举toString()的匹配 
- *                                     支持枚举名称的匹配 
+ *              2018-05-08  V3.1  添加：支持枚举toString()的匹配
+ *                                     支持枚举名称的匹配
  *              2018-05-15  V3.2  添加：数据库java.sql.Timestamp时间的转换
  *              2018-05-18  V3.3  添加：将Java转Json时，防止用户递归引用，而造成无法解释的问题。
  *              2018-07-05  V3.4  添加：将Java转Json时，支持为BigDecimal类型的转换。发现人：马龙
  *              2018-07-06  V3.5  添加：1.通过isBigDecimalFormat属性控制BigDecimal类型生成Json字符串时的格式，是否为科学计数法。
  *                                     2.通过digit属性控制Java转Json时，数值转字符串时保留小数位数。建议人：马龙
  *                                     3.将parser分为toJava、toJson两个系列的方法，方便使用者好理解。
- *              2018-07-10  V3.6  修复：1. Json转Java（Map对象）时，Json字符串中的 "key":null 情况的异常处理。发现人：马龙。 
- *                                        建议：当需要Map.value为NULL时，请在转换前设置此句this.setObjectClass(HashMap.class); 
+ *              2018-07-10  V3.6  修复：1. Json转Java（Map对象）时，Json字符串中的 "key":null 情况的异常处理。发现人：马龙。
+ *                                        建议：当需要Map.value为NULL时，请在转换前设置此句this.setObjectClass(HashMap.class);
  *                                             否则，NULL的Json字符串将转成""空字符串写入Hashtable中。
- *                                     2. 防止递归功能，添加允许递归次数。允许一定范围内的递归或重复数据。发现人：马龙。 
+ *                                     2. 防止递归功能，添加允许递归次数。允许一定范围内的递归或重复数据。发现人：马龙。
  *              2020-01-15  V3.7  添加：当Java对象转Json字符串时，是否包含对成员方法的转换输出。
  *              2021-01-15  V3.8  添加：简单判定字符串是否为Json格式的字符串
- *                                
+ * 
  */
 public final class XJSON
 {
     
     /** 当Java对象转Json字符串时，排除哪些方法不输出 */
-    private static String [] $ExcludeMethodNames = {"getClass" 
-                                                   ,"hashCode" 
-                                                   ,"equals" 
-                                                   ,"clone" 
-                                                   ,"toString" 
-                                                   ,"notify" 
-                                                   ,"notifyAll" 
-                                                   ,"wait" 
+    private static String [] $ExcludeMethodNames = {"getClass"
+                                                   ,"hashCode"
+                                                   ,"equals"
+                                                   ,"clone"
+                                                   ,"toString"
+                                                   ,"notify"
+                                                   ,"notifyAll"
+                                                   ,"wait"
                                                    ,"finalize"
                                                    ,"compareTo"
                                                    ,"toString"};
     
     private XJSONObject rootJSON;
     
-    /** 
+    /**
      * 首写字母是否大写（默认：首写字母小写）
      * 
      * 当使用 object.getter() 的方法名称作为JSONObject.put(name ,value)的 name 值时，首写字母是否大小
@@ -138,7 +138,7 @@ public final class XJSON
     private boolean     isJsonMethod;
     
     /** Java转Json时，BigDecimal的显示格式。是否启用科学计数法（默认为：自然数字，而非科学计数法） */
-    private boolean     isBigDecimalFormat; 
+    private boolean     isBigDecimalFormat;
     
     /** Java转Json时，数值转字符串时保留小数位数（默认为：NULL表示原样转Json字符串） */
     private Integer     digit;
@@ -247,7 +247,7 @@ public final class XJSON
     /**
      * 将JSONObject解释成Java实例对象
      * 
-     * @param i_JSONObject   
+     * @param i_JSONObject
      * @param i_ObjectClass  JSONObject对应的Java类型
      * @return
      */
@@ -278,7 +278,7 @@ public final class XJSON
      * 
      * @param i_JSONArray     JSONArray数组
      * @param i_ElementClass  JSONArray数组中元素的Java类型
-     * @return                
+     * @return
      */
     public List<Object> toJava(JSONArray i_JSONArray ,Class<?> i_ElementClass)
     {
@@ -499,7 +499,7 @@ public final class XJSON
                 String v_Key   = v_Iter.next().toString();
                 Object v_Value = i_JSONObject.get(v_Key);
                 
-                // 2018-07-10 Add 为NULL时，Map.value写入NULL对象 
+                // 2018-07-10 Add 为NULL时，Map.value写入NULL对象
                 if ( v_Value != null )
                 {
                     if ( v_Value.getClass() == JSONArray.class )
@@ -849,7 +849,7 @@ public final class XJSON
                                 v_Method.invoke(v_NewObj ,(new Date(v_Value.toString())).getDateObject());
                             }
                         }
-                        // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15 
+                        // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15
                         else if ( Timestamp.class == v_ParamClass )
                         {
                             if ( v_Value == null || Help.isNull(v_Value.toString()) )
@@ -862,7 +862,7 @@ public final class XJSON
                             }
                         }
                         else if ( MethodReflect.isExtendImplement(v_ParamClass ,List.class)
-                               || MethodReflect.isExtendImplement(v_ParamClass ,Set.class) 
+                               || MethodReflect.isExtendImplement(v_ParamClass ,Set.class)
                                || MethodReflect.isExtendImplement(v_ParamClass ,Map.class) )
                         {
                             /**
@@ -885,7 +885,7 @@ public final class XJSON
                             boolean    v_EnumOK     = false;
                             String     v_ValueStr   = v_Value.toString();
                             
-                            // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配 
+                            // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配
                             for (Enum<?> v_Enum : v_EnumValues)
                             {
                                 if ( v_ValueStr.equalsIgnoreCase(v_Enum.toString()) )
@@ -898,7 +898,7 @@ public final class XJSON
                             
                             if ( !v_EnumOK )
                             {
-                                // ZhengWei(HY) Add 2018-05-08  支持枚举名称的匹配 
+                                // ZhengWei(HY) Add 2018-05-08  支持枚举名称的匹配
                                 for (Enum<?> v_Enum : v_EnumValues)
                                 {
                                     if ( v_ValueStr.equalsIgnoreCase(v_Enum.name()) )
@@ -910,7 +910,7 @@ public final class XJSON
                                 }
                             }
                             
-                            // 尝试用枚举值匹配 
+                            // 尝试用枚举值匹配
                             if ( !v_EnumOK && Help.isNumber(v_ValueStr) )
                             {
                                 int v_ParamValueInt = Integer.parseInt(v_ValueStr.trim());
@@ -951,7 +951,7 @@ public final class XJSON
      * 
      * @param i_JSONArray
      * @param i_ElementClass  JSONArray数组中元素的Java类型
-     * @return                
+     * @return
      */
     public List<Object> parser(JSONArray i_JSONArray ,Class<?> i_ElementClass)
     {
@@ -1289,7 +1289,7 @@ public final class XJSON
         {
             v_ObjValue = (new Date((java.util.Date)i_Obj)).getFull();
         }
-        // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15 
+        // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15
         else if ( Timestamp.class == v_ObjClass )
         {
             v_ObjValue = (new Date((Timestamp)i_Obj)).getFull();
@@ -1334,7 +1334,7 @@ public final class XJSON
             
             for (int i=0; i<v_List.size(); i++)
             {
-                Object              v_Value   = v_List.get(i); 
+                Object              v_Value   = v_List.get(i);
                 Return<XJSONObject> v_RetTemp = this.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects);
                 
                 if ( v_RetTemp.paramInt == 0 )
@@ -1383,7 +1383,7 @@ public final class XJSON
             
             for (int i=0; i<v_List.length; i++)
             {
-                Object              v_Value   = v_List[i]; 
+                Object              v_Value   = v_List[i];
                 Return<XJSONObject> v_RetTemp = this.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects);
                 
                 if ( v_RetTemp.paramInt == 0 )
@@ -1582,7 +1582,7 @@ public final class XJSON
                         String v_Name  = null;
                         Object v_Value = null;
                         
-                        if ( v_MethodArr[i].getName().startsWith("get") )
+                        if ( v_MethodArr[i].getName().startsWith("get") && v_MethodArr[i].getName().length() > 3 )
                         {
                             if ( this.firstCharIsUpper )
                             {
@@ -1590,36 +1590,44 @@ public final class XJSON
                             }
                             else
                             {
-                                v_Name = v_MethodArr[i].getName().substring(3 ,4).toLowerCase() + v_MethodArr[i].getName().substring(4);
+                                v_Name = v_MethodArr[i].getName().substring(3 ,4).toLowerCase();
+                                        
+                                if ( v_MethodArr[i].getName().length() >= 5 )
+                                {
+                                    v_Name += v_MethodArr[i].getName().substring(4);
+                                }
                             }
                         }
-                        else if ( v_MethodArr[i].getName().startsWith("is") )
+                        else if ( v_MethodArr[i].getName().startsWith("is") && v_MethodArr[i].getName().length() > 2 )
                         {
                             if ( this.firstCharIsUpper )
                             {
-                                v_Name = v_Methods.get(i).getName().substring(2);
+                                v_Name = v_MethodArr[i].getName().substring(2);
                             }
                             else
                             {
-                                v_Name = v_Methods.get(i).getName().substring(2 ,3).toLowerCase() + v_Methods.get(i).getName().substring(3);
+                                v_Name = v_MethodArr[i].getName().substring(2 ,3).toLowerCase() + v_MethodArr[i].getName().substring(3);
                             }
                         }
                         
-                        try
+                        if ( !Help.isNull(v_Name) )
                         {
-                            v_Value = v_MethodArr[i].invoke(i_Obj);
-                            if ( v_Value == null )
+                            try
                             {
-                                v_Value = "";
+                                v_Value = v_MethodArr[i].invoke(i_Obj);
+                                if ( v_Value == null )
+                                {
+                                    v_Value = "";
+                                }
+                                parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects);
                             }
-                            parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects);
+                            catch (Exception e)
+                            {
+                                throw new Exception(v_Name + ":" + e.getMessage());
+                            }
+                            
+                            v_ChildCount++;
                         }
-                        catch (Exception e)
-                        {
-                            throw new Exception(v_Name + ":" + e.getMessage());
-                        }
-                        
-                        v_ChildCount++;
                     }
                 }
             }
@@ -1627,10 +1635,10 @@ public final class XJSON
             // Json方式显示成员方法  Add ZhengWei(HY) 2020-01-15
             if ( this.isJsonMethod )
             {
-                List<Method> v_Methods = MethodReflect.getMethodsExcludeStart(i_Obj.getClass() ,new String[]{"get" 
-                                                                                                            ,"set" 
-                                                                                                            ,"is" 
-                                                                                                            ,"gatProperty" 
+                List<Method> v_Methods = MethodReflect.getMethodsExcludeStart(i_Obj.getClass() ,new String[]{"get"
+                                                                                                            ,"set"
+                                                                                                            ,"is"
+                                                                                                            ,"gatProperty"
                                                                                                             ,"gatDoc"});
                 
                 if ( !Help.isNull(v_Methods) )
@@ -1708,7 +1716,7 @@ public final class XJSON
     
     
     /**
-     * Java转Json时，解析过的对象，防止对象中递归引用对象，而造成无法解释的问题 
+     * Java转Json时，解析过的对象，防止对象中递归引用对象，而造成无法解释的问题
      * 
      * @author      ZhengWei(HY)
      * @createDate  2018-05-18
@@ -1772,7 +1780,7 @@ public final class XJSON
      * 
      * 只用于Java对象实例解释成JSONObject对象
      * 
-     * @param firstCharIsUpper 
+     * @param firstCharIsUpper
      */
     public void setFirstCharIsUpper(boolean firstCharIsUpper)
     {
@@ -1808,7 +1816,7 @@ public final class XJSON
          * 
          * 只用于解释JSON字符串成为Java实例对象
      * 
-     * @param isAccuracy 
+     * @param isAccuracy
      */
     public void setAccuracy(boolean isAccuracy)
     {
@@ -1837,7 +1845,7 @@ public final class XJSON
      * 
      * (默认：true  即空值也生成Json字符串)
      * 
-     * @param isReturnNVL 
+     * @param isReturnNVL
      */
     public void setReturnNVL(boolean isReturnNVL)
     {
@@ -1861,7 +1869,7 @@ public final class XJSON
      * 设置：当Java对象转Json字符串时，是否包含对成员方法的转换输出
      * 默认为：false，不转换输出
      * 
-     * @param isJsonMethod 
+     * @param isJsonMethod
      */
     public void setJsonMethod(boolean isJsonMethod)
     {
@@ -1883,7 +1891,7 @@ public final class XJSON
     /**
      * 设置：Java转Json时，BigDecimal的显示格式。是否启用科学计数法（默认为：自然数字，而非科学计数法）
      * 
-     * @param isBigDecimalFormat 
+     * @param isBigDecimalFormat
      */
     public void setBigDecimalFormat(boolean isBigDecimalFormat)
     {
@@ -1905,7 +1913,7 @@ public final class XJSON
     /**
      * 设置：Java转Json时，数值转字符串时保留小数位数（默认为：NULL表示原样转Json字符串）
      * 
-     * @param i_Digit 
+     * @param i_Digit
      */
     public void setDigit(Integer i_Digit)
     {
@@ -1934,7 +1942,7 @@ public final class XJSON
     /**
      * 设置：允许递归出现在次数。Java转Json时，防止对象中递归引用对象，而造成无法解释的问题（默认值：0，表示不防止递归 ）
      * 
-     * @param recursionCount 
+     * @param recursionCount
      */
     public void setRecursionCount(int recursionCount)
     {
@@ -2074,11 +2082,11 @@ public final class XJSON
                 }
                 else if ( v_One == ',' )
                 {
-                    if ( v_JT.charAt(i + 1) != '"' 
+                    if ( v_JT.charAt(i + 1) != '"'
                       && v_JT.charAt(i + 1) != ']'
                       && v_JT.charAt(i + 1) != '}'
                       && v_JT.charAt(i + 1) != '{'
-                      && v_JT.charAt(i + 1) != '[' ) 
+                      && v_JT.charAt(i + 1) != '[' )
                     {
                         return false;
                     }
