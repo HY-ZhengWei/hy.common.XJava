@@ -206,7 +206,7 @@ public class AnalyseObjectServlet extends HttpServlet
             v_Ret.setParamObj(v_ImageDatas[1]);
             v_Ret.setParamInt(v_Y);
             
-            $PasswdCheck.put(v_SessionID ,v_X + "" + v_Y ,12);
+            getPasswdCheck().put(v_SessionID ,v_X + "" + v_Y ,12);
         }
         catch (Exception exce)
         {
@@ -308,21 +308,29 @@ public class AnalyseObjectServlet extends HttpServlet
                 return;
             }
             
-            String v_SID     = i_Request.getSession().getId();
+            Integer v_AllLCount = getLoginCounts().get($SessionID);
+            if ( v_AllLCount != null && v_AllLCount >= 3 )
+            {
+                // 全域被锁定中的提示
+                i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage ,"ERR92"));
+                return;
+            }
+            
+            String  v_SID    = i_Request.getSession().getId();
             Integer v_LCount = getLoginCounts().get(v_SID);
             if ( v_LCount != null && v_LCount >= 3 )
             {
                 // 账户被锁定中的提示
-                i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage));
+                i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage ,"ERR02"));
                 return;
             }
             
             String v_Password = i_Request.getParameter("password");
             String v_CheckPwd = i_Request.getParameter("checkPWD");
-            String v_CachePwd = getPasswdCheck().get(v_SID);
+            String v_CachePwd = getPasswdCheck().remove(v_SID);     // 密码只用一次尝试的机会。用完就立刻删除
             if ( Help.isNull(v_Password) || !Help.isNumber(v_CheckPwd) || !Help.isNumber(v_CachePwd) )
             {
-                i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage));
+                i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage ,""));
                 return;
             }
             
@@ -334,20 +342,43 @@ public class AnalyseObjectServlet extends HttpServlet
             {
                 if ( v_LCount == null || v_LCount <= 0 )
                 {
-                    getLoginCounts().put(v_SID ,1 ,60 * 30);
+                    v_LCount = 1;
+                    getLoginCounts().put(v_SID ,v_LCount ,60 * 10);
                 }
                 else if ( v_LCount < 3 )
                 {
-                    getLoginCounts().put(v_SID ,v_LCount + 1 ,60 * 30);
+                    getLoginCounts().put(v_SID ,++v_LCount ,60 * 10);
+                }
+                
+                if ( v_LCount >= 3 )
+                {
+                    if ( v_AllLCount == null ||v_AllLCount <= 0 )
+                    {
+                        v_AllLCount = 1;
+                        getLoginCounts().put($SessionID ,v_AllLCount ,60 * 30);
+                    }
+                    else if ( v_AllLCount < 3 )
+                    {
+                        getLoginCounts().put($SessionID ,++v_AllLCount ,60 * 30);
+                    }
+                    
+                    if ( v_AllLCount >= 3 )
+                    {
+                        // 全域锁定的提示
+                        i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage ,"ERR91"));
+                        $Logger.info("分析中心被多次尝试登录，全域已锁定");
+                    }
+                    else
+                    {
+                        // 账户锁定的提示
+                        i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage ,"ERR01"));
+                        $Logger.info("分析中心被多次尝试登录，账户已锁定");
+                    }
                 }
                 else
                 {
-                    // 锁定账户的提示
-                    i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage));
-                    return;
+                    i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage ,""));
                 }
-                
-                i_Response.getWriter().println(this.analyse.login(v_RequestURL ,v_BasePath ,v_RequestPage));
                 return;
             }
             // 登陆成功

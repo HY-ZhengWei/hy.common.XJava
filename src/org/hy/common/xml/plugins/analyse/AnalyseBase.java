@@ -133,20 +133,25 @@ public class AnalyseBase extends Analyse
     
     
     /**
-     * 验证登录
+     * 获取验证登录页面
      * 
      * @author      ZhengWei(HY)
      * @createDate  2016-01-07
      * @version     v1.0
-     *
-     * @param  i_LogonPath       登录的URL。如：http://127.0.0.1:80/hy/../analyseObject  (可选：附加用户输入的参数)
+     * 
+     * @param i_LogonPath     登录验证的提交Action。如：http://127.0.0.1:80/hy/../analyseObject  (可选：附加用户输入的参数)
+     * @param i_HttpBasePath  基础页面路径
+     * @param i_HttpBasePage  登录验证的提交Action。但无附加任何参加
+     * @param i_ErrorCode     登录时的异常信息
      * @return
      */
-    public String login(String i_LogonPath ,String i_HttpBasePath ,String i_HttpBasePage)
+    public String login(String i_LogonPath ,String i_HttpBasePath ,String i_HttpBasePage ,String i_ErrorCode)
     {
         String v_Content = this.getTemplateLogon();
         
-        return StringHelp.replaceAll(v_Content ,new String[]{":LoginPath" ,":HttpBasePath" ,":HttpBasePage"} ,new String[] {i_LogonPath ,i_HttpBasePath ,i_HttpBasePage});
+        return StringHelp.replaceAll(v_Content
+                                    ,new String[]{":LoginPath" ,":HttpBasePath" ,":HttpBasePage" ,":ErrorCode"}
+                                    ,new String[]{i_LogonPath  ,i_HttpBasePath  ,i_HttpBasePage  ,i_ErrorCode});
     }
     
     
@@ -184,7 +189,7 @@ public class AnalyseBase extends Analyse
         
         if ( Help.isNull(v_Servers) )
         {
-            return this.login(v_LoginPath ,v_LoginPath ,v_LoginPath);
+            return this.login(v_LoginPath ,v_LoginPath ,v_LoginPath ,"");
         }
         
         String v_RequestURL = i_RequestURL.split("//")[1].split("/")[0];

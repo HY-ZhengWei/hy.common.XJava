@@ -55,10 +55,11 @@ public class CheckImageUtil
             {
                 if ( $BgImage == null )
                 {
-                    Color  v_TransparentColor = new Color(255 ,255 ,255);
-                    String v_Package          = "/org/hy/common/xml/plugins/analyse/windows/image/";
+                    Color  v_TransparentColor = new Color(255 ,255 ,255);   // 透明色的识别
+                    Color  v_StrokeColor      = new Color(255 ,0   ,0);     // 描边色的识别
+                    String v_Package          = "/org/hy/common/xml/plugins/analyse/windows/images/";
                     
-                    $CutOutlineData = FileHelp.getImageOutline(ImageIO.read(getClass().getResource(v_Package + "CheckImageTemplateA.png")) ,v_TransparentColor.getRGB());
+                    $CutOutlineData = FileHelp.getImageOutline(ImageIO.read(getClass().getResource(v_Package + "CheckImageTemplateA.png")) ,v_TransparentColor.getRGB() ,v_StrokeColor.getRGB());
                     $CssOutLine     = ImageIO.read(getClass().getResource(v_Package + "CheckImageTemplateB.png"));
                     $BgImage        = ImageIO.read(getClass().getResource(v_Package + "CheckImage.png"));
                 }
@@ -69,7 +70,8 @@ public class CheckImageUtil
             
             FileHelp.copyImage($BgImage ,v_NewBig);
             FileHelp.cutImage( $BgImage ,v_NewSmall ,$CutOutlineData ,i_X ,i_Y);
-            FileHelp.overAlphaImage(     v_NewBig   ,$CssOutLine     ,i_X ,i_Y ,0.5F);
+            FileHelp.strokeImage(v_NewSmall ,$CutOutlineData ,0 ,0 ,(new Color(255 ,255 ,255)).getRGB());
+            FileHelp.overAlphaImage(v_NewBig ,$CssOutLine ,i_X ,i_Y ,0.5F);
             
             return new String[] {FileHelp.getContentImageBase64(v_NewBig) ,FileHelp.getContentImageBase64(v_NewSmall)};
         }
