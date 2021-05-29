@@ -39,11 +39,13 @@ import org.hy.common.Help;
  * @version     v1.0
  *              v2.0  2017-01-04  添加：查看XSQL对象执行错误的SQL语句
  *              v3.0  2017-01-22  添加：查看集群数据库访问量的概要统计数据
- *                                添加：查看集群数据库组合SQL访问量的概要统计数据 
+ *                                添加：查看集群数据库组合SQL访问量的概要统计数据
  *                                添加：查看集群查看XSQL对象执行错误的SQL语句
  *              v4.0  2019-03-20  添加：数据显示范围参数Scope，解决：当对象十分庞大时，页面显示缓慢的问题
  *              v5.0  2020-06-20  添加：页面定时刷新功能
+ *              v6.0  2021-05-29  废弃：此类被废弃，同时合并到 analyseObject/analyseDB 下，见 AnalyseObjectServlet.java
  */
+@Deprecated
 public class AnalyseServerServlet extends HttpServlet
 {
 
@@ -61,7 +63,8 @@ public class AnalyseServerServlet extends HttpServlet
     
     
     
-    public void doGet(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException 
+    @Override
+    public void doGet(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException
     {
         String v_BasePath = i_Request.getScheme()+"://" + i_Request.getServerName() + ":" + i_Request.getServerPort() + i_Request.getContextPath();
         
@@ -90,7 +93,8 @@ public class AnalyseServerServlet extends HttpServlet
     
     
     
-    public void doPost(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException 
+    @Override
+    public void doPost(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException
     {
         this.doGet(i_Request ,i_Response);
     }

@@ -631,7 +631,7 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
 	
 	* 10.实用的SQL缓存。@Xsql(cacheID)、@Xsql(updateCacheID) + Job(定时任务)，全部配置化即可实现，无须代码。
 	
-	* 11.强大的SQL统计(http://IP:Port/服务名/analyses/analyseDB)。异常SQL、SQL组即时发现。当配合集群功能时，可集群统计及监控。
+	* 11.强大的SQL统计(http://IP:Port/服务名/analyses/analyseObject/analyseDB)。异常SQL、SQL组即时发现。当配合集群功能时，可集群统计及监控。
 	
 	* 12.热部署SQL配置XML文件。可在服务不重启的情况下，动态加载有更新变化的XML配置文件并及时生效。同时能保证不影响正在运行的SQL。方便及时修复Bug。
 

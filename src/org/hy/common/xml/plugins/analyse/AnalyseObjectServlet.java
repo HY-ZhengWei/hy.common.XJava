@@ -90,6 +90,8 @@ import org.hy.common.xml.log.Logger;
  *              v11.0 2019-06-14  添加：查看表的关系图
  *              v12.0 2020-01-21  添加：执行对象方法的配置页面（带方法参数）
  *              v13.0 2020-06-15  添加：查看日志引擎分析（按类名、按方法、按日志代码行）
+ *              v14.0 2021-05-29  添加：图形码验证登录的功能
+ *                                合并：analyseDB数据库分析功能
  * 
  */
 public class AnalyseObjectServlet extends HttpServlet
@@ -206,7 +208,7 @@ public class AnalyseObjectServlet extends HttpServlet
             v_Ret.setParamObj(v_ImageDatas[1]);
             v_Ret.setParamInt(v_Y);
             
-            getPasswdCheck().put(v_SessionID ,v_X + "" + v_Y ,12);
+            getPasswdCheck().put(v_SessionID ,v_Y + "" + v_X ,12);
         }
         catch (Exception exce)
         {
@@ -388,6 +390,36 @@ public class AnalyseObjectServlet extends HttpServlet
                 i_Request.getSession().setAttribute($SessionID ,v_SessionData);
             }
         }
+        
+        
+        
+        // 2021-05-29  合并analyseDB的数据分析功能
+        if ( v_RequestURL.indexOf("/analyseDB") > 0 )
+        {
+            String v_Type    = i_Request.getParameter("type");
+            String v_XSQLXID = i_Request.getParameter("xsqlxid");
+            String v_Cluster = i_Request.getParameter("cluster");
+            String v_Sort    = Help.NVL(i_Request.getParameter("S"));
+            String v_Scope   = Help.NVL(i_Request.getParameter("scope"));
+            String v_Timer   = Help.NVL(i_Request.getParameter("Timer"));
+            
+            if ( !Help.isNull(v_XSQLXID) )
+            {
+                i_Response.getWriter().println(this.analyse.analyseDBError (v_BasePath ,i_Request.getRequestURL().toString() ,v_XSQLXID ,"Y".equalsIgnoreCase(v_Cluster)));
+            }
+            else if ( "GROUP".equalsIgnoreCase(v_Type) )
+            {
+                i_Response.getWriter().println(this.analyse.analyseDBGroup (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_Sort ,"Y".equalsIgnoreCase(v_Scope) ,v_Timer));
+            }
+            else
+            {
+                i_Response.getWriter().println(this.analyse.analyseDB      (v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_Sort ,"Y".equalsIgnoreCase(v_Scope) ,v_Timer));
+            }
+            
+            return;
+        }
+        
+        
         
         String v_XID        = i_Request.getParameter("xid");
         String v_Call       = i_Request.getParameter("call");

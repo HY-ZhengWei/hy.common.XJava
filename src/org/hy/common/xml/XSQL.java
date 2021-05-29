@@ -105,7 +105,7 @@ import oracle.sql.CLOB;
  *                                       发现人：向以前
  *              v8.0  2017-12-19  添加：将参数效验检查抛出的异常，也包括在try{}cacth{}内，自己抛出自己捕获，并记录在统计数据中。
  *                                       记录完成后再向外抛出。
- *                                       方便异常定位页面统计数据：http://IP:Port/服务名/analyses/analyseDB
+ *                                       方便异常定位页面统计数据：http://IP:Port/服务名/analyses/analyseObject/analyseDB
  *              v9.0  2018-01-12  添加：setCreate()实现服务启动时检查并创建数据库对象(如数据库表)，已存在不创建。
  *                                添加：execute()方法支持多条SQL语句的执行。
  *              v10.0 2018-01-17  添加：queryBigData()系列关于大数据操作的方法

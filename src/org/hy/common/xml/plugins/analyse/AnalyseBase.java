@@ -639,7 +639,7 @@ public class AnalyseBase extends Analyse
      *              v2.0  2020-06-21  添加：定时刷新页面的功能
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
-     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject/analyseDB
      * @param  i_Cluster         是否为集群
      * @param  i_SortType        排序类型
      * @param  i_IsAll           是否显示所有XSQL组对象（解决：当对象十分庞大时，页面显示缓慢）
@@ -835,11 +835,11 @@ public class AnalyseBase extends Analyse
         v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;");
         if ( i_Cluster )
         {
-            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset&cluster=Y&sameTime=Y' style='color:#AA66CC'>集群重置</a>";
+            v_Goto += "<a href='../analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset&cluster=Y&sameTime=Y' style='color:#AA66CC'>集群重置</a>";
         }
         else
         {
-            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset' style='color:#AA66CC'>重置统计</a>";
+            v_Goto += "<a href='../analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset' style='color:#AA66CC'>重置统计</a>";
         }
         
         v_FailCounts.clear();
@@ -872,7 +872,7 @@ public class AnalyseBase extends Analyse
      *              v3.0  2020-06-21  添加：定时刷新页面的功能
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
-     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject/analyseDB
      * @param  i_Cluster         是否为集群
      * @param  i_SortType        排序类型
      * @param  i_IsAll           是否显示所有XSQL组对象（解决：当对象十分庞大时，页面显示缓慢）
@@ -1128,11 +1128,11 @@ public class AnalyseBase extends Analyse
         v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;");
         if ( i_Cluster )
         {
-            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal&cluster=Y&sameTime=Y' style='color:#AA66CC'>集群重置</a>";
+            v_Goto += "<a href='../analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal&cluster=Y&sameTime=Y' style='color:#AA66CC'>集群重置</a>";
         }
         else
         {
-            v_Goto += "<a href='analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal' style='color:#AA66CC'>重置统计</a>";
+            v_Goto += "<a href='../analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal' style='color:#AA66CC'>重置统计</a>";
         }
         
         v_FailCounts.clear();
@@ -1321,7 +1321,7 @@ public class AnalyseBase extends Analyse
      * @version     v1.0
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
-     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseDB
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject/analyseDB
      * @param  i_XSQLXID         XSQL对象的XID
      * @param  i_Cluster         是否为集群
      * @return

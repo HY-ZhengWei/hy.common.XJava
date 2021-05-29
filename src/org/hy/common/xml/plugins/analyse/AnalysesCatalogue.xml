@@ -80,7 +80,7 @@
                 <appName>XSQL分析</appName>
                 <icon>:HttpBasePath/windows/images/xsql.png</icon>
                 <backgroundColor>#90ee90</backgroundColor>
-                <url>:HttpBasePath/analyses/analyseDB</url>
+                <url>:HttpBasePath/analyses/analyseObject/analyseDB</url>
                 <x>335</x>
                 <y>280</y>
                 <desktopShow>true</desktopShow>
@@ -173,7 +173,7 @@
                 <appName>XSQL组分析</appName>
                 <icon>:HttpBasePath/windows/images/xsqlGroup.png</icon>
                 <backgroundColor>#3CB371</backgroundColor>
-                <url>:HttpBasePath/analyses/analyseDB?type=Group</url>
+                <url>:HttpBasePath/analyses/analyseObject/analyseDB?type=Group</url>
                 <x>445</x>
                 <y>280</y>
                 <desktopShow>true</desktopShow>
