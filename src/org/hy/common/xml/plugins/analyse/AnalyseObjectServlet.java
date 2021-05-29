@@ -208,7 +208,7 @@ public class AnalyseObjectServlet extends HttpServlet
             v_Ret.setParamObj(v_ImageDatas[1]);
             v_Ret.setParamInt(v_Y);
             
-            getPasswdCheck().put(v_SessionID ,v_Y + "" + v_X ,12);
+            getPasswdCheck().put(v_SessionID ,v_Y + "" + v_X ,16);
         }
         catch (Exception exce)
         {
