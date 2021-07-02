@@ -65,10 +65,11 @@ public class AnalyseFS extends Analyse
     public static final String    $CloudLock = ".cloudlock";
     
     /** 允许对比查看文件内容的文件类型 */
-    private static final String[] $DiffTypes = new String[]{".xml" ,".txt" ,".json"    ,".ini"  ,".inf" ,".properties"
-                                                           ,".log" ,".out" ,".mf"      ,".md"
-                                                           ,".js"  ,".jsp" ,".css"     ,".htm" ,".html" ,".ftl" ,".svg" ,".map"
-                                                           ,".sh"  ,".bat" ,".profile" ,".policy"};
+    private static final String[] $DiffTypes = new String[]{".xml"  ,".txt" ,".json"    ,".ini"  ,".inf" ,".properties"
+                                                           ,".log"  ,".out" ,".mf"      ,".md"
+                                                           ,".js"   ,".jsp" ,".css"     ,".htm" ,".html" ,".ftl" ,".svg" ,".map"
+                                                           ,".java" ,".drl" ,".h"
+                                                           ,".sh"   ,".bat" ,".profile" ,".policy"};
     
     /** 自动排除哪些文件？不显示、不对比、不计算大小等 */
     public static final String    $ExcludeFiles   = "|_desktop.ini|._.ds_store|";
@@ -324,7 +325,7 @@ public class AnalyseFS extends Analyse
                 }
                 else
                 {
-                    v_RKey.put(":FileName" ,v_FReport.getFileName()); 
+                    v_RKey.put(":FileName" ,v_FReport.getFileName());
                 }
             }
             v_RKey.put(":Operate" ,v_Operate.toString());
@@ -712,7 +713,7 @@ public class AnalyseFS extends Analyse
             }
             
             return StringHelp.replaceAll("{'retCode':'3'}" ,"'" ,"\"");
-        } 
+        }
         else
         {
             return StringHelp.replaceAll("{'retCode':'4'}" ,"'" ,"\"");
@@ -751,7 +752,7 @@ public class AnalyseFS extends Analyse
         {
             try
             {
-                v_CloudLock = new File(v_File.toString() + $CloudLock); 
+                v_CloudLock = new File(v_File.toString() + $CloudLock);
                 v_FileHelp.create(v_CloudLock.toString() ,Date.getNowTime().getFullMilli() ,"UTF-8");
                 List<String> v_FailIP = null;
                 List<String> v_SuccIP = null;
@@ -775,12 +776,12 @@ public class AnalyseFS extends Analyse
                     if ( Help.isNull(v_FailIP) )
                     {
                         // 集群解压
-                        String v_UnZipRet = this.unZipFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP); 
+                        String v_UnZipRet = this.unZipFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP);
                         v_UnZipRet = StringHelp.replaceAll(v_UnZipRet ,"\"" ,"'");
                         if ( StringHelp.isContains(v_UnZipRet ,"'retCode':'0'") )
                         {
                             // 集群删除
-                            return this.delFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP); 
+                            return this.delFileByCluster(i_FilePath ,v_SaveFileName ,i_HIP);
                         }
                         else
                         {
@@ -798,11 +799,11 @@ public class AnalyseFS extends Analyse
                         Help.toSort(v_FailIP);
                         Help.toSort(v_SuccIP);
                         
-                        return StringHelp.replaceAll("{'retCode':'1','retHIP':'"              + StringHelp.toString(v_FailIP ,"") 
-                                                                + "','retHIPSize':'"          + v_FailIP.size() 
-                                                                + "','retSucceedfulIP':'"     + StringHelp.toString(v_SuccIP ,"") 
-                                                                + "','retSucceedfulIPSize':'" + v_SuccIP.size() 
-                                                                + "'}" 
+                        return StringHelp.replaceAll("{'retCode':'1','retHIP':'"              + StringHelp.toString(v_FailIP ,"")
+                                                                + "','retHIPSize':'"          + v_FailIP.size()
+                                                                + "','retSucceedfulIP':'"     + StringHelp.toString(v_SuccIP ,"")
+                                                                + "','retSucceedfulIPSize':'" + v_SuccIP.size()
+                                                                + "'}"
                                                     ,"'" ,"\"");
                     }
                 }
@@ -819,11 +820,11 @@ public class AnalyseFS extends Analyse
                         Help.toSort(v_FailIP);
                         Help.toSort(v_SuccIP);
                         
-                        return StringHelp.replaceAll("{'retCode':'1','retHIP':'"              + StringHelp.toString(v_FailIP ,"") 
-                                                                + "','retHIPSize':'"          + v_FailIP.size() 
-                                                                + "','retSucceedfulIP':'"     + StringHelp.toString(v_SuccIP ,"") 
-                                                                + "','retSucceedfulIPSize':'" + v_SuccIP.size() 
-                                                                + "'}" 
+                        return StringHelp.replaceAll("{'retCode':'1','retHIP':'"              + StringHelp.toString(v_FailIP ,"")
+                                                                + "','retHIPSize':'"          + v_FailIP.size()
+                                                                + "','retSucceedfulIP':'"     + StringHelp.toString(v_SuccIP ,"")
+                                                                + "','retSucceedfulIPSize':'" + v_SuccIP.size()
+                                                                + "'}"
                                                     ,"'" ,"\"");
                     }
                 }
@@ -1049,8 +1050,8 @@ public class AnalyseFS extends Analyse
                 else if ( StringHelp.isContains(v_FileType ,".bat") )
                 {
                     String v_Device = v_File.toString().substring(0 ,2);
-                    v_Ret = Help.executeCommand("GBK"   ,false ,true ,"cmd.exe /c " 
-                                                                      + v_Device + " && " 
+                    v_Ret = Help.executeCommand("GBK"   ,false ,true ,"cmd.exe /c "
+                                                                      + v_Device + " && "
                                                                       + " cd " + v_File.getParent() + " && \""
                                                                       + v_File.toString() + "\"");
                 }
@@ -1605,7 +1606,7 @@ public class AnalyseFS extends Analyse
                     FileHelp v_FileHelp = new FileHelp();
                     v_Size = v_FileHelp.calcSize(v_File ,$ExcludeFiles ,$ExcludeFolders);
                 }
-                else 
+                else
                 {
                     // 自动排除的文件
                     if ( $ExcludeFiles.indexOf("|" + v_File.getName() + "|") < 0 )
@@ -1617,7 +1618,7 @@ public class AnalyseFS extends Analyse
                 FileFingerprint v_FFinger     = new FileFingerprint(new Hash(2 ,2 ,null ,false));
                 String          v_FFingerCode = v_FFinger.calcFingerprint(v_File ,$ExcludeFiles ,$ExcludeFolders);
                 
-                return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size ,2) 
+                return StringHelp.replaceAll("{'retCode':'0','fileSize':'" + StringHelp.getComputeUnit(v_Size ,2)
                                            + "','fileByteSize':'"          + v_Size
                                            + "','fingerCode':'"            + v_FFingerCode
                                            + "','lastTime':'"              + new Date(v_File.lastModified()).getFull() + "'}" ,"'" ,"\"");
@@ -1656,7 +1657,7 @@ public class AnalyseFS extends Analyse
         int                 v_Error       = 0;
         List<ClientSocket>  v_Servers     = Cluster.getClusters();
         int                 v_SCount      = v_Servers.size();
-        Map<String ,String> v_Sizes       = new HashMap<String ,String>(); 
+        Map<String ,String> v_Sizes       = new HashMap<String ,String>();
         String              v_FSize       = null;
         String              v_FBSize      = null;
         String              v_Finger      = null;
@@ -1696,7 +1697,7 @@ public class AnalyseFS extends Analyse
                                 String v_LastTime   = StringHelp.getString(v_RetValue ,"'lastTime':'"     ,"'");
                                 
                                 // 通过文件指纹，高精度判定目录差异、文件差异
-                                if ( !Help.isNull(v_FingerCode) ) 
+                                if ( !Help.isNull(v_FingerCode) )
                                 {
                                     if ( v_Finger == null )
                                     {
@@ -1850,7 +1851,7 @@ public class AnalyseFS extends Analyse
         }
         v_Buffer.append("</table>");
         
-        return StringHelp.replaceAll("{'retCode':'"      + v_RetCode 
+        return StringHelp.replaceAll("{'retCode':'"      + v_RetCode
                                    + "',"                + v_Buffer.toString()
                                    + "',"                + v_Buffe2.toString()
                                    + "','clusterInfo':'" + v_ClusterInfo
@@ -1891,7 +1892,7 @@ public class AnalyseFS extends Analyse
         StringBuilder       v_HIP     = new StringBuilder();
         int                 v_ExecRet = 0;
         List<ClientSocket>  v_Servers = Cluster.getClusters();
-        Map<String ,String> v_Times   = new HashMap<String ,String>();  
+        Map<String ,String> v_Times   = new HashMap<String ,String>();
         
         if ( !Help.isNull(v_Servers) )
         {
@@ -1998,7 +1999,7 @@ public class AnalyseFS extends Analyse
                     return StringHelp.replaceAll("{'retCode':'1'}" ,"'" ,"\"");
                 }
             }
-            // 集群重新加载 
+            // 集群重新加载
             else
             {
                 int                v_ExecRet = 0 ;
@@ -2280,6 +2281,7 @@ public class AnalyseFS extends Analyse
          * @param e
          * @return   返回值表示是否继续拷贝
          */
+        @Override
         public boolean readBefore(FileReadEvent i_Event)
         {
             return true;
@@ -2293,6 +2295,7 @@ public class AnalyseFS extends Analyse
          * @param e
          * @return   返回值表示是否继续拷贝
          */
+        @Override
         public boolean readProcess(FileReadEvent i_Event)
         {
             this.isClone = true;
@@ -2347,7 +2350,7 @@ public class AnalyseFS extends Analyse
                             {
                                 v_ExecRet++;
                             }
-                            else 
+                            else
                             {
                                 this.failIP.put(v_HostName ,v_HostName);
                             }
@@ -2377,6 +2380,7 @@ public class AnalyseFS extends Analyse
          * 
          * @param e
          */
+        @Override
         public void readAfter(FileReadEvent i_Event)
         {
             // 当文件大小为0时，readProcess(...)方法是不会被调用的，所以是此特殊处理一下。
