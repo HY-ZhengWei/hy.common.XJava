@@ -1,50 +1,50 @@
 #layoutXMWindowDialog {
-	z-index: 99999910;
+    z-index: 99999910;
 }
 
 #editMWindowDialog {
-	z-index: 99999910;
+    z-index: 99999910;
 }
 
 #fullMWindowDialog {
-	z-index: 99999910;
-	width: 100%;
-	height: 100%;
-	display: none;
-	position: absolute;
-	top: 0px;
-	left: 0px; 
+    z-index: 99999910;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px; 
 }
 
 .fullMWindowDialogClose {
-	position: absolute;
-	top: 0px;
-	right: 0px;
-	padding-right: 8px;
-	padding-left: 8px;
-	padding-bottom: 8px;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: center;
-	background-color: rgba(255,255,255,0.1);
-	border-bottom-left-radius: 8px;
-	border-left: 1px solid gray;
-	border-bottom: 1px solid gray;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    padding-right: 8px;
+    padding-left: 8px;
+    padding-bottom: 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255,255,255,0.1);
+    border-bottom-left-radius: 8px;
+    border-left: 1px solid gray;
+    border-bottom: 1px solid gray;
 }
 
 .fullMWindowDialogCloseSelected {
-	background-color: rgba(255,255,255,0.6);
+    background-color: rgba(255,255,255,0.6);
 }
 
 #addMWindowDialog {
-	z-index: 99999910;
+    z-index: 99999910;
 }
 
 .input-group.mb-3 {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 
@@ -52,39 +52,39 @@
 
 
 .controlBar {
-	position: absolute;
-	width: 100%;
-	height: 10px;
-	top: 0px;
-	left: 0px;
-	z-index: 99999909;
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
+    position: absolute;
+    width: 100%;
+    height: 10px;
+    top: 0px;
+    left: 0px;
+    z-index: 99999909;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
 }
 
 .controlBarBackground {
-	border-bottom-left-radius: 5px;
-	border-bottom-right-radius: 5px;
-	padding-left: 5px;
-	padding-right: 5px;
-	padding-bottom: 5px;
-	background-color: gainsboro;
-	display: none;
-	flex-direction: row;
-	align-items: center;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-bottom: 5px;
+    background-color: gainsboro;
+    display: none;
+    flex-direction: row;
+    align-items: center;
 }
 
 .dropdown-item {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: space-between;
-	font-size: 13px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
 }
 
 .MWindowSettingBtns {
-	display: none;
+    display: none;
 }
 
 
@@ -92,15 +92,15 @@
 
 
 #urlMWindowDrag {
-	position: absolute;
-	top: -999999px;
-	left: -999999px;
-	z-index: 99999910;
+    position: absolute;
+    top: -999999px;
+    left: -999999px;
+    z-index: 99999910;
 }
 
 #urlMWindowDrag img {
-	width: 48px;
-	height: 48px;
+    width: 48px;
+    height: 48px;
 }
 
 
@@ -108,87 +108,87 @@
 
 
 #MWindowBody {
-	position: absolute;
-	top: 0px;
-	left: 0px;
-	width: 100%;
-	height: 100%;
-	z-index: 99999901;
-	background-color: white;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 99999901;
+    background-color: white;
 }
 
 #MWindowBody_Control {
-	position: absolute;
-	top: 0px;
-	left: 0px;
-	width: 100%;
-	height: 100%;
-	z-index: 99999900;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 99999900;
 }
 
 .MWindowComponent {
-	flex-shrink: 0;
+    flex-shrink: 0;
 }
 
 .MWindowRowBar {
-	display: flex;
+    display: flex;
     flex-direction: row;
 }
 
 .MWindowColBar {
-	display: flex;
+    display: flex;
     flex-direction: column;
 }
 
 .MWindowH {
-	height: 0px;
-	width: 100%;
-	background-color: #DDDDDD;
-	border-top-width: 0px;
+    height: 0px;
+    width: 100%;
+    background-color: #DDDDDD;
+    border-top-width: 0px;
     border-top-style: solid;
     border-top-color: #BBBBBB;
-	border-bottom-width: 0px;
+    border-bottom-width: 0px;
     border-bottom-style: solid;
     border-bottom-color: #BBBBBB;
-	cursor: s-resize;
-	z-index: 99999909;
+    cursor: s-resize;
+    z-index: 99999909;
 }
 
 .MWindowV {
-	height: 100%;
-	width: 0px;
-	background-color: #DDDDDD;
-	border-left-width: 0px;
+    height: 100%;
+    width: 0px;
+    background-color: #DDDDDD;
+    border-left-width: 0px;
     border-left-style: solid;
     border-left-color: #BBBBBB;
-	border-right-width: 0px;
+    border-right-width: 0px;
     border-right-style: solid;
     border-right-color: #BBBBBB;
-	cursor: e-resize;
-	z-index: 99999909;
+    cursor: e-resize;
+    z-index: 99999909;
 }
 
 .MWindowContent {
-	padding: 0px;
-	margin: 0px;
-	display: flex; 
-	flex-direction: column;
-	align-items: center;
+    padding: 0px;
+    margin: 0px;
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     font-size: 15px;
     text-align: center;
 }
 
 .MWindowNull {
-	width: 0px;
-	height: 0px;
-	padding: 0px;
-	margin: 0px;
-	display: flex; 
-	flex-shrink: 0;
-	flex-direction: row;
-	align-items: center;
+    width: 0px;
+    height: 0px;
+    padding: 0px;
+    margin: 0px;
+    display: flex; 
+    flex-shrink: 0;
+    flex-direction: row;
+    align-items: center;
     justify-content: center;
-	font-size: 15px;
+    font-size: 15px;
     text-align: center;
 }
