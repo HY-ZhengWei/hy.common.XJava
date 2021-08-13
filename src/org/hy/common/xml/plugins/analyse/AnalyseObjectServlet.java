@@ -101,16 +101,26 @@ public class AnalyseObjectServlet extends HttpServlet
     
     
     
-    private static final Logger               $Logger      = Logger.getLogger(AnalyseBase.class);
+    private static final Logger               $Logger       = Logger.getLogger(AnalyseBase.class);
     
     /** 登陆的Session会话ID标识，标识着是否登陆成功 */
-    public  static final String               $SessionID   = "$XJAVA$";
+    public  static final String               $SessionID    = "$XJAVA$";
+    
+    /** 登录验证码的超时时长（单位：秒） */
+    private static final int                  $LoginTimeout       = 30;
+    
+    /** 登录失败，锁会话的时长（单位：分钟） */
+    private static final int                  $LockSessionTimeLen = 10;
+    
+    /** 登录失败，锁全局的时长（单位：分钟） */
+    private static final int                  $LockGlobalTimeLen  = 30;
     
     /** 登录失败次数Map.key 为Session会话ID，Map.value为登录失败次数 */
-    private static ExpireMap<String ,Integer> $LoginCounts = null;
+    private static ExpireMap<String ,Integer> $LoginCounts  = null;
     
     /** 登录验证码Map.key 为Session会话ID，Map.value为验证码 */
-    private static ExpireMap<String ,String>  $PasswdCheck = null;
+    private static ExpireMap<String ,String>  $PasswdCheck  = null;
+    
     
     
     
@@ -208,7 +218,7 @@ public class AnalyseObjectServlet extends HttpServlet
             v_Ret.setParamObj(v_ImageDatas[1]);
             v_Ret.setParamInt(v_Y);
             
-            getPasswdCheck().put(v_SessionID ,v_Y + "" + v_X ,16);
+            getPasswdCheck().put(v_SessionID ,v_Y + "" + v_X ,$LoginTimeout);
         }
         catch (Exception exce)
         {
@@ -345,11 +355,11 @@ public class AnalyseObjectServlet extends HttpServlet
                 if ( v_LCount == null || v_LCount <= 0 )
                 {
                     v_LCount = 1;
-                    getLoginCounts().put(v_SID ,v_LCount ,60 * 10);
+                    getLoginCounts().put(v_SID ,v_LCount ,60 * $LockSessionTimeLen);
                 }
                 else if ( v_LCount < 3 )
                 {
-                    getLoginCounts().put(v_SID ,++v_LCount ,60 * 10);
+                    getLoginCounts().put(v_SID ,++v_LCount ,60 * $LockSessionTimeLen);
                 }
                 
                 if ( v_LCount >= 3 )
@@ -357,11 +367,11 @@ public class AnalyseObjectServlet extends HttpServlet
                     if ( v_AllLCount == null ||v_AllLCount <= 0 )
                     {
                         v_AllLCount = 1;
-                        getLoginCounts().put($SessionID ,v_AllLCount ,60 * 30);
+                        getLoginCounts().put($SessionID ,v_AllLCount ,60 * $LockGlobalTimeLen);
                     }
                     else if ( v_AllLCount < 3 )
                     {
-                        getLoginCounts().put($SessionID ,++v_AllLCount ,60 * 30);
+                        getLoginCounts().put($SessionID ,++v_AllLCount ,60 * $LockGlobalTimeLen);
                     }
                     
                     if ( v_AllLCount >= 3 )
