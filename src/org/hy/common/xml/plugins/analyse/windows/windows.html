@@ -112,7 +112,7 @@
         width: 130px; 
     }
     
-    #colorPicker {
+    .colorPicker {
         background: white;
         display: inline-block;
         position: absolute;
@@ -224,7 +224,8 @@
     <div id="appTooltip"></div>
     
     
-    <div id="colorPicker"></div>
+    <div id="colorPickerBG"   class="colorPicker"></div>
+    <div id="colorPickerFont" class="colorPicker"></div>
     
     
     <div id="appDesktopMenuBar">
@@ -253,7 +254,8 @@
                     <li id="resizeMax-LI"       ><div id="resizeMax"        class="MenuItem">大</div></li>
                 </ul>
             </li>
-            <li id="reColor-LI"  ><div id="reColor"   class="MenuItem">颜色</div></li>
+            <li id="reColor-LI"  ><div id="reColor"   class="MenuItem">背景色</div></li>
+            <li id="fontColor-LI"><div id="fontColor" class="MenuItem">标题色</div></li>
             <li id="rename-LI"   ><div id="rename"    class="MenuItem">重命名</div></li>
             <li><div class="MenuItem"></div></li>
             <li id="attribute-LI"><div id="attribute" class="MenuItem">属性</div></li>
@@ -307,9 +309,6 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">新建App</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
           </div>
           <div class="modal-body">
             
@@ -318,6 +317,58 @@
                     <span class="input-group-text">应用名称</span>
                 </div>
                 <input id="newAppName" type="text" class="form-control" placeholder="App名称" aria-label="App名称" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入App名称">
+            </div>
+            
+            <div class="newStyleBar">
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <label class="input-group-text" for="newNameFontColor">标题颜色</label>
+                  </div>
+                  <div class="dropdown">
+                      <button id="newNameFontColor" class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">纯净白</button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item newNameFontColorItem" data-color="#FFFFFF" style="background-color:#FFFFFF; color:black;" href="#">纯净白</a>
+                        <a class="dropdown-item newNameFontColorItem" data-color="#4395FF" style="background-color:#4395FF; color:white;" href="#">海军蓝</a>
+                        <a class="dropdown-item newNameFontColorItem" data-color="#17A2B8" style="background-color:#17A2B8; color:white;" href="#">皇家蓝</a>
+                        <a class="dropdown-item newNameFontColorItem" data-color="#28A745" style="background-color:#28A745; color:white;" href="#">森林绿</a>
+                        <a class="dropdown-item newNameFontColorItem" data-color="#3CB371" style="background-color:#3CB371; color:white;" href="#">春天绿</a>
+                        <a class="dropdown-item newNameFontColorItem" data-color="#DC3545" style="background-color:#DC3545; color:white;" href="#">玫瑰红</a>
+                        <a class="dropdown-item newNameFontColorItem" data-color="#FF6347" style="background-color:#FF6347; color:white;" href="#">蕃茄红</a>
+                        <a class="dropdown-item newNameFontColorItem" data-color="#FFC107" style="background-color:#FFC107; color:white;" href="#">柠檬黄</a>
+                        <a class="dropdown-item newNameFontColorItem" data-color="#6C757D" style="background-color:#6C757D; color:white;" href="#">低调灰</a>
+                        <a class="dropdown-item newNameFontColorItem" data-color="#343A40" style="background-color:#343A40; color:white;" href="#">太空黑</a>
+                        <a class="dropdown-item newNameFontColorItem" data-color="#563D7C" style="background-color:#563D7C; color:white;" href="#">紫罗兰</a>
+                      </div>
+                  </div>
+                </div>
+                
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <label class="input-group-text" for="newNameFontSize">文字大小</label>
+                  </div>
+                  <div class="dropdown">
+                      <button id="newNameFontSize" class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">正常</button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item newNameFontSizeItem" data-nameFontSize="FSize1" href="#">正常</a>
+                        <a class="dropdown-item newNameFontSizeItem" data-nameFontSize="FSize2" href="#">大</a>
+                        <a class="dropdown-item newNameFontSizeItem" data-nameFontSize="FSize3" href="#">巨大</a>
+                      </div>
+                  </div>
+                </div>
+                
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <label class="input-group-text" for="newNameToLMR">名称对齐</label>
+                  </div>
+                  <div class="dropdown">
+                      <button id="newNameToLMR" class="btn btn-secondary dropdown-toggle" type="button" data-nameToLMR="toLeft" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">左对齐</button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item newNameToLMRItem" data-nameToLMR="toLeft"   href="#">左对齐</a>
+                        <a class="dropdown-item newNameToLMRItem" data-nameToLMR="toMiddle" href="#">居中</a>
+                        <a class="dropdown-item newNameToLMRItem" data-nameToLMR="toRight"  href="#">右对齐</a>
+                      </div>
+                  </div>
+                </div>
             </div>
             
             <div class="input-group mb-3">
@@ -340,6 +391,13 @@
             
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">资源地址</span>
+                </div>
+                <input id="newAppDownloadUrl" type="text" class="form-control" placeholder="App相关的资源下载地址" aria-label="App相关的资源下载地址" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入App相关的资源下载地址">
+            </div>
+            
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
                     <span class="input-group-text" id="basic-addon1">访问确认</span>
                 </div>
                 <input id="newAppConfirm" type="text" class="form-control" placeholder="App访问前的确认消息，确认后才能访问" aria-label="App访问前的确认消息，确认后才能访问" aria-describedby="basic-addon1">
@@ -348,7 +406,7 @@
             <div class="newStyleBar">
                 <div class="input-group mb-3">
                   <div class="input-group-prepend">
-                    <label class="input-group-text" for="newBackgroundColor">背景颜色</label>
+                    <label class="input-group-text" for="newBackgroundColor">图标背景</label>
                   </div>
                   <div class="dropdown">
                       <button id="newBackgroundColor" class="btn btn-secondary dropdown-toggle" type="button" style="background-color:#4395FF;" data-color="#4395FF" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">海军蓝</button>
@@ -363,6 +421,7 @@
                         <a class="dropdown-item newBackgroundColorItem" data-color="#6C757D" style="background-color:#6C757D; color:white;" href="#">低调灰</a>
                         <a class="dropdown-item newBackgroundColorItem" data-color="#343A40" style="background-color:#343A40; color:white;" href="#">太空黑</a>
                         <a class="dropdown-item newBackgroundColorItem" data-color="#563D7C" style="background-color:#563D7C; color:white;" href="#">紫罗兰</a>
+                        <a class="dropdown-item newBackgroundColorItem" data-color="#FFFFFF" style="background-color:#FFFFFF; color:black;" href="#">纯净白</a>
                       </div>
                   </div>
                 </div>
@@ -383,19 +442,7 @@
                   </div>
                 </div>
                 
-                <div class="input-group mb-3">
-                  <div class="input-group-prepend">
-                    <label class="input-group-text" for="ewNameToLMR">名称对齐</label>
-                  </div>
-                  <div class="dropdown">
-                      <button id="newNameToLMR" class="btn btn-secondary dropdown-toggle" type="button" data-nameToLMR="toLeft" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">左对齐</button>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item newNameToLMRItem" data-nameToLMR="toLeft"   href="#">左对齐</a>
-                        <a class="dropdown-item newNameToLMRItem" data-nameToLMR="toMiddle" href="#">居中</a>
-                        <a class="dropdown-item newNameToLMRItem" data-nameToLMR="toRight"  href="#">右对齐</a>
-                      </div>
-                  </div>
-                </div>
+                <div class="input-group mb-3"></div>
             </div>
             
             <div class="input-group mb-3">
@@ -409,7 +456,7 @@
             
             <div class="input-group mb-3" id="newSystemBysBar">
                 <div class="input-group-prepend">
-                    <span class="input-group-text" id="basic-addon1">所属系统</span>
+                    <span class="input-group-text" id="newAppSaveBySystem">所属系统</span>
                 </div>
                 <div class="dropdown">
                     <button id="newSystemBysTitle" class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">请选择</button>
@@ -432,9 +479,6 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">App属性</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
           </div>
           <div class="modal-body">
             
@@ -443,6 +487,58 @@
                     <span class="input-group-text">应用名称</span>
                 </div>
                 <input id="editAppName" type="text" class="form-control" placeholder="App名称" aria-label="App名称" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入App名称">
+            </div>
+            
+            <div class="newStyleBar">
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <label class="input-group-text" for="editNameFontColor">标题颜色</label>
+                  </div>
+                  <div class="dropdown">
+                      <button id="editNameFontColor" class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">纯净白</button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item editNameFontColorItem" data-color="#FFFFFF" style="background-color:#FFFFFF; color:black;" href="#">纯净白</a>
+                        <a class="dropdown-item editNameFontColorItem" data-color="#4395FF" style="background-color:#4395FF; color:white;" href="#">海军蓝</a>
+                        <a class="dropdown-item editNameFontColorItem" data-color="#17A2B8" style="background-color:#17A2B8; color:white;" href="#">皇家蓝</a>
+                        <a class="dropdown-item editNameFontColorItem" data-color="#28A745" style="background-color:#28A745; color:white;" href="#">森林绿</a>
+                        <a class="dropdown-item editNameFontColorItem" data-color="#3CB371" style="background-color:#3CB371; color:white;" href="#">春天绿</a>
+                        <a class="dropdown-item editNameFontColorItem" data-color="#DC3545" style="background-color:#DC3545; color:white;" href="#">玫瑰红</a>
+                        <a class="dropdown-item editNameFontColorItem" data-color="#FF6347" style="background-color:#FF6347; color:white;" href="#">蕃茄红</a>
+                        <a class="dropdown-item editNameFontColorItem" data-color="#FFC107" style="background-color:#FFC107; color:white;" href="#">柠檬黄</a>
+                        <a class="dropdown-item editNameFontColorItem" data-color="#6C757D" style="background-color:#6C757D; color:white;" href="#">低调灰</a>
+                        <a class="dropdown-item editNameFontColorItem" data-color="#343A40" style="background-color:#343A40; color:white;" href="#">太空黑</a>
+                        <a class="dropdown-item editNameFontColorItem" data-color="#563D7C" style="background-color:#563D7C; color:white;" href="#">紫罗兰</a>
+                      </div>
+                  </div>
+                </div>
+                
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <label class="input-group-text" for="editNameFontSize">文字大小</label>
+                  </div>
+                  <div class="dropdown">
+                      <button id="editNameFontSize" class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">正常</button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item editNameFontSizeItem" data-nameFontSize="FSize1" href="#">正常</a>
+                        <a class="dropdown-item editNameFontSizeItem" data-nameFontSize="FSize2" href="#">大</a>
+                        <a class="dropdown-item editNameFontSizeItem" data-nameFontSize="FSize3" href="#">巨大</a>
+                      </div>
+                  </div>
+                </div>
+                
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <label class="input-group-text" for="editNameToLMR">名称对齐</label>
+                  </div>
+                  <div class="dropdown">
+                      <button id="editNameToLMR" class="btn btn-secondary dropdown-toggle" type="button" data-nameToLMR="toLeft" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">左对齐</button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item editNameToLMRItem" data-nameToLMR="toLeft"   href="#">左对齐</a>
+                        <a class="dropdown-item editNameToLMRItem" data-nameToLMR="toMiddle" href="#">居中</a>
+                        <a class="dropdown-item editNameToLMRItem" data-nameToLMR="toRight"  href="#">右对齐</a>
+                      </div>
+                  </div>
+                </div>
             </div>
             
             <div class="input-group mb-3">
@@ -465,6 +561,13 @@
             
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">资源地址</span>
+                </div>
+                <input id="editAppDownloadUrl" type="text" class="form-control" placeholder="App相关的资源下载地址" aria-label="App相关的资源下载地址" aria-describedby="basic-addon1" data-toggle="popover" data-placement="top" data-content="请输入App相关的资源下载地址">
+            </div>
+            
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
                     <span class="input-group-text" id="basic-addon1">访问确认</span>
                 </div>
                 <input id="editAppConfirm" type="text" class="form-control" placeholder="App访问前的确认消息，确认后才能访问" aria-label="App访问前的确认消息，确认后才能访问" aria-describedby="basic-addon1">
@@ -473,7 +576,7 @@
             <div class="newStyleBar">
                 <div class="input-group mb-3">
                   <div class="input-group-prepend">
-                    <label class="input-group-text" for="editBackgroundColor">背景颜色</label>
+                    <label class="input-group-text" for="editBackgroundColor">图标背景</label>
                   </div>
                   <div class="dropdown">
                       <button id="editBackgroundColor" class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">海军蓝</button>
@@ -488,6 +591,7 @@
                         <a class="dropdown-item editBackgroundColorItem" data-color="#6C757D" style="background-color:#6C757D; color:white;" href="#">低调灰</a>
                         <a class="dropdown-item editBackgroundColorItem" data-color="#343A40" style="background-color:#343A40; color:white;" href="#">太空黑</a>
                         <a class="dropdown-item editBackgroundColorItem" data-color="#563D7C" style="background-color:#563D7C; color:white;" href="#">紫罗兰</a>
+                        <a class="dropdown-item editBackgroundColorItem" data-color="#FFFFFF" style="background-color:#FFFFFF; color:black;" href="#">纯净白</a>
                       </div>
                   </div>
                 </div>
@@ -508,19 +612,7 @@
                   </div>
                 </div>
                 
-                <div class="input-group mb-3">
-                  <div class="input-group-prepend">
-                    <label class="input-group-text" for="editNameToLMR">名称对齐</label>
-                  </div>
-                  <div class="dropdown">
-                      <button id="editNameToLMR" class="btn btn-secondary dropdown-toggle" type="button" data-nameToLMR="toLeft" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">左对齐</button>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item editNameToLMRItem" data-nameToLMR="toLeft"   href="#">左对齐</a>
-                        <a class="dropdown-item editNameToLMRItem" data-nameToLMR="toMiddle" href="#">居中</a>
-                        <a class="dropdown-item editNameToLMRItem" data-nameToLMR="toRight"  href="#">右对齐</a>
-                      </div>
-                  </div>
-                </div>
+                <div class="input-group mb-3"></div>
             </div>
             
             <div class="input-group mb-3">
@@ -534,7 +626,7 @@
             
             <div class="input-group mb-3" id="editSystemBysBar">
                 <div class="input-group-prepend">
-                    <span class="input-group-text" id="basic-addon1">所属系统</span>
+                    <button type="button" class="btn btn-primary" id="editAppSaveBySystem">所属系统</button>
                 </div>
                 <div class="dropdown">
                     <button id="editSystemBysTitle" class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">请选择</button>
@@ -681,7 +773,17 @@
                                     longHeight: {width:105 ,height:215 ,iconSize:80  ,fontSize:13 ,comment:"高"},
                                     middle:     {width:105 ,height:105 ,iconSize:70  ,fontSize:13 ,comment:"中"},
                                     min:        {width:50  ,height:50  ,iconSize:40  ,fontSize:13 ,comment:"小"}
-                                 };
+                                  };
+        var v_NameToLMR         = {
+                                    toLeft:   {comment:"左对齐"},
+                                    toMiddle: {comment:"居中"  },
+                                    toRight:  {comment:"右对齐"},
+                                  };
+        var v_NameFontSize      = {
+                                    FSize1: {comment:"正常" ,fontSize:13},
+                                    FSize2: {comment:"大"   ,fontSize:18},
+                                    FSize3: {comment:"巨大" ,fontSize:23},
+                                  };
         var v_SystemDatas      = [];
         var v_Apps             = :Apps.datas;
         var v_StartMenuIndexes = {};

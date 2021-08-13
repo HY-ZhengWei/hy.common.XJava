@@ -162,10 +162,33 @@ function menuOnClickReColor()
     
     if ( v_ContextG != null && v_ContextData != null )
     {
-        showColorPicker(v_ContextData.backgroundColor ,d3.event.pageX ,d3.event.pageY ,function(i_Color)
+        showColorPicker("colorPickerBG" ,v_ContextData.backgroundColor ,d3.event.pageX ,d3.event.pageY ,function(i_Color)
         {
             v_ContextData.backgroundColor = i_Color;
             v_ContextG.select("rect").attr("fill" ,v_ContextData.backgroundColor);
+            
+            commitWindowAppXXColorSize(v_ContextData);
+        });
+    }
+}
+
+
+
+/**
+ * App图标标题文字改颜色
+ *
+ * ZhengWei(HY) Add 2021-08-13
+ */
+function menuOnClickFontColor()
+{
+    hideAppMenu();
+    
+    if ( v_ContextG != null && v_ContextData != null )
+    {
+        showColorPicker("colorPickerFont" ,v_ContextData.nameFontColor ,d3.event.pageX ,d3.event.pageY ,function(i_Color)
+        {
+            v_ContextData.nameFontColor = i_Color;
+            v_ContextG.select("text").attr("fill" ,v_ContextData.nameFontColor);
             
             commitWindowAppXXColorSize(v_ContextData);
         });
@@ -326,12 +349,13 @@ function menuOnClickEditApp()
 
 
 
-var v_AppMenusConfig      = [{fontSize:16 ,onClick:menuOnClickEditApp  ,name:"编辑"} 
-                            ,{fontSize:14 ,onClick:menuOnClickRename   ,name:"重命名"} 
-                            ,{fontSize:14 ,onClick:menuOnClickReColor  ,name:"颜色"} 
-                            ,{fontSize:14 ,onClick:menuOnClickCopyApp  ,name:"复制"} 
-                            ,{fontSize:14 ,onClick:menuOnClickDelApp   ,name:"删除"}
-                            ,{fontSize:14 ,onClick:menuOnClickShowSize ,name:"大小"}];
+var v_AppMenusConfig      = [{fontSize:16 ,onClick:menuOnClickEditApp   ,name:"编辑"} 
+                            ,{fontSize:14 ,onClick:menuOnClickRename    ,name:"重命名"} 
+                            ,{fontSize:14 ,onClick:menuOnClickReColor   ,name:"背景色"} 
+                            ,{fontSize:14 ,onClick:menuOnClickFontColor ,name:"标题色"} 
+                            ,{fontSize:14 ,onClick:menuOnClickCopyApp   ,name:"复制"} 
+                            ,{fontSize:14 ,onClick:menuOnClickDelApp    ,name:"删除"}
+                            ,{fontSize:14 ,onClick:menuOnClickShowSize  ,name:"大小"}];
 
 var v_AppMenusSizeConfig = [{fontSize:16 ,onClick:menuOnClickSizeGoBack       ,name:"返回"} 
                            ,{fontSize:14 ,onClick:menuOnClickResizeMax        ,name:"大"} 

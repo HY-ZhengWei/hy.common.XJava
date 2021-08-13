@@ -135,7 +135,58 @@ function showEditAppDialog()
     d3.select("#editAppIcon").attr("data-icon"   ,v_ContextData.icon);
     d3.select("#editAppIcon").attr("data-iconID" ,v_ContextData.iconID);
     
+    /* 标题颜色 */
+    if ( !v_ContextData.nameFontColor || v_ContextData.nameFontColor == undefined || v_ContextData.nameFontColor == "")
+    {
+        v_ContextData.nameFontColor = "#FFFFFF";
+    }
     var v_IsFindColor = false;
+    d3.selectAll(".editNameFontColorItem").each(function()
+    {
+        var v_My      = d3.select(this);
+        var v_BGColor = v_My.attr("data-color");
+        if ( v_BGColor == v_ContextData.nameFontColor )
+        {
+            d3.select("#editNameFontColor")
+            .attr("data-color"        ,v_ContextData.nameFontColor)
+            .style("background-color" ,v_ContextData.nameFontColor)
+            .style("color"            ,v_ContextData.nameFontColor == '#FFFFFF' ? 'black' : 'white')
+            .html(v_My.html());
+            
+            v_IsFindColor = true;
+        }
+    });
+    
+    if ( !v_IsFindColor )
+    {
+        d3.select("#editNameFontColor")
+        .attr("data-color"        ,v_ContextData.nameFontColor)
+        .style("background-color" ,v_ContextData.nameFontColor)
+        .style("color"            ,v_ContextData.nameFontColor == '#FFFFFF' ? 'black' : 'white')
+        .html("自选颜色");
+    }
+    
+    
+    if ( !v_ContextData.nameFontSize || v_ContextData.nameFontSize == undefined || v_ContextData.nameFontSize == "")
+    {
+        v_ContextData.nameFontSize = "FSize1";
+    }
+    d3.select("#editNameFontSize")
+    .attr("data-nameFontSize" ,v_ContextData.nameFontSize)
+    .html(v_NameFontSize[v_ContextData.nameFontSize].comment);
+    
+    
+    if ( !v_ContextData.nameToLMR || v_ContextData.nameToLMR == undefined || v_ContextData.nameToLMR == "")
+    {
+        v_ContextData.nameToLMR = "toLeft";
+    }
+    d3.select("#editNameToLMR")
+    .attr("data-nameToLMR" ,v_ContextData.nameToLMR)
+    .html(v_NameToLMR[v_ContextData.nameToLMR].comment);
+    
+    
+    /* 图标背景色 */
+    v_IsFindColor = false;
     d3.selectAll(".editBackgroundColorItem").each(function()
     {
         var v_My      = d3.select(this);
@@ -145,6 +196,7 @@ function showEditAppDialog()
             d3.select("#editBackgroundColor")
             .attr("data-color"        ,v_ContextData.backgroundColor)
             .style("background-color" ,v_ContextData.backgroundColor)
+            .style("color"            ,v_ContextData.backgroundColor == '#FFFFFF' ? 'black' : 'white')
             .html(v_My.html());
             
             v_IsFindColor = true;
@@ -156,21 +208,13 @@ function showEditAppDialog()
         d3.select("#editBackgroundColor")
         .attr("data-color"        ,v_ContextData.backgroundColor)
         .style("background-color" ,v_ContextData.backgroundColor)
+        .style("color"            ,v_ContextData.backgroundColor == '#FFFFFF' ? 'black' : 'white')
         .html("自选颜色");
     }
     
     d3.select("#editSizeType")
     .attr("data-sizeType" ,v_ContextData.sizeType)
     .html(v_Sizes[v_ContextData.sizeType].comment);
-    
-    if ( !v_ContextData.nameToLMR || v_ContextData.nameToLMR == undefined || v_ContextData.nameToLMR == "")
-    {
-        v_ContextData.nameToLMR = "toLeft";
-    }
-    d3.select("#editNameToLMR")
-    .attr("data-nameToLMR" ,v_ContextData.nameToLMR)
-    .html(v_NameToLMR[v_ContextData.nameToLMR].comment);
-    
     
     if ( v_ContextData.icon != null && v_ContextData.icon != "" )
     {
@@ -260,11 +304,18 @@ d3.select("#editAppSaveBySystem").on("click" ,function()
     v_ContextData.backgroundColor = d3.select("#editBackgroundColor").attr("data-color");
     v_ContextData.sizeType        = d3.select("#editSizeType")       .attr("data-sizeType");
     v_ContextData.nameToLMR       = d3.select("#editNameToLMR")      .attr("data-nameToLMR");
+    v_ContextData.nameFontColor   = d3.select("#editNameFontColor")  .attr("data-color");
+    v_ContextData.nameFontSize    = d3.select("#editNameFontSize")   .attr("data-nameFontSize");
     v_ContextData.systemBysCodes  = v_EditSystemBysCodes;
     
     if ( v_ContextData.sizeType == null || v_ContextData.sizeType == "" )
     {
         v_ContextData.sizeType = "middle";
+    }
+    
+    if ( v_ContextData.nameFontSize == null || v_ContextData.nameFontSize == "" )
+    {
+        v_ContextData.nameFontSize = "FSize1";
     }
     
     commitSaveAppBySystem(v_ContextData);
@@ -310,11 +361,18 @@ d3.select("#editAppBtn").on("click" ,function()
     v_ContextData.backgroundColor = d3.select("#editBackgroundColor").attr("data-color");
     v_ContextData.sizeType        = d3.select("#editSizeType")       .attr("data-sizeType");
     v_ContextData.nameToLMR       = d3.select("#editNameToLMR")      .attr("data-nameToLMR");
+    v_ContextData.nameFontColor   = d3.select("#editNameFontColor")  .attr("data-color");
+    v_ContextData.nameFontSize    = d3.select("#editNameFontSize")   .attr("data-nameFontSize");
     v_ContextData.systemBysCodes  = v_EditSystemBysCodes;
     
     if ( v_ContextData.sizeType == null || v_ContextData.sizeType == "" )
     {
         v_ContextData.sizeType = "middle";
+    }
+    
+    if ( v_ContextData.nameFontSize == null || v_ContextData.nameFontSize == "" )
+    {
+        v_ContextData.nameFontSize = "FSize1";
     }
     
     editApp(v_ContextData ,v_ContextG ,1000);
@@ -411,6 +469,55 @@ $("#editActionType").change(function()
 
 
 /**
+ * App标题文字颜色的选择改变事件
+ *
+ * ZhengWei(HY) Add 2021-08-13
+ */
+d3.selectAll(".editNameFontColorItem").on("click" ,function()
+{
+    var v_EditBGColor = d3.select(this).attr("data-color");
+    d3.select("#editNameFontColor")
+    .attr("data-color"        ,v_EditBGColor)
+    .style("background-color" ,v_EditBGColor)
+    .style("color"            ,v_EditBGColor == '#FFFFFF' ? 'black' : 'white')
+    .html(d3.select(this).html());
+})
+.on("mouseover" ,function()
+{
+    try
+    {
+        var v_My    = d3.select(this);
+        var v_FSize = Number(v_My.style("font-size").replace("px" ,""));
+        
+        v_My
+        .style("font-size" ,(v_FSize + 3) + "px")
+        .style("font-weight" ,"bold");
+    }
+    catch (error)
+    {
+        /* Nothing. */
+    }
+})
+.on("mouseout" ,function()
+{
+    try
+    {
+        var v_My    = d3.select(this);
+        var v_FSize = Number(v_My.style("font-size").replace("px" ,""));
+        
+        v_My
+        .style("font-size" ,(v_FSize - 3) + "px")
+        .style("font-weight" ,"normal");
+    }
+    catch (error)
+    {
+        /* Nothing. */
+    }
+});
+
+
+
+/**
  * App背景颜色的选择改变事件
  *
  * ZhengWei(HY) Add 2019-06-24
@@ -421,6 +528,7 @@ d3.selectAll(".editBackgroundColorItem").on("click" ,function()
     d3.select("#editBackgroundColor")
     .attr("data-color"        ,v_EditBGColor)
     .style("background-color" ,v_EditBGColor)
+    .style("color"            ,v_EditBGColor == '#FFFFFF' ? 'black' : 'white')
     .html(d3.select(this).html());
 })
 .on("mouseover" ,function()
@@ -490,5 +598,20 @@ d3.selectAll(".editNameToLMRItem").on("click" ,function()
     var v_EditNameToLMR = d3.select(this).attr("data-nameToLMR");
     d3.select("#editNameToLMR")
     .attr("data-nameToLMR" ,v_EditNameToLMR)
+    .html(d3.select(this).html());
+});
+
+
+
+/**
+ * App标题文字大小的选择改变事件
+ *
+ * ZhengWei(HY) Add 2021-08-13
+ */
+d3.selectAll(".editNameFontSizeItem").on("click" ,function()
+{
+    var v_EditNameFontSize = d3.select(this).attr("data-nameFontSize");
+    d3.select("#editNameFontSize")
+    .attr("data-nameFontSize" ,v_EditNameFontSize)
     .html(d3.select(this).html());
 });

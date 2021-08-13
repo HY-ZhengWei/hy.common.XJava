@@ -293,10 +293,21 @@ function createApp(i_Data ,i_G)
     }
     
     
+    if ( i_Data.nameFontColor == undefined || i_Data.nameFontColor == null || i_Data.nameFontColor == "" )
+    {
+        i_Data.nameFontColor = "#FFFFFF";
+    }
+    
+    if ( i_Data.nameFontSize == undefined || i_Data.nameFontSize == null || i_Data.nameFontSize == "" )
+    {
+        i_Data.nameFontSize = "FSize1";
+    }
+    
     if ( i_Data.sizeType != "min" )
     {
-        var v_X   = v_MySize.fontSize;
-        var v_LMR = "start";
+        let v_FontSize = v_NameFontSize[i_Data.nameFontSize].fontSize;
+        let v_X        = v_MySize.fontSize;
+        let v_LMR      = "start";
         if ( i_Data.nameToLMR == "toLeft" )
         {
             v_X   = v_MySize.fontSize;
@@ -319,8 +330,8 @@ function createApp(i_Data ,i_G)
         .attr("y"           ,v_MySize.height - v_MySize.fontSize)
         .attr("dx"          ,v_MySize.fontSize / 3 * -1)
         .attr("dy"          ,v_MySize.fontSize / 3)
-        .attr("font-size"   ,v_MySize.fontSize)
-        .attr("fill"        ,v_Colors.textColor)
+        .attr("font-size"   ,v_FontSize)
+        .attr("fill"        ,i_Data.nameFontColor)
         .attr("text-anchor" ,v_LMR)
         .style("cursor"     ,"pointer")
         .text(i_Data.appName)
@@ -421,8 +432,9 @@ function editApp(i_Data ,i_G ,i_ActionTime)
     /* 图标文字 */
     if ( i_Data.sizeType != "min" )
     {
-        var v_X   = v_MySize.fontSize;
-        var v_LMR = "start";
+        let v_FontSize = v_NameFontSize[i_Data.nameFontSize].fontSize;
+        let v_X        = v_MySize.fontSize;
+        let v_LMR      = "start";
         if ( i_Data.nameToLMR == "toLeft" )
         {
             v_X   = v_MySize.fontSize;
@@ -446,8 +458,8 @@ function editApp(i_Data ,i_G ,i_ActionTime)
             .attr("y"           ,v_MySize.height - v_MySize.fontSize)
             .attr("dx"          ,v_MySize.fontSize / 3 * -1)
             .attr("dy"          ,v_MySize.fontSize / 3)
-            .attr("font-size"   ,v_MySize.fontSize)
-            .attr("fill"        ,v_Colors.textColor)
+            .attr("font-size"   ,v_FontSize)
+            .attr("fill"        ,i_Data.nameFontColor)
             .attr("text-anchor" ,v_LMR)
             .style("cursor"     ,"pointer")
             .text(i_Data.appName)
@@ -476,7 +488,8 @@ function editApp(i_Data ,i_G ,i_ActionTime)
             .attr("y"           ,v_MySize.height - v_MySize.fontSize)
             .attr("dx"          ,v_MySize.fontSize / 3 * -1)
             .attr("dy"          ,v_MySize.fontSize / 3)
-            .attr("font-size"   ,v_MySize.fontSize)
+            .attr("font-size"   ,v_FontSize)
+            .attr("fill"        ,i_Data.nameFontColor)
             .attr("text-anchor" ,v_LMR)
             .text(i_Data.appName);
         }
@@ -616,8 +629,9 @@ function changeAppSize(i_G ,i_Data ,i_ToSize)
             });
         }
         
-        var v_X   = v_MySize.fontSize;
-        var v_LMR = "start";
+        let v_FontSize = v_NameFontSize[i_Data.nameFontSize].fontSize;
+        let v_X        = v_MySize.fontSize;
+        let v_LMR      = "start";
         if ( i_Data.nameToLMR == "toLeft" )
         {
             v_X   = v_MySize.fontSize;
@@ -642,7 +656,8 @@ function changeAppSize(i_G ,i_Data ,i_ToSize)
         .attr("y"           ,v_MySize.height - v_MySize.fontSize)
         .attr("dx"          ,v_MySize.fontSize / 3 * -1)
         .attr("dy"          ,v_MySize.fontSize / 3)
-        .attr("font-size"   ,v_MySize.fontSize)
+        .attr("font-size"   ,v_FontSize)
+        .attr("fill"        ,i_Data.nameFontColor)
         .attr("text-anchor" ,v_LMR);
     }
     else

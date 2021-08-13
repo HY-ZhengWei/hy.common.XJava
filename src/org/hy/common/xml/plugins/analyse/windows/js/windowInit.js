@@ -85,7 +85,12 @@ function bodyPageInit()
 	$("#newBackgroundColor") .dropdown();
 	$("#newSizeType")        .dropdown();
 	$("#newNameToLMR")       .dropdown();
+	$("#newNameFontColor")   .dropdown();
+	$("#newNameFontSize")    .dropdown();
+	
 	$("#editBackgroundColor").dropdown();
 	$("#editSizeType")       .dropdown();
 	$("#editNameToLMR")      .dropdown();
+	$("#editNameFontColor")  .dropdown();
+	$("#editNameFontSize")   .dropdown();
 }

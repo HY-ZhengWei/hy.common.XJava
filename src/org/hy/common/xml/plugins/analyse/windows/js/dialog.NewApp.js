@@ -140,18 +140,29 @@ function showNewAppDialog(i_MWTID)
     d3.select("#newAppIcon").attr("data-icon"   ,"");
     d3.select("#newAppIcon").attr("data-iconID" ,"");
     
+    d3.select("#newNameFontColor")
+    .attr("data-color"        ,"#FFFFFF")
+    .style("background-color" ,"#FFFFFF")
+    .style("color"            ,"black")
+    .html("纯净白");
+    
+    d3.select("#newNameFontSize")
+    .attr("data-nameFontSize" ,"FSize1")
+    .html(v_NameFontSize["FSize1"].comment);
+    
+    d3.select("#newNameToLMR")
+    .attr("data-nameToLMR" ,"toLeft")
+    .html(v_NameToLMR["toLeft"].comment);
+    
     d3.select("#newBackgroundColor")
     .attr("data-color"        ,"#4395FF")
     .style("background-color" ,"#4395FF")
+    .style("color"            ,"white")
     .html("海军蓝");
     
     d3.select("#newSizeType")
     .attr("data-sizeType" ,"middle")
     .html(v_Sizes["middle"].comment);
-    
-    d3.select("#newNameToLMR")
-    .attr("data-nameToLMR" ,"toLeft")
-    .html(v_NameToLMR["toLeft"].comment);
     
     delete v_FileConfigs.initialPreviewAsData;
     delete v_FileConfigs.initialPreview;
@@ -237,6 +248,8 @@ d3.select("#newAppBtn").on("click" ,function()
     v_NewData.backgroundColor = d3.select("#newBackgroundColor").attr("data-color");
     v_NewData.sizeType        = d3.select("#newSizeType")       .attr("data-sizeType");
     v_NewData.nameToLMR       = d3.select("#newNameToLMR")      .attr("data-nameToLMR");
+    v_NewData.nameFontColor   = d3.select("#newNameFontColor")  .attr("data-color");
+    v_NewData.nameFontSize    = d3.select("#newNameFontSize")   .attr("data-nameFontSize");
     v_NewData.x               = d3.select("#newAppName")        .attr("data-x");
     v_NewData.y               = d3.select("#newAppName")        .attr("data-y");
     v_NewData.systemBysCodes  = v_NewSystemBysCodes;
@@ -244,6 +257,11 @@ d3.select("#newAppBtn").on("click" ,function()
     if ( v_NewData.sizeType == null || v_NewData.sizeType == "" )
     {
         v_NewData.sizeType = "middle";
+    }
+    
+    if ( v_NewData.nameFontSize == null || v_NewData.nameFontSize == "" )
+    {
+        v_NewData.nameFontSize = "FSize1";
     }
     
     v_Apps.push(v_NewData);
@@ -346,6 +364,56 @@ $("#newActionType").change(function()
 
 
 /**
+ * App标题文字颜色的选择改变事件
+ *
+ * ZhengWei(HY) Add 2021-08-13
+ */
+d3.selectAll(".newNameFontColorItem")
+.on("click" ,function()
+{
+    var v_NewBGColor = d3.select(this).attr("data-color");
+    d3.select("#newNameFontColor")
+    .attr("data-color"        ,v_NewBGColor)
+    .style("background-color" ,v_NewBGColor)
+    .style("color"            ,v_NewBGColor == '#FFFFFF' ? 'black' : 'white')
+    .html(d3.select(this).html());
+})
+.on("mouseover" ,function()
+{
+    try
+    {
+        var v_My    = d3.select(this);
+        var v_FSize = Number(v_My.style("font-size").replace("px" ,""));
+        
+        v_My
+        .style("font-size" ,(v_FSize + 3) + "px")
+        .style("font-weight" ,"bold");
+    }
+    catch (error)
+    {
+        /* Nothing. */
+    }
+})
+.on("mouseout" ,function()
+{
+    try
+    {
+        var v_My    = d3.select(this);
+        var v_FSize = Number(v_My.style("font-size").replace("px" ,""));
+        
+        v_My
+        .style("font-size" ,(v_FSize - 3) + "px")
+        .style("font-weight" ,"normal");
+    }
+    catch (error)
+    {
+        /* Nothing. */
+    }
+});
+
+
+
+/**
  * App背景颜色的选择改变事件、鼠标移动事件
  *
  * ZhengWei(HY) Add 2019-06-24
@@ -416,8 +484,23 @@ d3.selectAll(".newSizeTypeItem").on("click" ,function()
  */
 d3.selectAll(".newNameToLMRItem").on("click" ,function()
 {
-    var v_EditNameToLMR = d3.select(this).attr("data-nameToLMR");
+    var v_NewNameToLMR = d3.select(this).attr("data-nameToLMR");
     d3.select("#newNameToLMR")
-    .attr("data-nameToLMR" ,v_EditNameToLMR)
+    .attr("data-nameToLMR" ,v_NewNameToLMR)
+    .html(d3.select(this).html());
+});
+
+
+
+/**
+ * App标题文字大小的选择改变事件
+ *
+ * ZhengWei(HY) Add 2021-08-13
+ */
+d3.selectAll(".newNameFontSizeItem").on("click" ,function()
+{
+    var v_NewNameToLMR = d3.select(this).attr("data-nameFontSize");
+    d3.select("#newNameFontSize")
+    .attr("data-nameFontSize" ,v_NewNameToLMR)
     .html(d3.select(this).html());
 });
