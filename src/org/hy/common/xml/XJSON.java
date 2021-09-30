@@ -82,10 +82,17 @@ import net.minidev.json.parser.JSONParser;
  *                                     2. 防止递归功能，添加允许递归次数。允许一定范围内的递归或重复数据。发现人：马龙。
  *              2020-01-15  V3.7  添加：当Java对象转Json字符串时，是否包含对成员方法的转换输出。
  *              2021-01-15  V3.8  添加：简单判定字符串是否为Json格式的字符串
+ *              2021-09-30  V3.9  添加：控制参数isJsonClassByObject。
+ *                                     在Java对象转Json字符串时，对于getter方法的返回类型为java.lang.Object时，
+ *                                     是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
+ *                                     控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
  * 
  */
 public final class XJSON
 {
+    
+    /** Json字符串的名称中是否包含"值"的Java类名称，形式是：{ "name@java.lang.Integer" : "value" } */
+    private static String    $JsonClassByObject_SplitKey = "@";
     
     /** 当Java对象转Json字符串时，排除哪些方法不输出 */
     private static String [] $ExcludeMethodNames = {"getClass"
@@ -132,10 +139,20 @@ public final class XJSON
     private boolean     isReturnNVL;
     
     /**
-     * 当Java对象转Json字符串时，是否包含对成员方法的转换输出
+     * 在Java对象转Json字符串时，是否包含对成员方法的转换输出
      * 默认为：false，不转换输出
      */
     private boolean     isJsonMethod;
+    
+    /**
+     * 在Java对象转Json字符串时，对于getter方法的返回类型为java.lang.Object时，
+     * 是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
+     * 
+     * 控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
+     * 
+     * 默认为：false，不转换输出
+     */
+    private boolean     isJsonClassByObject;
     
     /** Java转Json时，BigDecimal的显示格式。是否启用科学计数法（默认为：自然数字，而非科学计数法） */
     private boolean     isBigDecimalFormat;
@@ -157,14 +174,15 @@ public final class XJSON
     
     public XJSON()
     {
-        this.firstCharIsUpper   = false;
-        this.isAccuracy         = false;
-        this.isReturnNVL        = true;
-        this.isJsonMethod       = false;
-        this.isBigDecimalFormat = false;
-        this.digit              = null;
-        this.recursionCount     = 0;
-        this.parserObjectClass  = Hashtable.class;
+        this.firstCharIsUpper    = false;
+        this.isAccuracy          = false;
+        this.isReturnNVL         = true;
+        this.isJsonMethod        = false;
+        this.isJsonClassByObject = false;
+        this.isBigDecimalFormat  = false;
+        this.digit               = null;
+        this.recursionCount      = 0;
+        this.parserObjectClass   = Hashtable.class;
     }
     
     
@@ -536,10 +554,13 @@ public final class XJSON
             // 解释JSON字符串成为Java实例对象
             while ( v_Iter.hasNext() )
             {
-                String v_Key       = v_Iter.next().toString();
-                Object v_Value     = i_JSONObject.get(v_Key);
-                Method v_Method    = MethodReflect.getSetMethod(i_ObjectClass ,v_Key ,true);
-                Object v_ParserObj = null;
+                String    v_JsonName     = v_Iter.next().toString();
+                Object    v_Value        = i_JSONObject.get(v_JsonName);
+                String [] v_NameAndClass = v_JsonName.split($JsonClassByObject_SplitKey);
+                String    v_MethodName   = v_NameAndClass[0];
+                Method    v_Method       = MethodReflect.getSetMethod(i_ObjectClass ,v_MethodName ,true);
+                String    v_ValueClass   = v_NameAndClass.length == 2 ? v_NameAndClass[1] : null;
+                Object    v_ParserObj    = null;
                 
                 if ( v_Value == null )
                 {
@@ -549,7 +570,7 @@ public final class XJSON
                 {
                     if ( this.isAccuracy )
                     {
-                        throw new NullPointerException(i_ObjectClass.getName() + " setter method["+ v_Key + "] is not find.");
+                        throw new NullPointerException(i_ObjectClass.getName() + " setter method["+ v_MethodName + "] is not find.");
                     }
                 }
                 else if ( v_Value.getClass() == JSONArray.class )
@@ -641,7 +662,7 @@ public final class XJSON
                     }
                     else
                     {
-                        throw new NullPointerException(i_ObjectClass.getName() + " setter method["+ v_Key + "(List)] is not find.");
+                        throw new NullPointerException(i_ObjectClass.getName() + " setter method["+ v_MethodName + "(List)] is not find.");
                     }
                 }
                 else if ( v_Value.getClass() == JSONObject.class )
@@ -928,6 +949,21 @@ public final class XJSON
                         {
                             // Nothing.
                         }
+                        else if ( Object.class == v_ParamClass )
+                        {
+                            // 在Java对象转Json字符串时，对于getter方法的返回类型为java.lang.Object时，
+                            // 是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
+                            // 控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
+                            if ( !Help.isNull(v_ValueClass) )
+                            {
+                                Class<?> v_VClass = Help.forName(v_ValueClass);
+                                v_Method.invoke(v_NewObj ,Help.toObject(v_VClass ,v_Value.toString()));
+                            }
+                            else
+                            {
+                                v_Method.invoke(v_NewObj ,v_Value.toString());
+                            }
+                        }
                         else
                         {
                             throw new NullPointerException("Unknown Java Class type.");
@@ -1154,7 +1190,7 @@ public final class XJSON
         }
         
         Map<Object ,Integer> v_ParserObjects = new HashMap<Object ,Integer>();   // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
-        Return<XJSONObject>  v_Ret           = parser("" ,i_JavaData ,null ,v_ParserObjects);
+        Return<XJSONObject>  v_Ret           = parser("" ,i_JavaData ,null ,v_ParserObjects ,false);
         
         this.rootJSON = v_Ret.paramObj;
         
@@ -1182,7 +1218,7 @@ public final class XJSON
         }
         
         Map<Object ,Integer> v_ParserObjects = new HashMap<Object ,Integer>();   // 解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
-        Return<XJSONObject>  v_Ret           = parser(i_JSONRootName ,i_JavaData ,null ,v_ParserObjects);
+        Return<XJSONObject>  v_Ret           = parser(i_JSONRootName ,i_JavaData ,null ,v_ParserObjects ,false);
         
         this.rootJSON = v_Ret.paramObj;
         
@@ -1199,33 +1235,36 @@ public final class XJSON
      *              v2.0  2020-01-15  添加：Json方式显示成员方法。格式如：public:(参数类型):返回类型
      *
      * @param i_JSONName
-     * @param i_Obj
+     * @param i_JavaData              Java对象。
+     *                                    1. 参数可以是Java Bean
+     *                                    2. 参数可以是Map
      * @param i_JsonSuperObj
-     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_ParserObjects         解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_MethodReturnIsObject  判定方法的返回类型是否为java.lang.Object
      * @return
      * @throws Exception
      */
-    private Return<XJSONObject> parser(String i_JSONName ,final Object i_Obj ,XJSONObject i_JsonSuperObj ,Map<Object ,Integer> i_ParserObjects) throws Exception
+    private Return<XJSONObject> parser(String i_JSONName ,final Object i_JavaData ,XJSONObject i_JsonSuperObj ,Map<Object ,Integer> i_ParserObjects ,boolean i_MethodReturnIsObject) throws Exception
     {
-        Class<?>            v_ObjClass = i_Obj.getClass();
-        String              v_ObjValue = "";
-        Return<XJSONObject> v_Ret      = new Return<XJSONObject>(true);
+        Class<?>            v_JavaClass = i_JavaData.getClass();
+        String              v_JavaValue = "";
+        Return<XJSONObject> v_Ret       = new Return<XJSONObject>(true);
         
-        if ( String.class == v_ObjClass )
+        if ( String.class == v_JavaClass )
         {
-            v_ObjValue = i_Obj.toString();
+            v_JavaValue = i_JavaData.toString();
         }
-        else if ( int.class == v_ObjClass )
+        else if ( int.class == v_JavaClass )
         {
-            v_ObjValue = String.valueOf(i_Obj);
+            v_JavaValue = String.valueOf(i_JavaData);
         }
-        else if ( Integer.class == v_ObjClass )
+        else if ( Integer.class == v_JavaClass )
         {
-            v_ObjValue = ((Integer)i_Obj).toString();
+            v_JavaValue = ((Integer)i_JavaData).toString();
         }
-        else if ( BigDecimal.class == v_ObjClass )
+        else if ( BigDecimal.class == v_JavaClass )
         {
-            BigDecimal v_BigValue = (BigDecimal)i_Obj;
+            BigDecimal v_BigValue = (BigDecimal)i_JavaData;
             
             if ( this.digit != null )
             {
@@ -1235,107 +1274,107 @@ public final class XJSON
             if ( this.isBigDecimalFormat )
             {
                 // 科学计数
-                v_ObjValue = v_BigValue.toString();
+                v_JavaValue = v_BigValue.toString();
             }
             else
             {
                 // 自然数字
-                v_ObjValue = v_BigValue.toPlainString();
+                v_JavaValue = v_BigValue.toPlainString();
             }
         }
-        else if ( double.class == v_ObjClass || Double.class == v_ObjClass )
+        else if ( double.class == v_JavaClass || Double.class == v_JavaClass )
         {
             if ( this.digit != null )
             {
-                v_ObjValue = String.valueOf(Help.round((Double)i_Obj ,this.digit));
+                v_JavaValue = String.valueOf(Help.round((Double)i_JavaData ,this.digit));
             }
             else
             {
-                v_ObjValue = ((Double)i_Obj).toString();
+                v_JavaValue = ((Double)i_JavaData).toString();
             }
         }
-        else if ( float.class == v_ObjClass || Float.class == v_ObjClass )
+        else if ( float.class == v_JavaClass || Float.class == v_JavaClass )
         {
             if ( this.digit != null )
             {
-                v_ObjValue = String.valueOf(Help.round((Float)i_Obj ,this.digit));
+                v_JavaValue = String.valueOf(Help.round((Float)i_JavaData ,this.digit));
             }
             else
             {
-                v_ObjValue = ((Float)i_Obj).toString();
+                v_JavaValue = ((Float)i_JavaData).toString();
             }
         }
-        else if ( boolean.class == v_ObjClass )
+        else if ( boolean.class == v_JavaClass )
         {
-            v_ObjValue = String.valueOf(i_Obj);
+            v_JavaValue = String.valueOf(i_JavaData);
         }
-        else if ( Boolean.class == v_ObjClass )
+        else if ( Boolean.class == v_JavaClass )
         {
-            v_ObjValue = ((Boolean)i_Obj).toString();
+            v_JavaValue = ((Boolean)i_JavaData).toString();
         }
-        else if ( long.class == v_ObjClass )
+        else if ( long.class == v_JavaClass )
         {
-            v_ObjValue = String.valueOf(i_Obj);
+            v_JavaValue = String.valueOf(i_JavaData);
         }
-        else if ( Long.class == v_ObjClass )
+        else if ( Long.class == v_JavaClass )
         {
-            v_ObjValue = ((Long)i_Obj).toString();
+            v_JavaValue = ((Long)i_JavaData).toString();
         }
-        else if ( Date.class == v_ObjClass )
+        else if ( Date.class == v_JavaClass )
         {
-            v_ObjValue = ((Date)i_Obj).getFull();
+            v_JavaValue = ((Date)i_JavaData).getFull();
         }
-        else if ( java.util.Date.class == v_ObjClass )
+        else if ( java.util.Date.class == v_JavaClass )
         {
-            v_ObjValue = (new Date((java.util.Date)i_Obj)).getFull();
+            v_JavaValue = (new Date((java.util.Date)i_JavaData)).getFull();
         }
         // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15
-        else if ( Timestamp.class == v_ObjClass )
+        else if ( Timestamp.class == v_JavaClass )
         {
-            v_ObjValue = (new Date((Timestamp)i_Obj)).getFull();
+            v_JavaValue = (new Date((Timestamp)i_JavaData)).getFull();
         }
-        else if ( MethodReflect.isExtendImplement(v_ObjClass ,Enum.class) )
+        else if ( MethodReflect.isExtendImplement(v_JavaClass ,Enum.class) )
         {
-            v_ObjValue = ((Enum<?>)i_Obj).toString();
+            v_JavaValue = ((Enum<?>)i_JavaData).toString();
         }
-        else if ( byte.class == v_ObjClass )
+        else if ( byte.class == v_JavaClass )
         {
-            v_ObjValue = String.valueOf(i_Obj);
+            v_JavaValue = String.valueOf(i_JavaData);
         }
-        else if ( Byte.class == v_ObjClass )
+        else if ( Byte.class == v_JavaClass )
         {
-            v_ObjValue = ((Byte)i_Obj).toString();
+            v_JavaValue = ((Byte)i_JavaData).toString();
         }
-        else if ( short.class == v_ObjClass )
+        else if ( short.class == v_JavaClass )
         {
-            v_ObjValue = String.valueOf(i_Obj);
+            v_JavaValue = String.valueOf(i_JavaData);
         }
-        else if ( Short.class == v_ObjClass )
+        else if ( Short.class == v_JavaClass )
         {
-            v_ObjValue = ((Short)i_Obj).toString();
+            v_JavaValue = ((Short)i_JavaData).toString();
         }
-        else if ( char.class == v_ObjClass )
+        else if ( char.class == v_JavaClass )
         {
-            v_ObjValue = String.valueOf(i_Obj);
+            v_JavaValue = String.valueOf(i_JavaData);
         }
-        else if ( Character.class == v_ObjClass )
+        else if ( Character.class == v_JavaClass )
         {
-            v_ObjValue = ((Character)i_Obj).toString();
+            v_JavaValue = ((Character)i_JavaData).toString();
         }
-        else if ( i_Obj instanceof List )
+        else if ( i_JavaData instanceof List )
         {
-            if ( isRecursion(i_ParserObjects ,i_Obj) )
+            if ( isRecursion(i_ParserObjects ,i_JavaData) )
             {
                 return v_Ret;
             }
             
             JSONArray v_JSONArray = new JSONArray();
-            List<?>   v_List      = (List<?>)i_Obj;
+            List<?>   v_List      = (List<?>)i_JavaData;
             
             for (int i=0; i<v_List.size(); i++)
             {
                 Object              v_Value   = v_List.get(i);
-                Return<XJSONObject> v_RetTemp = this.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects);
+                Return<XJSONObject> v_RetTemp = this.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects ,false);
                 
                 if ( v_RetTemp.paramInt == 0 )
                 {
@@ -1371,20 +1410,20 @@ public final class XJSON
             return v_Ret.paramObj(i_JsonSuperObj);
         }
         // ZhengWei(HY) Add 2016-07-05 支持数组
-        else if ( i_Obj instanceof Object [] )
+        else if ( i_JavaData instanceof Object [] )
         {
-            if ( isRecursion(i_ParserObjects ,i_Obj) )
+            if ( isRecursion(i_ParserObjects ,i_JavaData) )
             {
                 return v_Ret;
             }
             
             JSONArray v_JSONArray = new JSONArray();
-            Object [] v_List      = (Object [])i_Obj;
+            Object [] v_List      = (Object [])i_JavaData;
             
             for (int i=0; i<v_List.length; i++)
             {
                 Object              v_Value   = v_List[i];
-                Return<XJSONObject> v_RetTemp = this.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects);
+                Return<XJSONObject> v_RetTemp = this.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects ,false);
                 
                 if ( v_RetTemp.paramInt == 0 )
                 {
@@ -1419,22 +1458,22 @@ public final class XJSON
             v_Ret.paramInt(1);
             return v_Ret.paramObj(i_JsonSuperObj);
         }
-        else if ( i_Obj instanceof Set )
+        else if ( i_JavaData instanceof Set )
         {
-            if ( isRecursion(i_ParserObjects ,i_Obj) )
+            if ( isRecursion(i_ParserObjects ,i_JavaData) )
             {
                 return v_Ret;
             }
             
             JSONArray   v_JSONArray = new JSONArray();
-            Set<?>      v_Set       = (Set<?>)i_Obj;
+            Set<?>      v_Set       = (Set<?>)i_JavaData;
             Iterator<?> v_Values    = v_Set.iterator();
             int         v_SetIndex  = 0;
             
             while ( v_Values.hasNext() )
             {
                 Object              v_Value   = v_Values.next();
-                Return<XJSONObject> v_RetTemp = this.parser("" + (v_SetIndex++) ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects);
+                Return<XJSONObject> v_RetTemp = this.parser("" + (v_SetIndex++) ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects ,false);
                 
                 if ( v_RetTemp.paramInt == 0 )
                 {
@@ -1469,14 +1508,14 @@ public final class XJSON
             v_Ret.paramInt(1);
             return v_Ret.paramObj(i_JsonSuperObj);
         }
-        else if ( i_Obj instanceof Map )
+        else if ( i_JavaData instanceof Map )
         {
-            if ( isRecursion(i_ParserObjects ,i_Obj) )
+            if ( isRecursion(i_ParserObjects ,i_JavaData) )
             {
                 return v_Ret;
             }
             
-            Map<? ,?> v_Map = (Map<? ,?>)i_Obj;
+            Map<? ,?> v_Map = (Map<? ,?>)i_JavaData;
             if ( !Help.isNull(v_Map) )
             {
                 XJSONObject v_ChildJsonObj = new XJSONObject();
@@ -1494,7 +1533,7 @@ public final class XJSON
                     {
                         v_Value = "";
                     }
-                    parser(v_Name.toString() ,v_Value ,v_ChildJsonObj ,i_ParserObjects);
+                    parser(v_Name.toString() ,v_Value ,v_ChildJsonObj ,i_ParserObjects ,false);
                 }
                 
                 if ( i_JsonSuperObj == null )
@@ -1513,11 +1552,11 @@ public final class XJSON
         }
         else
         {
-            if ( !Modifier.isPublic(i_Obj.getClass().getModifiers()) )
+            if ( !Modifier.isPublic(i_JavaData.getClass().getModifiers()) )
             {
                 return v_Ret;
             }
-            if ( isRecursion(i_ParserObjects ,i_Obj) )
+            if ( isRecursion(i_ParserObjects ,i_JavaData) )
             {
                 return v_Ret;
             }
@@ -1527,32 +1566,34 @@ public final class XJSON
             
             if ( this.isAccuracy )
             {
-                Map<String ,Method> v_Methods = MethodReflect.getGetMethodsMS(i_Obj.getClass());
+                Map<String ,Method> v_Methods = MethodReflect.getGetMethodsMS(i_JavaData.getClass());
                 
                 if ( !Help.isNull(v_Methods) )
                 {
-                    for (String v_ShortName : v_Methods.keySet())
+                    for (Map.Entry<String ,Method> v_ItemMethod : v_Methods.entrySet())
                     {
                         String v_Name  = null;
                         Object v_Value = null;
                         
                         if ( this.firstCharIsUpper )
                         {
-                            v_Name = v_ShortName;
+                            v_Name = v_ItemMethod.getKey();
                         }
                         else
                         {
-                            v_Name = StringHelp.toLowerCaseByFirst(v_ShortName);
+                            v_Name = StringHelp.toLowerCaseByFirst(v_ItemMethod.getKey());
                         }
                         
                         try
                         {
-                            v_Value = v_Methods.get(v_ShortName).invoke(i_Obj);
+                            Method  v_Method     = v_ItemMethod.getValue();
+                            boolean v_IsMRObject = Object.class.equals(v_Method.getReturnType()); // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
+                            v_Value = v_Method.invoke(i_JavaData);
                             if ( v_Value == null )
                             {
                                 v_Value = "";
                             }
-                            parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects);
+                            parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects ,v_IsMRObject);
                         }
                         catch (Exception e)
                         {
@@ -1565,7 +1606,7 @@ public final class XJSON
             }
             else
             {
-                List<Method> v_Methods   = MethodReflect.getStartMethods(i_Obj.getClass() ,new String[]{"get" ,"is"} ,0);
+                List<Method> v_Methods   = MethodReflect.getStartMethods(i_JavaData.getClass() ,new String[]{"get" ,"is"} ,0);
                 Method []    v_MethodArr = v_Methods.toArray(new Method[]{});
                 
                 Arrays.sort(v_MethodArr ,MethodComparator.getInstance());
@@ -1574,7 +1615,9 @@ public final class XJSON
                 {
                     for (int i=0; i<v_MethodArr.length; i++)
                     {
-                        if ( "getClass".equals(v_MethodArr[i].getName()) )
+                        Method v_Method = v_MethodArr[i];
+                        
+                        if ( "getClass".equals(v_Method.getName()) )
                         {
                             continue;
                         }
@@ -1582,31 +1625,31 @@ public final class XJSON
                         String v_Name  = null;
                         Object v_Value = null;
                         
-                        if ( v_MethodArr[i].getName().startsWith("get") && v_MethodArr[i].getName().length() > 3 )
+                        if ( v_Method.getName().startsWith("get") && v_Method.getName().length() > 3 )
                         {
                             if ( this.firstCharIsUpper )
                             {
-                                v_Name = v_MethodArr[i].getName().substring(3);
+                                v_Name = v_Method.getName().substring(3);
                             }
                             else
                             {
-                                v_Name = v_MethodArr[i].getName().substring(3 ,4).toLowerCase();
+                                v_Name = v_Method.getName().substring(3 ,4).toLowerCase();
                                         
-                                if ( v_MethodArr[i].getName().length() >= 5 )
+                                if ( v_Method.getName().length() >= 5 )
                                 {
-                                    v_Name += v_MethodArr[i].getName().substring(4);
+                                    v_Name += v_Method.getName().substring(4);
                                 }
                             }
                         }
-                        else if ( v_MethodArr[i].getName().startsWith("is") && v_MethodArr[i].getName().length() > 2 )
+                        else if ( v_Method.getName().startsWith("is") && v_Method.getName().length() > 2 )
                         {
                             if ( this.firstCharIsUpper )
                             {
-                                v_Name = v_MethodArr[i].getName().substring(2);
+                                v_Name = v_Method.getName().substring(2);
                             }
                             else
                             {
-                                v_Name = v_MethodArr[i].getName().substring(2 ,3).toLowerCase() + v_MethodArr[i].getName().substring(3);
+                                v_Name = v_Method.getName().substring(2 ,3).toLowerCase() + v_Method.getName().substring(3);
                             }
                         }
                         
@@ -1614,12 +1657,13 @@ public final class XJSON
                         {
                             try
                             {
-                                v_Value = v_MethodArr[i].invoke(i_Obj);
+                                boolean v_IsMRObject = Object.class.equals(v_Method.getReturnType()); // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
+                                v_Value = v_Method.invoke(i_JavaData);
                                 if ( v_Value == null )
                                 {
                                     v_Value = "";
                                 }
-                                parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects);
+                                parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects ,v_IsMRObject);
                             }
                             catch (Exception e)
                             {
@@ -1635,7 +1679,7 @@ public final class XJSON
             // Json方式显示成员方法  Add ZhengWei(HY) 2020-01-15
             if ( this.isJsonMethod )
             {
-                List<Method> v_Methods = MethodReflect.getMethodsExcludeStart(i_Obj.getClass() ,new String[]{"get"
+                List<Method> v_Methods = MethodReflect.getMethodsExcludeStart(i_JavaData.getClass() ,new String[]{"get"
                                                                                                             ,"set"
                                                                                                             ,"is"
                                                                                                             ,"gatProperty"
@@ -1675,7 +1719,7 @@ public final class XJSON
                         
                         v_Buffer.append("):").append(v_Method.getReturnType().getSimpleName());
                         
-                        parser(v_Buffer.toString() ,"" ,v_ChildJsonObj ,i_ParserObjects);
+                        parser(v_Buffer.toString() ,"" ,v_ChildJsonObj ,i_ParserObjects ,false);
                         v_ChildCount++;
                     }
                 }
@@ -1702,11 +1746,25 @@ public final class XJSON
         {
             if ( this.isReturnNVL )
             {
-                i_JsonSuperObj.put(i_JSONName ,v_ObjValue);
+                if ( this.isJsonClassByObject && i_MethodReturnIsObject )
+                {
+                    i_JsonSuperObj.put(i_JSONName + $JsonClassByObject_SplitKey + v_JavaClass.getName() ,v_JavaValue);
+                }
+                else
+                {
+                    i_JsonSuperObj.put(i_JSONName ,v_JavaValue);
+                }
             }
-            else if ( v_ObjValue !=null && !"".equals(v_ObjValue) )
+            else if ( v_JavaValue !=null && !"".equals(v_JavaValue) )
             {
-                i_JsonSuperObj.put(i_JSONName ,v_ObjValue);
+                if ( this.isJsonClassByObject && i_MethodReturnIsObject )
+                {
+                    i_JsonSuperObj.put(i_JSONName + $JsonClassByObject_SplitKey + v_JavaClass.getName() ,v_JavaValue);
+                }
+                else
+                {
+                    i_JsonSuperObj.put(i_JSONName ,v_JavaValue);
+                }
             }
         }
         
@@ -1874,6 +1932,36 @@ public final class XJSON
     public void setJsonMethod(boolean isJsonMethod)
     {
         this.isJsonMethod = isJsonMethod;
+    }
+
+
+    
+    /**
+     * 在Java对象转Json字符串时，对于getter方法的返回类型为java.lang.Object时，
+     * 是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
+     * 
+     * 控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
+     * 
+     * 默认为：false，不转换输出
+     */
+    public boolean isJsonClassByObject()
+    {
+        return isJsonClassByObject;
+    }
+
+    
+
+    /**
+     * 在Java对象转Json字符串时，对于getter方法的返回类型为java.lang.Object时，
+     * 是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
+     * 
+     * 控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
+     * 
+     * 默认为：false，不转换输出
+     */
+    public void setJsonClassByObject(boolean isJsonClassByObject)
+    {
+        this.isJsonClassByObject = isJsonClassByObject;
     }
 
 

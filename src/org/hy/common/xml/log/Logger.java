@@ -101,7 +101,7 @@ public class Logger
     /** 指出细粒度信息事件对调试应用程序是非常有帮助的，主要用于开发过程中打印一些运行信息 */
     private static Level                        $LogLevelDebug;
                                                 
-    /** 最低的日志级别 */                       
+    /** 最低的日志级别 */
     private static Level                        $LogLevelTrace;
                                                 
     private static Method                       $FatalIsEnabled;
@@ -122,7 +122,7 @@ public class Logger
                                                 
     private static Method                       $LogMethod_Log4j2Throwable;
     
-    /** 
+    /**
      * 全部日志处理类的集合。可用于日志分析
      * 
      * Map.key  为分区标示。为使用日志引擎的类名称
@@ -136,22 +136,22 @@ public class Logger
     /** 没有任何Log4j版本时，是否采用System.out.println()方法输出 */
     private Class<?>                            logClass;
     
-    /** 
+    /**
      * 统计日志执行次数
      * 
      * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
      * 
-     *   Map.Key   是：日志级别:方法名称:代码行 
-     *   Map.Value 是：累计执行次数 
+     *   Map.Key   是：日志级别:方法名称:代码行
+     *   Map.Value 是：累计执行次数
      */
     private Counter<String>                     requestCount;
     
-    /** 
+    /**
      * 统计日志最后执行时间
      * 
      * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
      * 
-     *   Map.Key   是：日志级别:方法名称:代码行 
+     *   Map.Key   是：日志级别:方法名称:代码行
      *   Map.Value 是：最后执行时间
      */
     private Map<String ,Long>                   requestTime;
@@ -160,8 +160,8 @@ public class Logger
      * 统计方法执行累计用时
      * 
      * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
-     *  
-     *   Map.Key   是：方法名称 + 线程号 
+     * 
+     *   Map.Key   是：方法名称 + 线程号
      *   Map.Value 是：累计用时
      */
     private Counter<String>                     methodExecSumTime;
@@ -170,8 +170,8 @@ public class Logger
      * 用于统计方法执行累计用时的方法最后执行行号，计算线程、方法、行号三者的关系。
      * 
      * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
-     *  
-     *   Map.Key   是：方法名称 + 线程号 
+     * 
+     *   Map.Key   是：方法名称 + 线程号
      *   Map.Value 是：代码行号
      * 
      * 仅限内部使用
@@ -182,17 +182,17 @@ public class Logger
      * 用于统计方法执行累计用时的方法最后执行时间
      * 
      * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
-     *  
+     * 
      *   Map.Key   是：方法名称 + 线程号
      *   Map.Value 是：最后执行时间
-     *   
+     * 
      * 仅限内部使用
      */
     private Map<String ,Long>                   methodExecLastime;
     
     
     
-    static 
+    static
     {
         try
         {
@@ -659,7 +659,7 @@ public class Logger
             {
                 v_Buffer.append("Loading logger is System.out (").append(Date.getNowTime().getFullMilli()).append(")\n\n");
             }
-            else 
+            else
             {
                 v_LogInput = Logger.class.getResourceAsStream("NoLogger.txt");
                 v_Buffer.append("Loading logger is not any implementation (").append(Date.getNowTime().getFullMilli()).append(")\n");
@@ -1132,7 +1132,7 @@ public class Logger
     {
         StackTraceElement v_StackTrace = LogStackTrace.calcLocation($FQCN);
         
-        if ( v_StackTrace != null ) 
+        if ( v_StackTrace != null )
         {
             $Loggers.putRow(v_StackTrace.getClassName() ,this);
         }
@@ -1185,13 +1185,13 @@ public class Logger
     
     
     
-    /** 
+    /**
      * 统计日志执行次数
      * 
      * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
      * 
-     *   Map.Key   是：日志级别:方法名称:代码行 
-     *   Map.Value 是：累计执行次数 
+     *   Map.Key   是：日志级别:方法名称:代码行
+     *   Map.Value 是：累计执行次数
      */
     public Counter<String> getRequestCount()
     {
@@ -1200,13 +1200,13 @@ public class Logger
     
     
     
-    /** 
+    /**
      * 统计日志执行次数
      * 
      * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
      * 
-     *   Map.Key   是：日志级别:方法名称:代码行 
-     *   Map.Value 是：累计执行次数 
+     *   Map.Key   是：日志级别:方法名称:代码行
+     *   Map.Value 是：累计执行次数
      */
     public Map<String ,Long> getRequestTime()
     {
@@ -1219,8 +1219,8 @@ public class Logger
      * 统计方法执行累计用时
      * 
      * 无论是否对接Log4J、SLF4J、Logback，均进行日志统计。
-     *  
-     *   Map.Key   是：方法名称 + 线程号 
+     * 
+     *   Map.Key   是：方法名称 + 线程号
      *   Map.Value 是：累计用时
      */
     public Counter<String> getMethodExecSumTimes()
@@ -1483,13 +1483,14 @@ public class Logger
         }
         else if ( logClass != null )
         {
+            String v_ThreadName = Thread.currentThread().getName();
             if ( i_Marker == null )
             {
-                this.println(getLevelName(i_Level) + "> " + i_Message + StringHelp.toString(i_Arguments));
+                this.println(getLevelName(i_Level) + "> " + v_ThreadName + "> " + i_Message + StringHelp.toString(i_Arguments));
             }
             else
             {
-                this.println(getLevelName(i_Level) + "> " + i_Marker.toString() + i_Message + StringHelp.toString(i_Arguments));
+                this.println(getLevelName(i_Level) + "> " + v_ThreadName + "> " + i_Marker.toString() + i_Message + StringHelp.toString(i_Arguments));
             }
             
             if ( i_Throwable != null )
@@ -1567,7 +1568,7 @@ public class Logger
      * @param i_Message
      * @param i_Throwable
      */
-    public void fatal(final String i_Message, final Throwable i_Throwable) 
+    public void fatal(final String i_Message, final Throwable i_Throwable)
     {
         this.log(null ,$LogLevelFatal ,i_Message ,null ,i_Throwable);
     }
@@ -1583,7 +1584,7 @@ public class Logger
      *
      * @param i_Throwable
      */
-    public void fatal(final Throwable i_Throwable) 
+    public void fatal(final Throwable i_Throwable)
     {
         this.log(null ,$LogLevelFatal ,"" ,null ,i_Throwable);
     }
@@ -1601,7 +1602,7 @@ public class Logger
      * @param i_Message
      * @param i_Arguments
      */
-    public void fatal(final Object i_Marker ,String i_Message, final Object ... i_Arguments) 
+    public void fatal(final Object i_Marker ,String i_Message, final Object ... i_Arguments)
     {
         this.log(i_Marker ,$LogLevelFatal ,i_Message ,i_Arguments ,null);
     }
@@ -1619,7 +1620,7 @@ public class Logger
      * @param i_Message
      * @param i_Throwable
      */
-    public void fatal(final Object i_Marker ,String i_Message, final Throwable i_Throwable) 
+    public void fatal(final Object i_Marker ,String i_Message, final Throwable i_Throwable)
     {
         this.log(i_Marker ,$LogLevelFatal ,i_Message ,null ,i_Throwable);
     }
@@ -1688,7 +1689,7 @@ public class Logger
      * @param i_Message
      * @param i_Throwable
      */
-    public void error(final String i_Message, final Throwable i_Throwable) 
+    public void error(final String i_Message, final Throwable i_Throwable)
     {
         this.log(null ,$LogLevelError ,i_Message ,null ,i_Throwable);
     }
@@ -1704,7 +1705,7 @@ public class Logger
      *
      * @param i_Throwable
      */
-    public void error(final Throwable i_Throwable) 
+    public void error(final Throwable i_Throwable)
     {
         this.log(null ,$LogLevelError ,"" ,null ,i_Throwable);
     }
@@ -1722,7 +1723,7 @@ public class Logger
      * @param i_Message
      * @param i_Arguments
      */
-    public void error(final Object i_Marker ,String i_Message, final Object ... i_Arguments) 
+    public void error(final Object i_Marker ,String i_Message, final Object ... i_Arguments)
     {
         this.log(i_Marker ,$LogLevelError ,i_Message ,i_Arguments ,null);
     }
@@ -1740,7 +1741,7 @@ public class Logger
      * @param i_Message
      * @param i_Throwable
      */
-    public void error(final Object i_Marker ,String i_Message, final Throwable i_Throwable) 
+    public void error(final Object i_Marker ,String i_Message, final Throwable i_Throwable)
     {
         this.log(i_Marker ,$LogLevelError ,i_Message ,null ,i_Throwable);
     }
@@ -1809,7 +1810,7 @@ public class Logger
      * @param i_Message
      * @param i_Throwable
      */
-    public void warn(final String i_Message, final Throwable i_Throwable) 
+    public void warn(final String i_Message, final Throwable i_Throwable)
     {
         this.log(null ,$LogLevelWarn ,i_Message ,null ,i_Throwable);
     }
@@ -1825,7 +1826,7 @@ public class Logger
      *
      * @param i_Throwable
      */
-    public void warn(final Throwable i_Throwable) 
+    public void warn(final Throwable i_Throwable)
     {
         this.log(null ,$LogLevelWarn ,"" ,null ,i_Throwable);
     }
@@ -1843,7 +1844,7 @@ public class Logger
      * @param i_Message
      * @param i_Arguments
      */
-    public void warn(final Object i_Marker ,String i_Message, final Object ... i_Arguments) 
+    public void warn(final Object i_Marker ,String i_Message, final Object ... i_Arguments)
     {
         this.log(i_Marker ,$LogLevelWarn ,i_Message ,i_Arguments ,null);
     }
@@ -1861,7 +1862,7 @@ public class Logger
      * @param i_Message
      * @param i_Throwable
      */
-    public void warn(final Object i_Marker ,String i_Message, final Throwable i_Throwable) 
+    public void warn(final Object i_Marker ,String i_Message, final Throwable i_Throwable)
     {
         this.log(i_Marker ,$LogLevelWarn ,i_Message ,null ,i_Throwable);
     }
@@ -1931,7 +1932,7 @@ public class Logger
      * @param i_Message
      * @param i_Throwable
      */
-    public void info(final String i_Message, final Throwable i_Throwable) 
+    public void info(final String i_Message, final Throwable i_Throwable)
     {
         this.log(null ,$LogLevelInfo ,i_Message ,null ,i_Throwable);
     }
@@ -1947,7 +1948,7 @@ public class Logger
      *
      * @param i_Throwable
      */
-    public void info(final Throwable i_Throwable) 
+    public void info(final Throwable i_Throwable)
     {
         this.log(null ,$LogLevelInfo ,"" ,null ,i_Throwable);
     }
@@ -1965,7 +1966,7 @@ public class Logger
      * @param i_Message
      * @param i_Arguments
      */
-    public void info(final Object i_Marker ,String i_Message, final Object ... i_Arguments) 
+    public void info(final Object i_Marker ,String i_Message, final Object ... i_Arguments)
     {
         this.log(i_Marker ,$LogLevelInfo ,i_Message ,i_Arguments ,null);
     }
@@ -1983,7 +1984,7 @@ public class Logger
      * @param i_Message
      * @param i_Throwable
      */
-    public void info(final Object i_Marker ,String i_Message, final Throwable i_Throwable) 
+    public void info(final Object i_Marker ,String i_Message, final Throwable i_Throwable)
     {
         this.log(i_Marker ,$LogLevelInfo ,i_Message ,null ,i_Throwable);
     }
@@ -2052,7 +2053,7 @@ public class Logger
      * @param i_Message
      * @param i_Throwable
      */
-    public void debug(final String i_Message, final Throwable i_Throwable) 
+    public void debug(final String i_Message, final Throwable i_Throwable)
     {
         this.log(null ,$LogLevelDebug ,i_Message ,null ,i_Throwable);
     }
@@ -2068,7 +2069,7 @@ public class Logger
      *
      * @param i_Throwable
      */
-    public void debug(final Throwable i_Throwable) 
+    public void debug(final Throwable i_Throwable)
     {
         this.log(null ,$LogLevelDebug ,"" ,null ,i_Throwable);
     }
@@ -2086,7 +2087,7 @@ public class Logger
      * @param i_Message
      * @param i_Arguments
      */
-    public void debug(final Object i_Marker ,String i_Message, final Object ... i_Arguments) 
+    public void debug(final Object i_Marker ,String i_Message, final Object ... i_Arguments)
     {
         this.log(i_Marker ,$LogLevelDebug ,i_Message ,i_Arguments ,null);
     }
@@ -2104,7 +2105,7 @@ public class Logger
      * @param i_Message
      * @param i_Throwable
      */
-    public void debug(final Object i_Marker ,String i_Message, final Throwable i_Throwable) 
+    public void debug(final Object i_Marker ,String i_Message, final Throwable i_Throwable)
     {
         this.log(i_Marker ,$LogLevelDebug ,i_Message ,null ,i_Throwable);
     }
@@ -2173,7 +2174,7 @@ public class Logger
      * @param i_Message
      * @param i_Throwable
      */
-    public void trace(final String i_Message, final Throwable i_Throwable) 
+    public void trace(final String i_Message, final Throwable i_Throwable)
     {
         this.log(null ,$LogLevelTrace ,i_Message ,null ,i_Throwable);
     }
@@ -2189,7 +2190,7 @@ public class Logger
      *
      * @param i_Throwable
      */
-    public void trace(final Throwable i_Throwable) 
+    public void trace(final Throwable i_Throwable)
     {
         this.log(null ,$LogLevelTrace ,"" ,null ,i_Throwable);
     }
@@ -2207,7 +2208,7 @@ public class Logger
      * @param i_Message
      * @param i_Arguments
      */
-    public void trace(final Object i_Marker ,String i_Message, final Object ... i_Arguments) 
+    public void trace(final Object i_Marker ,String i_Message, final Object ... i_Arguments)
     {
         this.log(i_Marker ,$LogLevelTrace ,i_Message ,i_Arguments ,null);
     }
@@ -2225,7 +2226,7 @@ public class Logger
      * @param i_Message
      * @param i_Throwable
      */
-    public void trace(final Object i_Marker ,String i_Message, final Throwable i_Throwable) 
+    public void trace(final Object i_Marker ,String i_Message, final Throwable i_Throwable)
     {
         this.log(i_Marker ,$LogLevelTrace ,i_Message ,null ,i_Throwable);
     }
