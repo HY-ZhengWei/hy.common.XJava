@@ -1,6 +1,8 @@
 package org.hy.common.xml.junit;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hy.common.Date;
@@ -36,6 +38,30 @@ public class JU_XJSON
     /**
      * 测试Getter方法的Object返回结果
      * 
+     * 如下报文是Java生成的报文
+        {
+            "valueDate": "2021-10-08 11:06:16",
+            "valueObject@java.util.HashMap": {
+                "b@org.hy.common.xml.junit.JU_XJSON": {
+                    "valueDate": "2021-10-07 08:30:00",
+                    "valueObject@java.lang.String": "DataB：常规对象类型",
+                    "valueString": "DataB：子对象中的字符串"
+                },
+                "c@org.hy.common.xml.junit.JU_XJSON": {
+                    "valueDate": "2021-10-08 09:00:00",
+                    "valueObject@java.util.ArrayList@org.hy.common.xml.junit.JU_XJSON": [
+                        {
+                            "valueDate": "2021-10-08 10:00:00",
+                            "valueObject@java.lang.String": "DataD：常规对象类型",
+                            "valueString": "DataD：子对象中的字符串"
+                        }
+                    ],
+                    "valueString": "DataC：子对象中的字符串"
+                }
+            },
+            "valueString": "字符串"
+        }
+     * 
      * @author      ZhengWei(HY)
      * @createDate  2021-09-30
      * @version     v1.0
@@ -45,27 +71,55 @@ public class JU_XJSON
     @Test
     public void test_Json() throws Exception
     {
-        JU_XJSON v_Data    = new JU_XJSON();
-        JU_XJSON v_DataNew = null;
-        v_Data.setValueString("字符串");
-        v_Data.setValueDate(new Date());
-        v_Data.setValueObject("2021-09-30 15:41:41");
+        List<Object>        v_DataList = new ArrayList<Object>();
+        Map<String ,Object> v_DataMap  = new HashMap<String ,Object>();
+        JU_XJSON            v_DataA    = new JU_XJSON();
+        JU_XJSON            v_DataB    = new JU_XJSON();
+        JU_XJSON            v_DataC    = new JU_XJSON();
+        JU_XJSON            v_DataD    = new JU_XJSON();
+        JU_XJSON            v_DataNew  = null;
+        
+        v_DataD.setValueString("DataD：子对象中的字符串");
+        v_DataD.setValueDate(new Date("2021-10-08 10:00:00"));
+        v_DataD.setValueObject("DataD：常规对象类型");
+        
+        v_DataList.add(v_DataD);
+        
+        v_DataC.setValueString("DataC：子对象中的字符串");
+        v_DataC.setValueDate(new Date("2021-10-08 09:00:00"));
+        v_DataC.setValueObject(v_DataList);
+        
+        v_DataB.setValueString("DataB：子对象中的字符串");
+        v_DataB.setValueDate(new Date("2021-10-07 08:30:00"));
+        v_DataB.setValueObject("DataB：常规对象类型");
+        
+        v_DataMap.put("b" ,v_DataB);
+        v_DataMap.put("c" ,v_DataC);
+        
+        v_DataA.setValueString("字符串");
+        v_DataA.setValueDate(new Date());
+        v_DataA.setValueObject(v_DataMap);     // 对象套娃
+        
         
         
         XJSON    v_Json       = new XJSON();
         String   v_JsonString = "";
         
-        v_JsonString = v_Json.toJson(v_Data ,"data").toJSONString();
+        $Logger.info("按普通Json转换");
+        v_JsonString = v_Json.toJson(v_DataA ,"data").toJSONString();
         v_DataNew    = (JU_XJSON) v_Json.toJava(v_JsonString ,JU_XJSON.class);
-        
+
         $Logger.info(v_JsonString);
         $Logger.info(v_DataNew.getValueString());
         $Logger.info(v_DataNew.getValueDate());
         $Logger.info(v_DataNew.getValueObject() + " -> " + v_DataNew.getValueObject().getClass().getName());
         
+        
+        
+        $Logger.info("\n\n支持Object对象的Json转换");
         v_Json.setJsonClassByObject(true);
         
-        v_JsonString = v_Json.toJson(v_Data ,"data").toJSONString();
+        v_JsonString = v_Json.toJson(v_DataA ,"data").toJSONString();
         v_DataNew    = (JU_XJSON) v_Json.toJava(v_JsonString ,JU_XJSON.class);
         
         $Logger.info(v_JsonString);
