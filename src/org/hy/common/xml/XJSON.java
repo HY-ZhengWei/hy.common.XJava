@@ -83,7 +83,7 @@ import net.minidev.json.parser.JSONParser;
  *                                     2. 防止递归功能，添加允许递归次数。允许一定范围内的递归或重复数据。发现人：马龙。
  *              2020-01-15  V3.7  添加：当Java对象转Json字符串时，是否包含对成员方法的转换输出。
  *              2021-01-15  V3.8  添加：简单判定字符串是否为Json格式的字符串
- *              2021-09-30  V4.0  添加：控制参数isJsonClassByObject。实现：Json序列化和反序列化
+ *              2021-09-30  V4.0  添加：控制参数isSerializable。实现：Json序列化和反序列化
  *                                     在Java对象转Json字符串时，对于getter方法的返回类型为java.lang.Object时，
  *                                     是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
  *                                     控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
@@ -94,7 +94,7 @@ public final class XJSON
     private static final Logger $Logger = new Logger(XJSON.class);
     
     /** Json字符串的名称中是否包含"值"的Java类名称，形式是：{ "name@java.lang.Integer" : "value" } */
-    private static String    $JsonClassByObject_SplitKey = "@";
+    private static String    $Serializable_SplitKey = "@";
     
     /** 当Java对象转Json字符串时，排除哪些方法不输出 */
     private static String [] $ExcludeMethodNames = {"getClass"
@@ -147,6 +147,8 @@ public final class XJSON
     private boolean     isJsonMethod;
     
     /**
+     * 实现：Json序列化和反序列化
+     * 
      * 在Java对象转Json字符串时，对于getter方法的返回类型为java.lang.Object时，
      * 是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
      * 
@@ -154,7 +156,7 @@ public final class XJSON
      * 
      * 默认为：false，不转换输出
      */
-    private boolean     isJsonClassByObject;
+    private boolean     isSerializable;
     
     /** Java转Json时，BigDecimal的显示格式。是否启用科学计数法（默认为：自然数字，而非科学计数法） */
     private boolean     isBigDecimalFormat;
@@ -180,7 +182,7 @@ public final class XJSON
         this.isAccuracy          = false;
         this.isReturnNVL         = true;
         this.isJsonMethod        = false;
-        this.isJsonClassByObject = false;
+        this.isSerializable      = false;
         this.isBigDecimalFormat  = false;
         this.digit               = null;
         this.recursionCount      = 0;
@@ -517,7 +519,7 @@ public final class XJSON
             {
                 String    v_JsonName      = v_Iter.next().toString();
                 Object    v_Value         = i_JSONObject.get(v_JsonName);
-                String [] v_NameAndClass  = v_JsonName.split($JsonClassByObject_SplitKey);
+                String [] v_NameAndClass  = v_JsonName.split($Serializable_SplitKey);
                 String    v_ValueClass    = v_NameAndClass.length >= 2 ? v_NameAndClass[1] : null;
                 String    v_MapKeyName    = v_NameAndClass[0];
                 Class<?>  v_MapValueClass = this.getObjectClass();
@@ -573,7 +575,7 @@ public final class XJSON
             {
                 String    v_JsonName     = v_Iter.next().toString();
                 Object    v_Value        = i_JSONObject.get(v_JsonName);
-                String [] v_NameAndClass = v_JsonName.split($JsonClassByObject_SplitKey);
+                String [] v_NameAndClass = v_JsonName.split($Serializable_SplitKey);
                 String    v_MethodName   = v_NameAndClass[0];
                 Method    v_Method       = MethodReflect.getSetMethod(i_ObjectClass ,v_MethodName ,true);
                 String    v_ValueClass   = v_NameAndClass.length >= 2 ? v_NameAndClass[1] : null;
@@ -1474,10 +1476,10 @@ public final class XJSON
             
             if ( this.isReturnNVL )
             {
-                if ( this.isJsonClassByObject && i_MethodReturnIsObject )
+                if ( this.isSerializable && i_MethodReturnIsObject )
                 {
                     // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                    i_JsonSuperObj.put(i_JSONName + $JsonClassByObject_SplitKey + v_JavaClass.getName() + $JsonClassByObject_SplitKey + v_List.get(0).getClass().getName() ,v_JSONArray);
+                    i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + v_List.get(0).getClass().getName() ,v_JSONArray);
                 }
                 else
                 {
@@ -1488,10 +1490,10 @@ public final class XJSON
             {
                 if ( v_JSONArray.size() > 0 )
                 {
-                    if ( this.isJsonClassByObject && i_MethodReturnIsObject )
+                    if ( this.isSerializable && i_MethodReturnIsObject )
                     {
                         // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                        i_JsonSuperObj.put(i_JSONName + $JsonClassByObject_SplitKey + v_JavaClass.getName() + $JsonClassByObject_SplitKey + v_List.get(0).getClass().getName() ,v_JSONArray);
+                        i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + v_List.get(0).getClass().getName() ,v_JSONArray);
                     }
                     else
                     {
@@ -1539,10 +1541,10 @@ public final class XJSON
             
             if ( this.isReturnNVL )
             {
-                if ( this.isJsonClassByObject && i_MethodReturnIsObject )
+                if ( this.isSerializable && i_MethodReturnIsObject )
                 {
                     // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                    i_JsonSuperObj.put(i_JSONName + $JsonClassByObject_SplitKey + v_JavaClass.getName() + $JsonClassByObject_SplitKey + v_List[0].getClass().getName() ,v_JSONArray);
+                    i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + v_List[0].getClass().getName() ,v_JSONArray);
                 }
                 else
                 {
@@ -1553,10 +1555,10 @@ public final class XJSON
             {
                 if ( v_JSONArray.size() > 0 )
                 {
-                    if ( this.isJsonClassByObject && i_MethodReturnIsObject )
+                    if ( this.isSerializable && i_MethodReturnIsObject )
                     {
                         // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                        i_JsonSuperObj.put(i_JSONName + $JsonClassByObject_SplitKey + v_JavaClass.getName() + $JsonClassByObject_SplitKey + v_List[0].getClass().getName() ,v_JSONArray);
+                        i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + v_List[0].getClass().getName() ,v_JSONArray);
                     }
                     else
                     {
@@ -1605,10 +1607,10 @@ public final class XJSON
             
             if ( this.isReturnNVL )
             {
-                if ( this.isJsonClassByObject && i_MethodReturnIsObject )
+                if ( this.isSerializable && i_MethodReturnIsObject )
                 {
                     // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                    i_JsonSuperObj.put(i_JSONName + $JsonClassByObject_SplitKey + v_JavaClass.getName() + $JsonClassByObject_SplitKey + v_Set.iterator().next().getClass().getName() ,v_JSONArray);
+                    i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + v_Set.iterator().next().getClass().getName() ,v_JSONArray);
                 }
                 else
                 {
@@ -1619,10 +1621,10 @@ public final class XJSON
             {
                 if ( v_JSONArray.size() > 0 )
                 {
-                    if ( this.isJsonClassByObject && i_MethodReturnIsObject )
+                    if ( this.isSerializable && i_MethodReturnIsObject )
                     {
                         // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                        i_JsonSuperObj.put(i_JSONName + $JsonClassByObject_SplitKey + v_JavaClass.getName() + $JsonClassByObject_SplitKey + v_Set.iterator().next().getClass().getName() ,v_JSONArray);
+                        i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + v_Set.iterator().next().getClass().getName() ,v_JSONArray);
                     }
                     else
                     {
@@ -1672,11 +1674,11 @@ public final class XJSON
                 }
                 else
                 {
-                    if ( this.isJsonClassByObject && i_MethodReturnIsObject )
+                    if ( this.isSerializable && i_MethodReturnIsObject )
                     {
                         // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
                         // Map集合时，与List集合不同，因为有json格式的name，可以实现每个元素类型均不要求一致性。所以，不在Map层面上添加元素类型
-                        i_JsonSuperObj.put(i_JSONName + $JsonClassByObject_SplitKey + v_JavaClass.getName() ,v_ChildJsonObj);
+                        i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() ,v_ChildJsonObj);
                     }
                     else
                     {
@@ -1872,9 +1874,9 @@ public final class XJSON
                 }
                 else
                 {
-                    if ( this.isJsonClassByObject && i_MethodReturnIsObject )
+                    if ( this.isSerializable && i_MethodReturnIsObject )
                     {
-                        i_JsonSuperObj.put(i_JSONName + $JsonClassByObject_SplitKey + v_JavaClass.getName() ,v_ChildJsonObj);
+                        i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() ,v_ChildJsonObj);
                     }
                     else
                     {
@@ -1891,9 +1893,9 @@ public final class XJSON
         {
             if ( this.isReturnNVL )
             {
-                if ( this.isJsonClassByObject && i_MethodReturnIsObject )
+                if ( this.isSerializable && i_MethodReturnIsObject )
                 {
-                    i_JsonSuperObj.put(i_JSONName + $JsonClassByObject_SplitKey + v_JavaClass.getName() ,v_JavaValue);
+                    i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() ,v_JavaValue);
                 }
                 else
                 {
@@ -1902,9 +1904,9 @@ public final class XJSON
             }
             else if ( v_JavaValue !=null && !"".equals(v_JavaValue) )
             {
-                if ( this.isJsonClassByObject && i_MethodReturnIsObject )
+                if ( this.isSerializable && i_MethodReturnIsObject )
                 {
-                    i_JsonSuperObj.put(i_JSONName + $JsonClassByObject_SplitKey + v_JavaClass.getName() ,v_JavaValue);
+                    i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() ,v_JavaValue);
                 }
                 else
                 {
@@ -2082,6 +2084,8 @@ public final class XJSON
 
     
     /**
+     * 实现：Json序列化和反序列化
+     * 
      * 在Java对象转Json字符串时，对于getter方法的返回类型为java.lang.Object时，
      * 是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
      * 
@@ -2089,14 +2093,16 @@ public final class XJSON
      * 
      * 默认为：false，不转换输出
      */
-    public boolean isJsonClassByObject()
+    public boolean isSerializable()
     {
-        return isJsonClassByObject;
+        return isSerializable;
     }
 
     
 
     /**
+     * 实现：Json序列化和反序列化
+     * 
      * 在Java对象转Json字符串时，对于getter方法的返回类型为java.lang.Object时，
      * 是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
      * 
@@ -2104,9 +2110,9 @@ public final class XJSON
      * 
      * 默认为：false，不转换输出
      */
-    public void setJsonClassByObject(boolean isJsonClassByObject)
+    public void setSerializable(boolean isSerializable)
     {
-        this.isJsonClassByObject = isJsonClassByObject;
+        this.isSerializable = isSerializable;
     }
 
 

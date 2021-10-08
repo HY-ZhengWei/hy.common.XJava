@@ -117,7 +117,7 @@ public class JU_XJSON
         
         
         $Logger.info("\n\n支持Object对象的Json转换");
-        v_Json.setJsonClassByObject(true);
+        v_Json.setSerializable(true);
         
         v_JsonString = v_Json.toJson(v_DataA ,"data").toJSONString();
         v_DataNew    = (JU_XJSON) v_Json.toJava(v_JsonString ,JU_XJSON.class);
