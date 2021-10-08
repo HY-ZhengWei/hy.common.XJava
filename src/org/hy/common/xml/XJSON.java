@@ -1670,7 +1670,15 @@ public final class XJSON
                 if ( i_JsonSuperObj == null )
                 {
                     // 只有一次执行到此的机会，即：根节点
-                    i_JsonSuperObj = v_ChildJsonObj;
+                    if ( Help.isNull(i_JSONName) )
+                    {
+                        i_JsonSuperObj = v_ChildJsonObj;
+                    }
+                    else
+                    {
+                        i_JsonSuperObj = new XJSONObject();
+                        i_JsonSuperObj.put(i_JSONName ,v_ChildJsonObj);
+                    }
                 }
                 else
                 {
@@ -1870,7 +1878,15 @@ public final class XJSON
                 if ( i_JsonSuperObj == null )
                 {
                     // 只有一次执行到此的机会，即：根节点
-                    i_JsonSuperObj = v_ChildJsonObj;
+                    if ( Help.isNull(i_JSONName) )
+                    {
+                        i_JsonSuperObj = v_ChildJsonObj;
+                    }
+                    else
+                    {
+                        i_JsonSuperObj = new XJSONObject();
+                        i_JsonSuperObj.put(i_JSONName ,v_ChildJsonObj);
+                    }
                 }
                 else
                 {
