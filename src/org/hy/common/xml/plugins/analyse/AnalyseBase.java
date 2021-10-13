@@ -20,8 +20,8 @@ import org.hy.common.Return;
 import org.hy.common.StringHelp;
 import org.hy.common.TablePartitionRID;
 import org.hy.common.db.DataSourceGroup;
-import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
+import org.hy.common.net.common.ClientCluster;
 import org.hy.common.net.data.CommunicationResponse;
 import org.hy.common.thread.Job;
 import org.hy.common.thread.JobDisasterRecoveryReport;
@@ -169,9 +169,9 @@ public class AnalyseBase extends Analyse
      */
     public String loginSSO(int i_ServerPort ,String i_RequestURL ,String i_LoginPath)
     {
-        StringBuilder      v_Buffer  = new StringBuilder();
-        String             v_Content = "<script type='text/javascript' src=':BasePath?SSOCallBack=getUSID&r=" + Math.random() + "'></script>";
-        List<ClientSocket> v_Servers = Cluster.getClusters();
+        StringBuilder       v_Buffer  = new StringBuilder();
+        String              v_Content = "<script type='text/javascript' src=':BasePath?SSOCallBack=getUSID&r=" + Math.random() + "'></script>";
+        List<ClientCluster> v_Servers = Cluster.getClusters();
         
         // 给登陆的URL带上一个r参数
         String v_LoginPath = i_LoginPath;
@@ -195,11 +195,11 @@ public class AnalyseBase extends Analyse
         String v_RequestURL = i_RequestURL.split("//")[1].split("/")[0];
         v_RequestURL = StringHelp.replaceAll(i_RequestURL ,v_RequestURL ,":IPPort");
         
-        for (ClientSocket v_Server : v_Servers)
+        for (ClientCluster v_Server : v_Servers)
         {
             v_Buffer.append(StringHelp.replaceAll(v_Content
                                                  ,":BasePath"
-                                                 ,StringHelp.replaceAll(v_RequestURL ,":IPPort" ,v_Server.getHostName() + ":" + i_ServerPort)));
+                                                 ,StringHelp.replaceAll(v_RequestURL ,":IPPort" ,v_Server.getHost() + ":" + i_ServerPort)));
         }
         
         return StringHelp.replaceAll(this.getTemplateLogonSSO()
@@ -671,14 +671,14 @@ public class AnalyseBase extends Analyse
         // 集群统计
         else
         {
-            List<ClientSocket> v_Servers = Cluster.getClusters();
+            List<ClientCluster> v_Servers = Cluster.getClusters();
             v_Total = new AnalyseDBTotal();
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBGroup_Total" ,true ,"XSQL组分析");
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBGroup_Total" ,true ,"XSQL组分析");
                 
-                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                for (Map.Entry<? extends ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
                     CommunicationResponse v_ResponseData = v_Item.getValue();
                     
@@ -912,14 +912,14 @@ public class AnalyseBase extends Analyse
         // 集群统计
         else
         {
-            List<ClientSocket> v_Servers = Cluster.getClusters();
+            List<ClientCluster> v_Servers = Cluster.getClusters();
             v_Total = new AnalyseDBTotal();
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDB_Total" ,true ,"XSQ分析");
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDB_Total" ,true ,"XSQ分析");
                 
-                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                for (Map.Entry<? extends ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
                     CommunicationResponse v_ResponseData = v_Item.getValue();
                     
@@ -1348,18 +1348,18 @@ public class AnalyseBase extends Analyse
             // 集群统计
             else
             {
-                List<ClientSocket> v_Servers = Cluster.getClusters();
+                List<ClientCluster> v_Servers = Cluster.getClusters();
                 v_ErrorLogs = new ArrayList<XSQLLog>();
                 
                 if ( !Help.isNull(v_Servers) )
                 {
-                    Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBError_Total" ,new Object[]{i_XSQLXID} ,true ,"XSQL执行日志");
+                    Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBError_Total" ,new Object[]{i_XSQLXID} ,true ,"XSQL执行日志");
                     
-                    for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                    for (Map.Entry<? extends ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                     {
                         CommunicationResponse v_ResponseData = v_Item.getValue();
-                        ClientSocket          v_Client       = v_Item.getKey();
-                        String                v_ClientName   = "【" + v_Client.getHostName() + ":" + v_Client.getPort() + "】 ";
+                        ClientCluster         v_Client       = v_Item.getKey();
+                        String                v_ClientName   = "【" + v_Client.getHost() + ":" + v_Client.getPort() + "】 ";
                         
                         if ( v_ResponseData.getResult() == 0 )
                         {
@@ -2259,9 +2259,9 @@ public class AnalyseBase extends Analyse
         // 集群重新加载
         else
         {
-            long                                     v_StartTime        = Date.getNowTime().getTime();
-            StringBuilder                            v_Ret              = new StringBuilder();
-            Map<ClientSocket ,CommunicationResponse> v_ClusterResponses = null;
+            long                                      v_StartTime        = Date.getNowTime().getTime();
+            StringBuilder                             v_Ret              = new StringBuilder();
+            Map<ClientCluster ,CommunicationResponse> v_ClusterResponses = null;
             
             if ( i_SameTime )
             {
@@ -2275,13 +2275,13 @@ public class AnalyseBase extends Analyse
             v_Ret.append("总体用时：").append(Date.toTimeLen(Date.getNowTime().getTime() - v_StartTime)).append("<br><br>");
             
             // 处理结果
-            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ClusterResponses.entrySet())
+            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ClusterResponses.entrySet())
             {
                 CommunicationResponse v_ResponseData = v_Item.getValue();
                 
                 v_ClusterResponses.put(v_Item.getKey() ,v_ResponseData);
                 
-                v_Ret.append(v_ResponseData.getEndTime().getFullMilli()).append("：").append(v_Item.getKey().getHostName()).append(" execute ");
+                v_Ret.append(v_ResponseData.getEndTime().getFullMilli()).append("：").append(v_Item.getKey().getHost()).append(" execute ");
                 if ( v_ResponseData.getResult() == 0 )
                 {
                     if ( v_ResponseData.getData() == null || !(v_ResponseData.getData() instanceof Return) )
@@ -2583,11 +2583,11 @@ public class AnalyseBase extends Analyse
             else
             {
                 StringBuilder v_Ret = new StringBuilder();
-                for (ClientSocket v_Client : Cluster.getClusters())
+                for (ClientCluster v_Client : Cluster.getClusters())
                 {
-                    CommunicationResponse v_ResponseData = v_Client.sendCommand("AnalyseBase" ,"analyseXFile_Reload" ,new Object[]{i_XFile ,false});
+                    CommunicationResponse v_ResponseData = v_Client.operation().sendCommand("AnalyseBase" ,"analyseXFile_Reload" ,new Object[]{i_XFile ,false});
                     
-                    v_Ret.append(Date.getNowTime().getFullMilli()).append("：").append(v_Client.getHostName()).append(" reload ");
+                    v_Ret.append(Date.getNowTime().getFullMilli()).append("：").append(v_Client.getHost()).append(" reload ");
                     v_Ret.append(v_ResponseData.getResult() == 0 ? "OK." : "Error(" + v_ResponseData.getResult() + ").").append("<br>");
                 }
                 
@@ -2620,7 +2620,7 @@ public class AnalyseBase extends Analyse
     {
         $Logger.debug("查看集群服务列表");
         
-        List<ClientSocket>   v_Servers      = Cluster.getClusters();
+        List<ClientCluster>  v_Servers      = Cluster.getClusters();
         StringBuilder        v_Buffer       = new StringBuilder();
         int                  v_Index        = 0;
         String               v_Content      = this.getTemplateShowClusterContent();
@@ -2629,9 +2629,9 @@ public class AnalyseBase extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseCluster_Info" ,true ,"监测服务");
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseCluster_Info" ,true ,"监测服务");
             
-            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
                 CommunicationResponse v_ResponseData  = v_Item.getValue();
                 ClusterReport         v_ClusterReport = null;
@@ -2652,7 +2652,7 @@ public class AnalyseBase extends Analyse
                     v_ClusterReport.setServerStatus("<font color='red'>异常</font>");
                 }
                 
-                v_ClusterReport.setHostName(v_Item.getKey().getHostName());
+                v_ClusterReport.setHostName(v_Item.getKey().getHost());
                 v_Clusters.add(v_ClusterReport);
             }
         }
@@ -2855,14 +2855,14 @@ public class AnalyseBase extends Analyse
         // 集群统计
         else
         {
-            List<ClientSocket> v_Servers = Cluster.getClusters();
+            List<ClientCluster> v_Servers = Cluster.getClusters();
             v_Total = new AnalyseThreadPoolTotal("合计");
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseThreadPool_Total" ,true ,"线程池");
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseThreadPool_Total" ,true ,"线程池");
                 
-                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
                     CommunicationResponse v_ResponseData = v_Item.getValue();
                     
@@ -2872,7 +2872,7 @@ public class AnalyseBase extends Analyse
                         {
                             AnalyseThreadPoolTotal v_TempTotal = (AnalyseThreadPoolTotal)v_ResponseData.getData();
                             
-                            v_TempTotal.setHostName(v_Item.getKey().getHostName() + ":" + v_Item.getKey().getPort());
+                            v_TempTotal.setHostName(v_Item.getKey().getHost() + ":" + v_Item.getKey().getPort());
                             
                             // 线程号前加主机IP:Port
                             for (ThreadReport v_TReport : v_TempTotal.getReports())
@@ -2993,14 +2993,14 @@ public class AnalyseBase extends Analyse
         // 集群统计
         else
         {
-            List<ClientSocket> v_Servers = Cluster.getClusters();
+            List<ClientCluster> v_Servers = Cluster.getClusters();
             v_Total = new AnalyseJobTotal("合计");
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseJob_Total" ,true ,"定时任务");
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseJob_Total" ,true ,"定时任务");
                 
-                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
                     CommunicationResponse v_ResponseData = v_Item.getValue();
                     
@@ -3218,14 +3218,14 @@ public class AnalyseBase extends Analyse
         // 集群统计
         else
         {
-            List<ClientSocket> v_Servers = Cluster.getClusters();
+            List<ClientCluster> v_Servers = Cluster.getClusters();
             v_Total = new AnalyseDSGTotal("合计");
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDataSourceGroup_Total" ,true ,"数据库连接池");
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDataSourceGroup_Total" ,true ,"数据库连接池");
                 
-                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
                     CommunicationResponse v_ResponseData = v_Item.getValue();
                     
@@ -3265,7 +3265,7 @@ public class AnalyseBase extends Analyse
                                             {
                                                 v_DsgStatus += "<br>";
                                             }
-                                            v_TR.setDsgStatus(v_DsgStatus + "<font color='red'>异常：</font>" + v_Item.getKey().getHostName());
+                                            v_TR.setDsgStatus(v_DsgStatus + "<font color='red'>异常：</font>" + v_Item.getKey().getHost());
                                         }
                                         
                                         v_TR.setConnActiveCount(v_TR.getConnActiveCount() + v_Report.getConnActiveCount());          // 合计值
@@ -3379,14 +3379,14 @@ public class AnalyseBase extends Analyse
         // 集群统计
         else
         {
-            List<ClientSocket> v_Servers = Cluster.getClusters();
+            List<ClientCluster> v_Servers = Cluster.getClusters();
             v_Total = new AnalyseLoggerTotal();
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseLogger_Total" ,new Object[] {i_TotalType} ,true ,"日志引擎");
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseLogger_Total" ,new Object[] {i_TotalType} ,true ,"日志引擎");
                 
-                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
                     CommunicationResponse v_ResponseData = v_Item.getValue();
                     
@@ -3401,7 +3401,7 @@ public class AnalyseBase extends Analyse
                                 // 显示每台服务上每个日志项，并不日志项合并统计
                                 if ( i_ShowEveryOne )
                                 {
-                                    String v_IP   = v_Item.getKey().getHostName();
+                                    String v_IP   = v_Item.getKey().getHost();
                                     String v_Host = v_IP + v_Item.getKey().getPort();
                                     for (LoggerReport v_Report : v_TempTotal.getReports().values())
                                     {
@@ -3410,7 +3410,7 @@ public class AnalyseBase extends Analyse
                                         
                                         if ( v_Report.getErrorFatalCount() > 0L )
                                         {
-                                            v_Errors.putRow(v_Report.getId() ,v_Item.getKey().getHostName() ,1);
+                                            v_Errors.putRow(v_Report.getId() ,v_Item.getKey().getHost() ,1);
                                         }
                                     }
                                 }
@@ -3439,7 +3439,7 @@ public class AnalyseBase extends Analyse
                                         
                                         if ( v_Report.getErrorFatalCount() > 0L )
                                         {
-                                            v_Errors.putRow(v_Report.getId() ,v_Item.getKey().getHostName() ,1);
+                                            v_Errors.putRow(v_Report.getId() ,v_Item.getKey().getHost() ,1);
                                         }
                                     }
                                 }

@@ -6,6 +6,7 @@ import java.util.List;
 import org.hy.common.Help;
 import org.hy.common.app.Param;
 import org.hy.common.net.ClientSocket;
+import org.hy.common.net.common.ClientCluster;
 import org.hy.common.xml.XJava;
 
 
@@ -54,11 +55,11 @@ public class Cluster
      *
      * @return
      */
-    public static List<ClientSocket> getClusters()
+    public static List<ClientCluster> getClusters()
     {
-        String []          v_ClusterServers = Help.NVL(Help.NVL(XJava.getParam("ClusterServers") ,new Param()).getValue()).split(",");
-        List<ClientSocket> v_Clusters       = new ArrayList<ClientSocket>();
-        int                v_Timeout        = (int)getClusterTimeout();
+        String []           v_ClusterServers = Help.NVL(Help.NVL(XJava.getParam("ClusterServers") ,new Param()).getValue()).split(",");
+        List<ClientCluster> v_Clusters      = new ArrayList<ClientCluster>();
+        int                 v_Timeout        = (int)getClusterTimeout();
         
         if ( !Help.isNull(v_ClusterServers) )
         {

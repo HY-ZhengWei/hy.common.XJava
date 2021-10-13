@@ -19,6 +19,7 @@ import org.hy.common.license.Hash;
 import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
 import org.hy.common.net.ServerSocket;
+import org.hy.common.net.common.ClientCluster;
 import org.hy.common.net.data.CommunicationResponse;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.annotation.Xjava;
@@ -116,15 +117,15 @@ public class AnalyseFS extends Analyse
         // 集群统计
         else
         {
-            List<ClientSocket> v_Servers = Cluster.getClusters();
+            List<ClientCluster> v_Servers = Cluster.getClusters();
             v_SCount = v_Servers.size();
             v_Total  = new HashMap<String ,FileReport>();
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"analysePath_Total" ,new Object[]{v_FPath} ,true ,"访问目录" + i_FPath);
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"analysePath_Total" ,new Object[]{v_FPath} ,true ,"访问目录" + i_FPath);
                 
-                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
                     CommunicationResponse v_ResponseData = v_Item.getValue();
                     
@@ -155,11 +156,11 @@ public class AnalyseFS extends Analyse
                                             v_FReport.setClusterSameSize(false);
                                         }
                                         
-                                        v_FReport.getClusterHave().add(v_Item.getKey().getHostName());
+                                        v_FReport.getClusterHave().add(v_Item.getKey().getHost());
                                     }
                                     else
                                     {
-                                        v_FRTemp.getClusterHave().add(v_Item.getKey().getHostName());
+                                        v_FRTemp.getClusterHave().add(v_Item.getKey().getHost());
                                         v_FRTemp.setClusterSameSize(true);
                                         v_Total.put(v_FR.getKey() ,v_FRTemp);
                                     }
@@ -180,11 +181,11 @@ public class AnalyseFS extends Analyse
                             v_FR.setClusterNoHave(new ArrayList<String>());
                         }
                         
-                        for (ClientSocket v_Server : v_Servers)
+                        for (ClientCluster v_Server : v_Servers)
                         {
-                            if ( !v_Haves.containsKey(v_Server.getHostName()) )
+                            if ( !v_Haves.containsKey(v_Server.getHost()) )
                             {
-                                v_FR.getClusterNoHave().add(v_Server.getHostName());
+                                v_FR.getClusterNoHave().add(v_Server.getHost());
                             }
                         }
                         
@@ -440,13 +441,13 @@ public class AnalyseFS extends Analyse
             
             if ( !Help.isNull(i_HIP) )
             {
-                List<ClientSocket> v_Servers = Cluster.getClusters();
+                List<ClientCluster> v_Servers = Cluster.getClusters();
                 
                 removeHIP(v_Servers ,i_HIP ,false);
                 
                 if ( !Help.isNull(v_Servers) )
                 {
-                    CommunicationResponse v_ResponseData = v_Servers.get(0).sendCommand("AnalyseFS" ,"getFileContent" ,new Object[]{v_FPath ,i_FName});
+                    CommunicationResponse v_ResponseData = v_Servers.get(0).operation().sendCommand("AnalyseFS" ,"getFileContent" ,new Object[]{v_FPath ,i_FName});
                     
                     if ( v_ResponseData.getResult() == 0 )
                     {
@@ -456,7 +457,7 @@ public class AnalyseFS extends Analyse
                         }
                     }
                     
-                    v_HIP = v_Servers.get(0).getHostName();
+                    v_HIP = v_Servers.get(0).getHost();
                 }
             }
             else
@@ -559,8 +560,9 @@ public class AnalyseFS extends Analyse
      */
     private String makeSelectHIP(String i_OnChangeFunName)
     {
-        StringBuilder v_SelectHIP = new StringBuilder();
-        List<ClientSocket> v_Servers = Cluster.getClusters();
+        StringBuilder       v_SelectHIP = new StringBuilder();
+        List<ClientCluster> v_Servers   = Cluster.getClusters();
+        
         if ( !Help.isNull(v_Servers) )
         {
             v_SelectHIP.append("<select id='SelectHIP' name='SelectHIP'");
@@ -571,9 +573,9 @@ public class AnalyseFS extends Analyse
             v_SelectHIP.append(">");
             v_SelectHIP.append("<option disabled selected>请选择定向操作的服务器</option>");
             
-            for (ClientSocket v_Server : v_Servers)
+            for (ClientCluster v_Server : v_Servers)
             {
-                v_SelectHIP.append("<option>").append(v_Server.getHostName()).append("</option>");
+                v_SelectHIP.append("<option>").append(v_Server.getHost()).append("</option>");
             }
             
             v_SelectHIP.append("</select>");
@@ -696,13 +698,13 @@ public class AnalyseFS extends Analyse
     {
         $Logger.debug("下载文件：" + i_HIP + Help.getSysPathSeparator() + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_LocalIP);
         
-        List<ClientSocket> v_Servers = Cluster.getClusters();
+        List<ClientCluster> v_Servers = Cluster.getClusters();
         
         removeHIP(v_Servers ,i_HIP ,false);
         
         if ( !Help.isNull(v_Servers) )
         {
-            CommunicationResponse v_ResponseData = v_Servers.get(0).sendCommand("AnalyseFS" ,"cloneFile" ,new Object[]{toWebHome(i_FilePath) ,i_FileName ,i_LocalIP});
+            CommunicationResponse v_ResponseData = v_Servers.get(0).operation().sendCommand("AnalyseFS" ,"cloneFile" ,new Object[]{toWebHome(i_FilePath) ,i_FileName ,i_LocalIP});
             
             if ( v_ResponseData.getResult() == 0 )
             {
@@ -955,17 +957,17 @@ public class AnalyseFS extends Analyse
     {
         $Logger.debug("集群执行命令：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
         
-        StringBuilder      v_HIP     = new StringBuilder();
-        int                v_ExecRet = 0;
-        List<ClientSocket> v_Servers = Cluster.getClusters();
+        StringBuilder       v_HIP     = new StringBuilder();
+        int                 v_ExecRet = 0;
+        List<ClientCluster> v_Servers = Cluster.getClusters();
         
         removeHIP(v_Servers ,i_HIP ,false);
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"executeCommand" ,new Object[]{i_FilePath ,i_FileName} ,true ,"执行命令文件" + i_FileName);
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"executeCommand" ,new Object[]{i_FilePath ,i_FileName} ,true ,"执行命令文件" + i_FileName);
             
-            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
                 CommunicationResponse v_ResponseData = v_Item.getValue();
                 
@@ -986,7 +988,7 @@ public class AnalyseFS extends Analyse
                             {
                                 v_HIP.append(",");
                             }
-                            v_HIP.append(v_Item.getKey().getHostName());
+                            v_HIP.append(v_Item.getKey().getHost());
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                         {
@@ -1001,7 +1003,7 @@ public class AnalyseFS extends Analyse
                     {
                         v_HIP.append(",");
                     }
-                    v_HIP.append(v_Item.getKey().getHostName());
+                    v_HIP.append(v_Item.getKey().getHost());
                 }
             }
         }
@@ -1143,17 +1145,17 @@ public class AnalyseFS extends Analyse
     {
         $Logger.debug("集群删除文件：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
         
-        int                v_ExecRet = 0;
-        List<ClientSocket> v_Servers = Cluster.getClusters();
-        List<String>       v_FailIP  = new ArrayList<String>();
+        int                 v_ExecRet = 0;
+        List<ClientCluster> v_Servers = Cluster.getClusters();
+        List<String>        v_FailIP  = new ArrayList<String>();
         
         removeHIP(v_Servers ,i_HIP ,false);
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"delFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,"删除文件" + i_FileName);
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"delFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,"删除文件" + i_FileName);
             
-            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
                 CommunicationResponse v_ResponseData = v_Item.getValue();
                 
@@ -1170,7 +1172,7 @@ public class AnalyseFS extends Analyse
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
                         {
-                            v_FailIP.add(v_Item.getKey().getHostName());
+                            v_FailIP.add(v_Item.getKey().getHost());
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                         {
@@ -1180,7 +1182,7 @@ public class AnalyseFS extends Analyse
                 }
                 else
                 {
-                    v_FailIP.add(v_Item.getKey().getHostName());
+                    v_FailIP.add(v_Item.getKey().getHost());
                 }
             }
         }
@@ -1279,17 +1281,17 @@ public class AnalyseFS extends Analyse
     {
         $Logger.debug("集群压缩文件：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
         
-        StringBuilder      v_HIP     = new StringBuilder();
-        int                v_ExecRet = 0;
-        List<ClientSocket> v_Servers = Cluster.getClusters();
+        StringBuilder       v_HIP     = new StringBuilder();
+        int                 v_ExecRet = 0;
+        List<ClientCluster> v_Servers = Cluster.getClusters();
         
         removeHIP(v_Servers ,i_HIP ,false);
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"zipFile" ,new Object[]{i_FilePath ,i_FileName ,Date.getNowTime().getFullMilli_ID()} ,true ,"压缩文件" + i_FileName);
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"zipFile" ,new Object[]{i_FilePath ,i_FileName ,Date.getNowTime().getFullMilli_ID()} ,true ,"压缩文件" + i_FileName);
             
-            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
                 CommunicationResponse v_ResponseData = v_Item.getValue();
                 
@@ -1310,7 +1312,7 @@ public class AnalyseFS extends Analyse
                             {
                                 v_HIP.append(",");
                             }
-                            v_HIP.append(v_Item.getKey().getHostName());
+                            v_HIP.append(v_Item.getKey().getHost());
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                         {
@@ -1324,7 +1326,7 @@ public class AnalyseFS extends Analyse
                     {
                         v_HIP.append(",");
                     }
-                    v_HIP.append(v_Item.getKey().getHostName());
+                    v_HIP.append(v_Item.getKey().getHost());
                 }
             }
         }
@@ -1401,17 +1403,17 @@ public class AnalyseFS extends Analyse
     {
         $Logger.debug("集群解压文件：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
         
-        int                v_ExecRet = 0;
-        List<ClientSocket> v_Servers = Cluster.getClusters();
-        List<String>       v_FailIP  = new ArrayList<String>();
+        int                 v_ExecRet = 0;
+        List<ClientCluster> v_Servers = Cluster.getClusters();
+        List<String>        v_FailIP  = new ArrayList<String>();
         
         removeHIP(v_Servers ,i_HIP ,false);
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"unZipFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,"解压文件" + i_FileName);
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"unZipFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,"解压文件" + i_FileName);
             
-            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
                 CommunicationResponse v_ResponseData = v_Item.getValue();
                 
@@ -1428,7 +1430,7 @@ public class AnalyseFS extends Analyse
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
                         {
-                            v_FailIP.add(v_Item.getKey().getHostName());
+                            v_FailIP.add(v_Item.getKey().getHost());
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                         {
@@ -1439,7 +1441,7 @@ public class AnalyseFS extends Analyse
                 }
                 else
                 {
-                    v_FailIP.add(v_Item.getKey().getHostName());
+                    v_FailIP.add(v_Item.getKey().getHost());
                 }
             }
         }
@@ -1513,17 +1515,17 @@ public class AnalyseFS extends Analyse
     {
         $Logger.debug("集群创建目录：" + i_FilePath + Help.getSysPathSeparator() + i_FileName + " to " + i_HIP);
         
-        StringBuilder      v_HIP     = new StringBuilder();
-        int                v_ExecRet = 0;
-        List<ClientSocket> v_Servers = Cluster.getClusters();
+        StringBuilder       v_HIP     = new StringBuilder();
+        int                 v_ExecRet = 0;
+        List<ClientCluster> v_Servers = Cluster.getClusters();
         
         removeHIP(v_Servers ,i_HIP ,true);
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"mkdir" ,new Object[]{i_FilePath ,i_FileName} ,true ,"创建目录" + i_FileName);
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"mkdir" ,new Object[]{i_FilePath ,i_FileName} ,true ,"创建目录" + i_FileName);
             
-            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
                 CommunicationResponse v_ResponseData = v_Item.getValue();
                 
@@ -1544,7 +1546,7 @@ public class AnalyseFS extends Analyse
                             {
                                 v_HIP.append(",");
                             }
-                            v_HIP.append(v_Item.getKey().getHostName());
+                            v_HIP.append(v_Item.getKey().getHost());
                         }
                         else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                         {
@@ -1559,7 +1561,7 @@ public class AnalyseFS extends Analyse
                     {
                         v_HIP.append(",");
                     }
-                    v_HIP.append(v_Item.getKey().getHostName());
+                    v_HIP.append(v_Item.getKey().getHost());
                 }
             }
         }
@@ -1655,7 +1657,7 @@ public class AnalyseFS extends Analyse
         
         int                 v_ExecRet     = 0;
         int                 v_Error       = 0;
-        List<ClientSocket>  v_Servers     = Cluster.getClusters();
+        List<ClientCluster> v_Servers     = Cluster.getClusters();
         int                 v_SCount      = v_Servers.size();
         Map<String ,String> v_Sizes       = new HashMap<String ,String>();
         String              v_FSize       = null;
@@ -1675,9 +1677,9 @@ public class AnalyseFS extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"calcFileSize" ,new Object[]{i_FilePath ,i_FileName} ,true ,"计算大小" + i_FileName);
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"calcFileSize" ,new Object[]{i_FilePath ,i_FileName} ,true ,"计算大小" + i_FileName);
                 
-                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
                     CommunicationResponse v_ResponseData = v_Item.getValue();
                     
@@ -1735,23 +1737,23 @@ public class AnalyseFS extends Analyse
                                 {
                                     v_ByteSize = StringHelp.getComputeUnit(Long.parseLong(v_ByteSize) ,4);
                                 }
-                                v_Sizes.put(v_Item.getKey().getHostName() ,Help.NVL(v_ByteSize ,v_FileSize) + "," + v_LastTime + "," + v_FingerCode);
+                                v_Sizes.put(v_Item.getKey().getHost() ,Help.NVL(v_ByteSize ,v_FileSize) + "," + v_LastTime + "," + v_FingerCode);
                             }
                             else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
                             {
                                 v_Error++;
-                                v_Sizes.put(v_Item.getKey().getHostName() ,"异常,");
+                                v_Sizes.put(v_Item.getKey().getHost() ,"异常,");
                             }
                             else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                             {
-                                v_Sizes.put(v_Item.getKey().getHostName() ,"不存在,");
+                                v_Sizes.put(v_Item.getKey().getHost() ,"不存在,");
                             }
                         }
                     }
                     else
                     {
                         v_Error++;
-                        v_Sizes.put(v_Item.getKey().getHostName() ,"异常,");
+                        v_Sizes.put(v_Item.getKey().getHost() ,"异常,");
                     }
                 }
             }
@@ -1891,14 +1893,14 @@ public class AnalyseFS extends Analyse
         
         StringBuilder       v_HIP     = new StringBuilder();
         int                 v_ExecRet = 0;
-        List<ClientSocket>  v_Servers = Cluster.getClusters();
+        List<ClientCluster> v_Servers = Cluster.getClusters();
         Map<String ,String> v_Times   = new HashMap<String ,String>();
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"getSystemTime" ,new Object[]{} ,true ,"系统时间");
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"getSystemTime" ,new Object[]{} ,true ,"系统时间");
             
-            for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
                 CommunicationResponse v_ResponseData = v_Item.getValue();
                 
@@ -1907,19 +1909,19 @@ public class AnalyseFS extends Analyse
                     if ( v_ResponseData.getData() != null )
                     {
                         String v_RetValue = v_ResponseData.getData().toString();
-                        v_Times.put(v_Item.getKey().getHostName() ,v_RetValue);
+                        v_Times.put(v_Item.getKey().getHost() ,v_RetValue);
                         v_ExecRet++;
                     }
                 }
                 else
                 {
-                    v_Times.put(v_Item.getKey().getHostName() ,"异常");
+                    v_Times.put(v_Item.getKey().getHost() ,"异常");
                     
                     if ( v_HIP.length() >= 1 )
                     {
                         v_HIP.append(",");
                     }
-                    v_HIP.append(v_Item.getKey().getHostName());
+                    v_HIP.append(v_Item.getKey().getHost());
                 }
             }
         }
@@ -2002,15 +2004,15 @@ public class AnalyseFS extends Analyse
             // 集群重新加载
             else
             {
-                int                v_ExecRet = 0 ;
-                List<ClientSocket> v_Servers = Cluster.getClusters();
+                int                 v_ExecRet = 0 ;
+                List<ClientCluster> v_Servers = Cluster.getClusters();
                 
                 if ( !Help.isNull(v_Servers) )
                 {
-                    Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"reload" ,new Object[]{i_XFile ,false} ,true ,"重新加载配置" + i_XFile);
+                    Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"reload" ,new Object[]{i_XFile ,false} ,true ,"重新加载配置" + i_XFile);
                     StringBuilder                            v_ErrorInfo     = new StringBuilder();
                     
-                    for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                    for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                     {
                         CommunicationResponse v_ResponseData = v_Item.getValue();
                         
@@ -2027,13 +2029,13 @@ public class AnalyseFS extends Analyse
                                 }
                                 else
                                 {
-                                    v_ErrorInfo.append(",").append(v_Item.getKey().getHostName());
+                                    v_ErrorInfo.append(",").append(v_Item.getKey().getHost());
                                 }
                             }
                         }
                         else
                         {
-                            v_ErrorInfo.append(",").append(v_Item.getKey().getHostName());
+                            v_ErrorInfo.append(",").append(v_Item.getKey().getHost());
                         }
                     }
                     
@@ -2131,7 +2133,7 @@ public class AnalyseFS extends Analyse
      *                      形式3 - 集群之外的临时服务的定向操作（仅限一台服务，一个IP），如下载 !127.0.0.1:1721
      * @param i_IsRemoveHave  有资源时删除服务器，还是无资源时删除服务器
      */
-    public static void removeHIP(List<ClientSocket> io_Servers ,String i_HIP ,boolean i_IsRemoveHave)
+    public static void removeHIP(List<ClientCluster> io_Servers ,String i_HIP ,boolean i_IsRemoveHave)
     {
         if ( Help.isNull(io_Servers) )
         {
@@ -2152,7 +2154,7 @@ public class AnalyseFS extends Analyse
             {
                 for (int i=io_Servers.size()-1; i>=0; i--)
                 {
-                    if ( v_HIP.indexOf(io_Servers.get(i).getHostName() + ",") >= 0 )
+                    if ( v_HIP.indexOf(io_Servers.get(i).getHost() + ",") >= 0 )
                     {
                         // 删除有资源的服务器，对没有资源的服务进行操作
                         io_Servers.remove(i);
@@ -2163,7 +2165,7 @@ public class AnalyseFS extends Analyse
             {
                 for (int i=io_Servers.size()-1; i>=0; i--)
                 {
-                    if ( v_HIP.indexOf(io_Servers.get(i).getHostName() + ",") < 0 )
+                    if ( v_HIP.indexOf(io_Servers.get(i).getHost() + ",") < 0 )
                     {
                         // 删除没有资源的服务器，对有资源的服务进行操作
                         io_Servers.remove(i);
@@ -2224,7 +2226,7 @@ public class AnalyseFS extends Analyse
         
         private FileDataPacket      dataPacket;
         
-        private List<ClientSocket>  servers;
+        private List<ClientCluster> servers;
         
         /** 克隆成功的服务IP */
         private Map<String ,String> succeedfulIP;
@@ -2314,7 +2316,7 @@ public class AnalyseFS extends Analyse
                 {
                     for (int i=this.servers.size() - 1; i>=0; i--)
                     {
-                        if ( v_HostName.equals(this.servers.get(i).getHostName()) )
+                        if ( v_HostName.equals(this.servers.get(i).getHost()) )
                         {
                             this.servers.remove(i);
                             break;
@@ -2328,11 +2330,11 @@ public class AnalyseFS extends Analyse
             
             try
             {
-                Map<ClientSocket ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(this.servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"cloneFileUpload" ,new Object[]{this.savePath ,this.dataPacket});
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(this.servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"cloneFileUpload" ,new Object[]{this.savePath ,this.dataPacket});
                 
-                for (Map.Entry<ClientSocket ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
-                    v_HostName = v_Item.getKey().getHostName();
+                    v_HostName = v_Item.getKey().getHost();
                     CommunicationResponse v_ResponseData = v_Item.getValue();
                     
                     if ( v_ResponseData.getResult() == 0 )
