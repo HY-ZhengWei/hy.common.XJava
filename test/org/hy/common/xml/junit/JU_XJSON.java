@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.hy.common.Date;
 import org.hy.common.Help;
+import org.hy.common.net.data.Command;
 import org.hy.common.xml.XJSON;
 import org.hy.common.xml.log.Logger;
 import org.junit.Test;
@@ -27,11 +28,13 @@ public class JU_XJSON
     
     private static final Logger $Logger = new Logger(JU_XJSON.class ,true);
     
-    private String valueString;
+    private String  valueString;
     
-    private Date   valueDate;
+    private Date    valueDate;
     
-    private Object valueObject;
+    private Object  valueObject;
+    
+    private byte [] valueByteArr;
     
     
     
@@ -82,23 +85,27 @@ public class JU_XJSON
         v_DataD.setValueString("DataD：子对象中的字符串");
         v_DataD.setValueDate(new Date("2021-10-08 10:00:00"));
         v_DataD.setValueObject("DataD：常规对象类型");
+        v_DataD.setValueByteArr(v_DataD.getValueObject().toString().getBytes());
         
         v_DataList.add(v_DataD);
         
         v_DataC.setValueString("DataC：子对象中的字符串");
         v_DataC.setValueDate(new Date("2021-10-08 09:00:00"));
-        v_DataC.setValueObject(v_DataList);
+        v_DataC.setValueObject(v_DataList);                    // 对象套娃
+        v_DataC.setValueByteArr(v_DataC.getValueObject().toString().getBytes());
         
         v_DataB.setValueString("DataB：子对象中的字符串");
         v_DataB.setValueDate(new Date("2021-10-07 08:30:00"));
         v_DataB.setValueObject("DataB：常规对象类型");
+        v_DataB.setValueByteArr(v_DataB.getValueObject().toString().getBytes());
         
         v_DataMap.put("b" ,v_DataB);
         v_DataMap.put("c" ,v_DataC);
         
         v_DataA.setValueString("字符串");
         v_DataA.setValueDate(new Date());
-        v_DataA.setValueObject(v_DataMap);     // 对象套娃
+        v_DataA.setValueObject(v_DataMap);                     // 对象套娃
+        v_DataA.setValueByteArr(v_DataA.getValueObject().toString().getBytes());
         
         
         
@@ -107,6 +114,9 @@ public class JU_XJSON
         
         $Logger.info("按普通Json转换");
         v_JsonString = v_Json.toJson(v_DataA ,"data").toJSONString();
+        v_DataNew    = (JU_XJSON) v_Json.toJava(v_JsonString ,"data" ,JU_XJSON.class);
+        
+        v_JsonString = v_Json.toJson(v_DataA).toJSONString();
         v_DataNew    = (JU_XJSON) v_Json.toJava(v_JsonString ,JU_XJSON.class);
 
         $Logger.info(v_JsonString);
@@ -119,13 +129,26 @@ public class JU_XJSON
         $Logger.info("\n\n支持Object对象的Json转换");
         v_Json.setSerializable(true);
         
-        v_JsonString = v_Json.toJson(v_DataA ,"data").toJSONString();
+        v_JsonString = v_Json.toJson(v_DataA).toJSONString();
         v_DataNew    = (JU_XJSON) v_Json.toJava(v_JsonString ,JU_XJSON.class);
         
         $Logger.info(v_JsonString);
         $Logger.info(v_DataNew.getValueString());
         $Logger.info(v_DataNew.getValueDate());
         $Logger.info(v_DataNew.getValueObject() + " -> " + v_DataNew.getValueObject().getClass().getName());
+    }
+    
+    
+    
+    @Test
+    public void test_JsonToJava_20211209() throws Exception
+    {
+        String v_JsonStr = "{\"XJavaCloudDatas\":{\"methodName\":\"cloneFileUpload\",\"params\":{\"0@java.lang.String\":\"$WebHome\",\"1@org.hy.common.file.FileDataPacket\":{\"dataCount\":\"1\",\"dataNo\":\"1\",\"name\":\"video.html\",\"size\":\"1376\"}}}}";
+        
+        XJSON   v_XJson   = new XJSON();
+        Command v_Command = (Command) v_XJson.toJava(v_JsonStr ,"XJavaCloudDatas" ,Command.class);
+        
+        $Logger.info(v_Command);
     }
     
     
@@ -139,6 +162,7 @@ public class JU_XJSON
      *
      * @throws Exception
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void test_001() throws Exception
     {
@@ -200,6 +224,18 @@ public class JU_XJSON
     public void setValueObject(Object valueObject)
     {
         this.valueObject = valueObject;
+    }
+
+    
+    public byte [] getValueByteArr()
+    {
+        return valueByteArr;
+    }
+
+    
+    public void setValueByteArr(byte [] valueByteArr)
+    {
+        this.valueByteArr = valueByteArr;
     }
     
 }

@@ -1,11 +1,10 @@
 package org.hy.common.xml;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -21,7 +20,6 @@ import org.hy.common.MethodReflect;
 import org.hy.common.Return;
 import org.hy.common.StaticReflect;
 import org.hy.common.StringHelp;
-import org.hy.common.comparate.MethodComparator;
 import org.hy.common.xml.log.Logger;
 
 import net.minidev.json.JSONArray;
@@ -87,6 +85,7 @@ import net.minidev.json.parser.JSONParser;
  *                                     在Java对象转Json字符串时，对于getter方法的返回类型为java.lang.Object时，
  *                                     是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
  *                                     控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
+ *              2021-12-09  V4.1  添加：Json字符串转Java对象时，当Setter方法的入传为数组时支持
  * 
  */
 public final class XJSON
@@ -95,19 +94,6 @@ public final class XJSON
     
     /** Json字符串的名称中是否包含"值"的Java类名称，形式是：{ "name@java.lang.Integer" : "value" } */
     private static String    $Serializable_SplitKey = "@";
-    
-    /** 当Java对象转Json字符串时，排除哪些方法不输出 */
-    private static String [] $ExcludeMethodNames = {"getClass"
-                                                   ,"hashCode"
-                                                   ,"equals"
-                                                   ,"clone"
-                                                   ,"toString"
-                                                   ,"notify"
-                                                   ,"notifyAll"
-                                                   ,"wait"
-                                                   ,"finalize"
-                                                   ,"compareTo"
-                                                   ,"toString"};
     
     private XJSONObject rootJSON;
     
@@ -474,6 +460,7 @@ public final class XJSON
      * @param i_ObjectClass         JSONObject对应的Java类型
      * @return
      */
+    @SuppressWarnings("unchecked")
     public Object parser(XJSONObject i_JSONObject ,Class<?> i_ObjectClass)
     {
         if ( i_JSONObject == null )
@@ -494,6 +481,10 @@ public final class XJSON
                 v_NewObj = new HashMap<Object ,Object>();
             }
             else if ( List.class.equals(i_ObjectClass) )
+            {
+                v_NewObj = new ArrayList<Object>();
+            }
+            else if ( i_ObjectClass.isArray() )
             {
                 v_NewObj = new ArrayList<Object>();
             }
@@ -551,6 +542,10 @@ public final class XJSON
                     {
                         v_Value = parser((XJSONObject)v_Value ,v_MapValueClass);
                     }
+                    else
+                    {
+                        v_Value = Help.toObject(v_MapValueClass ,v_Value.toString());
+                    }
                     
                     ((Map<String ,Object>)v_NewObj).put(v_MapKeyName ,v_Value);
                 }
@@ -577,10 +572,26 @@ public final class XJSON
                 Object    v_Value        = i_JSONObject.get(v_JsonName);
                 String [] v_NameAndClass = v_JsonName.split($Serializable_SplitKey);
                 String    v_MethodName   = v_NameAndClass[0];
-                Method    v_Method       = MethodReflect.getSetMethod(i_ObjectClass ,v_MethodName ,true);
                 String    v_ValueClass   = v_NameAndClass.length >= 2 ? v_NameAndClass[1] : null;
                 String    v_ElementClass = v_NameAndClass.length >= 3 ? v_NameAndClass[2] : null;
+                Method    v_Method       = null;
                 Object    v_ParserObj    = null;
+                
+                if ( i_ObjectClass.isArray() )
+                {
+                    try
+                    {
+                        v_Method = ArrayList.class.getMethod("add" ,new Class<?>[] {Object.class});
+                    }
+                    catch (Exception exce)
+                    {
+                        $Logger.error(exce);
+                    }
+                }
+                else
+                {
+                    v_Method = MethodReflect.getSetMethod(i_ObjectClass ,v_MethodName ,true);
+                }
                 
                 if ( v_Value == null )
                 {
@@ -699,6 +710,35 @@ public final class XJSON
                             throw new NullPointerException("Call " + i_ObjectClass.getName() + "." + v_Method.getName() + "(List<" + v_ActualTypeClass.getName() + ">) is error." + exce.getMessage());
                         }
                     }
+                    // Setter方法的入参是：数组类型
+                    else if ( v_ParamClass.isArray() )
+                    {
+                        Class<?> v_ActualTypeClass = null;
+                        
+                        try
+                        {
+                            v_ActualTypeClass = MethodReflect.getGenerics(v_Method);
+                            if ( v_ActualTypeClass == null )
+                            {
+                                v_ActualTypeClass = v_PEClass;
+                            }
+                        }
+                        catch (Exception exce)
+                        {
+                            v_ActualTypeClass = v_PEClass;
+                        }
+                        
+                        v_ParserObj = parser((JSONArray)v_Value ,v_ActualTypeClass);
+                        
+                        try
+                        {
+                            v_Method.invoke(v_NewObj ,new Object[] {((List<?>)v_ParserObj).toArray()});
+                        }
+                        catch (Exception exce)
+                        {
+                            throw new NullPointerException("Call " + i_ObjectClass.getName() + "." + v_Method.getName() + "(List<" + v_ActualTypeClass.getName() + ">) is error." + exce.getMessage());
+                        }
+                    }
                     // Setter方法的入参是：Object类型
                     else if ( v_ParamClass == Object.class )
                     {
@@ -744,7 +784,14 @@ public final class XJSON
                     
                     try
                     {
-                        v_Method.invoke(v_NewObj ,v_ParserObj);
+                        if ( v_VClass.isArray() )
+                        {
+                            v_Method.invoke(v_NewObj ,new Object[] {((List<?>)v_ParserObj).toArray()});
+                        }
+                        else
+                        {
+                            v_Method.invoke(v_NewObj ,v_ParserObj);
+                        }
                     }
                     catch (Exception exce)
                     {
@@ -1247,7 +1294,7 @@ public final class XJSON
      * @param i_JSONRootName  设置生成Json字符串的顶级节点名称
      * @throws Exception
      */
-    public XJSONObject toJson(Object i_JavaData ,String i_JSONRootName) throws Exception
+    public <T> XJSONObject toJson(T i_JavaData ,String i_JSONRootName) throws Exception
     {
         return parser(i_JavaData ,i_JSONRootName);
     }
@@ -1290,7 +1337,7 @@ public final class XJSON
      * @param i_JSONRootName  设置生成Json字符串的顶级节点名称
      * @throws Exception
      */
-    public XJSONObject parser(Object i_JavaData ,String i_JSONRootName) throws Exception
+    public <T> XJSONObject parser(T i_JavaData ,String i_JSONRootName) throws Exception
     {
         if ( i_JavaData == null )
         {
@@ -1324,614 +1371,84 @@ public final class XJSON
      * @return
      * @throws Exception
      */
-    private Return<XJSONObject> parser(String i_JSONName ,final Object i_JavaData ,XJSONObject i_JsonSuperObj ,Map<Object ,Integer> i_ParserObjects ,boolean i_MethodReturnIsObject) throws Exception
+    protected Return<XJSONObject> parser(String i_JSONName ,final Object i_JavaData ,XJSONObject i_JsonSuperObj ,Map<Object ,Integer> i_ParserObjects ,boolean i_MethodReturnIsObject) throws Exception
     {
-        Class<?>            v_JavaClass = i_JavaData.getClass();
-        String              v_JavaValue = "";
-        Return<XJSONObject> v_Ret       = new Return<XJSONObject>(true);
+        Return<XJSONObject> v_Ret              = new Return<XJSONObject>(true);
+        Class<?>            v_JavaClass        = i_JavaData.getClass();
+        String              v_JSONName         = i_JSONName;
+        Object              v_JsonValue        = XJSONToJson.executeToJson(this ,i_ParserObjects ,i_JavaData);
+        boolean             v_JsonValueIsValid = true;
+        XJSONObject         v_JsonSuper        = i_JsonSuperObj;
         
-        if ( String.class == v_JavaClass )
+        // 确保Json的最外层是一个对象，即最外层是一对{}号
+        if ( v_JsonValue == null )
         {
-            v_JavaValue = i_JavaData.toString();
+            return v_Ret;
         }
-        else if ( int.class == v_JavaClass )
+        else if ( v_JsonValue instanceof XJSONObject )
         {
-            v_JavaValue = String.valueOf(i_JavaData);
-        }
-        else if ( Integer.class == v_JavaClass )
-        {
-            v_JavaValue = ((Integer)i_JavaData).toString();
-        }
-        else if ( BigDecimal.class == v_JavaClass )
-        {
-            BigDecimal v_BigValue = (BigDecimal)i_JavaData;
-            
-            if ( this.digit != null )
+            if ( v_JsonSuper == null )
             {
-                v_BigValue = new BigDecimal(Help.round(v_BigValue.toString() ,this.digit));
-            }
-            
-            if ( this.isBigDecimalFormat )
-            {
-                // 科学计数
-                v_JavaValue = v_BigValue.toString();
-            }
-            else
-            {
-                // 自然数字
-                v_JavaValue = v_BigValue.toPlainString();
-            }
-        }
-        else if ( double.class == v_JavaClass || Double.class == v_JavaClass )
-        {
-            if ( this.digit != null )
-            {
-                v_JavaValue = String.valueOf(Help.round((Double)i_JavaData ,this.digit));
-            }
-            else
-            {
-                v_JavaValue = ((Double)i_JavaData).toString();
-            }
-        }
-        else if ( float.class == v_JavaClass || Float.class == v_JavaClass )
-        {
-            if ( this.digit != null )
-            {
-                v_JavaValue = String.valueOf(Help.round((Float)i_JavaData ,this.digit));
-            }
-            else
-            {
-                v_JavaValue = ((Float)i_JavaData).toString();
-            }
-        }
-        else if ( boolean.class == v_JavaClass )
-        {
-            v_JavaValue = String.valueOf(i_JavaData);
-        }
-        else if ( Boolean.class == v_JavaClass )
-        {
-            v_JavaValue = ((Boolean)i_JavaData).toString();
-        }
-        else if ( long.class == v_JavaClass )
-        {
-            v_JavaValue = String.valueOf(i_JavaData);
-        }
-        else if ( Long.class == v_JavaClass )
-        {
-            v_JavaValue = ((Long)i_JavaData).toString();
-        }
-        else if ( Date.class == v_JavaClass )
-        {
-            v_JavaValue = ((Date)i_JavaData).getFull();
-        }
-        else if ( java.util.Date.class == v_JavaClass )
-        {
-            v_JavaValue = (new Date((java.util.Date)i_JavaData)).getFull();
-        }
-        // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15
-        else if ( Timestamp.class == v_JavaClass )
-        {
-            v_JavaValue = (new Date((Timestamp)i_JavaData)).getFull();
-        }
-        else if ( MethodReflect.isExtendImplement(v_JavaClass ,Enum.class) )
-        {
-            v_JavaValue = ((Enum<?>)i_JavaData).toString();
-        }
-        else if ( byte.class == v_JavaClass )
-        {
-            v_JavaValue = String.valueOf(i_JavaData);
-        }
-        else if ( Byte.class == v_JavaClass )
-        {
-            v_JavaValue = ((Byte)i_JavaData).toString();
-        }
-        else if ( short.class == v_JavaClass )
-        {
-            v_JavaValue = String.valueOf(i_JavaData);
-        }
-        else if ( Short.class == v_JavaClass )
-        {
-            v_JavaValue = ((Short)i_JavaData).toString();
-        }
-        else if ( char.class == v_JavaClass )
-        {
-            v_JavaValue = String.valueOf(i_JavaData);
-        }
-        else if ( Character.class == v_JavaClass )
-        {
-            v_JavaValue = ((Character)i_JavaData).toString();
-        }
-        else if ( i_JavaData instanceof List )
-        {
-            if ( isRecursion(i_ParserObjects ,i_JavaData) )
-            {
-                return v_Ret;
-            }
-            
-            JSONArray v_JSONArray = new JSONArray();
-            List<?>   v_List      = (List<?>)i_JavaData;
-            
-            for (int i=0; i<v_List.size(); i++)
-            {
-                Object              v_Value   = v_List.get(i);
-                Return<XJSONObject> v_RetTemp = this.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects ,false);
-                
-                if ( v_RetTemp.paramInt == 0 )
+                // 递归循环时，只有一次执行到此的机会，即：根节点
+                if ( Help.isNull(v_JSONName) )
                 {
-                    v_JSONArray.add(v_Value);
+                    v_JsonSuper = (XJSONObject)v_JsonValue;
                 }
                 else
                 {
-                    if ( v_RetTemp.paramObj != null && v_RetTemp.paramObj.size() >= 1 )
-                    {
-                        v_JSONArray.addAll(v_RetTemp.paramObj.values());
-                    }
+                    v_JsonSuper = new XJSONObject();
                 }
             }
-            
-            if ( i_JsonSuperObj == null )
-            {
-                i_JsonSuperObj = new XJSONObject();
-            }
-            
-            if ( this.isReturnNVL )
-            {
-                if ( this.isSerializable && i_MethodReturnIsObject )
-                {
-                    // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                    i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + v_List.get(0).getClass().getName() ,v_JSONArray);
-                }
-                else
-                {
-                    i_JsonSuperObj.put(i_JSONName ,v_JSONArray);
-                }
-            }
-            else
-            {
-                if ( v_JSONArray.size() > 0 )
-                {
-                    if ( this.isSerializable && i_MethodReturnIsObject )
-                    {
-                        // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                        i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + v_List.get(0).getClass().getName() ,v_JSONArray);
-                    }
-                    else
-                    {
-                        i_JsonSuperObj.put(i_JSONName ,v_JSONArray);
-                    }
-                }
-            }
-            
-            v_Ret.paramInt(1);
-            return v_Ret.paramObj(i_JsonSuperObj);
+
+            v_JsonValueIsValid = ((XJSONObject)v_JsonValue).size() > 0;
         }
-        // ZhengWei(HY) Add 2016-07-05 支持数组
-        else if ( i_JavaData instanceof Object [] )
+        else if ( v_JsonValue instanceof JSONArray )
         {
-            if ( isRecursion(i_ParserObjects ,i_JavaData) )
+            if ( v_JsonSuper == null )
             {
-                return v_Ret;
+                // 递归循环时，只有一次执行到此的机会，即：根节点
+                v_JsonSuper = new XJSONObject();
+                v_JSONName  = Help.NVL(v_JSONName ,"xdatas");
             }
-            
-            JSONArray v_JSONArray = new JSONArray();
-            Object [] v_List      = (Object [])i_JavaData;
-            
-            for (int i=0; i<v_List.length; i++)
-            {
-                Object              v_Value   = v_List[i];
-                Return<XJSONObject> v_RetTemp = this.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects ,false);
-                
-                if ( v_RetTemp.paramInt == 0 )
-                {
-                    v_JSONArray.add(v_Value);
-                }
-                else
-                {
-                    if ( v_RetTemp.paramObj != null && v_RetTemp.paramObj.size() >= 1 )
-                    {
-                        v_JSONArray.addAll(v_RetTemp.paramObj.values());
-                    }
-                }
-            }
-            
-            if ( i_JsonSuperObj == null )
-            {
-                i_JsonSuperObj = new XJSONObject();
-            }
-            
-            if ( this.isReturnNVL )
-            {
-                if ( this.isSerializable && i_MethodReturnIsObject )
-                {
-                    // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                    i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + v_List[0].getClass().getName() ,v_JSONArray);
-                }
-                else
-                {
-                    i_JsonSuperObj.put(i_JSONName ,v_JSONArray);
-                }
-            }
-            else
-            {
-                if ( v_JSONArray.size() > 0 )
-                {
-                    if ( this.isSerializable && i_MethodReturnIsObject )
-                    {
-                        // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                        i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + v_List[0].getClass().getName() ,v_JSONArray);
-                    }
-                    else
-                    {
-                        i_JsonSuperObj.put(i_JSONName ,v_JSONArray);
-                    }
-                }
-            }
-            
-            v_Ret.paramInt(1);
-            return v_Ret.paramObj(i_JsonSuperObj);
-        }
-        else if ( i_JavaData instanceof Set )
-        {
-            if ( isRecursion(i_ParserObjects ,i_JavaData) )
-            {
-                return v_Ret;
-            }
-            
-            JSONArray   v_JSONArray = new JSONArray();
-            Set<?>      v_Set       = (Set<?>)i_JavaData;
-            Iterator<?> v_Values    = v_Set.iterator();
-            int         v_SetIndex  = 0;
-            
-            while ( v_Values.hasNext() )
-            {
-                Object              v_Value   = v_Values.next();
-                Return<XJSONObject> v_RetTemp = this.parser("" + (v_SetIndex++) ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects ,false);
-                
-                if ( v_RetTemp.paramInt == 0 )
-                {
-                    v_JSONArray.add(v_Value);
-                }
-                else
-                {
-                    if ( v_RetTemp.paramObj != null && v_RetTemp.paramObj.size() >= 1 )
-                    {
-                        v_JSONArray.addAll(v_RetTemp.paramObj.values());
-                    }
-                }
-            }
-            
-            if ( i_JsonSuperObj == null )
-            {
-                i_JsonSuperObj = new XJSONObject();
-            }
-            
-            if ( this.isReturnNVL )
-            {
-                if ( this.isSerializable && i_MethodReturnIsObject )
-                {
-                    // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                    i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + v_Set.iterator().next().getClass().getName() ,v_JSONArray);
-                }
-                else
-                {
-                    i_JsonSuperObj.put(i_JSONName ,v_JSONArray);
-                }
-            }
-            else
-            {
-                if ( v_JSONArray.size() > 0 )
-                {
-                    if ( this.isSerializable && i_MethodReturnIsObject )
-                    {
-                        // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                        i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + v_Set.iterator().next().getClass().getName() ,v_JSONArray);
-                    }
-                    else
-                    {
-                        i_JsonSuperObj.put(i_JSONName ,v_JSONArray);
-                    }
-                }
-            }
-            
-            v_Ret.paramInt(1);
-            return v_Ret.paramObj(i_JsonSuperObj);
-        }
-        else if ( i_JavaData instanceof Map )
-        {
-            if ( isRecursion(i_ParserObjects ,i_JavaData) )
-            {
-                return v_Ret;
-            }
-            
-            Map<? ,?> v_Map = (Map<? ,?>)i_JavaData;
-            if ( !Help.isNull(v_Map) )
-            {
-                XJSONObject v_ChildJsonObj = new XJSONObject();
-            
-                for (Map.Entry<?, ?> v_Item : v_Map.entrySet())
-                {
-                    Object v_Name  = v_Item.getKey();
-                    Object v_Value = v_Item.getValue();
-                    
-                    if ( v_Name == null )
-                    {
-                        v_Name = "";
-                    }
-                    if ( v_Item.getValue() == null )
-                    {
-                        v_Value = "";
-                    }
-                    
-                    // 对于Map集合，是可以支持每个元素均不相同的功能，所以 i_MethodReturnIsObject 传 true，
-                    // 当作Object对象来处理  2021-09-30
-                    parser(v_Name.toString() ,v_Value ,v_ChildJsonObj ,i_ParserObjects ,true);
-                }
-                
-                if ( i_JsonSuperObj == null )
-                {
-                    // 只有一次执行到此的机会，即：根节点
-                    if ( Help.isNull(i_JSONName) )
-                    {
-                        i_JsonSuperObj = v_ChildJsonObj;
-                    }
-                    else
-                    {
-                        i_JsonSuperObj = new XJSONObject();
-                        i_JsonSuperObj.put(i_JSONName ,v_ChildJsonObj);
-                    }
-                }
-                else
-                {
-                    if ( this.isSerializable && i_MethodReturnIsObject )
-                    {
-                        // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                        // Map集合时，与List集合不同，因为有json格式的name，可以实现每个元素类型均不要求一致性。所以，不在Map层面上添加元素类型
-                        i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() ,v_ChildJsonObj);
-                    }
-                    else
-                    {
-                        i_JsonSuperObj.put(i_JSONName ,v_ChildJsonObj);
-                    }
-                }
-            }
-            
-            v_Ret.paramInt(2);
-            return v_Ret.paramObj(i_JsonSuperObj);
+
+            v_JsonValueIsValid = ((JSONArray)v_JsonValue).size() > 0;
         }
         else
         {
-            if ( !Modifier.isPublic(i_JavaData.getClass().getModifiers()) )
-            {
-                return v_Ret;
-            }
-            if ( isRecursion(i_ParserObjects ,i_JavaData) )
-            {
-                return v_Ret;
-            }
-            
-            XJSONObject  v_ChildJsonObj = new XJSONObject();
-            int          v_ChildCount   = 0;
-            
-            if ( this.isAccuracy )
-            {
-                Map<String ,Method> v_Methods = MethodReflect.getGetMethodsMS(i_JavaData.getClass());
-                
-                if ( !Help.isNull(v_Methods) )
-                {
-                    for (Map.Entry<String ,Method> v_ItemMethod : v_Methods.entrySet())
-                    {
-                        String v_Name  = null;
-                        Object v_Value = null;
-                        
-                        if ( this.firstCharIsUpper )
-                        {
-                            v_Name = v_ItemMethod.getKey();
-                        }
-                        else
-                        {
-                            v_Name = StringHelp.toLowerCaseByFirst(v_ItemMethod.getKey());
-                        }
-                        
-                        try
-                        {
-                            Method  v_Method     = v_ItemMethod.getValue();
-                            boolean v_IsMRObject = Object.class.equals(v_Method.getReturnType()); // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                            v_Value = v_Method.invoke(i_JavaData);
-                            if ( v_Value == null )
-                            {
-                                v_Value = "";
-                            }
-                            parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects ,v_IsMRObject);
-                        }
-                        catch (Exception e)
-                        {
-                            throw new Exception(v_Name + ":" + e.getMessage());
-                        }
-                        
-                        v_ChildCount++;
-                    }
-                }
-            }
-            else
-            {
-                List<Method> v_Methods   = MethodReflect.getStartMethods(i_JavaData.getClass() ,new String[]{"get" ,"is"} ,0);
-                Method []    v_MethodArr = v_Methods.toArray(new Method[]{});
-                
-                Arrays.sort(v_MethodArr ,MethodComparator.getInstance());
-                
-                if ( !Help.isNull(v_MethodArr) )
-                {
-                    for (int i=0; i<v_MethodArr.length; i++)
-                    {
-                        Method v_Method = v_MethodArr[i];
-                        
-                        if ( "getClass".equals(v_Method.getName()) )
-                        {
-                            continue;
-                        }
-                        
-                        String v_Name  = null;
-                        Object v_Value = null;
-                        
-                        if ( v_Method.getName().startsWith("get") && v_Method.getName().length() > 3 )
-                        {
-                            if ( this.firstCharIsUpper )
-                            {
-                                v_Name = v_Method.getName().substring(3);
-                            }
-                            else
-                            {
-                                v_Name = v_Method.getName().substring(3 ,4).toLowerCase();
-                                        
-                                if ( v_Method.getName().length() >= 5 )
-                                {
-                                    v_Name += v_Method.getName().substring(4);
-                                }
-                            }
-                        }
-                        else if ( v_Method.getName().startsWith("is") && v_Method.getName().length() > 2 )
-                        {
-                            if ( this.firstCharIsUpper )
-                            {
-                                v_Name = v_Method.getName().substring(2);
-                            }
-                            else
-                            {
-                                v_Name = v_Method.getName().substring(2 ,3).toLowerCase() + v_Method.getName().substring(3);
-                            }
-                        }
-                        
-                        if ( !Help.isNull(v_Name) )
-                        {
-                            try
-                            {
-                                boolean v_IsMRObject = Object.class.equals(v_Method.getReturnType()); // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
-                                v_Value = v_Method.invoke(i_JavaData);
-                                if ( v_Value == null )
-                                {
-                                    v_Value = "";
-                                }
-                                parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects ,v_IsMRObject);
-                            }
-                            catch (Exception e)
-                            {
-                                throw new Exception(v_Name + ":" + e.getMessage());
-                            }
-                            
-                            v_ChildCount++;
-                        }
-                    }
-                }
-            }
-            
-            // Json方式显示成员方法  Add ZhengWei(HY) 2020-01-15
-            if ( this.isJsonMethod )
-            {
-                List<Method> v_Methods = MethodReflect.getMethodsExcludeStart(i_JavaData.getClass() ,new String[]{"get"
-                                                                                                            ,"set"
-                                                                                                            ,"is"
-                                                                                                            ,"gatProperty"
-                                                                                                            ,"gatDoc"});
-                
-                if ( !Help.isNull(v_Methods) )
-                {
-                    Method [] v_MethodArr = v_Methods.toArray(new Method[]{});
-                    
-                    Arrays.sort(v_MethodArr ,MethodComparator.getInstance());
-                    
-                    for (int i=0; i<v_MethodArr.length; i++)
-                    {
-                        Method v_Method = v_MethodArr[i];
-                        
-                        if ( StringHelp.isEquals(v_Method.getName() ,$ExcludeMethodNames) )
-                        {
-                            continue;
-                        }
-                        
-                        StringBuilder v_Buffer = new StringBuilder();
-                        
-                        v_Buffer.append(v_Method.getName()).append("(");
-                        
-                        Class<?> [] v_ParamTypes = v_Method.getParameterTypes();
-                        if ( !Help.isNull(v_ParamTypes) )
-                        {
-                            for (int pi=0; pi<v_ParamTypes.length; pi++)
-                            {
-                                if ( pi >= 1 )
-                                {
-                                    v_Buffer.append(",");
-                                }
-                                v_Buffer.append(v_ParamTypes[pi].getSimpleName());
-                            }
-                        }
-                        
-                        v_Buffer.append("):").append(v_Method.getReturnType().getSimpleName());
-                        
-                        parser(v_Buffer.toString() ,"" ,v_ChildJsonObj ,i_ParserObjects ,false);
-                        v_ChildCount++;
-                    }
-                }
-            }
-            
-            if ( v_ChildCount >= 1 )
-            {
-                if ( i_JsonSuperObj == null )
-                {
-                    // 只有一次执行到此的机会，即：根节点
-                    if ( Help.isNull(i_JSONName) )
-                    {
-                        i_JsonSuperObj = v_ChildJsonObj;
-                    }
-                    else
-                    {
-                        i_JsonSuperObj = new XJSONObject();
-                        i_JsonSuperObj.put(i_JSONName ,v_ChildJsonObj);
-                    }
-                }
-                else
-                {
-                    if ( this.isSerializable && i_MethodReturnIsObject )
-                    {
-                        i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() ,v_ChildJsonObj);
-                    }
-                    else
-                    {
-                        i_JsonSuperObj.put(i_JSONName ,v_ChildJsonObj);
-                    }
-                }
-            }
-            
-            v_Ret.paramInt(3);
-            return v_Ret.paramObj(i_JsonSuperObj);
+            v_JsonValueIsValid = !"".equals(v_JsonValue);
         }
-        
-        if ( i_JsonSuperObj != null )
+
+        // 允许返回空时，强制Json字符是有效的
+        if ( this.isReturnNVL )
         {
-            if ( this.isReturnNVL )
+            v_JsonValueIsValid = true;
+        }
+        
+        if ( v_JsonSuper != null && !Help.isNull(v_JSONName) )
+        {
+            if ( v_JsonValueIsValid )
             {
                 if ( this.isSerializable && i_MethodReturnIsObject )
                 {
-                    i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() ,v_JavaValue);
+                    if ( i_JavaData instanceof List || i_JavaData instanceof Set )
+                    {
+                        // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
+                        // 预规定：List、Set中的所有元素类型均是一样的类型，不存在五花八门的不同Java类型的情况
+                        v_JsonSuper.put(v_JSONName + $Serializable_SplitKey + v_JavaClass.getName() + $Serializable_SplitKey + ((Collection<?>)i_JavaData).iterator().next().getClass().getName() ,v_JsonValue);
+                    }
+                    else
+                    {
+                        v_JsonSuper.put(v_JSONName + $Serializable_SplitKey + v_JavaClass.getName() ,v_JsonValue);
+                    }
                 }
                 else
                 {
-                    i_JsonSuperObj.put(i_JSONName ,v_JavaValue);
-                }
-            }
-            else if ( v_JavaValue !=null && !"".equals(v_JavaValue) )
-            {
-                if ( this.isSerializable && i_MethodReturnIsObject )
-                {
-                    i_JsonSuperObj.put(i_JSONName + $Serializable_SplitKey + v_JavaClass.getName() ,v_JavaValue);
-                }
-                else
-                {
-                    i_JsonSuperObj.put(i_JSONName ,v_JavaValue);
+                    v_JsonSuper.put(v_JSONName ,v_JsonValue);
                 }
             }
         }
         
-        return v_Ret.paramObj(i_JsonSuperObj);
+        return v_Ret.paramObj(v_JsonSuper);
     }
     
     
@@ -1947,7 +1464,7 @@ public final class XJSON
      * @param i_Obj
      * @return
      */
-    private boolean isRecursion(Map<Object ,Integer> io_ParserObjects ,Object i_Obj)
+    protected boolean isRecursion(Map<Object ,Integer> io_ParserObjects ,Object i_Obj)
     {
         if ( this.recursionCount >= 1 )
         {
