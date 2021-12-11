@@ -760,16 +760,9 @@ public class XJSONToJson
             Object              v_Value   = v_Values.next();
             Return<XJSONObject> v_RetTemp = i_XJson.parser("" + (v_SetIndex++) ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects ,false);
             
-            if ( v_RetTemp.paramInt == 0 )
+            if ( v_RetTemp.paramObj != null && v_RetTemp.paramObj.size() >= 1 )
             {
-                v_JSONArray.add(v_Value);
-            }
-            else
-            {
-                if ( v_RetTemp.paramObj != null && v_RetTemp.paramObj.size() >= 1 )
-                {
-                    v_JSONArray.addAll(v_RetTemp.paramObj.values());
-                }
+                v_JSONArray.addAll(v_RetTemp.paramObj.values());
             }
         }
         
@@ -871,6 +864,72 @@ public class XJSONToJson
     
     
     /**
+     * int [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,int [] i_JavaData) throws Exception
+    {
+        JSONArray v_JSONArray = new JSONArray();
+            
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            Object              v_Value   = i_JavaData[i];
+            Return<XJSONObject> v_RetTemp = i_XJson.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects ,false);
+            
+            if ( v_RetTemp.paramObj != null && v_RetTemp.paramObj.size() >= 1 )
+            {
+                v_JSONArray.addAll(v_RetTemp.paramObj.values());
+            }
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * Integer [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Integer [] i_JavaData) throws Exception
+    {
+        JSONArray v_JSONArray = new JSONArray();
+            
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            Object              v_Value   = i_JavaData[i];
+            Return<XJSONObject> v_RetTemp = i_XJson.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects ,false);
+            
+            if ( v_RetTemp.paramObj != null && v_RetTemp.paramObj.size() >= 1 )
+            {
+                v_JSONArray.addAll(v_RetTemp.paramObj.values());
+            }
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
      * Object [] 转Json
      * 
      * @author      ZhengWei(HY)
@@ -914,16 +973,9 @@ public class XJSONToJson
                 Object              v_Value   = i_JavaData[i];
                 Return<XJSONObject> v_RetTemp = i_XJson.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects ,false);
                 
-                if ( v_RetTemp.paramInt == 0 )
+                if ( v_RetTemp.paramObj != null && v_RetTemp.paramObj.size() >= 1 )
                 {
-                    v_JSONArray.add(v_Value);
-                }
-                else
-                {
-                    if ( v_RetTemp.paramObj != null && v_RetTemp.paramObj.size() >= 1 )
-                    {
-                        v_JSONArray.addAll(v_RetTemp.paramObj.values());
-                    }
+                    v_JSONArray.addAll(v_RetTemp.paramObj.values());
                 }
             }
             
@@ -958,7 +1010,6 @@ public class XJSONToJson
         }
         
         XJSONObject v_ChildJsonObj = new XJSONObject();
-        int         v_ChildCount   = 0;  // 暂时保存，待 v_ChildJsonObj.size() 测试通过，将删除哈。 TODO
         
         if ( i_XJson.isAccuracy() )
         {
@@ -995,8 +1046,6 @@ public class XJSONToJson
                     {
                         throw new Exception(v_Name + ":" + e.getMessage());
                     }
-                    
-                    v_ChildCount++;
                 }
             }
         }
@@ -1065,8 +1114,6 @@ public class XJSONToJson
                         {
                             throw new Exception(v_Name + ":" + e.getMessage());
                         }
-                        
-                        v_ChildCount++;
                     }
                 }
             }
@@ -1116,7 +1163,6 @@ public class XJSONToJson
                     v_Buffer.append("):").append(v_Method.getReturnType().getSimpleName());
                     
                     i_XJson.parser(v_Buffer.toString() ,"" ,v_ChildJsonObj ,i_ParserObjects ,false);
-                    v_ChildCount++;
                 }
             }
         }

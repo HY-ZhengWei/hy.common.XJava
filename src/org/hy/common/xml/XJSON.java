@@ -1,5 +1,6 @@
 package org.hy.common.xml;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -713,7 +714,7 @@ public final class XJSON
                         
                         try
                         {
-                            v_ActualTypeClass = MethodReflect.getGenerics(v_Method);
+                            v_ActualTypeClass = v_Method.getParameterTypes()[0];
                             if ( v_ActualTypeClass == null )
                             {
                                 v_ActualTypeClass = v_PEClass;
@@ -724,11 +725,27 @@ public final class XJSON
                             v_ActualTypeClass = v_PEClass;
                         }
                         
-                        v_ParserObj = parser((JSONArray)v_Value ,v_ActualTypeClass);
+                        Object v_ArrDatas = null;
+                        try
+                        {
+                            v_ArrDatas = XJSONToJava.executeToJava(this ,(JSONArray)v_Value ,v_ActualTypeClass ,null);
+                        }
+                        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
+                        {
+                            $Logger.error(e);
+                        }
                         
                         try
                         {
-                            v_Method.invoke(v_NewObj ,new Object[] {((List<?>)v_ParserObj).toArray()});
+                            if ( v_ArrDatas == null )
+                            {
+                                v_ParserObj = parser((JSONArray)v_Value ,v_ActualTypeClass);
+                                v_Method.invoke(v_NewObj ,new Object[] {((List<?>)v_ParserObj).toArray()});
+                            }
+                            else
+                            {
+                                v_Method.invoke(v_NewObj ,new Object[] {v_ArrDatas});
+                            }
                         }
                         catch (Exception exce)
                         {
@@ -809,7 +826,7 @@ public final class XJSON
                     }
                     catch (Exception exce)
                     {
-                        throw new NullPointerException("Call " + i_ObjectClass.getName() + "." + v_Method.getName() + " is error." + exce.getMessage());
+                        throw new RuntimeException("Call " + i_ObjectClass.getName() + "." + v_Method.getName() + " is error." + exce.getMessage());
                     }
                 }
                 else
@@ -837,7 +854,7 @@ public final class XJSON
                     }
                     catch (Exception exce)
                     {
-                        throw new NullPointerException("Call " + i_ObjectClass.getName() + "." + v_Method.getName() + " is error." + exce.getMessage());
+                        throw new RuntimeException("Call " + i_ObjectClass.getName() + "." + v_Method.getName() + " is error." + exce.getMessage());
                     }
                 }
             }
@@ -890,7 +907,14 @@ public final class XJSON
             }
             else
             {
-                v_ParserObj = v_ElementObject.toString();
+                try
+                {
+                    v_ParserObj = XJSONToJava.executeToJava(this ,(String)v_ElementObject ,i_ElementClass ,null);
+                }
+                catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e)
+                {
+                    $Logger.error(e);
+                }
             }
             
             if ( v_ParserObj != null )

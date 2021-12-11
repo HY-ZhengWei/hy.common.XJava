@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,6 +16,8 @@ import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.StaticReflect;
 import org.hy.common.license.base64.Base64Factory;
+
+import net.minidev.json.JSONArray;
 
 
 
@@ -50,13 +53,13 @@ public class XJSONToJava
     /** 初始化Java元类型与toJava方法的映射关系 */
     static
     {
-        List<Method> v_ToJsonMethods = MethodReflect.getMethods(XJSONToJava.class ,"toJava" ,5);
+        List<Method> v_ToJsonMethods = MethodReflect.getStartMethods(XJSONToJava.class ,"toJava" ,4);
         
         if ( !Help.isNull(v_ToJsonMethods) )
         {
             for (Method v_Method : v_ToJsonMethods)
             {
-                Class<?> v_JavaValueClass = v_Method.getParameters()[4].getType();
+                Class<?> v_JavaValueClass = v_Method.getReturnType();  // 变相实现方法返回值的重载
                 $ToJavaMethods.put(v_JavaValueClass ,v_Method);
                 
                 if ( v_JavaValueClass == List.class )
@@ -144,8 +147,9 @@ public class XJSONToJava
      * @throws InvocationTargetException
      * @throws IllegalArgumentException
      * @throws IllegalAccessException
+     * @throws InstantiationException
      */
-    public static Object executeToJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    public static Object executeToJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException
     {
         Method v_ToJavaMethod = findToJava(i_JsonDataType);
         
@@ -154,7 +158,38 @@ public class XJSONToJava
             return null;
         }
         
-        return v_ToJavaMethod.invoke(null ,new Object[] {i_XJson ,i_JsonData ,i_JsonDataType ,i_JsonDataClass ,null});
+        return v_ToJavaMethod.invoke(null ,new Object[] {i_XJson ,i_JsonData ,i_JsonDataType ,i_JsonDataClass});
+    }
+    
+    
+    
+    /**
+     * 匹配并执行ToJava方法（专用于转换为数组）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param <T>
+     * @param i_XJson
+     * @param i_JsonDatas      待转的对象
+     * @param i_JsonDataType   转换成的类型。数组的元素类型
+     * @param i_JsonDataClass  Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return
+     * @throws InvocationTargetException
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException
+     */
+    public static Object executeToJava(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    {
+        Method v_ToJavaMethod = findToJava(i_JsonDataType);
+        
+        if ( v_ToJavaMethod == null || v_ToJavaMethod.getParameterTypes()[1] != JSONArray.class )
+        {
+            return null;
+        }
+        
+        return v_ToJavaMethod.invoke(null ,new Object[] {i_XJson ,i_JsonDatas ,i_JsonDataType.getComponentType() ,i_JsonDataClass});
     }
     
     
@@ -170,10 +205,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static String toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,String i_JsonDataTypeForJava)
+    public static String toJavaString(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         return i_JsonData;
     }
@@ -191,10 +225,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static boolean toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,boolean i_JsonDataTypeForJava)
+    public static boolean toJavaboolean(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         return Boolean.parseBoolean(i_JsonData);
     }
@@ -212,10 +245,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static Boolean toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Boolean i_JsonDataTypeForJava)
+    public static Boolean toJavaBoolean(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -230,7 +262,7 @@ public class XJSONToJava
     
     
     /**
-     * Json转Boolean
+     * Json转Enum
      * 
      * @author      ZhengWei(HY)
      * @createDate  2021-12-10
@@ -240,10 +272,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static Enum<?> toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Enum<?> i_JsonDataTypeForJava)
+    public static Enum<?> toJavaEnum(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -308,10 +339,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static byte toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,byte i_JsonDataTypeForJava)
+    public static byte toJavabyte(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         return Byte.parseByte(i_JsonData);
     }
@@ -329,10 +359,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static Byte toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Byte i_JsonDataTypeForJava)
+    public static Byte toJavaByte(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -357,10 +386,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static char toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,char i_JsonDataTypeForJava)
+    public static char toJavachar(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         return i_JsonData.charAt(0);
     }
@@ -378,10 +406,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static Character toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Character i_JsonDataTypeForJava)
+    public static Character toJavaCharacter(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -406,10 +433,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static short toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,short i_JsonDataTypeForJava)
+    public static short toJavashort(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         return Short.parseShort(i_JsonData);
     }
@@ -427,10 +453,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static Short toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Short i_JsonDataTypeForJava)
+    public static Short toJavaShort(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -455,10 +480,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static int toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,int i_JsonDataTypeForJava)
+    public static int toJavaint(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         return Integer.parseInt(i_JsonData);
     }
@@ -476,10 +500,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static Integer toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Integer i_JsonDataTypeForJava)
+    public static Integer toJavaInteger(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -504,10 +527,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static long toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,long i_JsonDataTypeForJava)
+    public static long toJavalong(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         return Long.parseLong(i_JsonData);
     }
@@ -525,10 +547,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static Long toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Long i_JsonDataTypeForJava)
+    public static Long toJavaLong(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -553,10 +574,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static double toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,double i_JsonDataTypeForJava)
+    public static double toJavadouble(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         return Double.parseDouble(i_JsonData);
     }
@@ -574,10 +594,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static Double toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Double i_JsonDataTypeForJava)
+    public static Double toJavaDouble(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -602,10 +621,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static float toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,float i_JsonDataTypeForJava)
+    public static float toJavafloat(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         return Float.parseFloat(i_JsonData);
     }
@@ -623,10 +641,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static Float toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Float i_JsonDataTypeForJava)
+    public static Float toJavaFloat(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -651,10 +668,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static BigDecimal toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,BigDecimal i_JsonDataTypeForJava)
+    public static BigDecimal toJavaBigDecimal(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -679,10 +695,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static Date toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Date i_JsonDataTypeForJava)
+    public static Date toJavaDate(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -707,10 +722,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static java.util.Date toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,java.util.Date i_JsonDataTypeForJava)
+    public static java.util.Date toJavajavautilDate(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -735,10 +749,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static java.sql.Date toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,java.sql.Date i_JsonDataTypeForJava)
+    public static java.sql.Date toJavajavasqlDate(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -763,10 +776,9 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      */
-    public static Timestamp toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Timestamp i_JsonDataTypeForJava)
+    public static Timestamp toJavaTimestamp(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -791,11 +803,10 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      * @throws ClassNotFoundException
      */
-    public static Class<?> toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Class<?> i_JsonDataTypeForJava) throws ClassNotFoundException
+    public static Class<?> toJavaClass(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass) throws ClassNotFoundException
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -820,11 +831,10 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      * @throws ClassNotFoundException
      */
-    public static byte [] toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,byte [] i_JsonDataTypeForJava) throws ClassNotFoundException
+    public static byte [] toJavabyteArray(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass) throws ClassNotFoundException
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -849,11 +859,10 @@ public class XJSONToJava
      * @param i_JsonData             待转的Json数据
      * @param i_JsonDataType         转换成的类型。一般为Java Setter方法的入参类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
      * @return
      * @throws ClassNotFoundException
      */
-    public static Byte [] toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Byte [] i_JsonDataTypeForJava) throws ClassNotFoundException
+    public static Byte [] toJavaByteArray(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass) throws ClassNotFoundException
     {
         if ( Help.isNull(i_JsonData) )
         {
@@ -862,6 +871,104 @@ public class XJSONToJava
         else
         {
             return ByteHelp.byteToByte(Base64Factory.getIntance().decode(i_JsonData));
+        }
+    }
+    
+    
+    
+    /**
+     * Json转int []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     * @throws InvocationTargetException
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws ClassNotFoundException
+     */
+    public static int [] toJavaintArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new int[0];
+        }
+        else
+        {
+            int []          v_RetArr   = new int[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                Object v_ElementJava = null;
+                
+                v_ElementJava = XJSONToJava.executeToJava(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+                
+                if ( v_ElementJava != null )
+                {
+                    v_RetArr[v_Index++] = (int)v_ElementJava;
+                }
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转int []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     * @throws InvocationTargetException
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws ClassNotFoundException
+     */
+    public static Integer [] toJavaIntegerArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new Integer[0];
+        }
+        else
+        {
+            Integer []      v_RetArr   = new Integer[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                Object v_ElementJava = null;
+                
+                v_ElementJava = XJSONToJava.executeToJava(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+                
+                if ( v_ElementJava != null )
+                {
+                    v_RetArr[v_Index++] = (int)v_ElementJava;
+                }
+            }
+            
+            return v_RetArr;
         }
     }
     
@@ -882,13 +989,10 @@ public class XJSONToJava
      *                               在Java对象转Json字符串时，对于getter方法的返回类型为java.lang.Object时，
      *                               是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
      *                               控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
-     * 
-     * @param i_JsonDataTypeForJava  实现执行时，此参数均传NULL，它存在的意义只为了方法重载（因为Java不支持回返值重载）
-     * 
      * @return
      * @throws Exception
      */
-    public static Object toJava(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass ,Object i_JsonDataTypeForJava) throws Exception
+    public static Object toJavaObject(XJSON i_XJson ,String i_JsonData ,Class<?> i_JsonDataType ,String i_JsonDataClass) throws Exception
     {
         Object v_VValue = null;
         
