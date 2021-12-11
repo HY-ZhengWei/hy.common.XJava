@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hy.common.ByteHelp;
 import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
@@ -62,6 +63,9 @@ public class XJSONToJson
     /** Map系列实现的映射关系的ToJson方法 */
     private static       Method                $ToJsonDefault_Map         = null;
     
+    /** Enum系列实现的映射关系的ToJson方法 */
+    private static       Method                $ToJsonDefault_Enum        = null;
+    
     /** 当找不到映射关系时，默认的ToJson方法。一般用于自定义Java Bean的情况 */
     private static       Method                $ToJsonDefault_Object      = null;
     
@@ -102,6 +106,10 @@ public class XJSONToJson
                 {
                     $ToJsonDefault_Map = v_Method;
                 }
+                else if ( v_JavaValueClass == Enum.class )
+                {
+                    $ToJsonDefault_Enum = v_Method;
+                }
             }
         }
     }
@@ -122,8 +130,8 @@ public class XJSONToJson
      * @createDate  2021-12-10
      * @version     v1.0
      * 
-     * @param i_JavaData
-     * @return
+     * @param i_JavaData  待转的对象
+     * @return            约定：不会返回NULL
      */
     public static <T> Method findToJson(T i_JavaData)
     {
@@ -133,7 +141,11 @@ public class XJSONToJson
         if ( v_Ret == null )
         {
             // 对常用接口，做适配性处理
-            if ( i_JavaData instanceof List )
+            if ( v_JavaDataClass.isArray() )
+            {
+                v_Ret = $ToJsonDefault_ArrayObject;
+            }
+            else if ( i_JavaData instanceof List )
             {
                 v_Ret = $ToJsonDefault_List;
             }
@@ -145,9 +157,9 @@ public class XJSONToJson
             {
                 v_Ret = $ToJsonDefault_Map;
             }
-            else if ( v_JavaDataClass.isArray() )
+            else if ( i_JavaData instanceof Enum )
             {
-                v_Ret = $ToJsonDefault_ArrayObject;
+                v_Ret = $ToJsonDefault_Enum;
             }
         }
         
@@ -661,6 +673,25 @@ public class XJSONToJson
     
     
     /**
+     * Class转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-09
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     */
+    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Class<?> i_JavaData)
+    {
+        return i_JavaData.getName();
+    }
+    
+    
+    
+    /**
      * List转Json
      * 
      * @author      ZhengWei(HY)
@@ -812,6 +843,29 @@ public class XJSONToJson
     public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,byte [] i_JavaData) throws Exception
     {
         return new String(Base64Factory.getIntance().encode(i_JavaData) ,CommunicationProtoEncoder.$Charset);
+    }
+    
+    
+    
+    /**
+     * Byte [] 转Json
+     * 
+     * 在大量传输byte[]数据时，如果按数组处理Json，生成的Json信息量太大了，所以按字符串传输
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-10
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return                 isSerializable = true 时，返回 XJSONObject
+     * @return                 isSerializable = false时，返回 JSONArray
+     * @throws Exception
+     */
+    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Byte [] i_JavaData) throws Exception
+    {
+        return new String(Base64Factory.getIntance().encode(ByteHelp.byteToByte(i_JavaData)) ,CommunicationProtoEncoder.$Charset);
     }
     
     

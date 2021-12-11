@@ -1,8 +1,6 @@
 package org.hy.common.xml;
 
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,11 +12,9 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.Return;
-import org.hy.common.StaticReflect;
 import org.hy.common.StringHelp;
 import org.hy.common.xml.log.Logger;
 
@@ -822,184 +818,9 @@ public final class XJSON
                     
                     try
                     {
-                        if ( String.class == v_ParamClass )
-                        {
-                            v_Method.invoke(v_NewObj ,v_Value.toString());
-                        }
-                        else if ( int.class == v_ParamClass )
-                        {
-                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,Integer.parseInt(v_Value.toString()));
-                            }
-                        }
-                        else if ( Integer.class == v_ParamClass )
-                        {
-                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,Integer.valueOf(v_Value.toString()));
-                            }
-                            else
-                            {
-                                Integer v_Null = null;
-                                v_Method.invoke(v_NewObj ,v_Null);
-                            }
-                        }
-                        else if ( long.class == v_ParamClass )
-                        {
-                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,Long.parseLong(v_Value.toString()));
-                            }
-                        }
-                        else if ( Long.class == v_ParamClass )
-                        {
-                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,Long.valueOf(v_Value.toString()));
-                            }
-                            else
-                            {
-                                Integer v_Null = null;
-                                v_Method.invoke(v_NewObj ,v_Null);
-                            }
-                        }
-                        else if ( double.class == v_ParamClass )
-                        {
-                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,Double.parseDouble(v_Value.toString()));
-                            }
-                        }
-                        else if ( Double.class == v_ParamClass )
-                        {
-                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,Double.valueOf(v_Value.toString()));
-                            }
-                            else
-                            {
-                                Double v_Null = null;
-                                v_Method.invoke(v_NewObj ,v_Null);
-                            }
-                        }
-                        else if ( BigDecimal.class == v_ParamClass )
-                        {
-                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,new BigDecimal(v_Value.toString()));
-                            }
-                            else
-                            {
-                                BigDecimal v_Null = null;
-                                v_Method.invoke(v_NewObj ,v_Null);
-                            }
-                        }
-                        else if ( float.class == v_ParamClass )
-                        {
-                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,Float.parseFloat(v_Value.toString()));
-                            }
-                        }
-                        else if ( Float.class == v_ParamClass )
-                        {
-                            if ( v_Value != null && !Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,Float.valueOf(v_Value.toString()));
-                            }
-                            else
-                            {
-                                Float v_Null = null;
-                                v_Method.invoke(v_NewObj ,v_Null);
-                            }
-                        }
-                        else if ( boolean.class == v_ParamClass )
-                        {
-                            if ( v_Value != null )
-                            {
-                                v_Method.invoke(v_NewObj ,Boolean.parseBoolean(v_Value.toString()));
-                            }
-                        }
-                        else if ( Boolean.class == v_ParamClass )
-                        {
-                            if ( v_Value != null )
-                            {
-                                v_Method.invoke(v_NewObj ,Boolean.valueOf(v_Value.toString()));
-                            }
-                        }
-                        else if ( short.class == v_ParamClass )
-                        {
-                            if ( v_Value != null )
-                            {
-                                v_Method.invoke(v_NewObj ,Short.parseShort(v_Value.toString()));
-                            }
-                        }
-                        else if ( Short.class == v_ParamClass )
-                        {
-                            if ( v_Value != null )
-                            {
-                                v_Method.invoke(v_NewObj ,Short.valueOf(v_Value.toString()));
-                            }
-                        }
-                        else if ( char.class == v_ParamClass || Character.class == v_ParamClass )
-                        {
-                            if ( v_Value != null )
-                            {
-                                v_Method.invoke(v_NewObj ,v_Value.toString().charAt(0));
-                            }
-                        }
-                        else if ( byte.class == v_ParamClass )
-                        {
-                            if ( v_Value != null )
-                            {
-                                v_Method.invoke(v_NewObj ,Byte.parseByte(v_Value.toString()));
-                            }
-                        }
-                        else if ( Byte.class == v_ParamClass )
-                        {
-                            if ( v_Value != null )
-                            {
-                                v_Method.invoke(v_NewObj ,Byte.valueOf(v_Value.toString()));
-                            }
-                        }
-                        else if ( Date.class == v_ParamClass )
-                        {
-                            if ( v_Value == null || Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,(Date)null);
-                            }
-                            else
-                            {
-                                v_Method.invoke(v_NewObj ,new Date(v_Value.toString()));
-                            }
-                        }
-                        else if ( java.util.Date.class == v_ParamClass )
-                        {
-                            if ( v_Value == null || Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,(java.util.Date)null);
-                            }
-                            else
-                            {
-                                v_Method.invoke(v_NewObj ,(new Date(v_Value.toString())).getDateObject());
-                            }
-                        }
-                        // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15
-                        else if ( Timestamp.class == v_ParamClass )
-                        {
-                            if ( v_Value == null || Help.isNull(v_Value.toString()) )
-                            {
-                                v_Method.invoke(v_NewObj ,(Timestamp)null);
-                            }
-                            else
-                            {
-                                v_Method.invoke(v_NewObj ,(new Date(v_Value.toString())).getSQLTimestamp());
-                            }
-                        }
-                        else if ( MethodReflect.isExtendImplement(v_ParamClass ,List.class)
-                               || MethodReflect.isExtendImplement(v_ParamClass ,Set.class)
-                               || MethodReflect.isExtendImplement(v_ParamClass ,Map.class) )
+                        if ( MethodReflect.isExtendImplement(v_ParamClass ,List.class)
+                          || MethodReflect.isExtendImplement(v_ParamClass ,Set.class)
+                          || MethodReflect.isExtendImplement(v_ParamClass ,Map.class) )
                         {
                             /**
                              * ZhengWei(HY) Add 2015-08-24
@@ -1008,92 +829,10 @@ public final class XJSON
                              * 对应正确的语法是：xx : []
                              */
                         }
-                        else if ( Class.class == v_ParamClass )
-                        {
-                            if ( !Help.isNull(v_Value) )
-                            {
-                                v_Method.invoke(v_NewObj ,Help.forName(v_Value.toString()));
-                            }
-                        }
-                        else if ( MethodReflect.isExtendImplement(v_ParamClass ,Enum.class) )
-                        {
-                            Enum<?> [] v_EnumValues = StaticReflect.getEnums((Class<? extends Enum<?>>) v_ParamClass);
-                            boolean    v_EnumOK     = false;
-                            String     v_ValueStr   = v_Value.toString();
-                            
-                            // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配
-                            for (Enum<?> v_Enum : v_EnumValues)
-                            {
-                                if ( v_ValueStr.equalsIgnoreCase(v_Enum.toString()) )
-                                {
-                                    v_Method.invoke(v_NewObj ,v_Enum);
-                                    v_EnumOK = true;
-                                    break;
-                                }
-                            }
-                            
-                            if ( !v_EnumOK )
-                            {
-                                // ZhengWei(HY) Add 2018-05-08  支持枚举名称的匹配
-                                for (Enum<?> v_Enum : v_EnumValues)
-                                {
-                                    if ( v_ValueStr.equalsIgnoreCase(v_Enum.name()) )
-                                    {
-                                        v_Method.invoke(v_NewObj ,v_Enum);
-                                        v_EnumOK = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            
-                            // 尝试用枚举值匹配
-                            if ( !v_EnumOK && Help.isNumber(v_ValueStr) )
-                            {
-                                int v_ParamValueInt = Integer.parseInt(v_ValueStr.trim());
-                                if ( 0 <= v_ParamValueInt && v_ParamValueInt < v_EnumValues.length )
-                                {
-                                    v_Method.invoke(v_NewObj ,v_EnumValues[v_ParamValueInt]);
-                                }
-                            }
-                        }
-                        else if ( v_ParamClass.isArray() )
-                        {
-                            // TODO 2015-08-24 待后期实现：对于数组，暂时还没有想好用什么好方法实现。
-                        }
-                        else if ( v_Value == null || Help.isNull(v_Value.toString()) )
-                        {
-                            // Nothing.
-                        }
-                        else if ( Object.class == v_ParamClass )
-                        {
-                            // 2021-09-30
-                            // 在Java对象转Json字符串时，对于getter方法的返回类型为java.lang.Object时，
-                            // 是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
-                            // 控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
-                            if ( !Help.isNull(v_ValueClass) )
-                            {
-                                Class<?> v_VClass = Help.forName(v_ValueClass);
-                                Object   v_VValue = null;
-                                
-                                if ( Help.isBasicDataType(v_VClass) )
-                                {
-                                    v_VValue = Help.toObject(v_VClass ,v_Value.toString());
-                                }
-                                else
-                                {
-                                    v_VValue = this.toJava(v_Value.toString() ,v_VClass);
-                                }
-                                
-                                v_Method.invoke(v_NewObj ,v_VValue);
-                            }
-                            else
-                            {
-                                v_Method.invoke(v_NewObj ,v_Value.toString());
-                            }
-                        }
                         else
                         {
-                            throw new NullPointerException("Unknown Java Class type.");
+                            Object v_JavaValue = XJSONToJava.executeToJava(this ,(String)v_Value ,v_ParamClass ,v_ValueClass);
+                            v_Method.invoke(v_NewObj ,v_JavaValue);
                         }
                     }
                     catch (Exception exce)
