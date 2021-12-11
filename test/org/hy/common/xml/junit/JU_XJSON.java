@@ -28,13 +28,19 @@ public class JU_XJSON
     
     private static final Logger $Logger = new Logger(JU_XJSON.class ,true);
     
-    private String  valueString;
+    private String     valueString;
     
-    private Date    valueDate;
+    private Date       valueDate;
     
-    private Object  valueObject;
+    private Object     valueObject;
     
-    private byte [] valueByteArr;
+    private byte    [] valueByteArr;
+    
+    private int     [] valueIntArr;
+    
+    private Integer [] valueIntegerArr;
+    
+    private String  [] valueStringArr;
     
     
     
@@ -86,6 +92,9 @@ public class JU_XJSON
         v_DataD.setValueDate(new Date("2021-10-08 10:00:00"));
         v_DataD.setValueObject("DataD：常规对象类型");
         v_DataD.setValueByteArr(v_DataD.getValueObject().toString().getBytes());
+        v_DataD.setValueIntArr(new int[]{1 ,2});
+        v_DataD.setValueIntegerArr(new Integer[]{1 ,2});
+        v_DataD.setValueStringArr(new String[] {"D" ,"Arr"});
         
         v_DataList.add(v_DataD);
         
@@ -93,11 +102,17 @@ public class JU_XJSON
         v_DataC.setValueDate(new Date("2021-10-08 09:00:00"));
         v_DataC.setValueObject(v_DataList);                    // 对象套娃
         v_DataC.setValueByteArr(v_DataC.getValueObject().toString().getBytes());
+        v_DataC.setValueIntArr(new int[]{3 ,4});
+        v_DataC.setValueIntegerArr(new Integer[]{3 ,4});
+        v_DataC.setValueStringArr(new String[] {"C" ,"Arr"});
         
         v_DataB.setValueString("DataB：子对象中的字符串");
         v_DataB.setValueDate(new Date("2021-10-07 08:30:00"));
         v_DataB.setValueObject("DataB：常规对象类型");
         v_DataB.setValueByteArr(v_DataB.getValueObject().toString().getBytes());
+        v_DataB.setValueIntArr(new int[]{5 ,6});
+        v_DataB.setValueIntegerArr(new Integer[]{5 ,6});
+        v_DataB.setValueStringArr(new String[] {"B" ,"Arr"});
         
         v_DataMap.put("b" ,v_DataB);
         v_DataMap.put("c" ,v_DataC);
@@ -106,8 +121,9 @@ public class JU_XJSON
         v_DataA.setValueDate(new Date());
         v_DataA.setValueObject(v_DataMap);                     // 对象套娃
         v_DataA.setValueByteArr(v_DataA.getValueObject().toString().getBytes());
-        
-        
+        v_DataA.setValueIntArr(new int[]{7 ,8});
+        v_DataA.setValueIntegerArr(new Integer[]{7 ,8});
+        v_DataA.setValueStringArr(new String[] {"A" ,"Arr"});
         
         XJSON    v_Json       = new XJSON();
         String   v_JsonString = "";
@@ -236,6 +252,42 @@ public class JU_XJSON
     public void setValueByteArr(byte [] valueByteArr)
     {
         this.valueByteArr = valueByteArr;
+    }
+
+    
+    public int [] getValueIntArr()
+    {
+        return valueIntArr;
+    }
+
+    
+    public void setValueIntArr(int [] valueIntArr)
+    {
+        this.valueIntArr = valueIntArr;
+    }
+
+
+    public Integer [] getValueIntegerArr()
+    {
+        return valueIntegerArr;
+    }
+
+    
+    public void setValueIntegerArr(Integer [] valueIntegerArr)
+    {
+        this.valueIntegerArr = valueIntegerArr;
+    }
+
+    
+    public String [] getValueStringArr()
+    {
+        return valueStringArr;
+    }
+
+    
+    public void setValueStringArr(String [] valueStringArr)
+    {
+        this.valueStringArr = valueStringArr;
     }
     
 }

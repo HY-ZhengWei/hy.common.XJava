@@ -667,7 +667,7 @@ public class XJSONToJson
      */
     public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Timestamp i_JavaData)
     {
-        return (new Date(i_JavaData)).getFull();
+        return (new Date(i_JavaData)).getFullMilli();
     }
     
     
@@ -833,7 +833,7 @@ public class XJSONToJson
      * @return                 isSerializable = false时，返回 JSONArray
      * @throws Exception
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,byte [] i_JavaData) throws Exception
+    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,byte [] i_JavaData)
     {
         return new String(Base64Factory.getIntance().encode(i_JavaData) ,CommunicationProtoEncoder.$Charset);
     }
@@ -856,9 +856,200 @@ public class XJSONToJson
      * @return                 isSerializable = false时，返回 JSONArray
      * @throws Exception
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Byte [] i_JavaData) throws Exception
+    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Byte [] i_JavaData)
     {
         return new String(Base64Factory.getIntance().encode(ByteHelp.byteToByte(i_JavaData)) ,CommunicationProtoEncoder.$Charset);
+    }
+    
+    
+    
+    /**
+     * String [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,String [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+        
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,Help.NVL(i_JavaData[i])));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * boolean [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,boolean [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+            
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,i_JavaData[i]));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * Boolean [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Boolean [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+        
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,Help.NVL(i_JavaData[i])));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * char [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,char [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+            
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,i_JavaData[i]));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * Character [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Character [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+        
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,Help.NVL(i_JavaData[i])));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * short [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,short [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+            
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,i_JavaData[i]));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * Short [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Short [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+        
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,Help.NVL(i_JavaData[i])));
+        }
+        
+        return v_JSONArray;
     }
     
     
@@ -874,21 +1065,14 @@ public class XJSONToJson
      * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
      * @param i_JavaData       待转的对象
      * @return
-     * @throws Exception
      */
-    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,int [] i_JavaData) throws Exception
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,int [] i_JavaData)
     {
         JSONArray v_JSONArray = new JSONArray();
             
         for (int i=0; i<i_JavaData.length; i++)
         {
-            Object              v_Value   = i_JavaData[i];
-            Return<XJSONObject> v_RetTemp = i_XJson.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects ,false);
-            
-            if ( v_RetTemp.paramObj != null && v_RetTemp.paramObj.size() >= 1 )
-            {
-                v_JSONArray.addAll(v_RetTemp.paramObj.values());
-            }
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,i_JavaData[i]));
         }
         
         return v_JSONArray;
@@ -907,21 +1091,230 @@ public class XJSONToJson
      * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
      * @param i_JavaData       待转的对象
      * @return
-     * @throws Exception
      */
-    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Integer [] i_JavaData) throws Exception
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Integer [] i_JavaData)
     {
         JSONArray v_JSONArray = new JSONArray();
             
         for (int i=0; i<i_JavaData.length; i++)
         {
-            Object              v_Value   = i_JavaData[i];
-            Return<XJSONObject> v_RetTemp = i_XJson.parser("" + i ,v_Value == null ? "" : v_Value ,new XJSONObject() ,i_ParserObjects ,false);
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,Help.NVL(i_JavaData[i])));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * long [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,long [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
             
-            if ( v_RetTemp.paramObj != null && v_RetTemp.paramObj.size() >= 1 )
-            {
-                v_JSONArray.addAll(v_RetTemp.paramObj.values());
-            }
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,i_JavaData[i]));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * Long [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Long [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+        
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,Help.NVL(i_JavaData[i])));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * double [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,double [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+            
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,i_JavaData[i]));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * Double [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Double [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+        
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,Help.NVL(i_JavaData[i])));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * float [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,float [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+            
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,i_JavaData[i]));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * Float [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Float [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+        
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,Help.NVL(i_JavaData[i])));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * BigDecimal [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,BigDecimal [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+        
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,Help.NVL(i_JavaData[i])));
+        }
+        
+        return v_JSONArray;
+    }
+    
+    
+    
+    /**
+     * Class [] 转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Class<?> [] i_JavaData)
+    {
+        JSONArray v_JSONArray = new JSONArray();
+        
+        for (int i=0; i<i_JavaData.length; i++)
+        {
+            v_JSONArray.add(XJSONToJson.toJson(i_XJson ,i_ParserObjects ,Help.NVL(i_JavaData[i])));
         }
         
         return v_JSONArray;

@@ -877,7 +877,7 @@ public class XJSONToJava
     
     
     /**
-     * Json转int []
+     * Json转String []
      * 
      * @author      ZhengWei(HY)
      * @createDate  2021-12-11
@@ -888,35 +888,245 @@ public class XJSONToJava
      * @param i_JsonDataType         转换成的类型。数组的元素类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
      * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
-     * @throws InvocationTargetException
-     * @throws IllegalArgumentException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws ClassNotFoundException
      */
-    public static int [] toJavaintArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException
+    public static String [] toJavaStringArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonDatas) )
         {
-            return new int[0];
+            return new String[0];
         }
         else
         {
-            int []          v_RetArr   = new int[i_JsonDatas.size()];
+            String []       v_RetArr   = new String[i_JsonDatas.size()];
             int             v_Index    = 0;
             ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
             
             while ( v_Iterator.hasNext() )
             {
                 Object v_ElementJson = v_Iterator.next();
-                Object v_ElementJava = null;
-                
-                v_ElementJava = XJSONToJava.executeToJava(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
-                
-                if ( v_ElementJava != null )
-                {
-                    v_RetArr[v_Index++] = (int)v_ElementJava;
-                }
+                v_RetArr[v_Index++] = XJSONToJava.toJavaString(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转boolean []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static boolean [] toJavabooleanArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new boolean[0];
+        }
+        else
+        {
+            boolean []      v_RetArr   = new boolean[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavaboolean(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转Boolean []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static Boolean [] toJavaBooleanArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new Boolean[0];
+        }
+        else
+        {
+            Boolean []      v_RetArr   = new Boolean[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavaBoolean(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转char []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static char [] toJavacharArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new char[0];
+        }
+        else
+        {
+            char []         v_RetArr   = new char[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavachar(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转Character []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static Character [] toJavaCharacterArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new Character[0];
+        }
+        else
+        {
+            Character []    v_RetArr   = new Character[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavaCharacter(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转short []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static short [] toJavashortArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new short[0];
+        }
+        else
+        {
+            short []        v_RetArr   = new short[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavashort(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转Short []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static Short [] toJavaShortArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new Short[0];
+        }
+        else
+        {
+            Short []        v_RetArr   = new Short[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavaShort(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
             }
             
             return v_RetArr;
@@ -937,13 +1147,45 @@ public class XJSONToJava
      * @param i_JsonDataType         转换成的类型。数组的元素类型
      * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
      * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
-     * @throws InvocationTargetException
-     * @throws IllegalArgumentException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws ClassNotFoundException
      */
-    public static Integer [] toJavaIntegerArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException
+    public static int [] toJavaintArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new int[0];
+        }
+        else
+        {
+            int []          v_RetArr   = new int[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavaint(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转int []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static Integer [] toJavaIntegerArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
     {
         if ( Help.isNull(i_JsonDatas) )
         {
@@ -958,14 +1200,304 @@ public class XJSONToJava
             while ( v_Iterator.hasNext() )
             {
                 Object v_ElementJson = v_Iterator.next();
-                Object v_ElementJava = null;
-                
-                v_ElementJava = XJSONToJava.executeToJava(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
-                
-                if ( v_ElementJava != null )
-                {
-                    v_RetArr[v_Index++] = (int)v_ElementJava;
-                }
+                v_RetArr[v_Index++] = XJSONToJava.toJavaInteger(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转long []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static long [] toJavalongArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new long[0];
+        }
+        else
+        {
+            long []         v_RetArr   = new long[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavalong(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转Long []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static Long [] toJavaLongArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new Long[0];
+        }
+        else
+        {
+            Long []         v_RetArr   = new Long[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavaLong(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转double []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static double [] toJavadoubleArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new double[0];
+        }
+        else
+        {
+            double []       v_RetArr   = new double[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavadouble(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转Double []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static Double [] toJavaDoubleArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new Double[0];
+        }
+        else
+        {
+            Double []       v_RetArr   = new Double[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavaDouble(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转float []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static float [] toJavafloatArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new float[0];
+        }
+        else
+        {
+            float []        v_RetArr   = new float[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavafloat(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转Float []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static Float [] toJavaFloatArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new Float[0];
+        }
+        else
+        {
+            Float []        v_RetArr   = new Float[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavaFloat(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转BigDecimal []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     */
+    public static BigDecimal [] toJavaBigDecimalArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass)
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new BigDecimal[0];
+        }
+        else
+        {
+            BigDecimal []   v_RetArr   = new BigDecimal[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavaBigDecimal(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
+            }
+            
+            return v_RetArr;
+        }
+    }
+    
+    
+    
+    /**
+     * Json转Class []
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_JsonData             待转的Json数据
+     * @param i_JsonDataType         转换成的类型。数组的元素类型
+     * @param i_JsonDataClass        Json字符串名称中定义的Java类型。如 xxx@java.lang.String
+     * @return                       转成数组时，不返回NULL，无值时，用 new T[0] 表示。
+     * @throws ClassNotFoundException
+     */
+    public static Class<?> [] toJavaClassArray(XJSON i_XJson ,JSONArray i_JsonDatas ,Class<?> i_JsonDataType ,String i_JsonDataClass) throws ClassNotFoundException
+    {
+        if ( Help.isNull(i_JsonDatas) )
+        {
+            return new Class[0];
+        }
+        else
+        {
+            Class<?> []        v_RetArr   = new Class[i_JsonDatas.size()];
+            int             v_Index    = 0;
+            ListIterator<?> v_Iterator = i_JsonDatas.listIterator();
+            
+            while ( v_Iterator.hasNext() )
+            {
+                Object v_ElementJson = v_Iterator.next();
+                v_RetArr[v_Index++] = XJSONToJava.toJavaClass(i_XJson ,(String)v_ElementJson ,i_JsonDataType ,null);
             }
             
             return v_RetArr;
