@@ -1,5 +1,6 @@
 package org.hy.common.xml.junit;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +10,7 @@ import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.net.data.Command;
 import org.hy.common.xml.XJSON;
+import org.hy.common.xml.XJSONToJava;
 import org.hy.common.xml.log.Logger;
 import org.junit.Test;
 
@@ -159,12 +161,34 @@ public class JU_XJSON
     @Test
     public void test_JsonToJava_20211209() throws Exception
     {
-        String v_JsonStr = "{\"XJavaCloudDatas\":{\"methodName\":\"cloneFileUpload\",\"params\":{\"0@java.lang.String\":\"$WebHome\",\"1@org.hy.common.file.FileDataPacket\":{\"dataCount\":\"1\",\"dataNo\":\"1\",\"name\":\"video.html\",\"size\":\"1376\"}}}}";
-        
         XJSON   v_XJson   = new XJSON();
-        Command v_Command = (Command) v_XJson.toJava(v_JsonStr ,"XJavaCloudDatas" ,Command.class);
+        String  v_JsonStr = "";
+        Command v_Command = null;
+        
+        v_JsonStr = "{\"XJavaCloudDatas\":{\"methodName\":\"zipFile\",\"params\":{\"0@java.lang.String\":\"$WebHome\",\"1@java.lang.String\":\"windows\",\"2@java.lang.String\":\"20211213153722613\"}}}";
+        v_Command = (Command) v_XJson.toJava(v_JsonStr ,"XJavaCloudDatas" ,Command.class);
+        
+        v_JsonStr = "{\"XJavaCloudDatas\":{\"methodName\":\"calcFileSize\",\"params\":{\"0@java.lang.String\":\"$WebHome\",\"1@java.lang.String\":\"windows\"}}}";
+        v_Command = (Command) v_XJson.toJava(v_JsonStr ,"XJavaCloudDatas" ,Command.class);
+
+        v_JsonStr = "{\"XJavaCloudDatas\":{\"methodName\":\"cloneFileUpload\",\"params\":{\"0@java.lang.String\":\"$WebHome\",\"1@org.hy.common.file.FileDataPacket\":{\"dataCount\":\"1\",\"dataNo\":\"1\",\"name\":\"video.html\",\"size\":\"1376\"}}}}";
+        v_Command = (Command) v_XJson.toJava(v_JsonStr ,"XJavaCloudDatas" ,Command.class);
         
         $Logger.info(v_Command);
+    }
+    
+    
+    
+    @Test
+    public void test_executeToJava() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException
+    {
+        Object   v_Value      = new Long(1);
+        Object   v_JavaValue  = null;
+        Class<?> v_ParamClass = Long.class;
+        
+        v_JavaValue = XJSONToJava.executeToJava(new XJSON() ,v_Value.toString() ,v_ParamClass ,null);
+        
+        $Logger.info(v_JavaValue);
     }
     
     

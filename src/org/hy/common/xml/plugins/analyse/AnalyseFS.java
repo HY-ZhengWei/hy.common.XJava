@@ -16,11 +16,12 @@ import org.hy.common.file.event.FileReadEvent;
 import org.hy.common.file.event.FileReadListener;
 import org.hy.common.license.FileFingerprint;
 import org.hy.common.license.Hash;
-import org.hy.common.net.ClientSocket;
 import org.hy.common.net.ClientSocketCluster;
-import org.hy.common.net.ServerSocket;
 import org.hy.common.net.common.ClientCluster;
 import org.hy.common.net.data.CommunicationResponse;
+import org.hy.common.net.data.LoginRequest;
+import org.hy.common.net.netty.rpc.ClientRPC;
+import org.hy.common.net.netty.rpc.ServerRPC;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.annotation.Xjava;
 import org.hy.common.xml.log.Logger;
@@ -53,6 +54,7 @@ import org.hy.common.xml.plugins.analyse.data.FileReport;
  *              v9.0  2019-12-18  添加：排除哪些文件或目录不显示、不对比、不计算大小等的排除功能
  *              v10.0 2020-06-22  添加：日志监控
  *              v11.0 2021-01-15  添加：通过文件指纹，高精度判定目录差异、文件差异（集群是否相同）的功能。
+ *              v12.0 2021-12-13  优化：使用新版本net 3.0.0。
  */
 @Xjava
 public class AnalyseFS extends Analyse
@@ -77,6 +79,13 @@ public class AnalyseFS extends Analyse
     
     /** 自动排除哪些目录？不显示、不对比、不计算大小等 */
     public static final String    $ExcludeFolders = "|__macosx|.svn|";
+    
+    
+    
+    private LoginRequest getLoginRequest()
+    {
+        return new LoginRequest("XJava" ,"").setSystemName("Analyses");
+    }
     
     
     
@@ -123,46 +132,64 @@ public class AnalyseFS extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"analysePath_Total" ,new Object[]{v_FPath} ,true ,"访问目录" + i_FPath);
-                
-                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+                try
                 {
-                    CommunicationResponse v_ResponseData = v_Item.getValue();
-                    
-                    if ( v_ResponseData.getResult() == 0 )
+                    // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                    ClientSocketCluster.startServer(v_Servers);
+                    ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"analysePath_Total" ,new Object[]{v_FPath} ,true ,"访问目录" + i_FPath);
+                }
+                catch (Exception exce)
+                {
+                    $Logger.error(exce);
+                }
+                finally
+                {
+                    ClientSocketCluster.shutdownServer(v_Servers);
+                }
+                
+                if ( v_ResponseDatas != null )
+                {
+                    for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                     {
-                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof Map )
+                        CommunicationResponse v_ResponseData = v_Item.getValue();
+                        
+                        if ( v_ResponseData.getResult() == 0 )
                         {
-                            Map<String ,FileReport> v_TempTotal = (Map<String ,FileReport>)v_ResponseData.getData();
-                            
-                            if ( !Help.isNull(v_TempTotal) )
+                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof Map )
                             {
-                                for (Map.Entry<String ,FileReport> v_FR : v_TempTotal.entrySet())
+                                Map<String ,FileReport> v_TempTotal = (Map<String ,FileReport>)v_ResponseData.getData();
+                                
+                                if ( !Help.isNull(v_TempTotal) )
                                 {
-                                    FileReport v_FReport = v_Total.get(v_FR.getKey());
-                                    FileReport v_FRTemp  = v_FR.getValue();
-                                    
-                                    if ( v_FReport != null )
+                                    for (Map.Entry<String ,FileReport> v_FR : v_TempTotal.entrySet())
                                     {
-                                        // 最后修改时间为：集群中的最后修改时间，才能保证多次刷新页面时，修改时间不会随机游走
-                                        if ( v_FRTemp.getLastTime().compareTo(v_FReport.getLastTime()) >= 1 )
-                                        {
-                                            v_FReport.setLastTime(v_FRTemp.getLastTime());
-                                        }
+                                        FileReport v_FReport = v_Total.get(v_FR.getKey());
+                                        FileReport v_FRTemp  = v_FR.getValue();
                                         
-                                        // 判定文件大小是否均相同
-                                        if ( v_FRTemp.getFileSize() != v_FReport.getFileSize() )
+                                        if ( v_FReport != null )
                                         {
-                                            v_FReport.setClusterSameSize(false);
+                                            // 最后修改时间为：集群中的最后修改时间，才能保证多次刷新页面时，修改时间不会随机游走
+                                            if ( v_FRTemp.getLastTime().compareTo(v_FReport.getLastTime()) >= 1 )
+                                            {
+                                                v_FReport.setLastTime(v_FRTemp.getLastTime());
+                                            }
+                                            
+                                            // 判定文件大小是否均相同
+                                            if ( v_FRTemp.getFileSize() != v_FReport.getFileSize() )
+                                            {
+                                                v_FReport.setClusterSameSize(false);
+                                            }
+                                            
+                                            v_FReport.getClusterHave().add(v_Item.getKey().getHost());
                                         }
-                                        
-                                        v_FReport.getClusterHave().add(v_Item.getKey().getHost());
-                                    }
-                                    else
-                                    {
-                                        v_FRTemp.getClusterHave().add(v_Item.getKey().getHost());
-                                        v_FRTemp.setClusterSameSize(true);
-                                        v_Total.put(v_FR.getKey() ,v_FRTemp);
+                                        else
+                                        {
+                                            v_FRTemp.getClusterHave().add(v_Item.getKey().getHost());
+                                            v_FRTemp.setClusterSameSize(true);
+                                            v_Total.put(v_FR.getKey() ,v_FRTemp);
+                                        }
                                     }
                                 }
                             }
@@ -426,12 +453,14 @@ public class AnalyseFS extends Analyse
     {
         $Logger.debug("对比文件内容：" + i_FPath + Help.getSysPathSeparator() + i_FName);
         
-        String   v_FPath         = toWebHome(i_FPath);
-        File     v_File          = new File(toTruePath(i_FPath) + Help.getSysPathSeparator() + i_FName);
-        FileHelp v_FileHelp      = new FileHelp();
-        String   v_HIP           = "";
-        String   v_TextContent01 = "";
-        String   v_TextContent02 = "";
+        String        v_FPath         = toWebHome(i_FPath);
+        File          v_File          = new File(toTruePath(i_FPath) + Help.getSysPathSeparator() + i_FName);
+        FileHelp      v_FileHelp      = new FileHelp();
+        String        v_HIP           = "";
+        String        v_TextContent01 = "";
+        String        v_TextContent02 = "";
+        ClientCluster v_CCluster      = null;
+        
         try
         {
             if ( v_File.exists() && v_File.isFile() )
@@ -447,7 +476,10 @@ public class AnalyseFS extends Analyse
                 
                 if ( !Help.isNull(v_Servers) )
                 {
-                    CommunicationResponse v_ResponseData = v_Servers.get(0).operation().sendCommand("AnalyseFS" ,"getFileContent" ,new Object[]{v_FPath ,i_FName});
+                    v_CCluster = v_Servers.get(0);
+                    v_CCluster.operation().startServer();
+                    v_CCluster.operation().login(getLoginRequest());
+                    CommunicationResponse v_ResponseData = v_CCluster.operation().sendCommand("AnalyseFS" ,"getFileContent" ,new Object[]{v_FPath ,i_FName});
                     
                     if ( v_ResponseData.getResult() == 0 )
                     {
@@ -468,6 +500,13 @@ public class AnalyseFS extends Analyse
         catch (Exception exce)
         {
             exce.printStackTrace();
+        }
+        finally
+        {
+            if ( v_CCluster != null )
+            {
+                v_CCluster.operation().shutdownServer();
+            }
         }
         
         return StringHelp.replaceAll(this.getTemplateDiff()
@@ -601,7 +640,7 @@ public class AnalyseFS extends Analyse
     {
         StringBuilder v_SelectLocalIP = new StringBuilder();
         String []     v_IPs           = Help.getIPs().split(" ");
-        ServerSocket  v_LocalServer   = (ServerSocket)XJava.getObject(ServerSocket.class);
+        ServerRPC     v_LocalServer   = (ServerRPC)XJava.getObject(ServerRPC.class);
         
         if ( v_LocalServer != null && !Help.isNull(v_IPs) )
         {
@@ -704,17 +743,36 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            CommunicationResponse v_ResponseData = v_Servers.get(0).operation().sendCommand("AnalyseFS" ,"cloneFile" ,new Object[]{toWebHome(i_FilePath) ,i_FileName ,i_LocalIP});
+            String        v_Ret      = StringHelp.replaceAll("{'retCode':'3'}" ,"'" ,"\"");
+            ClientCluster v_CCluster = v_Servers.get(0);
             
-            if ( v_ResponseData.getResult() == 0 )
+            try
             {
-                if ( v_ResponseData.getData() != null )
+                v_CCluster.operation().startServer();
+                v_CCluster.operation().login(getLoginRequest());
+                CommunicationResponse v_ResponseData = v_CCluster.operation().sendCommand("AnalyseFS" ,"cloneFile" ,new Object[]{toWebHome(i_FilePath) ,i_FileName ,i_LocalIP});
+                
+                if ( v_ResponseData.getResult() == 0 )
                 {
-                    return v_ResponseData.getData().toString();
+                    if ( v_ResponseData.getData() != null )
+                    {
+                        v_Ret = v_ResponseData.getData().toString();
+                    }
+                }
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(exce);
+            }
+            finally
+            {
+                if ( v_CCluster != null )
+                {
+                    v_CCluster.operation().shutdownServer();
                 }
             }
             
-            return StringHelp.replaceAll("{'retCode':'3'}" ,"'" ,"\"");
+            return v_Ret;
         }
         else
         {
@@ -965,7 +1023,22 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"executeCommand" ,new Object[]{i_FilePath ,i_FileName} ,true ,"执行命令文件" + i_FileName);
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+            try
+            {
+                // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                ClientSocketCluster.startServer(v_Servers);
+                ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"executeCommand" ,new Object[]{i_FilePath ,i_FileName} ,true ,"执行命令文件" + i_FileName);
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(exce);
+            }
+            finally
+            {
+                ClientSocketCluster.shutdownServer(v_Servers);
+            }
             
             for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
             {
@@ -1153,36 +1226,54 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"delFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,"删除文件" + i_FileName);
-            
-            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+            try
             {
-                CommunicationResponse v_ResponseData = v_Item.getValue();
-                
-                if ( v_ResponseData.getResult() == 0 )
+                // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                ClientSocketCluster.startServer(v_Servers);
+                ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"delFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,"删除文件" + i_FileName);
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(exce);
+            }
+            finally
+            {
+                ClientSocketCluster.shutdownServer(v_Servers);
+            }
+            
+            if ( v_ResponseDatas != null )
+            {
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
-                    if ( v_ResponseData.getData() != null )
+                    CommunicationResponse v_ResponseData = v_Item.getValue();
+                    
+                    if ( v_ResponseData.getResult() == 0 )
                     {
-                        String v_RetValue = v_ResponseData.getData().toString();
-                        v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
-                        
-                        if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                        if ( v_ResponseData.getData() != null )
                         {
-                            v_ExecRet++;
-                        }
-                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
-                        {
-                            v_FailIP.add(v_Item.getKey().getHost());
-                        }
-                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
-                        {
-                            v_ExecRet++;
+                            String v_RetValue = v_ResponseData.getData().toString();
+                            v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                            
+                            if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                            {
+                                v_ExecRet++;
+                            }
+                            else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
+                            {
+                                v_FailIP.add(v_Item.getKey().getHost());
+                            }
+                            else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
+                            {
+                                v_ExecRet++;
+                            }
                         }
                     }
-                }
-                else
-                {
-                    v_FailIP.add(v_Item.getKey().getHost());
+                    else
+                    {
+                        v_FailIP.add(v_Item.getKey().getHost());
+                    }
                 }
             }
         }
@@ -1289,44 +1380,62 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"zipFile" ,new Object[]{i_FilePath ,i_FileName ,Date.getNowTime().getFullMilli_ID()} ,true ,"压缩文件" + i_FileName);
-            
-            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+            try
             {
-                CommunicationResponse v_ResponseData = v_Item.getValue();
-                
-                if ( v_ResponseData.getResult() == 0 )
+                // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                ClientSocketCluster.startServer(v_Servers);
+                ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"zipFile" ,new Object[]{i_FilePath ,i_FileName ,Date.getNowTime().getFullMilli_ID()} ,true ,"压缩文件" + i_FileName);
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(exce);
+            }
+            finally
+            {
+                ClientSocketCluster.shutdownServer(v_Servers);
+            }
+            
+            if ( v_ResponseDatas != null )
+            {
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
-                    if ( v_ResponseData.getData() != null )
+                    CommunicationResponse v_ResponseData = v_Item.getValue();
+                    
+                    if ( v_ResponseData.getResult() == 0 )
                     {
-                        String v_RetValue = v_ResponseData.getData().toString();
-                        v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
-                        
-                        if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                        if ( v_ResponseData.getData() != null )
                         {
-                            v_ExecRet++;
-                        }
-                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
-                        {
-                            if ( v_HIP.length() >= 1 )
+                            String v_RetValue = v_ResponseData.getData().toString();
+                            v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                            
+                            if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
                             {
-                                v_HIP.append(",");
+                                v_ExecRet++;
                             }
-                            v_HIP.append(v_Item.getKey().getHost());
-                        }
-                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
-                        {
-                            v_ExecRet++;
+                            else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
+                            {
+                                if ( v_HIP.length() >= 1 )
+                                {
+                                    v_HIP.append(",");
+                                }
+                                v_HIP.append(v_Item.getKey().getHost());
+                            }
+                            else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
+                            {
+                                v_ExecRet++;
+                            }
                         }
                     }
-                }
-                else
-                {
-                    if ( v_HIP.length() >= 1 )
+                    else
                     {
-                        v_HIP.append(",");
+                        if ( v_HIP.length() >= 1 )
+                        {
+                            v_HIP.append(",");
+                        }
+                        v_HIP.append(v_Item.getKey().getHost());
                     }
-                    v_HIP.append(v_Item.getKey().getHost());
                 }
             }
         }
@@ -1411,37 +1520,55 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"unZipFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,"解压文件" + i_FileName);
-            
-            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+            try
             {
-                CommunicationResponse v_ResponseData = v_Item.getValue();
-                
-                if ( v_ResponseData.getResult() == 0 )
+                // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                ClientSocketCluster.startServer(v_Servers);
+                ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"unZipFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,"解压文件" + i_FileName);
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(exce);
+            }
+            finally
+            {
+                ClientSocketCluster.shutdownServer(v_Servers);
+            }
+            
+            if ( v_ResponseDatas != null )
+            {
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
-                    if ( v_ResponseData.getData() != null )
+                    CommunicationResponse v_ResponseData = v_Item.getValue();
+                    
+                    if ( v_ResponseData.getResult() == 0 )
                     {
-                        String v_RetValue = v_ResponseData.getData().toString();
-                        v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
-                        
-                        if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                        if ( v_ResponseData.getData() != null )
                         {
-                            v_ExecRet++;
-                        }
-                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
-                        {
-                            v_FailIP.add(v_Item.getKey().getHost());
-                        }
-                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
-                        {
-                            // 不存在需解压的压缩包时，也认为是成功的
-                            v_ExecRet++;
+                            String v_RetValue = v_ResponseData.getData().toString();
+                            v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                            
+                            if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                            {
+                                v_ExecRet++;
+                            }
+                            else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
+                            {
+                                v_FailIP.add(v_Item.getKey().getHost());
+                            }
+                            else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
+                            {
+                                // 不存在需解压的压缩包时，也认为是成功的
+                                v_ExecRet++;
+                            }
                         }
                     }
-                }
-                else
-                {
-                    v_FailIP.add(v_Item.getKey().getHost());
+                    else
+                    {
+                        v_FailIP.add(v_Item.getKey().getHost());
+                    }
                 }
             }
         }
@@ -1523,45 +1650,63 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"mkdir" ,new Object[]{i_FilePath ,i_FileName} ,true ,"创建目录" + i_FileName);
-            
-            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+            try
             {
-                CommunicationResponse v_ResponseData = v_Item.getValue();
-                
-                if ( v_ResponseData.getResult() == 0 )
+                // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                ClientSocketCluster.startServer(v_Servers);
+                ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"mkdir" ,new Object[]{i_FilePath ,i_FileName} ,true ,"创建目录" + i_FileName);
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(exce);
+            }
+            finally
+            {
+                ClientSocketCluster.shutdownServer(v_Servers);
+            }
+            
+            if ( v_ResponseDatas != null )
+            {
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
-                    if ( v_ResponseData.getData() != null )
+                    CommunicationResponse v_ResponseData = v_Item.getValue();
+                    
+                    if ( v_ResponseData.getResult() == 0 )
                     {
-                        String v_RetValue = v_ResponseData.getData().toString();
-                        v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
-                        
-                        if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                        if ( v_ResponseData.getData() != null )
                         {
-                            v_ExecRet++;
-                        }
-                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
-                        {
-                            if ( v_HIP.length() >= 1 )
+                            String v_RetValue = v_ResponseData.getData().toString();
+                            v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                            
+                            if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
                             {
-                                v_HIP.append(",");
+                                v_ExecRet++;
                             }
-                            v_HIP.append(v_Item.getKey().getHost());
-                        }
-                        else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
-                        {
-                            // 目录存在时，也认为是成功的
-                            v_ExecRet++;
+                            else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
+                            {
+                                if ( v_HIP.length() >= 1 )
+                                {
+                                    v_HIP.append(",");
+                                }
+                                v_HIP.append(v_Item.getKey().getHost());
+                            }
+                            else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
+                            {
+                                // 目录存在时，也认为是成功的
+                                v_ExecRet++;
+                            }
                         }
                     }
-                }
-                else
-                {
-                    if ( v_HIP.length() >= 1 )
+                    else
                     {
-                        v_HIP.append(",");
+                        if ( v_HIP.length() >= 1 )
+                        {
+                            v_HIP.append(",");
+                        }
+                        v_HIP.append(v_Item.getKey().getHost());
                     }
-                    v_HIP.append(v_Item.getKey().getHost());
                 }
             }
         }
@@ -1677,83 +1822,101 @@ public class AnalyseFS extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"calcFileSize" ,new Object[]{i_FilePath ,i_FileName} ,true ,"计算大小" + i_FileName);
-                
-                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+                try
                 {
-                    CommunicationResponse v_ResponseData = v_Item.getValue();
-                    
-                    if ( v_ResponseData.getResult() == 0 )
+                    // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                    ClientSocketCluster.startServer(v_Servers);
+                    ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"calcFileSize" ,new Object[]{i_FilePath ,i_FileName} ,true ,"计算大小" + i_FileName);
+                }
+                catch (Exception exce)
+                {
+                    $Logger.error(exce);
+                }
+                finally
+                {
+                    ClientSocketCluster.shutdownServer(v_Servers);
+                }
+                
+                if ( v_ResponseDatas != null )
+                {
+                    for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                     {
-                        if ( v_ResponseData.getData() != null )
+                        CommunicationResponse v_ResponseData = v_Item.getValue();
+                        
+                        if ( v_ResponseData.getResult() == 0 )
                         {
-                            String v_RetValue = v_ResponseData.getData().toString();
-                            v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
-                            
-                            if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                            if ( v_ResponseData.getData() != null )
                             {
-                                v_ExecRet++;
-                                String v_FileSize   = StringHelp.getString(v_RetValue ,"'fileSize':'"     ,"'");
-                                String v_ByteSize   = StringHelp.getString(v_RetValue ,"'fileByteSize':'" ,"'");
-                                String v_FingerCode = StringHelp.getString(v_RetValue ,"'fingerCode':'"   ,"'");
-                                String v_LastTime   = StringHelp.getString(v_RetValue ,"'lastTime':'"     ,"'");
+                                String v_RetValue = v_ResponseData.getData().toString();
+                                v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
                                 
-                                // 通过文件指纹，高精度判定目录差异、文件差异
-                                if ( !Help.isNull(v_FingerCode) )
+                                if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
                                 {
-                                    if ( v_Finger == null )
+                                    v_ExecRet++;
+                                    String v_FileSize   = StringHelp.getString(v_RetValue ,"'fileSize':'"     ,"'");
+                                    String v_ByteSize   = StringHelp.getString(v_RetValue ,"'fileByteSize':'" ,"'");
+                                    String v_FingerCode = StringHelp.getString(v_RetValue ,"'fingerCode':'"   ,"'");
+                                    String v_LastTime   = StringHelp.getString(v_RetValue ,"'lastTime':'"     ,"'");
+                                    
+                                    // 通过文件指纹，高精度判定目录差异、文件差异
+                                    if ( !Help.isNull(v_FingerCode) )
                                     {
-                                        v_Finger = v_FingerCode;
+                                        if ( v_Finger == null )
+                                        {
+                                            v_Finger = v_FingerCode;
+                                        }
+                                        else if ( !v_Finger.equals(v_FingerCode) )
+                                        {
+                                            v_IsSame = false;
+                                        }
                                     }
-                                    else if ( !v_Finger.equals(v_FingerCode) )
+                                    else if ( !Help.isNull(v_ByteSize) )
                                     {
-                                        v_IsSame = false;
+                                        if ( v_FBSize == null )
+                                        {
+                                            v_FBSize = v_ByteSize;
+                                        }
+                                        else if ( !v_FBSize.equals(v_ByteSize) )
+                                        {
+                                            v_IsSame = false;
+                                        }
                                     }
+                                    else
+                                    {
+                                        if ( v_FSize == null )
+                                        {
+                                            v_FSize = v_FileSize;
+                                        }
+                                        else if ( !v_FSize.equals(v_FileSize) )
+                                        {
+                                            v_IsSame = false;
+                                        }
+                                    }
+                                    
+                                    if ( !Help.isNull(v_ByteSize) )
+                                    {
+                                        v_ByteSize = StringHelp.getComputeUnit(Long.parseLong(v_ByteSize) ,4);
+                                    }
+                                    v_Sizes.put(v_Item.getKey().getHost() ,Help.NVL(v_ByteSize ,v_FileSize) + "," + v_LastTime + "," + v_FingerCode);
                                 }
-                                else if ( !Help.isNull(v_ByteSize) )
+                                else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
                                 {
-                                    if ( v_FBSize == null )
-                                    {
-                                        v_FBSize = v_ByteSize;
-                                    }
-                                    else if ( !v_FBSize.equals(v_ByteSize) )
-                                    {
-                                        v_IsSame = false;
-                                    }
+                                    v_Error++;
+                                    v_Sizes.put(v_Item.getKey().getHost() ,"异常,");
                                 }
-                                else
+                                else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
                                 {
-                                    if ( v_FSize == null )
-                                    {
-                                        v_FSize = v_FileSize;
-                                    }
-                                    else if ( !v_FSize.equals(v_FileSize) )
-                                    {
-                                        v_IsSame = false;
-                                    }
+                                    v_Sizes.put(v_Item.getKey().getHost() ,"不存在,");
                                 }
-                                
-                                if ( !Help.isNull(v_ByteSize) )
-                                {
-                                    v_ByteSize = StringHelp.getComputeUnit(Long.parseLong(v_ByteSize) ,4);
-                                }
-                                v_Sizes.put(v_Item.getKey().getHost() ,Help.NVL(v_ByteSize ,v_FileSize) + "," + v_LastTime + "," + v_FingerCode);
-                            }
-                            else if ( StringHelp.isContains(v_RetValue ,"'retCode':'1'") )
-                            {
-                                v_Error++;
-                                v_Sizes.put(v_Item.getKey().getHost() ,"异常,");
-                            }
-                            else if ( StringHelp.isContains(v_RetValue ,"'retCode':'2'") )
-                            {
-                                v_Sizes.put(v_Item.getKey().getHost() ,"不存在,");
                             }
                         }
-                    }
-                    else
-                    {
-                        v_Error++;
-                        v_Sizes.put(v_Item.getKey().getHost() ,"异常,");
+                        else
+                        {
+                            v_Error++;
+                            v_Sizes.put(v_Item.getKey().getHost() ,"异常,");
+                        }
                     }
                 }
             }
@@ -1898,30 +2061,48 @@ public class AnalyseFS extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"getSystemTime" ,new Object[]{} ,true ,"系统时间");
-            
-            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+            try
             {
-                CommunicationResponse v_ResponseData = v_Item.getValue();
-                
-                if ( v_ResponseData.getResult() == 0 )
+                // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                ClientSocketCluster.startServer(v_Servers);
+                ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"getSystemTime" ,new Object[]{} ,true ,"系统时间");
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(exce);
+            }
+            finally
+            {
+                ClientSocketCluster.shutdownServer(v_Servers);
+            }
+            
+            if ( v_ResponseDatas != null )
+            {
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
-                    if ( v_ResponseData.getData() != null )
-                    {
-                        String v_RetValue = v_ResponseData.getData().toString();
-                        v_Times.put(v_Item.getKey().getHost() ,v_RetValue);
-                        v_ExecRet++;
-                    }
-                }
-                else
-                {
-                    v_Times.put(v_Item.getKey().getHost() ,"异常");
+                    CommunicationResponse v_ResponseData = v_Item.getValue();
                     
-                    if ( v_HIP.length() >= 1 )
+                    if ( v_ResponseData.getResult() == 0 )
                     {
-                        v_HIP.append(",");
+                        if ( v_ResponseData.getData() != null )
+                        {
+                            String v_RetValue = v_ResponseData.getData().toString();
+                            v_Times.put(v_Item.getKey().getHost() ,v_RetValue);
+                            v_ExecRet++;
+                        }
                     }
-                    v_HIP.append(v_Item.getKey().getHost());
+                    else
+                    {
+                        v_Times.put(v_Item.getKey().getHost() ,"异常");
+                        
+                        if ( v_HIP.length() >= 1 )
+                        {
+                            v_HIP.append(",");
+                        }
+                        v_HIP.append(v_Item.getKey().getHost());
+                    }
                 }
             }
         }
@@ -2009,33 +2190,51 @@ public class AnalyseFS extends Analyse
                 
                 if ( !Help.isNull(v_Servers) )
                 {
-                    Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"reload" ,new Object[]{i_XFile ,false} ,true ,"重新加载配置" + i_XFile);
-                    StringBuilder                            v_ErrorInfo     = new StringBuilder();
-                    
-                    for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                    Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+                    try
                     {
-                        CommunicationResponse v_ResponseData = v_Item.getValue();
-                        
-                        if ( v_ResponseData.getResult() == 0 )
+                        // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                        ClientSocketCluster.startServer(v_Servers);
+                        ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                        v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"reload" ,new Object[]{i_XFile ,false} ,true ,"重新加载配置" + i_XFile);
+                    }
+                    catch (Exception exce)
+                    {
+                        $Logger.error(exce);
+                    }
+                    finally
+                    {
+                        ClientSocketCluster.shutdownServer(v_Servers);
+                    }
+                    
+                    StringBuilder v_ErrorInfo = new StringBuilder();
+                    if ( v_ResponseDatas != null )
+                    {
+                        for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                         {
-                            if ( v_ResponseData.getData() != null )
+                            CommunicationResponse v_ResponseData = v_Item.getValue();
+                            
+                            if ( v_ResponseData.getResult() == 0 )
                             {
-                                String v_RetValue = v_ResponseData.getData().toString();
-                                v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
-                                
-                                if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                                if ( v_ResponseData.getData() != null )
                                 {
-                                    v_ExecRet++;
-                                }
-                                else
-                                {
-                                    v_ErrorInfo.append(",").append(v_Item.getKey().getHost());
+                                    String v_RetValue = v_ResponseData.getData().toString();
+                                    v_RetValue = StringHelp.replaceAll(v_RetValue ,"\"" ,"'");
+                                    
+                                    if ( StringHelp.isContains(v_RetValue ,"'retCode':'0'") )
+                                    {
+                                        v_ExecRet++;
+                                    }
+                                    else
+                                    {
+                                        v_ErrorInfo.append(",").append(v_Item.getKey().getHost());
+                                    }
                                 }
                             }
-                        }
-                        else
-                        {
-                            v_ErrorInfo.append(",").append(v_Item.getKey().getHost());
+                            else
+                            {
+                                v_ErrorInfo.append(",").append(v_Item.getKey().getHost());
+                            }
                         }
                     }
                     
@@ -2179,7 +2378,7 @@ public class AnalyseFS extends Analyse
                 String [] v_IPPort = i_HIP.split(":");
                 if ( v_IPPort.length == 2 && Help.isNumber(v_IPPort[1]) )
                 {
-                    ClientSocket v_NewServer = new ClientSocket(v_IPPort[0].substring(1) ,Integer.parseInt(v_IPPort[1]));
+                    ClientRPC v_NewServer = new ClientRPC().setHost(v_IPPort[0].substring(1)).setPort(Integer.parseInt(v_IPPort[1]));
                     
                     io_Servers.add(v_NewServer);
                 }
@@ -2253,6 +2452,10 @@ public class AnalyseFS extends Analyse
             
             this.servers = Cluster.getClusters();
             removeHIP(this.servers ,i_HIP ,true);
+            
+            // 数据通讯前，先连接，再登录。但不获取结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+            ClientSocketCluster.startServer(this.servers);
+            ClientSocketCluster.login(this.servers ,getLoginRequest());
         }
         
         
@@ -2331,7 +2534,6 @@ public class AnalyseFS extends Analyse
             try
             {
                 Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(this.servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"cloneFileUpload" ,new Object[]{this.savePath ,this.dataPacket});
-                
                 for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
                     v_HostName = v_Item.getKey().getHost();
@@ -2341,7 +2543,7 @@ public class AnalyseFS extends Analyse
                     {
                         if ( v_ResponseData.getData() != null )
                         {
-                            int v_UploadValue = (Integer)v_ResponseData.getData();
+                            int v_UploadValue = Integer.parseInt(v_ResponseData.getData().toString());
                             
                             if ( v_UploadValue == FileHelp.$Upload_Finish )
                             {
@@ -2390,6 +2592,8 @@ public class AnalyseFS extends Analyse
             {
                 readProcess(i_Event);
             }
+            
+            ClientSocketCluster.shutdownServer(this.servers);
         }
         
     }

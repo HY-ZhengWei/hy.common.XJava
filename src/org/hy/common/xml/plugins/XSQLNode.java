@@ -11,7 +11,7 @@ import org.hy.common.StringHelp;
 import org.hy.common.XJavaID;
 import org.hy.common.db.DBCondition;
 import org.hy.common.db.DBSQL;
-import org.hy.common.net.ClientSocket;
+import org.hy.common.net.netty.rpc.ClientRPC;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
 import org.hy.common.xml.log.Logger;
@@ -1134,7 +1134,7 @@ public class XSQLNode implements XJavaID
         {
             String [] v_HostPort = (v_Server.trim() + ":1721").split(":");
             
-            this.cloudServersList.add(new XSQLNodeCloud(new ClientSocket(v_HostPort[0] ,Integer.parseInt(v_HostPort[1]))));
+            this.cloudServersList.add(new XSQLNodeCloud(new ClientRPC().setHost(v_HostPort[0]).setPort(Integer.parseInt(v_HostPort[1]))));
         }
     }
     

@@ -8,8 +8,9 @@ import org.hy.common.Execute;
 import org.hy.common.ExecuteEvent;
 import org.hy.common.ExecuteListener;
 import org.hy.common.Help;
-import org.hy.common.net.ClientSocket;
 import org.hy.common.net.data.CommunicationResponse;
+import org.hy.common.net.data.LoginRequest;
+import org.hy.common.net.netty.rpc.ClientRPC;
 
 
 
@@ -28,7 +29,7 @@ public class XSQLNodeCloud
 {
     
     /** 云服务器 */
-    private ClientSocket client;
+    private ClientRPC    client;
     
     /** 是否空闲 */
     private boolean      isIdle;
@@ -44,12 +45,12 @@ public class XSQLNodeCloud
     
     public XSQLNodeCloud(String i_HostName ,int i_Port)
     {
-        this(new ClientSocket(i_HostName ,i_Port));
+        this(new ClientRPC().setHost(i_HostName).setPort(i_Port));
     }
     
     
     
-    public XSQLNodeCloud(ClientSocket i_Client)
+    public XSQLNodeCloud(ClientRPC i_Client)
     {
         this.client = i_Client;
         this.isIdle = true;
@@ -60,7 +61,7 @@ public class XSQLNodeCloud
     /**
      * 获取：云服务器
      */
-    public ClientSocket getClient()
+    public ClientRPC getClient()
     {
         return client;
     }
@@ -80,7 +81,7 @@ public class XSQLNodeCloud
     /**
      * 设置：是否空闲
      * 
-     * @param isIdle 
+     * @param isIdle
      */
     public synchronized void setIdle(boolean isIdle)
     {
@@ -107,7 +108,7 @@ public class XSQLNodeCloud
         i_XSQLNode.cloudBusy();
         this.isIdle = false;
         
-        System.out.println("\n" + Date.getNowTime().getFullMilli() + "  Cloud computing " + this.client.getHostName() + ":" + this.client.getPort() + " Starting ...");
+        System.out.println("\n" + Date.getNowTime().getFullMilli() + "  Cloud computing " + this.client.getHost() + ":" + this.client.getPort() + " Starting ...");
         Help.print(io_Params);
         System.out.println();
         
@@ -115,7 +116,17 @@ public class XSQLNodeCloud
         // 这与上次 "2018-07-26 优化：及时释放资源，自动的GC太慢了" 有关。
         Map<String ,Object> v_Params = new HashMap<String ,Object>(io_Params);
         
-        Execute v_Execute = new Execute(client ,"sendCommand" ,new Object[]{i_XSQLNode.getXid().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{v_Params}});
+        if ( !this.client.isStart() )
+        {
+            this.client.start(this.client.newBootstrap());
+        }
+        
+        if ( !this.client.operation().isLogin() )
+        {
+            this.client.operation().login(new LoginRequest("XSQL" ,"").setSystemName("XSQLCloud"));
+        }
+        
+        Execute v_Execute = new Execute(this.client.operation() ,"sendCommand" ,new Object[]{i_XSQLNode.getXid().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{v_Params}});
         v_Execute.addListener(new XSQLNodeCloudExecuteListener(i_XSQLNode ,this ,i_Control ,v_Params ,io_Returns ,i_ExecuteCount));
         v_Execute.start();
     }
@@ -171,19 +182,20 @@ public class XSQLNodeCloud
          *
          * @param i_Event
          */
+        @Override
         public void result(ExecuteEvent i_Event)
         {
-            if (  i_Event != null 
+            if (  i_Event != null
               && !i_Event.isError()
               &&  i_Event.getResult() != null
               &&  ((CommunicationResponse)i_Event.getResult()).getResult() == 0 )
             {
-                System.out.println("\n" 
-                                 + Date.getNowTime().getFullMilli() 
-                                 + "  Cloud computing " 
-                                 + this.cloud.getClient().getHostName() 
+                System.out.println("\n"
+                                 + Date.getNowTime().getFullMilli()
+                                 + "  Cloud computing "
+                                 + this.cloud.getClient().getHost()
                                  + ":"
-                                 + this.cloud.getClient().getPort() 
+                                 + this.cloud.getClient().getPort()
                                  + " Finish.");
                 
                 this.cloud.isIdle = true;

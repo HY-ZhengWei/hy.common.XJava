@@ -16,6 +16,8 @@ public class DataInfo
     
     /** 字节数组 */
     private byte [] bytes;
+    
+    private DataChild child;
 
     
     
@@ -31,11 +33,23 @@ public class DataInfo
     /**
      * 设置：字节数组
      * 
-     * @param bytes 
+     * @param bytes
      */
     public void setBytes(byte [] bytes)
     {
         this.bytes = bytes;
+    }
+
+    
+    public DataChild getChild()
+    {
+        return child;
+    }
+
+    
+    public void setChild(DataChild child)
+    {
+        this.child = child;
     }
     
 }

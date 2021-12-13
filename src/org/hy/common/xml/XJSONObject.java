@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.hy.common.Help;
+
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONAwareEx;
@@ -22,7 +24,8 @@ import net.minidev.json.JSONValue;
  * 
  * @author      ZhengWei(HY)
  * @createDate  2014-11-30
- * @version     v1.0  
+ * @version     v1.0
+ *              v2.0  2021-12-13  添加：从JSONObject转本类时，自动排序后初始的功能
  * 
  * @see net.minidev.json.JSONObject;
  */
@@ -152,7 +155,7 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
      */
     public XJSONObject(Map<String ,?> map)
     {
-        super(map);
+        super(Help.toSort(map));
     }
 
 
@@ -215,6 +218,7 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
     /**
      * serialize Object as json to an stream
      */
+    @Override
     public void writeJSONString(Appendable out) throws IOException
     {
         writeJSON(this ,out ,JSONValue.COMPRESSION);
@@ -225,6 +229,7 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
     /**
      * serialize Object as json to an stream
      */
+    @Override
     public void writeJSONString(Appendable out ,JSONStyle compression) throws IOException
     {
         writeJSON(this ,out ,compression);
@@ -315,6 +320,7 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
 
 
 
+    @Override
     public String toJSONString()
     {
         return toJSONString(this ,JSONValue.COMPRESSION);
@@ -322,6 +328,7 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
 
 
 
+    @Override
     public String toJSONString(JSONStyle compression)
     {
         return toJSONString(this ,compression);
@@ -336,6 +343,7 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
 
 
 
+    @Override
     public String toString()
     {
         return toJSONString(this ,JSONValue.COMPRESSION);

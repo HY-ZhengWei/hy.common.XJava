@@ -5,6 +5,7 @@ import java.util.List;
 import org.hy.common.app.Param;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
+import org.hy.common.xml.junit.xsql.bean.DataInfo;
 import org.hy.common.xml.plugins.AppInitConfig;
 import org.junit.Test;
 
@@ -45,14 +46,14 @@ public class JU_XSQL extends AppInitConfig
      * @author      ZhengWei(HY)
      * @createDate  2020-10-27
      * @version     v1.0
-     * @throws InterruptedException 
+     * @throws InterruptedException
      */
     @Test
-    public void querySQLServerVarbinary() throws InterruptedException 
+    public void querySQLServerVarbinary() throws InterruptedException
     {
         XSQL v_XSQL = XJava.getXSQL("XSQL_Junit_Query_SQLServer_Varbinary");
         
-        v_XSQL.query();
+        v_XSQL.query(new DataInfo());
         
         Thread.sleep(60 * 1000);
     }

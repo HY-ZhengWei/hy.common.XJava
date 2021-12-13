@@ -1532,14 +1532,16 @@ public class XJSONToJava
         {
             Class<?> v_VClass = Help.forName(i_JsonDataClass.toString());
             
-            if ( Help.isBasicDataType(v_VClass) )
+            Method v_ToJavaMethod = findToJava(v_VClass);
+            
+            // 防止递归
+            if ( v_ToJavaMethod == null || v_ToJavaMethod.getReturnType() == Object.class )
             {
-                v_VValue = Help.toObject(v_VClass ,i_JsonData);
+                return i_JsonData;
             }
-            else
-            {
-                v_VValue = i_XJson.toJava(i_JsonData ,v_VClass);
-            }
+            
+            return v_ToJavaMethod.invoke(null ,new Object[] {i_XJson ,i_JsonData ,v_VClass ,i_JsonDataClass});
+            
         }
         else
         {

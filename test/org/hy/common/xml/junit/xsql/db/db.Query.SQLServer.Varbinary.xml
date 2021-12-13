@@ -19,6 +19,7 @@
                 SELECT  LOGO AS bytes
                   FROM  BRP_SYS_ORG
                  WHERE  modelID = 'EC08D37E-A088-4AC4-B405-F5DCF69ACF62'
+                <[ AND  modelID = ':child.id'  ]>
                 ]]>
             </content>
             

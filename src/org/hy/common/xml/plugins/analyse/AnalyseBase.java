@@ -23,6 +23,7 @@ import org.hy.common.db.DataSourceGroup;
 import org.hy.common.net.ClientSocketCluster;
 import org.hy.common.net.common.ClientCluster;
 import org.hy.common.net.data.CommunicationResponse;
+import org.hy.common.net.data.LoginRequest;
 import org.hy.common.thread.Job;
 import org.hy.common.thread.JobDisasterRecoveryReport;
 import org.hy.common.thread.JobReport;
@@ -109,6 +110,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *                                      XSQL组监控的定时刷新
  *              v22.3 2021-01-15  修正：执行Java方法时，防止方法不存的异常。
  *                                修正：执行Java方法时，防止Json格式的字符无法正常显示的问题
+ *              v23.0 2021-12-13  优化：使用新版本net 3.0.0。
  * 
  */
 @Xjava
@@ -128,6 +130,13 @@ public class AnalyseBase extends Analyse
         {
             $ServerStartTime = new Date();
         }
+    }
+    
+    
+    
+    private LoginRequest getLoginRequest()
+    {
+        return new LoginRequest("XJava" ,"").setSystemName("Analyses");
     }
     
     
@@ -676,23 +685,41 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBGroup_Total" ,true ,"XSQL组分析");
-                
-                for (Map.Entry<? extends ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+                try
                 {
-                    CommunicationResponse v_ResponseData = v_Item.getValue();
-                    
-                    if ( v_ResponseData.getResult() == 0 )
+                    // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                    ClientSocketCluster.startServer(v_Servers);
+                    ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBGroup_Total" ,true ,"XSQL组分析");
+                }
+                catch (Exception exce)
+                {
+                    $Logger.error(exce);
+                }
+                finally
+                {
+                    ClientSocketCluster.shutdownServer(v_Servers);
+                }
+                
+                if ( v_ResponseDatas != null )
+                {
+                    for (Map.Entry<? extends ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                     {
-                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseDBTotal )
+                        CommunicationResponse v_ResponseData = v_Item.getValue();
+                        
+                        if ( v_ResponseData.getResult() == 0 )
                         {
-                            AnalyseDBTotal v_TempTotal = (AnalyseDBTotal)v_ResponseData.getData();
-                            
-                            v_Total.getRequestCount().putAll(v_TempTotal.getRequestCount());
-                            v_Total.getSuccessCount().putAll(v_TempTotal.getSuccessCount());
-                            v_Total.getIoRowCount()  .putAll(v_TempTotal.getIoRowCount());
-                            v_Total.getMaxExecTime() .putAll(v_TempTotal.getMaxExecTime());
-                            v_Total.getTotalTimeLen().putAll(v_TempTotal.getTotalTimeLen());
+                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseDBTotal )
+                            {
+                                AnalyseDBTotal v_TempTotal = (AnalyseDBTotal)v_ResponseData.getData();
+                                
+                                v_Total.getRequestCount().putAll(v_TempTotal.getRequestCount());
+                                v_Total.getSuccessCount().putAll(v_TempTotal.getSuccessCount());
+                                v_Total.getIoRowCount()  .putAll(v_TempTotal.getIoRowCount());
+                                v_Total.getMaxExecTime() .putAll(v_TempTotal.getMaxExecTime());
+                                v_Total.getTotalTimeLen().putAll(v_TempTotal.getTotalTimeLen());
+                            }
                         }
                     }
                 }
@@ -917,28 +944,46 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDB_Total" ,true ,"XSQ分析");
-                
-                for (Map.Entry<? extends ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+                try
                 {
-                    CommunicationResponse v_ResponseData = v_Item.getValue();
-                    
-                    if ( v_ResponseData.getResult() == 0 )
+                    // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                    ClientSocketCluster.startServer(v_Servers);
+                    ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDB_Total" ,true ,"XSQ分析");
+                }
+                catch (Exception exce)
+                {
+                    $Logger.error(exce);
+                }
+                finally
+                {
+                    ClientSocketCluster.shutdownServer(v_Servers);
+                }
+                
+                if ( v_ResponseDatas != null )
+                {
+                    for (Map.Entry<? extends ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                     {
-                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseDBTotal )
+                        CommunicationResponse v_ResponseData = v_Item.getValue();
+                        
+                        if ( v_ResponseData.getResult() == 0 )
                         {
-                            AnalyseDBTotal v_TempTotal = (AnalyseDBTotal)v_ResponseData.getData();
-                            
-                            v_Total.getRequestCount()   .putAll(v_TempTotal.getRequestCount());
-                            v_Total.getSuccessCount()   .putAll(v_TempTotal.getSuccessCount());
-                            v_Total.getIoRowCount()     .putAll(v_TempTotal.getIoRowCount());
-                            v_Total.getMaxExecTime()    .putAll(v_TempTotal.getMaxExecTime());
-                            v_Total.getTotalTimeLen()   .putAll(v_TempTotal.getTotalTimeLen());
-                            v_Total.getTriggerCount()   .putAll(v_TempTotal.getTriggerCount());
-                            /*
-                            v_Total.getTriggerReqCount().putAll(v_TempTotal.getTriggerReqCount());
-                            v_Total.getTriggerSucCount().putAll(v_TempTotal.getTriggerSucCount());
-                            */
+                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseDBTotal )
+                            {
+                                AnalyseDBTotal v_TempTotal = (AnalyseDBTotal)v_ResponseData.getData();
+                                
+                                v_Total.getRequestCount()   .putAll(v_TempTotal.getRequestCount());
+                                v_Total.getSuccessCount()   .putAll(v_TempTotal.getSuccessCount());
+                                v_Total.getIoRowCount()     .putAll(v_TempTotal.getIoRowCount());
+                                v_Total.getMaxExecTime()    .putAll(v_TempTotal.getMaxExecTime());
+                                v_Total.getTotalTimeLen()   .putAll(v_TempTotal.getTotalTimeLen());
+                                v_Total.getTriggerCount()   .putAll(v_TempTotal.getTriggerCount());
+                                /*
+                                v_Total.getTriggerReqCount().putAll(v_TempTotal.getTriggerReqCount());
+                                v_Total.getTriggerSucCount().putAll(v_TempTotal.getTriggerSucCount());
+                                */
+                            }
                         }
                     }
                 }
@@ -1353,26 +1398,44 @@ public class AnalyseBase extends Analyse
                 
                 if ( !Help.isNull(v_Servers) )
                 {
-                    Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBError_Total" ,new Object[]{i_XSQLXID} ,true ,"XSQL执行日志");
-                    
-                    for (Map.Entry<? extends ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                    Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+                    try
                     {
-                        CommunicationResponse v_ResponseData = v_Item.getValue();
-                        ClientCluster         v_Client       = v_Item.getKey();
-                        String                v_ClientName   = "【" + v_Client.getHost() + ":" + v_Client.getPort() + "】 ";
-                        
-                        if ( v_ResponseData.getResult() == 0 )
+                        // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                        ClientSocketCluster.startServer(v_Servers);
+                        ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                        v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBError_Total" ,new Object[]{i_XSQLXID} ,true ,"XSQL执行日志");
+                    }
+                    catch (Exception exce)
+                    {
+                        $Logger.error(exce);
+                    }
+                    finally
+                    {
+                        ClientSocketCluster.shutdownServer(v_Servers);
+                    }
+                    
+                    if ( v_ResponseDatas != null )
+                    {
+                        for (Map.Entry<? extends ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                         {
-                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof List )
+                            CommunicationResponse v_ResponseData = v_Item.getValue();
+                            ClientCluster         v_Client       = v_Item.getKey();
+                            String                v_ClientName   = "【" + v_Client.getHost() + ":" + v_Client.getPort() + "】 ";
+                            
+                            if ( v_ResponseData.getResult() == 0 )
                             {
-                                List<XSQLLog> v_XSQLLogs = (List<XSQLLog>)v_ResponseData.getData();
-                                
-                                for (XSQLLog v_XSQLLog : v_XSQLLogs)
+                                if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof List )
                                 {
-                                    v_XSQLLog.setE(v_ClientName + Help.NVL(v_XSQLLog.getE()));
+                                    List<XSQLLog> v_XSQLLogs = (List<XSQLLog>)v_ResponseData.getData();
+                                    
+                                    for (XSQLLog v_XSQLLog : v_XSQLLogs)
+                                    {
+                                        v_XSQLLog.setE(v_ClientName + Help.NVL(v_XSQLLog.getE()));
+                                    }
+                                    
+                                    v_ErrorLogs.addAll(v_XSQLLogs);
                                 }
-                                
-                                v_ErrorLogs.addAll(v_XSQLLogs);
                             }
                         }
                     }
@@ -2262,51 +2325,69 @@ public class AnalyseBase extends Analyse
             long                                      v_StartTime        = Date.getNowTime().getTime();
             StringBuilder                             v_Ret              = new StringBuilder();
             Map<ClientCluster ,CommunicationResponse> v_ClusterResponses = null;
+            List<ClientCluster>                       v_Servers          = Cluster.getClusters();
             
-            if ( i_SameTime )
+            try
             {
-                v_ClusterResponses = ClientSocketCluster.sendCommands(Cluster.getClusters() ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,i_CallParams ,false ,false} ,true ,"执行XJava对象");
-            }
-            else
-            {
-                v_ClusterResponses = ClientSocketCluster.sendCommands(Cluster.getClusters()                              ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,i_CallParams ,false ,false});
-            }
+                // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                ClientSocketCluster.startServer(v_Servers);
+                ClientSocketCluster.login(v_Servers ,getLoginRequest());
             
-            v_Ret.append("总体用时：").append(Date.toTimeLen(Date.getNowTime().getTime() - v_StartTime)).append("<br><br>");
-            
-            // 处理结果
-            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ClusterResponses.entrySet())
-            {
-                CommunicationResponse v_ResponseData = v_Item.getValue();
-                
-                v_ClusterResponses.put(v_Item.getKey() ,v_ResponseData);
-                
-                v_Ret.append(v_ResponseData.getEndTime().getFullMilli()).append("：").append(v_Item.getKey().getHost()).append(" execute ");
-                if ( v_ResponseData.getResult() == 0 )
+                if ( i_SameTime )
                 {
-                    if ( v_ResponseData.getData() == null || !(v_ResponseData.getData() instanceof Return) )
-                    {
-                        v_Ret.append("is Error.");
-                    }
-                    else
-                    {
-                        Return<String> v_ExecRet = (Return<String>)v_ResponseData.getData();
-                        
-                        if ( v_ExecRet.booleanValue() )
-                        {
-                            v_Ret.append("is OK.");
-                        }
-                        else
-                        {
-                            v_Ret.append("is Error(").append(v_ExecRet.paramStr).append(").");
-                        }
-                    }
+                    v_ClusterResponses = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,i_CallParams ,false ,false} ,true ,"执行XJava对象");
                 }
                 else
                 {
-                    v_Ret.append("is Error(").append(v_ResponseData.getResult()).append(").");
+                    v_ClusterResponses = ClientSocketCluster.sendCommands(v_Servers                              ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,i_CallParams ,false ,false});
                 }
-                v_Ret.append("<br>");
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(exce);
+            }
+            finally
+            {
+                ClientSocketCluster.shutdownServer(v_Servers);
+            }
+            v_Ret.append("总体用时：").append(Date.toTimeLen(Date.getNowTime().getTime() - v_StartTime)).append("<br><br>");
+            
+            if ( v_ClusterResponses != null )
+            {
+                // 处理结果
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ClusterResponses.entrySet())
+                {
+                    CommunicationResponse v_ResponseData = v_Item.getValue();
+                    
+                    v_ClusterResponses.put(v_Item.getKey() ,v_ResponseData);
+                    
+                    v_Ret.append(v_ResponseData.getEndTime().getFullMilli()).append("：").append(v_Item.getKey().getHost()).append(" execute ");
+                    if ( v_ResponseData.getResult() == 0 )
+                    {
+                        if ( v_ResponseData.getData() == null || !(v_ResponseData.getData() instanceof Return) )
+                        {
+                            v_Ret.append("is Error.");
+                        }
+                        else
+                        {
+                            Return<String> v_ExecRet = (Return<String>)v_ResponseData.getData();
+                            
+                            if ( v_ExecRet.booleanValue() )
+                            {
+                                v_Ret.append("is OK.");
+                            }
+                            else
+                            {
+                                v_Ret.append("is Error(").append(v_ExecRet.paramStr).append(").");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        v_Ret.append("is Error(").append(v_ResponseData.getResult()).append(").");
+                    }
+                    v_Ret.append("<br>");
+                }
             }
             
             return v_RetInfo.paramStr(v_Ret.toString());
@@ -2582,13 +2663,29 @@ public class AnalyseBase extends Analyse
             // 集群重新加载
             else
             {
-                StringBuilder v_Ret = new StringBuilder();
-                for (ClientCluster v_Client : Cluster.getClusters())
+                StringBuilder       v_Ret     = new StringBuilder();
+                List<ClientCluster> v_Servers = Cluster.getClusters();
+                try
                 {
-                    CommunicationResponse v_ResponseData = v_Client.operation().sendCommand("AnalyseBase" ,"analyseXFile_Reload" ,new Object[]{i_XFile ,false});
+                    // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                    ClientSocketCluster.startServer(v_Servers);
+                    ClientSocketCluster.login(v_Servers ,getLoginRequest());
                     
-                    v_Ret.append(Date.getNowTime().getFullMilli()).append("：").append(v_Client.getHost()).append(" reload ");
-                    v_Ret.append(v_ResponseData.getResult() == 0 ? "OK." : "Error(" + v_ResponseData.getResult() + ").").append("<br>");
+                    for (ClientCluster v_Client : v_Servers)
+                    {
+                        CommunicationResponse v_ResponseData = v_Client.operation().sendCommand("AnalyseBase" ,"analyseXFile_Reload" ,new Object[]{i_XFile ,false});
+                        
+                        v_Ret.append(Date.getNowTime().getFullMilli()).append("：").append(v_Client.getHost()).append(" reload ");
+                        v_Ret.append(v_ResponseData.getResult() == 0 ? "OK." : "Error(" + v_ResponseData.getResult() + ").").append("<br>");
+                    }
+                }
+                catch (Exception exce)
+                {
+                    $Logger.error(exce);
+                }
+                finally
+                {
+                    ClientSocketCluster.shutdownServer(v_Servers);
                 }
                 
                 return v_Ret.toString();
@@ -2629,31 +2726,49 @@ public class AnalyseBase extends Analyse
         
         if ( !Help.isNull(v_Servers) )
         {
-            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseCluster_Info" ,true ,"监测服务");
-            
-            for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+            Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+            try
             {
-                CommunicationResponse v_ResponseData  = v_Item.getValue();
-                ClusterReport         v_ClusterReport = null;
-                
-                if ( v_ResponseData.getResult() == 0 )
+                // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                ClientSocketCluster.startServer(v_Servers);
+                ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseCluster_Info" ,true ,"监测服务");
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(exce);
+            }
+            finally
+            {
+                ClientSocketCluster.shutdownServer(v_Servers);
+            }
+            
+            if ( v_ResponseDatas != null )
+            {
+                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
-                    if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof ClusterReport )
+                    CommunicationResponse v_ResponseData  = v_Item.getValue();
+                    ClusterReport         v_ClusterReport = null;
+                    
+                    if ( v_ResponseData.getResult() == 0 )
                     {
-                        v_ClusterReport = (ClusterReport)v_ResponseData.getData();
-                        v_ClusterReport.setServerStatus("正常");
+                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof ClusterReport )
+                        {
+                            v_ClusterReport = (ClusterReport)v_ResponseData.getData();
+                            v_ClusterReport.setServerStatus("正常");
+                        }
                     }
+                    
+                    if ( v_ClusterReport == null )
+                    {
+                        v_ClusterReport = new ClusterReport();
+                        v_ClusterReport.setStartTime("-");
+                        v_ClusterReport.setServerStatus("<font color='red'>异常</font>");
+                    }
+                    
+                    v_ClusterReport.setHostName(v_Item.getKey().getHost());
+                    v_Clusters.add(v_ClusterReport);
                 }
-                
-                if ( v_ClusterReport == null )
-                {
-                    v_ClusterReport = new ClusterReport();
-                    v_ClusterReport.setStartTime("-");
-                    v_ClusterReport.setServerStatus("<font color='red'>异常</font>");
-                }
-                
-                v_ClusterReport.setHostName(v_Item.getKey().getHost());
-                v_Clusters.add(v_ClusterReport);
             }
         }
         else
@@ -2860,31 +2975,49 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseThreadPool_Total" ,true ,"线程池");
-                
-                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+                try
                 {
-                    CommunicationResponse v_ResponseData = v_Item.getValue();
-                    
-                    if ( v_ResponseData.getResult() == 0 )
+                    // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                    ClientSocketCluster.startServer(v_Servers);
+                    ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseThreadPool_Total" ,true ,"线程池");
+                }
+                catch (Exception exce)
+                {
+                    $Logger.error(exce);
+                }
+                finally
+                {
+                    ClientSocketCluster.shutdownServer(v_Servers);
+                }
+                
+                if ( v_ResponseDatas != null )
+                {
+                    for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                     {
-                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseThreadPoolTotal )
+                        CommunicationResponse v_ResponseData = v_Item.getValue();
+                        
+                        if ( v_ResponseData.getResult() == 0 )
                         {
-                            AnalyseThreadPoolTotal v_TempTotal = (AnalyseThreadPoolTotal)v_ResponseData.getData();
-                            
-                            v_TempTotal.setHostName(v_Item.getKey().getHost() + ":" + v_Item.getKey().getPort());
-                            
-                            // 线程号前加主机IP:Port
-                            for (ThreadReport v_TReport : v_TempTotal.getReports())
+                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseThreadPoolTotal )
                             {
-                                v_TReport.setThreadNo(v_TempTotal.getHostName() + v_TReport.getThreadNo());
+                                AnalyseThreadPoolTotal v_TempTotal = (AnalyseThreadPoolTotal)v_ResponseData.getData();
+                                
+                                v_TempTotal.setHostName(v_Item.getKey().getHost() + ":" + v_Item.getKey().getPort());
+                                
+                                // 线程号前加主机IP:Port
+                                for (ThreadReport v_TReport : v_TempTotal.getReports())
+                                {
+                                    v_TReport.setThreadNo(v_TempTotal.getHostName() + v_TReport.getThreadNo());
+                                }
+                                
+                                v_Total.getReports().addAll( v_TempTotal.getReports());
+                                v_Total.setThreadCount(      v_Total.getThreadCount()       + v_TempTotal.getThreadCount());
+                                v_Total.setIdleThreadCount(  v_Total.getIdleThreadCount()   + v_TempTotal.getIdleThreadCount());
+                                v_Total.setActiveThreadCount(v_Total.getActiveThreadCount() + v_TempTotal.getActiveThreadCount());
+                                v_Total.setWaitTaskCount(    v_Total.getWaitTaskCount()     + v_TempTotal.getWaitTaskCount());
                             }
-                            
-                            v_Total.getReports().addAll( v_TempTotal.getReports());
-                            v_Total.setThreadCount(      v_Total.getThreadCount()       + v_TempTotal.getThreadCount());
-                            v_Total.setIdleThreadCount(  v_Total.getIdleThreadCount()   + v_TempTotal.getIdleThreadCount());
-                            v_Total.setActiveThreadCount(v_Total.getActiveThreadCount() + v_TempTotal.getActiveThreadCount());
-                            v_Total.setWaitTaskCount(    v_Total.getWaitTaskCount()     + v_TempTotal.getWaitTaskCount());
                         }
                     }
                 }
@@ -2998,19 +3131,37 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseJob_Total" ,true ,"定时任务");
-                
-                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+                try
                 {
-                    CommunicationResponse v_ResponseData = v_Item.getValue();
-                    
-                    if ( v_ResponseData.getResult() == 0 )
+                    // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                    ClientSocketCluster.startServer(v_Servers);
+                    ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseJob_Total" ,true ,"定时任务");
+                }
+                catch (Exception exce)
+                {
+                    $Logger.error(exce);
+                }
+                finally
+                {
+                    ClientSocketCluster.shutdownServer(v_Servers);
+                }
+                
+                if ( v_ResponseDatas != null )
+                {
+                    for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                     {
-                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseJobTotal )
+                        CommunicationResponse v_ResponseData = v_Item.getValue();
+                        
+                        if ( v_ResponseData.getResult() == 0 )
                         {
-                            AnalyseJobTotal v_TempTotal = (AnalyseJobTotal)v_ResponseData.getData();
-                            
-                            v_Total.getReports().addAll( v_TempTotal.getReports());
+                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseJobTotal )
+                            {
+                                AnalyseJobTotal v_TempTotal = (AnalyseJobTotal)v_ResponseData.getData();
+                                
+                                v_Total.getReports().addAll( v_TempTotal.getReports());
+                            }
                         }
                     }
                 }
@@ -3223,55 +3374,73 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDataSourceGroup_Total" ,true ,"数据库连接池");
-                
-                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+                try
                 {
-                    CommunicationResponse v_ResponseData = v_Item.getValue();
-                    
-                    if ( v_ResponseData.getResult() == 0 )
+                    // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                    ClientSocketCluster.startServer(v_Servers);
+                    ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDataSourceGroup_Total" ,true ,"数据库连接池");
+                }
+                catch (Exception exce)
+                {
+                    $Logger.error(exce);
+                }
+                finally
+                {
+                    ClientSocketCluster.shutdownServer(v_Servers);
+                }
+                
+                if ( v_ResponseDatas != null )
+                {
+                    for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                     {
-                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseDSGTotal )
+                        CommunicationResponse v_ResponseData = v_Item.getValue();
+                        
+                        if ( v_ResponseData.getResult() == 0 )
                         {
-                            AnalyseDSGTotal v_TempTotal = (AnalyseDSGTotal)v_ResponseData.getData();
-                            
-                            if ( !Help.isNull(v_TempTotal.getReports()) )
+                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseDSGTotal )
                             {
-                                for (DataSourceGroupReport v_Report : v_TempTotal.getReports().values())
+                                AnalyseDSGTotal v_TempTotal = (AnalyseDSGTotal)v_ResponseData.getData();
+                                
+                                if ( !Help.isNull(v_TempTotal.getReports()) )
                                 {
-                                    DataSourceGroupReport v_TR = v_Total.getReports().get(v_Report.getDsgID());
-                                    
-                                    if ( v_TR == null )
+                                    for (DataSourceGroupReport v_Report : v_TempTotal.getReports().values())
                                     {
-                                        v_Total.getReports().put(v_Report.getDsgID() ,v_Report);
-                                    }
-                                    else
-                                    {
-                                        if ( v_TR.getDbProductType().indexOf(v_Report.getDbProductType()) < 0 )
-                                        {
-                                            // 不同数据库类型就拼接
-                                            String v_DBPType = v_TR.getDbProductType();
-                                            if ( !Help.isNull(v_DBPType) )
-                                            {
-                                                v_DBPType += "<br>";
-                                            }
-                                            v_TR.setDbProductType(v_DBPType + v_Report.getDbProductType());
-                                        }
+                                        DataSourceGroupReport v_TR = v_Total.getReports().get(v_Report.getDsgID());
                                         
-                                        if ( "异常".equals(v_Report.getDsgStatus()) )
+                                        if ( v_TR == null )
                                         {
-                                            String v_DsgStatus = v_TR.getDsgStatus();
-                                            if ( !Help.isNull(v_DsgStatus) )
-                                            {
-                                                v_DsgStatus += "<br>";
-                                            }
-                                            v_TR.setDsgStatus(v_DsgStatus + "<font color='red'>异常：</font>" + v_Item.getKey().getHost());
+                                            v_Total.getReports().put(v_Report.getDsgID() ,v_Report);
                                         }
-                                        
-                                        v_TR.setConnActiveCount(v_TR.getConnActiveCount() + v_Report.getConnActiveCount());          // 合计值
-                                        v_TR.setConnMaxUseCount(Math.max(v_TR.getConnMaxUseCount() ,v_Report.getConnMaxUseCount())); // 最大峰值
-                                        v_TR.setDataSourcesSize((v_TR.getDataSourcesSize() + v_Report.getDataSourcesSize()));        // 平均值
-                                        v_TR.setConnLastTime(v_TR.getConnLastTime().compareTo(v_Report.getConnLastTime()) >= 0 ? v_TR.getConnLastTime() : v_Report.getConnLastTime());
+                                        else
+                                        {
+                                            if ( v_TR.getDbProductType().indexOf(v_Report.getDbProductType()) < 0 )
+                                            {
+                                                // 不同数据库类型就拼接
+                                                String v_DBPType = v_TR.getDbProductType();
+                                                if ( !Help.isNull(v_DBPType) )
+                                                {
+                                                    v_DBPType += "<br>";
+                                                }
+                                                v_TR.setDbProductType(v_DBPType + v_Report.getDbProductType());
+                                            }
+                                            
+                                            if ( "异常".equals(v_Report.getDsgStatus()) )
+                                            {
+                                                String v_DsgStatus = v_TR.getDsgStatus();
+                                                if ( !Help.isNull(v_DsgStatus) )
+                                                {
+                                                    v_DsgStatus += "<br>";
+                                                }
+                                                v_TR.setDsgStatus(v_DsgStatus + "<font color='red'>异常：</font>" + v_Item.getKey().getHost());
+                                            }
+                                            
+                                            v_TR.setConnActiveCount(v_TR.getConnActiveCount() + v_Report.getConnActiveCount());          // 合计值
+                                            v_TR.setConnMaxUseCount(Math.max(v_TR.getConnMaxUseCount() ,v_Report.getConnMaxUseCount())); // 最大峰值
+                                            v_TR.setDataSourcesSize((v_TR.getDataSourcesSize() + v_Report.getDataSourcesSize()));        // 平均值
+                                            v_TR.setConnLastTime(v_TR.getConnLastTime().compareTo(v_Report.getConnLastTime()) >= 0 ? v_TR.getConnLastTime() : v_Report.getConnLastTime());
+                                        }
                                     }
                                 }
                             }
@@ -3384,62 +3553,80 @@ public class AnalyseBase extends Analyse
             
             if ( !Help.isNull(v_Servers) )
             {
-                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseLogger_Total" ,new Object[] {i_TotalType} ,true ,"日志引擎");
-                
-                for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+                try
                 {
-                    CommunicationResponse v_ResponseData = v_Item.getValue();
-                    
-                    if ( v_ResponseData.getResult() == 0 )
+                    // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                    ClientSocketCluster.startServer(v_Servers);
+                    ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseLogger_Total" ,new Object[] {i_TotalType} ,true ,"日志引擎");
+                }
+                catch (Exception exce)
+                {
+                    $Logger.error(exce);
+                }
+                finally
+                {
+                    ClientSocketCluster.shutdownServer(v_Servers);
+                }
+                
+                if ( v_ResponseDatas != null )
+                {
+                    for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                     {
-                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseLoggerTotal )
+                        CommunicationResponse v_ResponseData = v_Item.getValue();
+                        
+                        if ( v_ResponseData.getResult() == 0 )
                         {
-                            AnalyseLoggerTotal v_TempTotal = (AnalyseLoggerTotal)v_ResponseData.getData();
-                            
-                            if ( !Help.isNull(v_TempTotal.getReports()) )
+                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseLoggerTotal )
                             {
-                                // 显示每台服务上每个日志项，并不日志项合并统计
-                                if ( i_ShowEveryOne )
+                                AnalyseLoggerTotal v_TempTotal = (AnalyseLoggerTotal)v_ResponseData.getData();
+                                
+                                if ( !Help.isNull(v_TempTotal.getReports()) )
                                 {
-                                    String v_IP   = v_Item.getKey().getHost();
-                                    String v_Host = v_IP + v_Item.getKey().getPort();
-                                    for (LoggerReport v_Report : v_TempTotal.getReports().values())
+                                    // 显示每台服务上每个日志项，并不日志项合并统计
+                                    if ( i_ShowEveryOne )
                                     {
-                                        v_Report.setClassName(v_IP + "/" + v_Report.getClassName());
-                                        v_Total.getReports().put(v_Host + v_Report.getId() ,v_Report);
-                                        
-                                        if ( v_Report.getErrorFatalCount() > 0L )
+                                        String v_IP   = v_Item.getKey().getHost();
+                                        String v_Host = v_IP + v_Item.getKey().getPort();
+                                        for (LoggerReport v_Report : v_TempTotal.getReports().values())
                                         {
-                                            v_Errors.putRow(v_Report.getId() ,v_Item.getKey().getHost() ,1);
+                                            v_Report.setClassName(v_IP + "/" + v_Report.getClassName());
+                                            v_Total.getReports().put(v_Host + v_Report.getId() ,v_Report);
+                                            
+                                            if ( v_Report.getErrorFatalCount() > 0L )
+                                            {
+                                                v_Errors.putRow(v_Report.getId() ,v_Item.getKey().getHost() ,1);
+                                            }
                                         }
                                     }
-                                }
-                                // 对集群的日志项做Map/Reduce合计统计
-                                else
-                                {
-                                    for (LoggerReport v_Report : v_TempTotal.getReports().values())
+                                    // 对集群的日志项做Map/Reduce合计统计
+                                    else
                                     {
-                                        LoggerReport v_TR = v_Total.getReports().get(v_Report.getId());
-                                        
-                                        if ( v_TR == null )
+                                        for (LoggerReport v_Report : v_TempTotal.getReports().values())
                                         {
-                                            v_Total.getReports().put(v_Report.getId() ,v_Report);
-                                        }
-                                        else
-                                        {
-                                            v_TR.setCount(       Math.max(v_TR.getCount()            ,v_Report.getCount()));
-                                            v_TR.setCountNoError(Math.max(v_TR.getCountNoError()     ,v_Report.getCountNoError()));
-                                            v_TR.setRequestCount(         v_TR.getRequestCount()    + v_Report.getRequestCount());
-                                            v_TR.setErrorFatalCount(      v_TR.getErrorFatalCount() + v_Report.getErrorFatalCount());
-                                            v_TR.setWarnCount(            v_TR.getWarnCount()       + v_Report.getWarnCount());
-                                            v_TR.setLastTime(    Math.max(v_TR.getLastTime()         ,v_Report.getLastTime()));
-                                            v_TR.setExecSumTime(          v_TR.getExecSumTime()     + v_Report.getExecSumTime());
-                                            v_TR.setExecAvgTime(AnalyseLoggerTotal.calcExecAvgTime(v_TR));
-                                        }
-                                        
-                                        if ( v_Report.getErrorFatalCount() > 0L )
-                                        {
-                                            v_Errors.putRow(v_Report.getId() ,v_Item.getKey().getHost() ,1);
+                                            LoggerReport v_TR = v_Total.getReports().get(v_Report.getId());
+                                            
+                                            if ( v_TR == null )
+                                            {
+                                                v_Total.getReports().put(v_Report.getId() ,v_Report);
+                                            }
+                                            else
+                                            {
+                                                v_TR.setCount(       Math.max(v_TR.getCount()            ,v_Report.getCount()));
+                                                v_TR.setCountNoError(Math.max(v_TR.getCountNoError()     ,v_Report.getCountNoError()));
+                                                v_TR.setRequestCount(         v_TR.getRequestCount()    + v_Report.getRequestCount());
+                                                v_TR.setErrorFatalCount(      v_TR.getErrorFatalCount() + v_Report.getErrorFatalCount());
+                                                v_TR.setWarnCount(            v_TR.getWarnCount()       + v_Report.getWarnCount());
+                                                v_TR.setLastTime(    Math.max(v_TR.getLastTime()         ,v_Report.getLastTime()));
+                                                v_TR.setExecSumTime(          v_TR.getExecSumTime()     + v_Report.getExecSumTime());
+                                                v_TR.setExecAvgTime(AnalyseLoggerTotal.calcExecAvgTime(v_TR));
+                                            }
+                                            
+                                            if ( v_Report.getErrorFatalCount() > 0L )
+                                            {
+                                                v_Errors.putRow(v_Report.getId() ,v_Item.getKey().getHost() ,1);
+                                            }
                                         }
                                     }
                                 }

@@ -788,7 +788,7 @@ public final class XJSON
                         }
                     }
                     
-                    v_ParserObj = this.parser((JSONObject)v_Value ,v_VClass);
+                    v_ParserObj = this.parser(new XJSONObject((JSONObject)v_Value) ,v_VClass);
                     
                     if ( v_ParserObj == null )
                     {
@@ -832,6 +832,7 @@ public final class XJSON
                 else
                 {
                     Class<?> v_ParamClass = v_Method.getParameterTypes()[0];
+                    Object   v_JavaValue  = null;
                     
                     try
                     {
@@ -848,13 +849,13 @@ public final class XJSON
                         }
                         else
                         {
-                            Object v_JavaValue = XJSONToJava.executeToJava(this ,(String)v_Value ,v_ParamClass ,v_ValueClass);
+                            v_JavaValue = XJSONToJava.executeToJava(this ,v_Value.toString() ,v_ParamClass ,v_ValueClass);
                             v_Method.invoke(v_NewObj ,v_JavaValue);
                         }
                     }
                     catch (Exception exce)
                     {
-                        throw new RuntimeException("Call " + i_ObjectClass.getName() + "." + v_Method.getName() + " is error." + exce.getMessage());
+                        throw new RuntimeException("Call " + i_ObjectClass.getName() + "." + v_Method.getName() + " is error." + exce.getMessage() + ". json=" + v_Value + ". java=" + v_JavaValue);
                     }
                 }
             }
@@ -909,7 +910,7 @@ public final class XJSON
             {
                 try
                 {
-                    v_ParserObj = XJSONToJava.executeToJava(this ,(String)v_ElementObject ,i_ElementClass ,null);
+                    v_ParserObj = XJSONToJava.executeToJava(this ,v_ElementObject.toString() ,i_ElementClass ,null);
                 }
                 catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e)
                 {

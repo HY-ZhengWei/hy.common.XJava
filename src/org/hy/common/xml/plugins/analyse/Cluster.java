@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.hy.common.Help;
 import org.hy.common.app.Param;
-import org.hy.common.net.ClientSocket;
 import org.hy.common.net.common.ClientCluster;
+import org.hy.common.net.netty.rpc.ClientRPC;
 import org.hy.common.xml.XJava;
 
 
@@ -58,8 +58,7 @@ public class Cluster
     public static List<ClientCluster> getClusters()
     {
         String []           v_ClusterServers = Help.NVL(Help.NVL(XJava.getParam("ClusterServers") ,new Param()).getValue()).split(",");
-        List<ClientCluster> v_Clusters      = new ArrayList<ClientCluster>();
-        int                 v_Timeout        = (int)getClusterTimeout();
+        List<ClientCluster> v_Clusters       = new ArrayList<ClientCluster>();
         
         if ( !Help.isNull(v_ClusterServers) )
         {
@@ -69,9 +68,7 @@ public class Cluster
                 {
                     String [] v_HostPort = (v_Server.trim() + ":1721").split(":");
                     
-                    ClientSocket v_Clent = new ClientSocket(v_HostPort[0] ,Integer.parseInt(v_HostPort[1]));
-                    
-                    v_Clent.setTimeout(v_Timeout);
+                    ClientRPC v_Clent = new ClientRPC().setHost(v_HostPort[0]).setPort(Integer.parseInt(v_HostPort[1]));
                     
                     v_Clusters.add(v_Clent);
                 }

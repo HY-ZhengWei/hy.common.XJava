@@ -4,8 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.hy.common.xml.SerializableClass;
-
 import org.hy.common.Help;
 import org.hy.common.ListMap;
 
@@ -23,7 +21,7 @@ public final class XmlHelp
 {
     private static ListMap<Class<?> ,SerializableClass> $Buffer;
     
-    /** 
+    /**
      * 缓存最大值
      * 
      * 当缓存达到一定大小($BufferSize)后，最早缓存的数据将被移出缓存
