@@ -39,9 +39,6 @@
 	<classpathentry kind="lib" path="lib/spring_5x/spring-core-5.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring_5x/spring-web-5.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring_5x/spring-webmvc-5.0.7.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-api-2.13.3.jar"/>
-	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-core-2.13.3.jar"/>
-	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-slf4j-impl-2.13.3.jar"/>
 	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/slf4j-api-1.7.30.jar"/>
 	<classpathentry kind="lib" path="lib/junit/junit-4.13.1.jar"/>
 	<classpathentry kind="lib" path="lib/db_sqlserver/jtds-1.2.jar"/>
@@ -54,5 +51,8 @@
 	<classpathentry kind="lib" path="lib/protobuf/protobuf-java-3.17.3.jar"/>
 	<classpathentry kind="lib" path="lib/json/accessors-smart-2.4.7.jar"/>
 	<classpathentry kind="lib" path="lib/json/asm-9.1.jar"/>
+	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-api-2.15.0.jar"/>
+	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-core-2.15.0.jar"/>
+	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-slf4j-impl-2.15.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
