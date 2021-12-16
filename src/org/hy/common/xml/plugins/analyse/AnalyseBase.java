@@ -691,7 +691,7 @@ public class AnalyseBase extends Analyse
                     // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                     ClientSocketCluster.startServer(v_Servers);
                     ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBGroup_Total" ,true ,"XSQL组分析");
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseDBGroup_Total" ,true ,"XSQL组分析");
                 }
                 catch (Exception exce)
                 {
@@ -950,7 +950,7 @@ public class AnalyseBase extends Analyse
                     // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                     ClientSocketCluster.startServer(v_Servers);
                     ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDB_Total" ,true ,"XSQ分析");
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseDB_Total" ,true ,"XSQ分析");
                 }
                 catch (Exception exce)
                 {
@@ -1404,7 +1404,7 @@ public class AnalyseBase extends Analyse
                         // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                         ClientSocketCluster.startServer(v_Servers);
                         ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                        v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDBError_Total" ,new Object[]{i_XSQLXID} ,true ,"XSQL执行日志");
+                        v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseDBError_Total" ,new Object[]{i_XSQLXID} ,true ,"XSQL执行日志");
                     }
                     catch (Exception exce)
                     {
@@ -2335,11 +2335,11 @@ public class AnalyseBase extends Analyse
             
                 if ( i_SameTime )
                 {
-                    v_ClusterResponses = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,i_CallParams ,false ,false} ,true ,"执行XJava对象");
+                    v_ClusterResponses = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,i_CallParams ,false ,false} ,true ,"执行XJava对象");
                 }
                 else
                 {
-                    v_ClusterResponses = ClientSocketCluster.sendCommands(v_Servers                              ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,i_CallParams ,false ,false});
+                    v_ClusterResponses = ClientSocketCluster.sendCommands(v_Servers        ,-1 ,"AnalyseBase" ,"analyseObject_Execute" ,new Object[]{i_XJavaObjectID ,i_CallMethod ,i_CallParams ,false ,false});
                 }
             }
             catch (Exception exce)
@@ -2673,7 +2673,7 @@ public class AnalyseBase extends Analyse
                     
                     for (ClientCluster v_Client : v_Servers)
                     {
-                        CommunicationResponse v_ResponseData = v_Client.operation().sendCommand("AnalyseBase" ,"analyseXFile_Reload" ,new Object[]{i_XFile ,false});
+                        CommunicationResponse v_ResponseData = v_Client.operation().sendCommand(-1 ,"AnalyseBase" ,"analyseXFile_Reload" ,new Object[]{i_XFile ,false});
                         
                         v_Ret.append(Date.getNowTime().getFullMilli()).append("：").append(v_Client.getHost()).append(" reload ");
                         v_Ret.append(v_ResponseData.getResult() == 0 ? "OK." : "Error(" + v_ResponseData.getResult() + ").").append("<br>");
@@ -2732,7 +2732,7 @@ public class AnalyseBase extends Analyse
                 // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                 ClientSocketCluster.startServer(v_Servers);
                 ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseCluster_Info" ,true ,"监测服务");
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseCluster_Info" ,true ,"监测服务");
             }
             catch (Exception exce)
             {
@@ -2981,7 +2981,7 @@ public class AnalyseBase extends Analyse
                     // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                     ClientSocketCluster.startServer(v_Servers);
                     ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseThreadPool_Total" ,true ,"线程池");
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseThreadPool_Total" ,true ,"线程池");
                 }
                 catch (Exception exce)
                 {
@@ -3137,7 +3137,7 @@ public class AnalyseBase extends Analyse
                     // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                     ClientSocketCluster.startServer(v_Servers);
                     ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseJob_Total" ,true ,"定时任务");
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseJob_Total" ,true ,"定时任务");
                 }
                 catch (Exception exce)
                 {
@@ -3380,7 +3380,7 @@ public class AnalyseBase extends Analyse
                     // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                     ClientSocketCluster.startServer(v_Servers);
                     ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseDataSourceGroup_Total" ,true ,"数据库连接池");
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseDataSourceGroup_Total" ,true ,"数据库连接池");
                 }
                 catch (Exception exce)
                 {
@@ -3559,7 +3559,7 @@ public class AnalyseBase extends Analyse
                     // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                     ClientSocketCluster.startServer(v_Servers);
                     ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseBase" ,"analyseLogger_Total" ,new Object[] {i_TotalType} ,true ,"日志引擎");
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseLogger_Total" ,new Object[] {i_TotalType} ,true ,"日志引擎");
                 }
                 catch (Exception exce)
                 {

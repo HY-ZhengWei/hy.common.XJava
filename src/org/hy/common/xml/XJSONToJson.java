@@ -1497,11 +1497,22 @@ public class XJSONToJson
                         {
                             boolean v_IsMRObject = Object.class.equals(v_Method.getReturnType()); // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
                             v_Value = v_Method.invoke(i_JavaData);
-                            if ( v_Value == null )
+                            if ( v_Value != null )
                             {
-                                v_Value = "";
+                                i_XJson.parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects ,v_IsMRObject);
                             }
-                            i_XJson.parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects ,v_IsMRObject);
+                            else
+                            {
+                                if ( v_ChildJsonObj == null )
+                                {
+                                    v_ChildJsonObj = new XJSONObject();
+                                }
+                                
+                                if ( i_XJson.isReturnNVL() )
+                                {
+                                    v_ChildJsonObj.put(v_Name ,"");
+                                }
+                            }
                         }
                         catch (Exception e)
                         {

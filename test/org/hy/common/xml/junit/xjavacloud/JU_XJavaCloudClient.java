@@ -39,11 +39,11 @@ public class JU_XJavaCloudClient
         ClientSocketCluster.login(v_Servers ,new LoginRequest("XJava" ,"").setSystemName("Analyses"));
 
         
-        CommunicationResponse v_CResp = v_Client.operation().sendCommand("AnalyseFS" ,"getSystemTime");
+        CommunicationResponse v_CResp = v_Client.operation().sendCommand(-1 ,"AnalyseFS" ,"getSystemTime");
         $Logger.info("获取服务端的时间");
         System.out.println(v_CResp);
         
-        v_CResp = v_Client.operation().sendCommand("AnalyseBase" ,"analyseDB_Total");
+        v_CResp = v_Client.operation().sendCommand(-1 ,"AnalyseBase" ,"analyseDB_Total");
         $Logger.info("获取服务端的的XSQL分析结果");
         System.out.println(v_CResp);
         
@@ -53,11 +53,11 @@ public class JU_XJavaCloudClient
         Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
         
         
-        v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,60 * 1000 ,"AnalyseFS"   ,"getSystemTime"   ,false ,"服务器的系统时间");
+        v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,60 * 1000 ,"AnalyseFS"   ,"getSystemTime"   ,false ,"服务器的系统时间");
         $Logger.info("获取集群的时间");
         System.out.println(v_ResponseDatas);
         
-        v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,60 * 1000 ,"AnalyseBase" ,"analyseDB_Total" ,false ,"XSQ分析");
+        v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,60 * 1000 ,"AnalyseBase" ,"analyseDB_Total" ,false ,"XSQ分析");
         $Logger.info("获取集群的XSQL分析结果");
         System.out.println(v_ResponseDatas);
         

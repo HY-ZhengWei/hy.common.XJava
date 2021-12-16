@@ -138,7 +138,7 @@ public class AnalyseFS extends Analyse
                     // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                     ClientSocketCluster.startServer(v_Servers);
                     ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"analysePath_Total" ,new Object[]{v_FPath} ,true ,"访问目录" + i_FPath);
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseFS" ,"analysePath_Total" ,new Object[]{v_FPath} ,true ,"访问目录" + i_FPath);
                 }
                 catch (Exception exce)
                 {
@@ -479,7 +479,7 @@ public class AnalyseFS extends Analyse
                     v_CCluster = v_Servers.get(0);
                     v_CCluster.operation().startServer();
                     v_CCluster.operation().login(getLoginRequest());
-                    CommunicationResponse v_ResponseData = v_CCluster.operation().sendCommand("AnalyseFS" ,"getFileContent" ,new Object[]{v_FPath ,i_FName});
+                    CommunicationResponse v_ResponseData = v_CCluster.operation().sendCommand(-1 ,"AnalyseFS" ,"getFileContent" ,new Object[]{v_FPath ,i_FName});
                     
                     if ( v_ResponseData.getResult() == 0 )
                     {
@@ -750,7 +750,7 @@ public class AnalyseFS extends Analyse
             {
                 v_CCluster.operation().startServer();
                 v_CCluster.operation().login(getLoginRequest());
-                CommunicationResponse v_ResponseData = v_CCluster.operation().sendCommand("AnalyseFS" ,"cloneFile" ,new Object[]{toWebHome(i_FilePath) ,i_FileName ,i_LocalIP});
+                CommunicationResponse v_ResponseData = v_CCluster.operation().sendCommand(-1 ,"AnalyseFS" ,"cloneFile" ,new Object[]{toWebHome(i_FilePath) ,i_FileName ,i_LocalIP});
                 
                 if ( v_ResponseData.getResult() == 0 )
                 {
@@ -1029,7 +1029,7 @@ public class AnalyseFS extends Analyse
                 // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                 ClientSocketCluster.startServer(v_Servers);
                 ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"executeCommand" ,new Object[]{i_FilePath ,i_FileName} ,true ,"执行命令文件" + i_FileName);
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseFS" ,"executeCommand" ,new Object[]{i_FilePath ,i_FileName} ,true ,"执行命令文件" + i_FileName);
             }
             catch (Exception exce)
             {
@@ -1232,7 +1232,7 @@ public class AnalyseFS extends Analyse
                 // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                 ClientSocketCluster.startServer(v_Servers);
                 ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"delFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,"删除文件" + i_FileName);
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseFS" ,"delFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,"删除文件" + i_FileName);
             }
             catch (Exception exce)
             {
@@ -1386,7 +1386,7 @@ public class AnalyseFS extends Analyse
                 // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                 ClientSocketCluster.startServer(v_Servers);
                 ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"zipFile" ,new Object[]{i_FilePath ,i_FileName ,Date.getNowTime().getFullMilli_ID()} ,true ,"压缩文件" + i_FileName);
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseFS" ,"zipFile" ,new Object[]{i_FilePath ,i_FileName ,Date.getNowTime().getFullMilli_ID()} ,true ,"压缩文件" + i_FileName);
             }
             catch (Exception exce)
             {
@@ -1526,7 +1526,7 @@ public class AnalyseFS extends Analyse
                 // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                 ClientSocketCluster.startServer(v_Servers);
                 ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"unZipFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,"解压文件" + i_FileName);
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseFS" ,"unZipFile" ,new Object[]{i_FilePath ,i_FileName} ,true ,"解压文件" + i_FileName);
             }
             catch (Exception exce)
             {
@@ -1656,7 +1656,7 @@ public class AnalyseFS extends Analyse
                 // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                 ClientSocketCluster.startServer(v_Servers);
                 ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"mkdir" ,new Object[]{i_FilePath ,i_FileName} ,true ,"创建目录" + i_FileName);
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseFS" ,"mkdir" ,new Object[]{i_FilePath ,i_FileName} ,true ,"创建目录" + i_FileName);
             }
             catch (Exception exce)
             {
@@ -1828,7 +1828,7 @@ public class AnalyseFS extends Analyse
                     // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                     ClientSocketCluster.startServer(v_Servers);
                     ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"calcFileSize" ,new Object[]{i_FilePath ,i_FileName} ,true ,"计算大小" + i_FileName);
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseFS" ,"calcFileSize" ,new Object[]{i_FilePath ,i_FileName} ,true ,"计算大小" + i_FileName);
                 }
                 catch (Exception exce)
                 {
@@ -2067,7 +2067,7 @@ public class AnalyseFS extends Analyse
                 // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                 ClientSocketCluster.startServer(v_Servers);
                 ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"getSystemTime" ,new Object[]{} ,true ,"系统时间");
+                v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseFS" ,"getSystemTime" ,new Object[]{} ,true ,"系统时间");
             }
             catch (Exception exce)
             {
@@ -2196,7 +2196,7 @@ public class AnalyseFS extends Analyse
                         // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                         ClientSocketCluster.startServer(v_Servers);
                         ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                        v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"reload" ,new Object[]{i_XFile ,false} ,true ,"重新加载配置" + i_XFile);
+                        v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseFS" ,"reload" ,new Object[]{i_XFile ,false} ,true ,"重新加载配置" + i_XFile);
                     }
                     catch (Exception exce)
                     {
@@ -2533,7 +2533,7 @@ public class AnalyseFS extends Analyse
             
             try
             {
-                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(this.servers ,Cluster.getClusterTimeout() ,"AnalyseFS" ,"cloneFileUpload" ,new Object[]{this.savePath ,this.dataPacket});
+                Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = ClientSocketCluster.sendCommands(this.servers ,-1 ,"AnalyseFS" ,"cloneFileUpload" ,new Object[]{this.savePath ,this.dataPacket});
                 for (Map.Entry<ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
                 {
                     v_HostName = v_Item.getKey().getHost();
