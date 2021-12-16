@@ -83,7 +83,6 @@ import net.minidev.json.parser.JSONParser;
  *                                     是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
  *                                     控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
  *              2021-12-09  V4.1  添加：Json字符串转Java对象时，当Setter方法的入传为数组时支持
- * 
  */
 public final class XJSON
 {
@@ -491,12 +490,19 @@ public final class XJSON
             }
             else
             {
-                v_NewObj = i_ObjectClass.newInstance();
+                if ( MethodReflect.allowNew(i_ObjectClass) )
+                {
+                    v_NewObj = i_ObjectClass.newInstance();
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
         catch (Exception exce)
         {
-            throw new NullPointerException(i_ObjectClass.getName() + " newInstance() is error.");
+            throw new RuntimeException(i_ObjectClass.getName() + " newInstance() is error.");
         }
         
         Iterator<?> v_Iter  = i_JSONObject.keySet().iterator();
@@ -790,25 +796,23 @@ public final class XJSON
                     
                     v_ParserObj = this.parser(new XJSONObject((JSONObject)v_Value) ,v_VClass);
                     
-                    if ( v_ParserObj == null )
+                    if ( v_ParserObj != null )
                     {
-                        throw new NullPointerException("Call " + i_ObjectClass.getName() + "." + v_Method.getName() + " parameter is null.");
-                    }
-                    
-                    try
-                    {
-                        if ( v_VClass.isArray() )
+                        try
                         {
-                            v_Method.invoke(v_NewObj ,new Object[] {((List<?>)v_ParserObj).toArray()});
+                            if ( v_VClass.isArray() )
+                            {
+                                v_Method.invoke(v_NewObj ,new Object[] {((List<?>)v_ParserObj).toArray()});
+                            }
+                            else
+                            {
+                                v_Method.invoke(v_NewObj ,v_ParserObj);
+                            }
                         }
-                        else
+                        catch (Exception exce)
                         {
-                            v_Method.invoke(v_NewObj ,v_ParserObj);
+                            throw new RuntimeException("Call " + i_ObjectClass.getName() + "." + v_Method.getName() + " is error." + exce.getMessage());
                         }
-                    }
-                    catch (Exception exce)
-                    {
-                        throw new RuntimeException("Call " + i_ObjectClass.getName() + "." + v_Method.getName() + " is error." + exce.getMessage());
                     }
                 }
                 else if ( v_Value.getClass() == XJSONObject.class )

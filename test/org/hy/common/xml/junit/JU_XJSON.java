@@ -11,6 +11,7 @@ import org.hy.common.Help;
 import org.hy.common.Queue;
 import org.hy.common.Queue.QueueType;
 import org.hy.common.net.data.Command;
+import org.hy.common.thread.Jobs;
 import org.hy.common.xml.XJSON;
 import org.hy.common.xml.XJSONToJava;
 import org.hy.common.xml.log.Logger;
@@ -246,6 +247,21 @@ public class JU_XJSON
         $Logger.info(v_Json);
         $Logger.info(v_New);
         $Logger.info("由构造器初始化的对象，并且未开放对应的Setter方法时，无法做到Json的反序列化"); // TODO
+    }
+    
+    
+    
+    @Test
+    public void test_复杂对象JobsToJson() throws Exception
+    {
+        Jobs  v_Data  = new Jobs();
+        Jobs  v_New   = null;
+        XJSON v_XJson = new XJSON();
+        
+        String v_Json = v_XJson.toJson(v_Data).toJSONString();
+        v_New = (Jobs)v_XJson.toJava(v_Json ,v_Data.getClass());
+        $Logger.info(v_Json);
+        $Logger.info(v_New);
     }
 
     

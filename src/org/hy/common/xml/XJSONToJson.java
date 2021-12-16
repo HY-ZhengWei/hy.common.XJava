@@ -1459,6 +1459,11 @@ public class XJSONToJson
                     {
                         continue;
                     }
+                    if ( v_Method.getReturnType() == i_JavaData.getClass() )
+                    {
+                        // 防止死循环：方法返回值的类型就是类自己
+                        continue;
+                    }
                     
                     String v_Name  = null;
                     Object v_Value = null;
@@ -1497,6 +1502,7 @@ public class XJSONToJson
                         {
                             boolean v_IsMRObject = Object.class.equals(v_Method.getReturnType()); // 2021-09-30 添加：判定方法的返回类型是否为java.lang.Object
                             v_Value = v_Method.invoke(i_JavaData);
+                            
                             if ( v_Value != null )
                             {
                                 i_XJson.parser(v_Name ,v_Value ,v_ChildJsonObj ,i_ParserObjects ,v_IsMRObject);
