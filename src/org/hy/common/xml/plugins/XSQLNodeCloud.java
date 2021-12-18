@@ -8,9 +8,11 @@ import org.hy.common.Execute;
 import org.hy.common.ExecuteEvent;
 import org.hy.common.ExecuteListener;
 import org.hy.common.Help;
+import org.hy.common.net.common.ClientCluster;
 import org.hy.common.net.data.CommunicationResponse;
 import org.hy.common.net.data.LoginRequest;
 import org.hy.common.net.netty.rpc.ClientRPC;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -24,15 +26,19 @@ import org.hy.common.net.netty.rpc.ClientRPC;
  * @version     v1.0
  *              v2.0  2018-02-22  1.修复：云计算时，某台服务器异常后，修复"云等待"死等的问题。
  *                                2.添加：云计算异常时，尝试交给其它云服务计算。当重试多次(this.cloudRetryCount)云计算仍然异常时，放弃计算。
+ *              v3.0  2021-12-18  1.升级：使用Net 3.0.0 版本
  */
 public class XSQLNodeCloud
 {
+    private static Logger $Logger = Logger.getLogger(XSQLNodeCloud.class ,true);
+    
+    
     
     /** 云服务器 */
-    private ClientRPC    client;
+    private ClientCluster client;
     
     /** 是否空闲 */
-    private boolean      isIdle;
+    private boolean       isIdle;
     
     
     
@@ -43,6 +49,14 @@ public class XSQLNodeCloud
     
     
     
+    /**
+     * 2021-12-18 建议不再使用本方法创建通讯，因没法定义每台服务的个性化超时时长
+     *            建议使用：XSQLNodeCloud(ClientCluster i_Client) 方法
+     * 
+     * @param i_HostName
+     * @param i_Port
+     */
+    @Deprecated
     public XSQLNodeCloud(String i_HostName ,int i_Port)
     {
         this(new ClientRPC().setHost(i_HostName).setPort(i_Port));
@@ -50,7 +64,7 @@ public class XSQLNodeCloud
     
     
     
-    public XSQLNodeCloud(ClientRPC i_Client)
+    public XSQLNodeCloud(ClientCluster i_Client)
     {
         this.client = i_Client;
         this.isIdle = true;
@@ -61,7 +75,7 @@ public class XSQLNodeCloud
     /**
      * 获取：云服务器
      */
-    public ClientRPC getClient()
+    public ClientCluster getClient()
     {
         return client;
     }
@@ -105,6 +119,11 @@ public class XSQLNodeCloud
      */
     public synchronized void executeCloud(XSQLNode i_XSQLNode ,XSQLGroupControl i_Control ,Map<String ,Object> io_Params ,Map<String ,Object> io_Returns ,int i_ExecuteCount)
     {
+        if ( this.client == null )
+        {
+            return;
+        }
+        
         i_XSQLNode.cloudBusy();
         this.isIdle = false;
         
@@ -116,14 +135,21 @@ public class XSQLNodeCloud
         // 这与上次 "2018-07-26 优化：及时释放资源，自动的GC太慢了" 有关。
         Map<String ,Object> v_Params = new HashMap<String ,Object>(io_Params);
         
-        if ( !this.client.isStart() )
+        try
         {
-            this.client.start(this.client.newBootstrap());
+            if ( !this.client.operation().isStartServer() )
+            {
+                this.client.operation().startServer();
+            }
+            
+            if ( !this.client.operation().isLogin() )
+            {
+                this.client.operation().login(new LoginRequest("XSQL" ,"").setSystemName("XSQLCloud"));
+            }
         }
-        
-        if ( !this.client.operation().isLogin() )
+        catch (Exception exce)
         {
-            this.client.operation().login(new LoginRequest("XSQL" ,"").setSystemName("XSQLCloud"));
+            $Logger.error(exce);
         }
         
         Execute v_Execute = new Execute(this.client.operation() ,"sendCommand" ,new Object[]{-1 ,i_XSQLNode.getXid().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{v_Params}});

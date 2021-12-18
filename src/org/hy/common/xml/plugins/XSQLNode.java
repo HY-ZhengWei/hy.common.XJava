@@ -1123,7 +1123,11 @@ public class XSQLNode implements XJavaID
      *     public boolean 方法名称(Map<String ,Object> i_Params) {}
      * 
      *     入参i_Params与XSQLGroupExecuteJava.executeJava_XSQLNode()方法中的io_Params入参相同，但只是只读的。
+     * 
+     * 2021-12-18 建议不再使用本方法创建通讯，因没法定义每台服务的个性化超时时长
+     *            建议使用：this.setCloudServersList(CycleNextList<XSQLNodeCloud> cloudServersList) 方法
      */
+    @Deprecated
     public void setCloudServers(String cloudServers)
     {
         this.cloudServers     = cloudServers;
