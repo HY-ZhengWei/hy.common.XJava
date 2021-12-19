@@ -11,13 +11,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.hy.common.xml.XJava;
-import org.hy.common.xml.log.Logger;
 import org.hy.common.Date;
 import org.hy.common.Des;
 import org.hy.common.Help;
 import org.hy.common.app.Param;
 import org.hy.common.file.FileHelp;
+import org.hy.common.xml.XJava;
 
 
 
@@ -30,7 +29,7 @@ import org.hy.common.file.FileHelp;
  * 
  * @author      ZhengWei(HY)
  * @createDate  2014-08-07
- * @version     v1.0  
+ * @version     v1.0
  *              v2.0  2016-01-04  将所有初始化过的XJava配置文件都保存在XJava对象池中。
  *                                保存类型为LinkedHashMap，map.key为配置文件的名称，map.value为AppInitConfig的实例对象
  *              v3.0  2016-12-26  支持对目录（包含子目录）下的所有配置文件都遍历加载的功能。
@@ -43,10 +42,14 @@ import org.hy.common.file.FileHelp;
  *              v4.2  2019-05-20  添加：加载空目录时，显示it is empty的提示。
  *              v5.0  2019-08-21  添加：load(...)系列方法，显示区分功能划分，方便用户选择。
  *              v6.0  2020-06-24  添加：通过日志引擎规范输出日志
+ *              v6.1  2021-12-19  删除：日志引擎的构建
  */
 public class AppInitConfig
 {
+    /*
+     * 因为要允许终端用户选择使用输出日志的引擎，所以这里不能先行构建Logger
     private static final Logger $Logger = new Logger(AppInitConfig.class);
+    */
     
     /** 保存所有初始化过的XJava配置文件的XID标记 */
     public static final String $XFileNames_XID      = "XFILENAMES";
@@ -75,15 +78,15 @@ public class AppInitConfig
     /** 文件编码 */
     private String  enCode;
     
-    /** 
-     * XML文件的类路径 
+    /**
+     * XML文件的类路径
      * 
      * 格式为：/com/xxx/yyy/
      */
     private String  xmlClassPath;
     
     /**
-     * XJava功能中的xmlClassPath属性，表示解译xml文件的URL的路径（父目录路径） 
+     * XJava功能中的xmlClassPath属性，表示解译xml文件的URL的路径（父目录路径）
      * 
      * 格式为：com.xxx.yyy.
      */
@@ -185,7 +188,6 @@ public class AppInitConfig
         }
         catch (Exception exce)
         {
-            $Logger.error(exce);
             exce.printStackTrace();
         }
     }
@@ -199,7 +201,7 @@ public class AppInitConfig
      * @createDate  2019-08-21
      * @version     v1.0
      *
-     * @param i_XMLName  配置文件 
+     * @param i_XMLName  配置文件
      */
     public void loadXML(String i_XMLName)
     {
@@ -215,7 +217,7 @@ public class AppInitConfig
      * @createDate  2019-08-21
      * @version     v1.0
      *
-     * @param i_XMLName       配置文件 
+     * @param i_XMLName       配置文件
      * @param i_XmlRootPath
      */
     public void loadXML(String i_XMLName ,String i_XmlRootPath)
@@ -234,7 +236,7 @@ public class AppInitConfig
      * @createDate  2019-08-21
      * @version     v1.0
      *
-     * @param i_XMLName  配置文件 
+     * @param i_XMLName  配置文件
      */
     public void loadXML(List<Param> i_XMLNames)
     {
@@ -423,7 +425,7 @@ public class AppInitConfig
      */
     public synchronized void init(List<Param> i_Params ,String i_XmlRootPath)
     {
-        this.init(null ,i_Params ,i_XmlRootPath); 
+        this.init(null ,i_Params ,i_XmlRootPath);
     }
     
     
@@ -474,7 +476,7 @@ public class AppInitConfig
                         v_FObject   = new File(v_FFullName);
                         
                         // 遍历目录（包含子目录）下的所有配置文件 2016-12-26
-                        if ( v_FObject.isDirectory() ) 
+                        if ( v_FObject.isDirectory() )
                         {
                             List<Param> v_ChildParams = new ArrayList<Param>();
                             File []     v_ChildFiles  = v_FObject.listFiles();
@@ -500,7 +502,7 @@ public class AppInitConfig
                                         // ZhengWei(HY) Add 2017-12-20
                                         // 无论Windows、Linux系统，统一均使用 / 符号分隔路径。防止Tomcat 7.0.82+ 版本以上出现如下异常的问题
                                         // Invalid character found in the request target. The valid characters are defined in RFC 7230 and RFC 3986
-                                        v_ChildParam.setValue(v_XmlName.substring(0 ,v_XmlName.length() - 1) + "/" + v_ChildFile.getName());  
+                                        v_ChildParam.setValue(v_XmlName.substring(0 ,v_XmlName.length() - 1) + "/" + v_ChildFile.getName());
                                     }
                                     else
                                     {
@@ -634,7 +636,6 @@ public class AppInitConfig
         }
         catch (Exception exce)
         {
-            $Logger.error(exce);
             exce.printStackTrace();
         }
         
@@ -669,7 +670,6 @@ public class AppInitConfig
             }
             catch (Exception exce)
             {
-                $Logger.error(exce);
                 exce.printStackTrace();
             }
             return;
@@ -694,7 +694,6 @@ public class AppInitConfig
         }
         catch (Exception exce)
         {
-            $Logger.error(exce);
             exce.printStackTrace();
         }
     }
@@ -741,7 +740,7 @@ public class AppInitConfig
      *   2. 支持Java类名称，如 java.lang.Integer
      *   3. 支持XML文件名称，如 abc.xml
      *   4. 支持目录名称，将对其下所有（包含子目录）配置文件进行加载
-     *   
+     * 
      * @author      ZhengWei(HY)
      * @createDate  2016-02-19
      * @version     v1.0
@@ -773,7 +772,6 @@ public class AppInitConfig
         }
         catch (Exception exce)
         {
-            $Logger.error(exce);
             exce.printStackTrace();
         }
     }
@@ -788,7 +786,7 @@ public class AppInitConfig
      *   2. 支持Java类名称，如 java.lang.Integer
      *   3. 支持XML文件名称，如 abc.xml
      *   4. 支持目录名称，将对其下所有（包含子目录）配置文件进行加载
-     *   
+     * 
      * @author      ZhengWei(HY)
      * @createDate  2016-02-19
      * @version     v1.0
@@ -806,7 +804,6 @@ public class AppInitConfig
             }
             catch (Exception exce)
             {
-                $Logger.error(exce);
                 exce.printStackTrace();
             }
             return;
@@ -831,7 +828,6 @@ public class AppInitConfig
         }
         catch (Exception exce)
         {
-            $Logger.error(exce);
             exce.printStackTrace();
         }
     }
@@ -904,7 +900,6 @@ public class AppInitConfig
         else
         {
             System.out.println("Loading    " + i_Name + " error.");
-            $Logger.error("Loading " + i_Name + " error.");
         }
     }
     
@@ -932,7 +927,7 @@ public class AppInitConfig
 
     
     /**
-     * 入参格式为：/com/xxx/yyy/。注意最后有一个符号'/' 
+     * 入参格式为：/com/xxx/yyy/。注意最后有一个符号'/'
      * 
      * @param xmlClassPath
      */

@@ -581,6 +581,10 @@ public class XJSONToJson
         {
             v_BigValue = new BigDecimal(Help.round(i_JavaData.toString() ,i_XJson.getDigit()));
         }
+        else
+        {
+            v_BigValue = i_JavaData;
+        }
         
         if ( i_XJson.isBigDecimalFormat() )
         {

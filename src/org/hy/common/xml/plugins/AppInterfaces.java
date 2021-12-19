@@ -3,10 +3,10 @@ package org.hy.common.xml.plugins;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import org.hy.common.Help;
 import org.hy.common.xml.XJSON;
 import org.hy.common.xml.XJava;
-
-import org.hy.common.Help;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -25,6 +25,8 @@ import org.hy.common.Help;
  */
 public final class AppInterfaces
 {
+    private static final Logger              $Logger = new Logger(AppInterfaces.class);
+    
     private static AppInterfaces             $AppInterfaces;
     
     private static XJSON                     $XJson;
@@ -36,7 +38,7 @@ public final class AppInterfaces
     /**
      * 将消息分发给接收者去执行(只用于服务端：如Web服务)
      * 
-     * @param i_Obj       消息的执行者(消息的接收者) 
+     * @param i_Obj       消息的执行者(消息的接收者)
      * @param i_Message   消息本身
      * @return
      */
@@ -55,7 +57,7 @@ public final class AppInterfaces
     /**
      * 将消息分发给接收者去执行(只用于服务端：如Web服务)
      * 
-     * @param i_Obj         消息的执行者(消息的接收者) 
+     * @param i_Obj         消息的执行者(消息的接收者)
      * @param i_AppMessage  消息本身
      * @return
      */
@@ -92,7 +94,9 @@ public final class AppInterfaces
         }
         catch (Exception exce)
         {
-            v_Ret = (AppMessage<?>)i_AppMessage.clone();
+            $Logger.error(exce);
+            
+            v_Ret = i_AppMessage.clone();
             v_Ret.setRc("-1");
             v_Ret.setResult(false);
             if ( exce.getCause() != null  )
@@ -157,7 +161,7 @@ public final class AppInterfaces
     /**
      * 获取接口的消息被加密过的信息
      * 
-     * @param i_Message  消息对象 
+     * @param i_Message  消息对象
      * @return
      */
     public static String getEncrypt(AppMessage<?> i_Msg)
@@ -211,7 +215,7 @@ public final class AppInterfaces
             
             if ( $Interfaces.containsKey(v_SID) )
             {
-                AppInterface v_AppInterface = $Interfaces.get(v_SID); 
+                AppInterface v_AppInterface = $Interfaces.get(v_SID);
                 
                 return v_AppInterface.getAppInfo(i_Message);
             }
@@ -223,8 +227,7 @@ public final class AppInterfaces
         }
         catch (Exception exce)
         {
-            // Nothing.
-            // 为了安全，不报错，直接返回空
+            $Logger.error(exce);
         }
         
         return v_ErrorMsg;
@@ -245,7 +248,7 @@ public final class AppInterfaces
         {
             if ( !Help.isNull(i_SID) && $Interfaces.containsKey(i_SID) )
             {
-                AppInterface v_AppInterface = $Interfaces.get(i_SID); 
+                AppInterface v_AppInterface = $Interfaces.get(i_SID);
                 
                 return v_AppInterface.getAppInfo(i_SID ,i_Message);
             }
@@ -269,7 +272,7 @@ public final class AppInterfaces
     {
         if ( $Interfaces.containsKey(i_AppMessage.getSid()) )
         {
-            AppInterface v_AppInterface = $Interfaces.get(i_AppMessage.getSid()); 
+            AppInterface v_AppInterface = $Interfaces.get(i_AppMessage.getSid());
             
             return v_AppInterface.getEmName();
         }
@@ -285,7 +288,7 @@ public final class AppInterfaces
     {
         if ( !Help.isNull(i_SID) && $Interfaces.containsKey(i_SID) )
         {
-            AppInterface v_AppInterface = $Interfaces.get(i_SID); 
+            AppInterface v_AppInterface = $Interfaces.get(i_SID);
             
             if ( !Help.isNull(v_AppInterface.getMsgKey(i_SID ,i_SysID)) )
             {

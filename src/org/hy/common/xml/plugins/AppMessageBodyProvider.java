@@ -17,13 +17,11 @@ import javax.ws.rs.ext.Provider;
 
 import org.glassfish.jersey.message.internal.AbstractMessageReaderWriterProvider;
 import org.glassfish.jersey.server.ContainerRequest;
-import org.hy.common.xml.XJSON;
-import org.hy.common.xml.XJava;
-import org.hy.common.xml.plugins.AppInterfaces;
-import org.hy.common.xml.plugins.AppMessage;
-
 import org.hy.common.Date;
 import org.hy.common.Help;
+import org.hy.common.xml.XJSON;
+import org.hy.common.xml.XJava;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -34,7 +32,7 @@ import org.hy.common.Help;
  * 
  * @author      ZhengWei(HY)
  * @createDate  2014-09-25
- * @version     v1.0  
+ * @version     v1.0
  *              v2.0  2018-01-20  添加：当访问路径不存时，服务端也打出日志。
  */
 @Provider
@@ -42,17 +40,20 @@ import org.hy.common.Help;
 @Singleton
 public class AppMessageBodyProvider extends AbstractMessageReaderWriterProvider<AppMessage<?>>
 {
+    private static final Logger $Logger = new Logger(AppMessageBodyProvider.class);
+    
     private javax.inject.Provider<ContainerRequest> request;
     
     
     
-    public AppMessageBodyProvider(@Context javax.inject.Provider<ContainerRequest> i_Request) 
-    {  
+    public AppMessageBodyProvider(@Context javax.inject.Provider<ContainerRequest> i_Request)
+    {
         this.request = i_Request;
-    } 
+    }
 
     
     
+    @Override
     public boolean isReadable(Class<?> type ,Type genericType ,Annotation [] annotations ,MediaType mediaType)
     {
         return type == AppMessage.class;
@@ -60,15 +61,18 @@ public class AppMessageBodyProvider extends AbstractMessageReaderWriterProvider<
     
     
     
+    @Override
     @SuppressWarnings("unchecked")
     public AppMessage<?> readFrom(Class<AppMessage<?>> type ,Type genericType ,Annotation [] annotations ,MediaType mediaType ,MultivaluedMap<String ,String> httpHeaders ,InputStream entityStream) throws IOException ,WebApplicationException
     {
         AppInterface  v_AppInterface = null;
         AppMessage<?> v_Ret          = null;
         
-        try 
+        try
         {
             String v_Path = this.request.get().getPath(true);
+            
+            $Logger.debug(v_Path);
             
             if ( !Help.isNull(v_Path) )
             {
@@ -80,12 +84,13 @@ public class AppMessageBodyProvider extends AbstractMessageReaderWriterProvider<
                     if ( v_AppInterface != null )
                     {
                         String v_MsgInfo = readFromAsString(entityStream ,mediaType);
+                        $Logger.debug(v_MsgInfo);
                         v_Ret = AppInterfaces.getAppMessage(v_Path ,v_MsgInfo);
                         
                         // 请求次数++
                         if ( v_Ret == null )
                         {
-                            System.err.println("\nError: " + Date.getNowTime().getFullMilli() + "：Request [" + v_Path + "] is fail.\n" + v_MsgInfo);
+                            $Logger.error("Request [" + v_Path + "] is fail.\n" + v_MsgInfo);
                             v_AppInterface.request("");
                         }
                         else
@@ -95,15 +100,17 @@ public class AppMessageBodyProvider extends AbstractMessageReaderWriterProvider<
                     }
                     else
                     {
-                        System.err.println("\nError: " + Date.getNowTime().getFullMilli() + "  Request path[" + v_Path + "] does not exist.");
+                        $Logger.error("Request path[" + v_Path + "] does not exist.");
                     }
                 }
             }
             
             return v_Ret;
-        } 
-        catch (Exception exce) 
+        }
+        catch (Exception exce)
         {
+            $Logger.error(exce);
+            
             try
             {
                 if ( v_AppInterface != null )
@@ -124,6 +131,7 @@ public class AppMessageBodyProvider extends AbstractMessageReaderWriterProvider<
 
     
     
+    @Override
     public boolean isWriteable(Class<?> type ,Type genericType ,Annotation [] annotations ,MediaType mediaType)
     {
         return true;
@@ -131,6 +139,7 @@ public class AppMessageBodyProvider extends AbstractMessageReaderWriterProvider<
 
     
     
+    @Override
     @SuppressWarnings("unchecked")
     public void writeTo(AppMessage<?> t ,Class<?> type ,Type genericType ,Annotation [] annotations ,MediaType mediaType ,MultivaluedMap<String ,Object> httpHeaders ,OutputStream entityStream) throws IOException ,WebApplicationException
     {

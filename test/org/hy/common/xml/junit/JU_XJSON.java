@@ -263,6 +263,19 @@ public class JU_XJSON
         $Logger.info(v_Json);
         $Logger.info(v_New);
     }
+    
+    
+    
+    @Test
+    public void test_JsonToMap() throws Exception
+    {
+        String v_Json  = "{\"body\":{\"compareValue\":\"\",\"currentPage\":\"\",\"limit\":\"\",\"pagePerCount\":\"\",\"rowKey\":\"\",\"start\":\"\",\"startIndex\":\"\",\"syncMacCount\":\"50000\",\"t\":\"\",\"token\":\"\"},\"encry\":\"\",\"format\":\"\",\"rc\":\"0\",\"result\":\"\",\"ri\":\"\",\"serialNo\":\"\",\"session\":\"\",\"sid\":\"I012A001\",\"sidv\":\"\",\"sign\":\"\",\"sysid\":\"capmsplan\",\"tokenSec\":\"\"}";
+        XJSON  v_XJson = new XJSON();
+        
+        Map<? ,?> v_Mes = (Map<? ,?>)v_XJson.parser(v_Json);
+        
+        $Logger.info(v_Mes);
+    }
 
     
     

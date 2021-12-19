@@ -152,7 +152,7 @@ public class XSQLNodeCloud
             $Logger.error(exce);
         }
         
-        Execute v_Execute = new Execute(this.client.operation() ,"sendCommand" ,new Object[]{-1 ,i_XSQLNode.getXid().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{v_Params}});
+        Execute v_Execute = new Execute(this.client.operation() ,"sendCommand" ,new Object[]{-1L ,i_XSQLNode.getXid().trim() ,i_XSQLNode.getMethodName().trim() ,new Object[]{v_Params}});
         v_Execute.addListener(new XSQLNodeCloudExecuteListener(i_XSQLNode ,this ,i_Control ,v_Params ,io_Returns ,i_ExecuteCount));
         v_Execute.start();
     }
