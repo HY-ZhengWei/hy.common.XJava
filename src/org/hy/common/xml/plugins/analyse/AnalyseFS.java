@@ -2152,7 +2152,7 @@ public class AnalyseFS extends Analyse
     @SuppressWarnings("unchecked")
     public String reload(String i_XFile ,boolean i_Cluster)
     {
-        $Logger.debug("热部署：" + i_XFile + Help.getSysPathSeparator() + " is cluster " + (i_Cluster ? "Yes" : "No"));
+        $Logger.info("热部署：" + Help.getWebINFPath() + i_XFile + " is cluster " + (i_Cluster ? "Yes" : "No"));
         
         Map<String ,Object> v_XFileNames = (Map<String ,Object>)XJava.getObject(AppInitConfig.$XFileNames_XID);
         
@@ -2172,7 +2172,16 @@ public class AnalyseFS extends Analyse
                     }
                     else
                     {
-                        v_AConfig.init(i_XFile);
+                        v_XFileObj = new File(Help.getClassHomePath() + i_XFile);
+                        
+                        if ( v_XFileObj.exists() && v_XFileObj.isFile() )
+                        {
+                            v_AConfig.initW(i_XFile ,Help.getClassHomePath());
+                        }
+                        else
+                        {
+                            v_AConfig.init(i_XFile);
+                        }
                     }
                     
                     return StringHelp.replaceAll("{'retCode':'0'}" ,"'" ,"\"");
