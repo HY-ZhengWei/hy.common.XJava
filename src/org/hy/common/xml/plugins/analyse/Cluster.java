@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hy.common.net.common.ClientCluster;
+import org.hy.common.net.netty.rpc.ClientRPC;
 import org.hy.common.xml.XJava;
 
 
@@ -47,7 +48,26 @@ public class Cluster
             v_Clusters = new ArrayList<ClientCluster>();
         }
         
-        return v_Clusters;
+        List<ClientCluster> v_ClusterServers = new ArrayList<ClientCluster>();
+        
+        for (ClientCluster v_Client : v_Clusters)
+        {
+            // 因为 ClusterServers 是短连接，在使用完成后，就关闭的，并且超时时长也不同，所以要每次创建个新的哈
+            ClientRPC v_NewClient = new ClientRPC();
+            
+            v_NewClient.setHost(v_Client.getHost());
+            v_NewClient.setPort(v_Client.getPort());
+            
+            if ( v_Client instanceof ClientRPC )
+            {
+                v_NewClient.setComment(((ClientRPC)v_Client).getComment());
+                v_NewClient.setTimeout(((ClientRPC)v_Client).getTimeout());
+            }
+            
+            v_ClusterServers.add(v_NewClient);
+        }
+        
+        return v_ClusterServers;
     }
     
 }
