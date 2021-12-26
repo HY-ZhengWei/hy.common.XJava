@@ -37,6 +37,7 @@ import org.hy.common.xml.XSQLDBMetadata;
 import org.hy.common.xml.XSQLLog;
 import org.hy.common.xml.XSQLTriggerInfo;
 import org.hy.common.xml.annotation.Xjava;
+import org.hy.common.xml.log.LogException;
 import org.hy.common.xml.log.Logger;
 import org.hy.common.xml.plugins.AppInitConfig;
 import org.hy.common.xml.plugins.XSQLGroup;
@@ -3701,6 +3702,16 @@ public class AnalyseBase extends Analyse
                                            && v_Report.getRequestCount() >= 1
                                            && (v_Report.getRequestCount() - v_Report.getWarnCount() - v_Report.getErrorFatalCount()) % v_Report.getCountNoError() > 0;
             
+            String v_OperateURL = i_ReLoadPath
+                                + "?logger=Y"
+                                + "&cn=" + v_Report.getClassName()
+                                + "&mn=" + Help.NVL(v_Report.getMethodName())
+                                + "&ln=" + Help.NVL(v_Report.getLineNumber());
+            if ( i_Cluster )
+            {
+                v_OperateURL += "&cluster=Y";
+            }
+            
             v_RKey.put(":No"              ,String.valueOf(++v_Index));
             v_RKey.put(":ClassName"       ,v_Report.getClassName());
             v_RKey.put(":MethodName"      ,Help.NVL(v_Report.getMethodName() ,"-"));
@@ -3708,8 +3719,8 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":LogLevel"        ,Help.NVL(v_Report.getLevelName()  ,"-"));
             v_RKey.put(":TotalCount"      ,"<span style='color:" + (v_Report.getCount()           >  0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getCount()           + "</span>");
             v_RKey.put(":RequestCount"    ,"<span style='color:" + (v_Report.getRequestCount()    >  0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getRequestCount()    + "</span>");
-            v_RKey.put(":WarnCount"       ,"<span style='color:" + (v_Report.getWarnCount()       >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_Report.getWarnCount()       + "</span>");
-            v_RKey.put(":ErrorFatalCount" ,"<span style='color:" + (v_Report.getErrorFatalCount() >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_Report.getErrorFatalCount() + "</span>");
+            v_RKey.put(":WarnCount"       ,"<span style='color:" + (v_Report.getWarnCount()       >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + (v_Report.getWarnCount()       > 0 ? "<a href='" + v_OperateURL + "&level=warn"  + "'>" + v_Report.getWarnCount()       + "</a>" : "0") + "</span>");
+            v_RKey.put(":ErrorFatalCount" ,"<span style='color:" + (v_Report.getErrorFatalCount() >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + (v_Report.getErrorFatalCount() > 0 ? "<a href='" + v_OperateURL + "&level=error" + "'>" + v_Report.getErrorFatalCount() + "</a>" : "0") + "</span>");
             v_RKey.put(":IsRunning"       ,v_IsRunning ? "运行中" : "-");
             v_RKey.put(":ExecSumTime"     ,"<span style='color:" + (v_Report.getExecSumTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecSumTime() >= 0 ? Date.toTimeLen(v_Report.getExecSumTime()) : "-") + "</span>");
             v_RKey.put(":ExecAvgTime"     ,"<span style='color:" + (v_Report.getExecAvgTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecAvgTime() >= 0 ? Help.round(v_Report.getExecAvgTime() ,2) : "-") + "</span>");
@@ -3828,6 +3839,256 @@ public class AnalyseBase extends Analyse
     public AnalyseLoggerTotal analyseLogger_Total(String i_TotalType)
     {
         return new AnalyseLoggerTotal(i_TotalType);
+    }
+    
+    
+    
+    /**
+     * 功能1. 查看对象执行异常的日志（支持集群）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-24
+     * @version     v1.0
+     *
+     * @param  i_BasePath         服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ReLoadPath       重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject?logger=Y
+     * @param  i_Cluster          是否为集群
+     * @param  i_ClassName        类名称
+     * @param  i_MethodName       方法名称
+     * @param  i_LineNumber       行号
+     * @param  i_LogLevel         日志级别
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public String analyseLoggerException(String  i_BasePath
+                                        ,String  i_ReLoadPath
+                                        ,boolean i_Cluster
+                                        ,String  i_ClassName
+                                        ,String  i_MethodName
+                                        ,String  i_LineNumber
+                                        ,String  i_LogLevel)
+    {
+        $Logger.debug("查看对象执行异常的日志：" + i_ClassName + ":" + i_MethodName + ":" + i_LineNumber + ":" + i_LogLevel);
+        
+        if ( Help.isNull(i_ClassName) )
+        {
+            return "";
+        }
+        
+        try
+        {
+            List<LogException> v_ErrorLogs = null;
+            
+            // 本机统计
+            if ( !i_Cluster )
+            {
+                v_ErrorLogs = this.analyseLoggerException_Total(i_ClassName ,i_MethodName ,i_LineNumber ,i_LogLevel);
+            }
+            // 集群统计
+            else
+            {
+                List<ClientCluster> v_Servers = Cluster.getClusters();
+                v_ErrorLogs = new ArrayList<LogException>();
+                
+                if ( !Help.isNull(v_Servers) )
+                {
+                    Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+                    try
+                    {
+                        // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                        ClientSocketCluster.startServer(v_Servers);
+                        ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                        v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseLoggerException_Total" ,new Object[]{i_ClassName ,i_MethodName ,i_LineNumber ,i_LogLevel} ,true ,"对象执行异常的日志");
+                    }
+                    catch (Exception exce)
+                    {
+                        $Logger.error(exce);
+                    }
+                    finally
+                    {
+                        ClientSocketCluster.shutdownServer(v_Servers);
+                    }
+                    
+                    if ( v_ResponseDatas != null )
+                    {
+                        for (Map.Entry<? extends ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                        {
+                            CommunicationResponse v_ResponseData = v_Item.getValue();
+                            ClientCluster         v_Client       = v_Item.getKey();
+                            String                v_ClientName   = "【" + v_Client.getHost() + ":" + v_Client.getPort() + "】 ";
+                            
+                            if ( v_ResponseData.getResult() == 0 )
+                            {
+                                if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof List )
+                                {
+                                    List<LogException> v_ELogs = (List<LogException>)v_ResponseData.getData();
+                                    
+                                    for (LogException v_ELog : v_ELogs)
+                                    {
+                                        v_ELog.setE(v_ClientName + Help.NVL(v_ELog.getE()));
+                                    }
+                                    
+                                    v_ErrorLogs.addAll(v_ELogs);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            String v_Content      = "";
+            String v_OperateURL   = "#";
+            String v_OperateTitle = "";
+            XJSON  v_XJSON        = new XJSON();
+            v_XJSON.setReturnNVL(true);
+            v_XJSON.setAccuracy(true);
+            
+            XJSONObject v_Ret = v_XJSON.parser(v_ErrorLogs);
+            if ( null != v_Ret )
+            {
+                v_Content = v_Ret.toJSONString();
+            }
+            else
+            {
+                v_Content = "{}";
+            }
+            
+            return StringHelp.replaceAll(this.getTemplateShowObject()
+                                        ,new String[]{":HttpBasePath" ,":TitleInfo"       ,":XJavaObjectID" ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3" ,":OperateURL4" ,":OperateTitle4" ,":OperateURL5" ,":OperateTitle5"}
+                                        ,new String[]{i_BasePath      ,"执行异常的业务对象" ,i_ClassName      ,v_Content  ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle});
+        }
+        catch (Exception exce)
+        {
+            $Logger.error(exce);
+            return exce.toString();
+        }
+    }
+    
+    
+    
+    /**
+     * 查看对象执行错误的日志
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-24
+     * @version     v1.0
+     * 
+     * @param  i_ClassName        类名称
+     * @param  i_MethodName       方法名称
+     * @param  i_LineNumber       行号
+     * @param  i_LogLevel         日志级别
+     * @return
+     */
+    public List<LogException> analyseLoggerException_Total(String i_ClassName ,String i_MethodName ,String i_LineNumber ,String i_LogLevel)
+    {
+        List<LogException> v_ErrorLogs = new ArrayList<LogException>();
+        List<Logger>       v_Loggers   = Logger.getLoggers().get(i_ClassName);
+        String []          v_FindKeys  = null;
+        if ( Help.isNull(v_Loggers) )
+        {
+            return v_ErrorLogs;
+        }
+        
+        // 日志级别:方法名称:代码行
+        // 按“类”分组统计
+        if ( Help.isNull(i_MethodName) && Help.isNull(i_LineNumber) )
+        {
+            if ( Help.isNull(i_LogLevel) )
+            {
+                v_FindKeys = new String[] {"warn:" ,"error:" ,"fatal:"};
+            }
+            else if ( "error".equalsIgnoreCase(i_LogLevel) )
+            {
+                v_FindKeys = new String[] {"error:" ,"fatal:"};
+            }
+            else
+            {
+                v_FindKeys = new String[] {"warn:"};
+            }
+            
+            this.analyseLoggerException_Total_Add(v_ErrorLogs ,v_Loggers ,v_FindKeys);
+        }
+        // 按“日志输出代码行”统计
+        else if ( !Help.isNull(i_MethodName) && !Help.isNull(i_LineNumber) )
+        {
+            if ( Help.isNull(i_LogLevel) )
+            {
+                v_FindKeys = new String[] {"warn:"  + i_MethodName + ":" + i_LineNumber
+                                          ,"error:" + i_MethodName + ":" + i_LineNumber
+                                          ,"fatal:" + i_MethodName + ":" + i_LineNumber};
+            }
+            else if ( "error".equalsIgnoreCase(i_LogLevel) )
+            {
+                v_FindKeys = new String[] {"error:" + i_MethodName + ":" + i_LineNumber
+                                          ,"fatal:" + i_MethodName + ":" + i_LineNumber};
+            }
+            else
+            {
+                v_FindKeys = new String[] {"warn:"  + i_MethodName + ":" + i_LineNumber};
+            }
+            
+            this.analyseLoggerException_Total_Add(v_ErrorLogs ,v_Loggers ,v_FindKeys);
+        }
+        // 按“方法”分组统计
+        else if ( !Help.isNull(i_MethodName) )
+        {
+            if ( Help.isNull(i_LogLevel) )
+            {
+                v_FindKeys = new String[] {"warn:"  + i_MethodName + ":"
+                                          ,"error:" + i_MethodName + ":"
+                                          ,"fatal:" + i_MethodName + ":"};
+            }
+            else if ( "error".equalsIgnoreCase(i_LogLevel) )
+            {
+                v_FindKeys = new String[] {"error:" + i_MethodName + ":"
+                                          ,"fatal:" + i_MethodName + ":"};
+            }
+            else
+            {
+                v_FindKeys = new String[] {"warn:"  + i_MethodName + ":"};
+            }
+            
+            this.analyseLoggerException_Total_Add(v_ErrorLogs ,v_Loggers ,v_FindKeys);
+        }
+        
+        return v_ErrorLogs;
+    }
+    
+    
+    
+    /**
+     * 收集指定过滤器的异常日志
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-12-25
+     * @version     v1.0
+     * 
+     * @param  io_ErrorLogs    收集器
+     * @param  i_Loggers       日志集合
+     * @param  i_FindKeys      过滤器
+     * @return
+     */
+    private void analyseLoggerException_Total_Add(List<LogException> io_ErrorLogs ,List<Logger> i_Loggers ,String [] i_FindKeys)
+    {
+        for (Logger v_Logger : i_Loggers)
+        {
+            if ( v_Logger.getExecptionLog() == null )
+            {
+                continue;
+            }
+            
+            for (Map.Entry<String ,Busway<LogException>> v_Item : v_Logger.getExecptionLog().entrySet())
+            {
+                if ( StringHelp.isStartsWith(v_Item.getKey() ,i_FindKeys) )
+                {
+                    LogException [] v_LogExceptions = v_Item.getValue().toArray(new LogException[] {});
+                    for (LogException v_LogExce : v_LogExceptions)
+                    {
+                        io_ErrorLogs.add(v_LogExce);
+                    }
+                }
+            }
+        }
     }
     
     

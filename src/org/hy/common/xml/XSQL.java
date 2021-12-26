@@ -179,8 +179,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /** SQL执行日志。默认只保留1000条执行过的SQL语句 */
     public  static final Busway<XSQLLog>   $SQLBusway      = new Busway<XSQLLog>(1000);
     
-    /** SQL执行异常的日志。默认只保留1000条执行异常的SQL语句 */
-    public  static final Busway<XSQLLog>   $SQLBuswayError = new Busway<XSQLLog>(1000);
+    /** SQL执行异常的日志。默认只保留9000条执行异常的SQL语句 */
+    public  static final Busway<XSQLLog>   $SQLBuswayError = new Busway<XSQLLog>(9000);
     
     /** XSQL */
     public  static final String            $XSQLErrors     = "XSQL-Errors";

@@ -574,20 +574,38 @@ public class AnalyseObjectServlet extends HttpServlet
             }
             else if ( !Help.isNull(v_Logger) )
             {
-                String v_TotalType       = Help.NVL(i_Request.getParameter("TT"));
-                String v_Sort            = Help.NVL(i_Request.getParameter("S"));
-                String v_FilterClassName = Help.NVL(i_Request.getParameter("FCN"));
-                String v_Timer           = Help.NVL(i_Request.getParameter("Timer"));
-                String v_ShowEveryOne    = Help.NVL(i_Request.getParameter("ShowEveryOne"));
-                
-                i_Response.getWriter().println(this.analyse.analyseLogger(v_BasePath
-                                                                         ,i_Request.getRequestURL().toString()
-                                                                         ,"Y".equalsIgnoreCase(v_Cluster)
-                                                                         ,"Y".equalsIgnoreCase(v_ShowEveryOne)
-                                                                         ,v_TotalType
-                                                                         ,v_Sort
-                                                                         ,v_FilterClassName
-                                                                         ,v_Timer));
+                String v_ClassName = Help.NVL(i_Request.getParameter("cn"));
+                if ( Help.isNull(v_ClassName) )
+                {
+                    String v_TotalType       = Help.NVL(i_Request.getParameter("TT"));
+                    String v_Sort            = Help.NVL(i_Request.getParameter("S"));
+                    String v_FilterClassName = Help.NVL(i_Request.getParameter("FCN"));
+                    String v_Timer           = Help.NVL(i_Request.getParameter("Timer"));
+                    String v_ShowEveryOne    = Help.NVL(i_Request.getParameter("ShowEveryOne"));
+                    
+                    i_Response.getWriter().println(this.analyse.analyseLogger(v_BasePath
+                                                                             ,i_Request.getRequestURL().toString()
+                                                                             ,"Y".equalsIgnoreCase(v_Cluster)
+                                                                             ,"Y".equalsIgnoreCase(v_ShowEveryOne)
+                                                                             ,v_TotalType
+                                                                             ,v_Sort
+                                                                             ,v_FilterClassName
+                                                                             ,v_Timer));
+                }
+                else
+                {
+                    String v_MethodName = Help.NVL(i_Request.getParameter("mn"));
+                    String v_LineNumber = Help.NVL(i_Request.getParameter("ln"));
+                    String v_LogLevel   = Help.NVL(i_Request.getParameter("level"));
+                    
+                    i_Response.getWriter().println(this.analyse.analyseLoggerException(v_BasePath
+                                                                                      ,i_Request.getRequestURL().toString()
+                                                                                      ,"Y".equalsIgnoreCase(v_Cluster)
+                                                                                      ,v_ClassName
+                                                                                      ,v_MethodName
+                                                                                      ,v_LineNumber
+                                                                                      ,v_LogLevel));
+                }
             }
             else if ( Help.isNull(v_XFile) && "Y".equalsIgnoreCase(v_Cluster) )
             {

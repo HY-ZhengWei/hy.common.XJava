@@ -14,6 +14,7 @@ import org.hy.common.PartitionMap;
 import org.hy.common.StaticReflect;
 import org.hy.common.StringHelp;
 import org.hy.common.TablePartition;
+import org.hy.common.TablePartitionBusway;
 import org.hy.common.file.FileHelp;
 
 
@@ -56,85 +57,85 @@ public class Logger
 {
     
     /** 全局控制参数：是否启用SLF4J。目标对象实例化前的有效，日志对象实例化后，修改是没有任何效果的 */
-    private static boolean                      $IsEnabled_SLF4J = true;
+    private static boolean                             $IsEnabled_SLF4J = true;
     
     /** 全局控制参数：是否启用Log4J。目标对象实例化前的有效，日志对象实例化后，修改是没有任何效果的 */
-    private static boolean                      $IsEnabled_Log4J = true;
+    private static boolean                             $IsEnabled_Log4J = true;
     
     /** 全局控制参数：是否启用System.out.println输出日志。目标对象实例化前的有效，日志对象实例化后，修改是没有任何效果的 */
-    private static boolean                      $IsEnabled_Print = false;
+    private static boolean                             $IsEnabled_Print = false;
     
     
     
     /** 常量：日志引擎的类型为：SLF4J */
-    public static final int                     $LogType_SLF4J = 1;
+    public static final int                            $LogType_SLF4J = 1;
     
     /** 常量：日志引擎的类型为：Log4J */
-    public static final int                     $LogType_Log4J = 2;
+    public static final int                            $LogType_Log4J = 2;
     
-    private static final String                 $FQCN = Logger.class.getName();
+    private static final String                        $FQCN = Logger.class.getName();
     
     
     
     /** 日志实现类库的类型（1：SLF4J  2：Log4J） */
-    private static int                          $LogType    = -1;
-    
+    private static int                                 $LogType    = -1;
+                                                       
     /** 日志实现类库的版本 */
-    private static int                          $LogVersion = -1;
-    
-    private static Class<?>                     $LogClass;
-    
-    private static Class<?>                     $LogManager;
+    private static int                                 $LogVersion = -1;
+                                                       
+    private static Class<?>                            $LogClass;
+                                                       
+    private static Class<?>                            $LogManager;
     
     /** 指出每个严重的错误事件将会导致应用程序的退出。这个级别比较高了。重大错误，这种级别你可以直接停止程序了 */
-    private static Level                        $LogLevelFatal;
+    private static Level                               $LogLevelFatal;
                           
     /** 指出虽然发生错误事件，但仍然不影响系统的继续运行。打印错误和异常信息，如果不想输出太多的日志，可以使用这个级别 */
-    private static Level                        $LogLevelError;
+    private static Level                               $LogLevelError;
                           
     /** 表明会出现潜在错误的情形，有些信息不是错误信息，但是也要给程序员的一些提示。 */
-    private static Level                        $LogLevelWarn;
+    private static Level                               $LogLevelWarn;
                           
     /** 消息在粗粒度级别上突出强调应用程序的运行过程。打印一些你感兴趣的或者重要的信息 */
-    private static Level                        $LogLevelInfo;
+    private static Level                               $LogLevelInfo;
                           
     /** 指出细粒度信息事件对调试应用程序是非常有帮助的，主要用于开发过程中打印一些运行信息 */
-    private static Level                        $LogLevelDebug;
-                                                
+    private static Level                               $LogLevelDebug;
+                                                       
     /** 最低的日志级别 */
-    private static Level                        $LogLevelTrace;
-                                                
-    private static Method                       $FatalIsEnabled;
-                                                
-    private static Method                       $ErrorIsEnabled;
-                                                
-    private static Method                       $WarnIsEnabled;
-                                                
-    private static Method                       $InfoIsEnabled;
-                                                
-    private static Method                       $DebugIsEnabled;
-                                                
-    private static Method                       $TraceIsEnabled;
-    
-    private static Method                       $LogMethodNull;
-    
-    private static Method                       $LogMethod;
-                                                
-    private static Method                       $LogMethod_Log4j2Throwable;
-    
+    private static Level                               $LogLevelTrace;
+                                                       
+    private static Method                              $FatalIsEnabled;
+                                                       
+    private static Method                              $ErrorIsEnabled;
+                                                       
+    private static Method                              $WarnIsEnabled;
+                                                       
+    private static Method                              $InfoIsEnabled;
+                                                       
+    private static Method                              $DebugIsEnabled;
+                                                       
+    private static Method                              $TraceIsEnabled;
+                                                       
+    private static Method                              $LogMethodNull;
+                                                       
+    private static Method                              $LogMethod;
+                                                       
+    private static Method                              $LogMethod_Log4j2Throwable;
+                                                       
     /**
      * 全部日志处理类的集合。可用于日志分析
      * 
      * Map.key  为分区标示。为使用日志引擎的类名称
      */
-    private static PartitionMap<String ,Logger> $Loggers = new TablePartition<String ,Logger>();
-    
-    
-    
-    private Object                              log;
+    private static PartitionMap<String ,Logger>        $Loggers = new TablePartition<String ,Logger>();
+                                                       
+                                                       
+                                                       
+    private Object                                     log;
     
     /** 没有任何Log4j版本时，是否采用System.out.println()方法输出 */
-    private Class<?>                            logClass;
+    private Class<?>                                   logClass;
     
     /**
      * 统计日志执行次数
@@ -144,7 +145,7 @@ public class Logger
      *   Map.Key   是：日志级别:方法名称:代码行
      *   Map.Value 是：累计执行次数
      */
-    private Counter<String>                     requestCount;
+    private Counter<String>                            requestCount;
     
     /**
      * 统计日志最后执行时间
@@ -154,7 +155,15 @@ public class Logger
      *   Map.Key   是：日志级别:方法名称:代码行
      *   Map.Value 是：最后执行时间
      */
-    private Map<String ,Long>                   requestTime;
+    private Map<String ,Long>                          requestTime;
+    
+    /**
+     * 记录异常日志的具体内容
+     * 
+     * Map.Key   是：日志级别:方法名称:代码行
+     * Map.Value 是：异常对象
+     */
+    private TablePartitionBusway<String ,LogException> execptionLog;
     
     /**
      * 统计方法执行累计用时
@@ -164,7 +173,7 @@ public class Logger
      *   Map.Key   是：方法名称 + 线程号
      *   Map.Value 是：累计用时
      */
-    private Counter<String>                     methodExecSumTime;
+    private Counter<String>                            methodExecSumTime;
     
     /**
      * 用于统计方法执行累计用时的方法最后执行行号，计算线程、方法、行号三者的关系。
@@ -176,7 +185,7 @@ public class Logger
      * 
      * 仅限内部使用
      */
-    private Map<String ,Integer>                methodExecLines;
+    private Map<String ,Integer>                       methodExecLines;
     
     /**
      * 用于统计方法执行累计用时的方法最后执行时间
@@ -188,7 +197,7 @@ public class Logger
      * 
      * 仅限内部使用
      */
-    private Map<String ,Long>                   methodExecLastime;
+    private Map<String ,Long>                          methodExecLastime;
     
     
     
@@ -1116,6 +1125,11 @@ public class Logger
         {
             this.methodExecSumTime.set(v_Key ,0L);
         }
+        
+        for (String v_Key : this.execptionLog.keySet())
+        {
+            this.execptionLog.get(v_Key).clear();
+        }
     }
     
     
@@ -1152,7 +1166,7 @@ public class Logger
      * @version     v1.0
      *
      */
-    private void request(String i_LevelName)
+    private void request(final Level i_Level ,final String i_LevelName ,final String i_Message ,final Throwable i_Throwable)
     {
         StackTraceElement v_StackTrace = LogStackTrace.calcLocation($FQCN);
         
@@ -1161,6 +1175,19 @@ public class Logger
             String v_Key = i_LevelName + ":" + v_StackTrace.getMethodName() + ":" + v_StackTrace.getLineNumber();
             this.requestCount.put(v_Key ,1L);
             this.requestTime .put(v_Key ,Date.getNowTime().getTime());
+            
+            if ( i_Level == $LogLevelWarn || i_Level == $LogLevelError || i_Level == $LogLevelFatal )
+            {
+                synchronized ( this )
+                {
+                    if ( this.execptionLog == null )
+                    {
+                        this.execptionLog = new TablePartitionBusway<String ,LogException>();
+                    }
+                }
+                
+                this.execptionLog.putRow(v_Key ,new LogException(i_Message ,i_Throwable));
+            }
             
             // 下面代码的功能是：通过方法内两次及以上的多次日志输出，尝试计算出方法执行用时
             String  v_MethodThreadID = v_StackTrace.getMethodName() + Thread.currentThread().getId();
@@ -1196,6 +1223,19 @@ public class Logger
     public Counter<String> getRequestCount()
     {
         return requestCount;
+    }
+    
+    
+    
+    /**
+     * 记录异常日志的具体内容
+     * 
+     * Map.Key   是：日志级别:方法名称:代码行
+     * Map.Value 是：异常对象
+     */
+    public TablePartitionBusway<String ,LogException> getExecptionLog()
+    {
+        return this.execptionLog;
     }
     
     
@@ -1413,7 +1453,7 @@ public class Logger
      */
     public void log(final Object i_Marker ,final Level i_Level ,final String i_Message ,final Object [] i_Arguments ,final Throwable i_Throwable)
     {
-        this.request(getLevelName(i_Level));
+        this.request(i_Level ,getLevelName(i_Level) ,i_Message, i_Throwable);
         
         if ( this.log != null && $LogMethod != $LogMethodNull )
         {
