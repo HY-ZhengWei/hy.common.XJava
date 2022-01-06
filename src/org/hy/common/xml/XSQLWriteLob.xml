@@ -2,28 +2,28 @@
 
 <config>
 
-	<import name="sqls"            class="java.util.ArrayList" />
-	<import name="sql"             class="org.hy.common.app.Param" />
+    <import name="sqls"            class="java.util.ArrayList" />
+    <import name="sql"             class="org.hy.common.app.Param" />
 
 
 
     <!-- 数据库写入大数据字段(如CLob)的模块的相关SQL -->
-	<sqls>
-		
-		<!-- 数据库ORACLE -->
-		<sql id="XSQL_WriteLob_ORACLE" new="true">
-		
-			<value>
-				<![CDATA[
-					SELECT  :LobName
-					  FROM  :TableName
-					 WHERE  :IdWheres
-					   FOR  UPDATE
-				]]>
-			</value>
-			
-		</sql>
-		
-	</sqls>
-	
+    <sqls>
+        
+        <!-- 数据库ORACLE -->
+        <sql id="XSQL_WriteLob_ORACLE" new="true">
+        
+            <value>
+                <![CDATA[
+                    SELECT  :LobName
+                      FROM  :TableName
+                     WHERE  :IdWheres
+                       FOR  UPDATE
+                ]]>
+            </value>
+            
+        </sql>
+        
+    </sqls>
+    
 </config>

@@ -42,7 +42,7 @@
             <app>
                 <level>1</level>
                 <appID>MC001</appID>
-                <appName>集群监控</appName>
+                <appName>集群分析</appName>
                 <icon>:HttpBasePath/windows/images/cluster.png</icon>
                 <backgroundColor>#b0c4de</backgroundColor>
                 <url>:HttpBasePath/analyses/analyseObject?cluster=Y</url>
@@ -55,7 +55,7 @@
             <app>
                 <level>1</level>
                 <appID>MK001</appID>
-                <appName>日志监控</appName>
+                <appName>日志分析</appName>
                 <icon>:HttpBasePath/windows/images/logger.png</icon>
                 <backgroundColor>#c1dee0</backgroundColor>
                 <url>:HttpBasePath/analyses/analyseObject?logger=Y</url>
@@ -214,7 +214,7 @@
                 <level>2</level>
                 <appID>MF002</appID>
                 <superID>MF001</superID>
-                <appName>DB连接池监控</appName>
+                <appName>DB连接池分析</appName>
                 <icon>:HttpBasePath/windows/images/connectPool.png</icon>
                 <backgroundColor>#fa9b9b</backgroundColor>
                 <url>:HttpBasePath/analyses/analyseObject?DSG=Y</url>
@@ -269,7 +269,7 @@
                 <level>2</level>
                 <appID>MG003</appID>
                 <superID>MG001</superID>
-                <appName>定时任务监控</appName>
+                <appName>定时任务分析</appName>
                 <icon>:HttpBasePath/windows/images/timer.png</icon>
                 <backgroundColor>#6C757D</backgroundColor>
                 <url>:HttpBasePath/analyses/analyseObject?Job=Y</url>
@@ -283,12 +283,27 @@
             <app>
                 <level>1</level>
                 <appID>MH001</appID>
-                <appName>线程池监控</appName>
+                <appName>线程池分析</appName>
                 <icon>:HttpBasePath/windows/images/tpool.png</icon>
                 <backgroundColor>#343A40</backgroundColor>
                 <url>:HttpBasePath/analyses/analyseObject?ThreadPool=Y</url>
                 <x>885</x>
                 <y>170</y>
+                <desktopShow>true</desktopShow>
+                <sizeType>longWidth</sizeType>
+            </app>
+            
+            
+            
+            <app>
+                <level>1</level>
+                <appID>MH001</appID>
+                <appName>云连接分析</appName>
+                <icon>:HttpBasePath/windows/images/communication.png</icon>
+                <backgroundColor>#1EE883</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseObject?net=Y</url>
+                <x>885</x>
+                <y>390</y>
                 <desktopShow>true</desktopShow>
                 <sizeType>longWidth</sizeType>
             </app>

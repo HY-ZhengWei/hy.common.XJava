@@ -44,6 +44,7 @@ import org.hy.common.xml.annotation.XRequest;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.XTypeAnno;
 import org.hy.common.xml.annotation.Xjava;
+import org.hy.common.xml.log.Logger;
 import org.hy.common.xml.plugins.AppInterface;
 import org.hy.common.xml.plugins.XRule;
 import org.hy.common.xml.plugins.XSQLGroup;
@@ -53,7 +54,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import com.sun.istack.internal.logging.Logger;
 
 
 
@@ -91,10 +91,12 @@ import com.sun.istack.internal.logging.Logger;
  *              v1.13 2018-05-04  添加：支持Setter方法重载情况下的XML解析赋值。
  *              v1.14 2019-09-04  添加：支持XML配置中特定的属性加密，并且当为明文时，程序启后将自动重写为密文保存在配置中。建议人：邹德福
  *              v1.15 2021-01-16  添加：构造器constructor参数支持属性加密、回写配置文件的功能
+ *              v1.16 2022-01-05  添加：日志机制启用内部的Logger，不再强关联Apache
+ *                                添加：getObjects(Class)支持对接口类的猜想
  */
 public final class XJava
 {
-    private final static Logger                    $Logger                       = Logger.getLogger(XJava.class);
+    private final static Logger                    $Logger                       = Logger.getLogger(XJava.class ,true);
     
     private final static String                    $XML_JAVA_DATATYPE_CHAR       = "char";
     
@@ -556,7 +558,7 @@ public final class XJava
         
         if ( v_Param == null )
         {
-            $Logger.warning("Param id(" + i_ID + ") is not exists.");
+            $Logger.warn("Param id(" + i_ID + ") is not exists.");
             return new Param();
         }
         else
@@ -585,7 +587,7 @@ public final class XJava
         
         if ( v_Param == null )
         {
-            $Logger.warning("Param id(" + i_ID + ") is not exists.");
+            $Logger.warn("Param id(" + i_ID + ") is not exists.");
             return new Param();
         }
         else
@@ -739,9 +741,10 @@ public final class XJava
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception exce)
             {
-                throw new NullPointerException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + e.getMessage() + ".");
+                $Logger.error(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + "." ,exce);
+                throw new NullPointerException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + ".");
             }
             
             
@@ -807,9 +810,10 @@ public final class XJava
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception exce)
             {
-                throw new NullPointerException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + e.getMessage() + ".");
+                $Logger.error(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + "." ,exce);
+                throw new NullPointerException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + ".");
             }
             
             
@@ -833,6 +837,7 @@ public final class XJava
                 }
                 catch (Exception exce)
                 {
+                    $Logger.error(exce);
                     throw new NullPointerException(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().object.getClass().getName() + "] is " + exce.getMessage() + ".\n" + exce.getMessage());
                 }
             }
@@ -887,9 +892,10 @@ public final class XJava
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception exce)
             {
-                throw new NullPointerException("[" + v_TreeNode.getNodeID() + "] is " + e.getMessage());
+                $Logger.error("[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() ,exce);
+                throw new NullPointerException("[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage());
             }
             
             
@@ -914,9 +920,10 @@ public final class XJava
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception exce)
             {
-                throw new NullPointerException("[" + v_TreeNode.getNodeID() + "] is " + e.getMessage());
+                $Logger.error("[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() ,exce);
+                throw new NullPointerException("[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage());
             }
             
             if ( v_Maybe.size() == 1 )
@@ -925,9 +932,10 @@ public final class XJava
                 {
                     return v_Maybe.keySet().iterator().next().getObject(i_IsNew);
                 }
-                catch (Exception e)
+                catch (Exception exce)
                 {
-                    throw new NullPointerException(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().object.getClass().getName() + "] is " + e.getMessage() + ".");
+                    $Logger.error(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().object.getClass().getName() + "] is " + exce.getMessage() ,exce);
+                    throw new NullPointerException(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().object.getClass().getName() + "] is " + exce.getMessage() + ".");
                 }
             }
         }
@@ -1080,9 +1088,10 @@ public final class XJava
         }
         else
         {
-            Iterator<String>      v_Iterator = $XML_OBJECTS.keySetNodeID();
-            String                v_ID       = null;
-            TreeNode<XJavaObject> v_TreeNode = null;
+            Iterator<String>         v_Iterator = $XML_OBJECTS.keySetNodeID();
+            String                   v_ID       = null;
+            TreeNode<XJavaObject>    v_TreeNode = null;
+            Map<String ,XJavaObject> v_Maybe    = new HashMap<String ,XJavaObject>(); // 有可能是的对象 ZhengWei(HY) Add 2022-01-05
             
             try
             {
@@ -1091,17 +1100,25 @@ public final class XJava
                     v_ID       = v_Iterator.next();
                     v_TreeNode = $XML_OBJECTS.getByNodeID(v_ID);
                     
-                    if ( null    != v_TreeNode.getInfo()
-                      && null    != v_TreeNode.getInfo().getObject()
-                      && i_Class == v_TreeNode.getInfo().getObject().getClass() )
+                    if ( null != v_TreeNode.getInfo()
+                      && null != v_TreeNode.getInfo().getObject() )
                     {
-                        v_Objs.put(v_ID ,v_TreeNode.getInfo().getObject());
+                        if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
+                        {
+                            v_Objs.put(v_ID ,v_TreeNode.getInfo().getObject());
+                        }
+                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
+                        {
+                            // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2022-01-05
+                            v_Maybe.put(v_ID ,v_TreeNode.getInfo());
+                        }
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception exce)
             {
-                throw new NullPointerException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + e.getMessage() + ".");
+                $Logger.error(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + "." ,exce);
+                throw new RuntimeException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + ".");
             }
             
             
@@ -1113,6 +1130,21 @@ public final class XJava
                 if ( null != v_Object && i_Class == v_Object.getClass() )
                 {
                     v_Objs.put(v_ID ,v_Object);
+                }
+            }
+            
+            if ( v_Objs.size() <= 0 && v_Maybe.size() >= 1 )
+            {
+                try
+                {
+                    for (Map.Entry<String ,XJavaObject> v_XItem : v_Maybe.entrySet())
+                    {
+                        v_Objs.put(v_XItem.getKey() ,v_XItem.getValue().getObject());
+                    }
+                }
+                catch (Exception exce)
+                {
+                    $Logger.error(exce);
                 }
             }
         }
@@ -1141,9 +1173,10 @@ public final class XJava
         }
         else
         {
-            Iterator<String>      v_Iterator = $XML_OBJECTS.keySetNodeID();
-            String                v_ID       = null;
-            TreeNode<XJavaObject> v_TreeNode = null;
+            Iterator<String>         v_Iterator = $XML_OBJECTS.keySetNodeID();
+            String                   v_ID       = null;
+            TreeNode<XJavaObject>    v_TreeNode = null;
+            Map<String ,XJavaObject> v_Maybe    = new HashMap<String ,XJavaObject>(); // 有可能是的对象 ZhengWei(HY) Add 2022-01-05
             
             try
             {
@@ -1158,11 +1191,26 @@ public final class XJava
                     {
                         v_Objs.put(v_ID ,v_TreeNode.getInfo().getObject(i_IsNew));
                     }
+                    
+                    if ( null != v_TreeNode.getInfo()
+                      && null != v_TreeNode.getInfo().getObject() )
+                    {
+                        if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
+                        {
+                            v_Objs.put(v_ID ,v_TreeNode.getInfo().getObject(i_IsNew));
+                        }
+                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
+                        {
+                            // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2022-01-05
+                            v_Maybe.put(v_ID ,v_TreeNode.getInfo());
+                        }
+                    }
                 }
             }
-            catch (Exception e)
+            catch (Exception exce)
             {
-                throw new NullPointerException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + e.getMessage() + ".");
+                $Logger.error(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + "." ,exce);
+                throw new NullPointerException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + ".");
             }
             
             
@@ -1184,10 +1232,26 @@ public final class XJava
                             v_Objs.put(v_ID ,v_Object);
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception exce)
                     {
-                        throw new NullPointerException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + e.getMessage() + ".");
+                        $Logger.error(exce);
+                        throw new NullPointerException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + ".");
                     }
+                }
+            }
+            
+            if ( v_Objs.size() <= 0 && v_Maybe.size() >= 1 )
+            {
+                try
+                {
+                    for (Map.Entry<String ,XJavaObject> v_XItem : v_Maybe.entrySet())
+                    {
+                        v_Objs.put(v_XItem.getKey() ,v_XItem.getValue().getObject(i_IsNew));
+                    }
+                }
+                catch (Exception exce)
+                {
+                    $Logger.error(exce);
                 }
             }
         }
@@ -1293,6 +1357,7 @@ public final class XJava
         }
         catch (Exception exce)
         {
+            $Logger.error(exce);
             return v_Ret;
         }
         
@@ -1319,6 +1384,7 @@ public final class XJava
             }
             catch (Exception exce)
             {
+                $Logger.error(exce);
                 throw new RuntimeException("Submit node [" + i_NodeID + "] is exception.");
             }
         }
@@ -1557,8 +1623,7 @@ public final class XJava
                 }
                 catch (Exception exce)
                 {
-                    System.err.println("XType.XML or XType.XD or XType.XSQL [" + v_ClassInfo.getClassObj().getName() + "] is error ,maybe file or object is not find.");
-                    exce.printStackTrace();
+                    $Logger.error("XType.XML or XType.XD or XType.XSQL [" + v_ClassInfo.getClassObj().getName() + "] is error ,maybe file or object is not find." ,exce);
                 }
             }
         }
@@ -1608,6 +1673,7 @@ public final class XJava
                     catch (Exception exce)
                     {
                         // 没有默认构造器异常
+                        $Logger.error("New instance Annotation ID[" + v_ID + "] exception of Class[" + v_ClassInfo.getClassObj().toString() + "]" ,exce);
                         throw new ClassNotFoundException("New instance Annotation ID[" + v_ID + "] exception of Class[" + v_ClassInfo.getClassObj().toString() + "].\n" + exce.getMessage());
                     }
                 }
@@ -1627,6 +1693,7 @@ public final class XJava
                         catch (Exception exce)
                         {
                             // 没有默认构造器异常
+                            $Logger.error("New instance Annotation ID[" + v_ID + "] exception of Class[" + v_ClassInfo.getClassObj().toString() + "].",exce);
                             throw new ClassNotFoundException("New instance Annotation ID[" + v_ID + "] exception of Class[" + v_ClassInfo.getClassObj().toString() + "].");
                         }
                     }
@@ -1725,6 +1792,7 @@ public final class XJava
                                 catch (Exception exce)
                                 {
                                     // 执行方法注入参数异常
+                                    $Logger.error("Call Method[" + v_Method.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "]." ,exce);
                                     throw new NullPointerException("Call Method[" + v_Method.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "].");
                                 }
                             }
@@ -1841,6 +1909,7 @@ public final class XJava
                                     }
                                     catch (Exception exce)
                                     {
+                                        $Logger.error("Set Field's[" + v_Field.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "]." ,exce);
                                         throw new IllegalAccessException("Set Field's[" + v_Field.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "].");
                                     }
                                     // throw new NoSuchMethodException("Field's[" + v_Field.getName() + "] Setter Method is not exist of Class[" + v_ClassInfo.getClassObj().toString() + "].  Annotation name is ref[" + v_AnnoRef.ref() + "]");
@@ -1855,6 +1924,7 @@ public final class XJava
                                     catch (Exception exce)
                                     {
                                         // 执行属性的Setter方法注入参数异常
+                                        $Logger.error("Call Field's[" + v_Field.getName() + "] Setter Method[" + v_Method.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "]." ,exce);
                                         throw new RuntimeException("Call Field's[" + v_Field.getName() + "] Setter Method[" + v_Method.getName() + "] Annotation Ref[" + v_AnnoRef.ref() + "] is error of Class[" + v_ClassInfo.getClassObj().toString() + "].");
                                     }
                                 }
@@ -2047,7 +2117,7 @@ public final class XJava
         }
         catch (Exception exce)
         {
-            exce.printStackTrace();
+            $Logger.error(exce);
             return null;
         }
         
@@ -2094,7 +2164,7 @@ public final class XJava
                             }
                             catch (Exception exce)
                             {
-                                exce.printStackTrace();
+                                $Logger.error(exce);
                                 return null;
                             }
                             
@@ -2149,7 +2219,7 @@ public final class XJava
                         
                         if ( v_OldS < 0 || v_OldE < 0 )
                         {
-                            $Logger.warning("overWriteXml is not find. " + v_XJE.getSuperID() + ":" + v_XJE.getNodeName() + ":" + ":" + v_XJE.getValue() + ":" + v_Row);
+                            $Logger.warn("overWriteXml is not find. " + v_XJE.getSuperID() + ":" + v_XJE.getNodeName() + ":" + ":" + v_XJE.getValue() + ":" + v_Row);
                             continue;
                         }
                         
@@ -2178,7 +2248,7 @@ public final class XJava
         }
         catch (Exception exce)
         {
-            exce.printStackTrace();
+            $Logger.error(exce);
         }
     }
     
@@ -2526,6 +2596,7 @@ public final class XJava
                                     }
                                     catch (Exception exce)
                                     {
+                                        $Logger.error("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "]." ,exce);
                                         throw new ClassNotFoundException("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
                                     }
                                 }
@@ -2613,6 +2684,7 @@ public final class XJava
                             }
                             catch (Exception exce)
                             {
+                                $Logger.error("Setter method [" + v_SuperSetMethodName + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
                                 throw new NoSuchMethodException("Setter method [" + v_SuperSetMethodName + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
                             }
                         }
@@ -2649,6 +2721,7 @@ public final class XJava
                             }
                             catch (Exception exce)
                             {
+                                $Logger.error("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
                                 throw new ClassNotFoundException("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
                             }
                             
@@ -2661,6 +2734,7 @@ public final class XJava
                         }
                         catch (Exception exce)
                         {
+                            $Logger.error("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
                             throw new NoSuchMethodException("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
                         }
                     }
@@ -2675,6 +2749,7 @@ public final class XJava
                             }
                             catch (Exception exce)
                             {
+                                $Logger.error("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
                                 throw new ClassNotFoundException("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
                             }
                             
@@ -2687,6 +2762,7 @@ public final class XJava
                         }
                         catch (Exception exce)
                         {
+                            $Logger.error("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
                             throw new NoSuchMethodException("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
                         }
                     }
@@ -2701,14 +2777,18 @@ public final class XJava
                             }
                             catch (Exception exce)
                             {
+                                String v_Error = "";
                                 if ( v_ID != null )
                                 {
-                                    throw new ClassNotFoundException("Exception of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]. ID is [" + v_ID + "]. Class is [" + v_ClassName + "]");
+                                    v_Error = "Exception of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]. ID is [" + v_ID + "]. Class is [" + v_ClassName + "]";
                                 }
                                 else
                                 {
-                                    throw new ClassNotFoundException("Exception of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]. Class is [" + v_ClassName + "]");
+                                    v_Error = "Exception of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]. Class is [" + v_ClassName + "]";
                                 }
+                                
+                                $Logger.error(v_Error ,exce);
+                                throw new ClassNotFoundException(v_Error);
                             }
                             
                             // 字符串类型特殊的对待
@@ -2742,6 +2822,7 @@ public final class XJava
                                 }
                                 catch (Exception exce)
                                 {
+                                    $Logger.error("Execute List method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
                                     throw new NoSuchMethodException("Execute List method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
                                 }
                             }
@@ -2763,6 +2844,7 @@ public final class XJava
                                 }
                                 catch (Exception exce)
                                 {
+                                    $Logger.error("Execute Map method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
                                     throw new NoSuchMethodException("Execute Map method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
                                 }
                             }
@@ -2817,11 +2899,13 @@ public final class XJava
                                 }
                                 catch (Exception exce)
                                 {
+                                    $Logger.error("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]" ,exce);
                                     throw new InstantiationException("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].\n" + exce.getMessage());
                                 }
                             }
                             else
                             {
+                                $Logger.error("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
                                 throw new InstantiationException("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
                             }
                         }
@@ -2850,6 +2934,7 @@ public final class XJava
                                 }
                                 catch (Exception exce)
                                 {
+                                    $Logger.error("Field setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "]." ,exce);
                                     throw new IllegalAccessException("Field setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + exce.getMessage());
                                 }
                             }
@@ -2912,6 +2997,8 @@ public final class XJava
                                 {
                                     v_Msg += exce.getCause().getMessage() + "\n";
                                 }
+                                
+                                $Logger.error("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "]." ,exce);
                                 throw new NoSuchMethodException("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + v_Msg + exce.getMessage());
                             }
                         }
@@ -2941,6 +3028,7 @@ public final class XJava
                     }
                     catch (Exception exce)
                     {
+                        $Logger.error("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "]." ,exce);
                         throw new ClassNotFoundException("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].\n" + exce.getMessage());
                     }
                 }
@@ -3095,6 +3183,7 @@ public final class XJava
                     }
                     catch (Exception exce)
                     {
+                        $Logger.error(exce);
                         throw exce;
                     }
                 }
@@ -3108,6 +3197,7 @@ public final class XJava
                     }
                     catch (Exception exce)
                     {
+                        $Logger.error(exce);
                         throw exce;
                     }
                 }
@@ -3436,6 +3526,7 @@ public final class XJava
                     }
                     catch (Exception exce)
                     {
+                        $Logger.error(exce);
                         throw exce;
                     }
                 }
@@ -3449,6 +3540,7 @@ public final class XJava
                     }
                     catch (Exception exce)
                     {
+                        $Logger.error(exce);
                         throw exce;
                     }
                 }
@@ -3927,6 +4019,7 @@ public final class XJava
                     }
                     catch (Exception exce)
                     {
+                        $Logger.error("Ref url[" + i_RefID + "] is exception of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "]." ,exce);
                         throw new NoSuchMethodException("Ref url[" + i_RefID + "] is exception of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].\n" + exce.getMessage());
                     }
                 }
@@ -3974,6 +4067,7 @@ public final class XJava
                     }
                     catch (Exception exce)
                     {
+                        $Logger.error("Ref url[" + i_RefID + "] is't exist of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "]." ,exce);
                         throw new NoSuchMethodException("Ref url[" + i_RefID + "] is't exist of Node[" + i_Node.getParentNode().getNodeName() + "." + i_Node.getNodeName() + "].\n" + exce.getMessage());
                     }
                 }
@@ -4101,6 +4195,7 @@ public final class XJava
                 }
                 catch (Exception exce)
                 {
+                    $Logger.error("XJava object clone exception." ,exce);
                     throw new java.lang.NoSuchMethodException("XJava object clone exception.\n" + exce.getMessage());
                 }
             }
@@ -4119,6 +4214,7 @@ public final class XJava
             }
             catch (Exception exce)
             {
+                $Logger.error("XJava object newInstance exception." ,exce);
                 throw new NoSuchMethodException("XJava object newInstance exception.\n" + exce.getMessage());
             }
         }
@@ -4165,16 +4261,14 @@ public final class XJava
             
             return v_NewObj;
         }
-        catch (InstantiationException exce)
+        catch (IllegalAccessException | InstantiationException exce)
         {
-            throw new NoSuchMethodException("XJava object newInstance exception." + v_ErrorInfo + "\n" + exce.getMessage());
-        }
-        catch (IllegalAccessException exce)
-        {
+            $Logger.error("XJava object newInstance exception." ,exce);
             throw new NoSuchMethodException("XJava object newInstance exception." + v_ErrorInfo + "\n" + exce.getMessage());
         }
         catch (Exception exce)
         {
+            $Logger.error("XJava object setter(getter()) exception." ,exce);
             throw new NoSuchMethodException("XJava object setter(getter()) exception." + v_ErrorInfo + "\n" + exce.getMessage());
         }
     }

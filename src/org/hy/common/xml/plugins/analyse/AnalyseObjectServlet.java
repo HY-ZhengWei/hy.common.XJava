@@ -70,6 +70,8 @@ import org.hy.common.xml.log.Logger;
  * 功能22：查看表的关系图                       http://IP:Port/WebService/../analyseObject?&tableRef=Ydsgid=*
  * 
  * 功能23：查看日志引擎分析                     http://IP:Port/WebService/../analyseObject?logger=Y
+ * 
+ * 功能24：查看通讯连接分析                     http://IP:Port/WebService/../analyseObject?net=Y
  *
  * @author      ZhengWei(HY)
  * @createDate  2015-12-16
@@ -448,6 +450,7 @@ public class AnalyseObjectServlet extends HttpServlet
         String v_FS         = i_Request.getParameter("FS");
         String v_XSGFlow    = i_Request.getParameter("XSGFlow");
         String v_Logger     = i_Request.getParameter("logger");
+        String v_Net        = i_Request.getParameter("net");
         
         if ( !Help.isNull(v_Execute) )
         {
@@ -606,6 +609,20 @@ public class AnalyseObjectServlet extends HttpServlet
                                                                                       ,v_LineNumber
                                                                                       ,v_LogLevel));
                 }
+            }
+            else if ( !Help.isNull(v_Net) )
+            {
+                String v_TotalType  = Help.NVL(i_Request.getParameter("TT"));
+                String v_Sort       = Help.NVL(i_Request.getParameter("S"));
+                String v_FilterName = Help.NVL(i_Request.getParameter("FCN"));
+                String v_Timer      = Help.NVL(i_Request.getParameter("Timer"));
+                
+                i_Response.getWriter().println(this.analyse.analyseNet(v_BasePath
+                                                                      ,i_Request.getRequestURL().toString()
+                                                                      ,v_TotalType
+                                                                      ,v_Sort
+                                                                      ,v_FilterName
+                                                                      ,v_Timer));
             }
             else if ( Help.isNull(v_XFile) && "Y".equalsIgnoreCase(v_Cluster) )
             {

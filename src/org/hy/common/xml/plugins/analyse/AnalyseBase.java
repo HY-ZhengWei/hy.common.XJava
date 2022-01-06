@@ -22,6 +22,7 @@ import org.hy.common.TablePartitionRID;
 import org.hy.common.db.DataSourceGroup;
 import org.hy.common.net.ClientSocketCluster;
 import org.hy.common.net.common.ClientCluster;
+import org.hy.common.net.common.ServerOperation;
 import org.hy.common.net.data.CommunicationResponse;
 import org.hy.common.net.data.LoginRequest;
 import org.hy.common.thread.Job;
@@ -46,10 +47,12 @@ import org.hy.common.xml.plugins.analyse.data.AnalyseDBTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseDSGTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseJobTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseLoggerTotal;
+import org.hy.common.xml.plugins.analyse.data.AnalyseNetTotal;
 import org.hy.common.xml.plugins.analyse.data.AnalyseThreadPoolTotal;
 import org.hy.common.xml.plugins.analyse.data.ClusterReport;
 import org.hy.common.xml.plugins.analyse.data.DataSourceGroupReport;
 import org.hy.common.xml.plugins.analyse.data.LoggerReport;
+import org.hy.common.xml.plugins.analyse.data.NetReport;
 import org.hy.common.xml.plugins.analyse.data.WindowsApp;
 import org.hy.common.xml.plugins.analyse.data.XSQLGroupTree;
 import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
@@ -112,6 +115,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v22.3 2021-01-15  修正：执行Java方法时，防止方法不存的异常。
  *                                修正：执行Java方法时，防止Json格式的字符无法正常显示的问题
  *              v23.0 2021-12-13  优化：使用新版本net 3.0.0。
+ *              v23.1 2022-01-05  添加：通讯连接分析
  * 
  */
 @Xjava
@@ -3507,6 +3511,278 @@ public class AnalyseBase extends Analyse
     
     
     /**
+     * 功能1：本机通讯连接分析
+     * 
+     * 注意：不建议在通讯连接时，再进行集群通讯分析，只统计本机与外部的连接就好了哈
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-01-05
+     * @version     v1.0
+     *
+     * @param  i_BasePath   服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ReLoadPath 重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject?net=Y
+     * @param  i_TotalType  统计类型(User、ClientIP、UserClientIP)
+     * @param  i_SortType   排序类型(ConnectName、Connect、LoginTime、LogoutTime、IdleTime、RequestCount、SucceedCount、ErrorCount、ExecSumTime、ExecAvgTime、LastTime)
+     * @param  i_FilterName 服务端口、账户、客户IP的模糊过滤条件
+     * @param  i_Timer      定时刷新的时长（单位：毫秒）
+     * @return
+     */
+    public String analyseNet(String  i_BasePath
+                            ,String  i_ReLoadPath
+                            ,String  i_TotalType
+                            ,String  i_SortType
+                            ,String  i_FilterName
+                            ,String  i_Timer)
+    {
+        $Logger.debug("连接通讯的分析：" + " is totalType " + i_TotalType );
+        
+        StringBuilder                     v_Buffer  = new StringBuilder();
+        int                               v_Index   = 0;
+        String                            v_Content = this.getTemplateShowNetContent();
+        AnalyseNetTotal                   v_Total   = null;
+        TablePartitionRID<String ,Object> v_Errors  = new TablePartitionRID<String ,Object>();
+        
+        // 本机统计
+        v_Total = this.analyseNet_Total(i_TotalType);
+        
+        List<NetReport> v_TotalList = Help.toList(v_Total.getReports());
+        
+        // 类名称的模糊过滤条件（不区分大小写）
+        if ( !Help.isNull(i_FilterName) )
+        {
+            String v_FilterName = i_FilterName.trim().toLowerCase();
+            for (int i=v_TotalList.size() - 1; i>=0; i--)
+            {
+                NetReport v_Item = v_TotalList.get(i);
+                if ( !StringHelp.isContains(v_Item.getServerPort() + "_" + v_Item.getHost() + "_" + v_Item.getUserName().toLowerCase() + "_" + v_Item.getSystemName().toLowerCase() ,v_FilterName) )
+                {
+                    v_TotalList.remove(i);
+                }
+            }
+        }
+        
+        if ( "Connect".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"connectCount DESC" ,"onlineCount DESC" ,"requestCount DESC" ,"activeTime DESC");
+        }
+        // 排序类型(登录时间)
+        else if ( "LoginTime".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"loginTime DESC" ,"requestCount DESC" ,"activeTime DESC");
+        }
+        // 排序类型(登出时间)
+        else if ( "LogoutTime".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"logoutTime DESC" ,"requestCount DESC" ,"activeTime DESC");
+        }
+        // 排序类型(心跳时间)
+        else if ( "IdleTime".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"idleTime DESC" ,"requestCount DESC" ,"activeTime DESC");
+        }
+        // 排序类型(请求量)
+        else if ( "RequestCount".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"requestCount DESC" ,"activeTime DESC");
+        }
+        // 排序类型(成功量)
+        else if ( "SucceedCount".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"activeCount DESC" ,"activeTime DESC");
+        }
+        // 排序类型(未成功量)
+        else if ( "ErrorCount".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"errorCount DESC" ,"activeTime DESC");
+        }
+        // 排序类型(累计用时)
+        else if ( "ExecSumTime".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"activeTimeLen DESC" ,"activeTime DESC");
+        }
+        // 排序类型(平均用时)
+        else if ( "ExecAvgTime".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"avgActiveTimeLen DESC" ,"activeTime DESC");
+        }
+        // 排序类型(操作时间)
+        else if ( "LastTime".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"activeTime DESC" ,"requestCount DESC");
+        }
+        // 排序类型(连接标识) - 默认排序
+        else
+        {
+            Help.toSort(v_TotalList ,"totalID" ,"requestCount DESC" ,"activeTime DESC");
+        }
+        
+        long v_NowTime         = new Date().getMinutes(-2).getTime();
+        long v_SumConnectCount = 0L;
+        long v_SumOnlineCount  = 0L;
+        long v_SumRequestCount = 0L;
+        long v_SumSucceedCount = 0L;
+        long v_SumErrorCount   = 0L;
+        long v_SumExecSumTime  = 0L;
+        for (NetReport v_Report : v_TotalList)
+        {
+            Map<String ,String> v_RKey = new HashMap<String ,String>();
+            
+            v_RKey.put(":No"           ,String.valueOf(++v_Index));
+            v_RKey.put(":ConnectName"  ,v_Report.getTotalID());
+            v_RKey.put(":SessionLimit" ,v_Report.getSessionLimit());
+            v_RKey.put(":Connect"      ,"<span style='color:" + (v_Report.getOnlineCount()      > 0 ? "green;font-weight:bold" : "black") + ";'>" + v_Report.getConnectCount() + ":" + v_Report.getOnlineCount() + "</span>");
+            v_RKey.put(":LoginTime"    ,v_Report.getLoginTime()  != null ? v_Report.getLoginTime() .getFull() : "-");
+            v_RKey.put(":LogoutTime"   ,v_Report.getLogoutTime() != null ? v_Report.getLogoutTime().getFull() : "-");
+            v_RKey.put(":IdleTime"     ,v_Report.getIdleTime()   != null ? v_Report.getIdleTime()  .getHMS()  : "-");
+            v_RKey.put(":RequestCount" ,"<span style='color:" + (v_Report.getRequestCount()     > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getRequestCount() + "</span>");
+            v_RKey.put(":SucceedCount" ,"<span style='color:" + (v_Report.getActiveCount()      > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getActiveCount()  + "</span>");
+            v_RKey.put(":ErrorCount"   ,"<span style='color:" + (v_Report.getErrorCount()       > 0 ? "red;  font-weight:bold" : "gray") + ";'>" + (v_Report.getErrorCount()       > 0 ? "" + v_Report.getErrorCount() + "" : "0") + "</span>");
+            v_RKey.put(":ExecSumTime"  ,"<span style='color:" + (v_Report.getActiveTimeLen()    > 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getActiveTimeLen()    > 0 ? Date.toTimeLen(v_Report.getActiveTimeLen()) : "-") + "</span>");
+            v_RKey.put(":ExecAvgTime"  ,"<span style='color:" + (v_Report.getAvgActiveTimeLen() > 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getAvgActiveTimeLen() > 0 ? Help.round(v_Report.getAvgActiveTimeLen() ,2) : "-") + "</span>");
+            v_RKey.put(":LastTime"     ,v_Report.getActiveTime() == null ? "" : (v_Report.getActiveTime().getTime() >= v_NowTime ? v_Report.getActiveTime().getFull() : "<span style='color:gray;'>" + v_Report.getActiveTime().getFull() + "</span>"));
+            
+            v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
+            
+            v_SumConnectCount += v_Report.getConnectCount();
+            v_SumOnlineCount  += v_Report.getOnlineCount();
+            v_SumRequestCount += v_Report.getRequestCount();
+            v_SumSucceedCount += v_Report.getActiveCount();
+            v_SumErrorCount   += v_Report.getErrorCount();
+            v_SumExecSumTime  += v_Report.getActiveTimeLen();
+        }
+        
+        // 合计
+        Map<String ,String> v_RKey = new HashMap<String ,String>();
+        
+        v_RKey.put(":No"           ,String.valueOf(++v_Index));
+        v_RKey.put(":ConnectName"  ,"合计");
+        v_RKey.put(":SessionLimit" ,"-");
+        v_RKey.put(":Connect"      ,"<span style='color:" + (v_SumOnlineCount  > 0 ? "green;font-weight:bold" : "black") + ";'>" + v_SumConnectCount + ":" + v_SumOnlineCount + "</span>");
+        v_RKey.put(":LoginTime"    ,"-");
+        v_RKey.put(":LogoutTime"   ,"-");
+        v_RKey.put(":IdleTime"     ,"-");
+        v_RKey.put(":RequestCount" ,"<span style='color:" + (v_SumRequestCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SumRequestCount + "</span>");
+        v_RKey.put(":SucceedCount" ,"<span style='color:" + (v_SumSucceedCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SumSucceedCount + "</span>");
+        v_RKey.put(":ErrorCount"   ,"<span style='color:" + (v_SumErrorCount   > 0 ? "red;  font-weight:bold" : "gray") + ";'>" + v_SumErrorCount   + "</span>");
+        v_RKey.put(":ExecSumTime"  ,"<span style='color:" + (v_SumExecSumTime  > 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Date.toTimeLen(v_SumExecSumTime) : "-") + "</span>");
+        v_RKey.put(":ExecAvgTime"  ,"<span style='color:" + (v_SumExecSumTime  > 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Help.round(Help.division(v_SumExecSumTime ,Help.division(v_SumRequestCount , v_SumSucceedCount)) ,2) : "-") + "</span>");
+        v_RKey.put(":LastTime"     ,"-");
+        
+        v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
+        
+        
+        StringBuilder v_GotoTitle = new StringBuilder();
+        v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+        v_GotoTitle.append("(");
+        
+        // 按“服务端口”分组统计
+        if ( "LocalSocket".equalsIgnoreCase(i_TotalType) )
+        {
+            v_GotoTitle.append("<a href='#' id='ByLocalSocketTotal'  style='color:gray'   >按服务</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='#' id='ByClientIPTotal'     style='color:#AA66CC'>按客户</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='#' id='ByUserTotal'         style='color:#AA66CC'>按账户</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='#' id='ByUserClientIPTotal' style='color:#AA66CC'>按明细</a>");
+        }
+        // 按“客户IP”分组统计
+        else if ( "ClientIP".equalsIgnoreCase(i_TotalType) )
+        {
+            v_GotoTitle.append("<a href='#' id='ByLocalSocketTotal'  style='color:#AA66CC'>按服务</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='#' id='ByClientIPTotal'     style='color:gray'   >按客户</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='#' id='ByUserTotal'         style='color:#AA66CC'>按账户</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='#' id='ByUserClientIPTotal' style='color:#AA66CC'>按明细</a>");
+        }
+        // 按“账户”分组统计
+        else if ( "User".equalsIgnoreCase(i_TotalType) )
+        {
+            v_GotoTitle.append("<a href='#' id='ByLocalSocketTotal'  style='color:#AA66CC'>按服务</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='#' id='ByClientIPTotal'     style='color:#AA66CC'>按客户</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='#' id='ByUserTotal'         style='color:gray'   >按账户</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='#' id='ByUserClientIPTotal' style='color:#AA66CC'>按明细</a>");
+        }
+        // 按“明细分析”统计 (默认分组方式)
+        else
+        {
+            v_GotoTitle.append("<a href='#' id='ByLocalSocketTotal'  style='color:#AA66CC'>按服务</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='#' id='ByClientIPTotal'     style='color:#AA66CC'>按客户</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='#' id='ByUserTotal'         style='color:#AA66CC'>按账户</a>");
+            v_GotoTitle.append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+            v_GotoTitle.append("<a href='#' id='ByUserClientIPTotal' style='color:gray'   >按明细</a>");
+        }
+        
+        v_GotoTitle.append(")").append(StringHelp.lpad("" ,4 ,"&nbsp;"));
+        v_GotoTitle.append("<a href='analyseObject?xid=AnalyseBase&call=analyseNet_RestTotal' style='color:#AA66CC'>重置统计</a>");
+        
+        v_Total.getReports().clear();
+        v_Total = null;
+        v_TotalList.clear();
+        v_TotalList = null;
+        v_Errors.clear();
+        v_Errors = null;
+        
+        return StringHelp.replaceAll(this.getTemplateShowNet()
+                                    ,new String[]{":GotoTitle"           ,":Title"     ,":HttpBasePath" ,":Sort"   ,":TotalType" ,":Cluster" ,":Timer" ,":FilterConnectName"   ,":Content"}
+                                    ,new String[]{v_GotoTitle.toString() ,"通讯连接分析" ,i_BasePath      ,i_SortType ,i_TotalType ,"N"       ,i_Timer  ,Help.NVL(i_FilterName) ,v_Buffer.toString()});
+    }
+    
+    
+    
+    /**
+     * 获取通讯连接的分析信息
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-01-05
+     * @version     v1.0
+     *
+     * @param  i_TotalType  统计类型(LocalSocket、User、ClientIP、UserClientIP)
+     * @return
+     */
+    public AnalyseNetTotal analyseNet_Total(String i_TotalType)
+    {
+        return new AnalyseNetTotal(i_TotalType);
+    }
+    
+    
+    
+    /**
+     * 重置通讯连接的统计数据
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-01-05
+     * @version     v1.0
+     *
+     * @return
+     */
+    public void analyseNet_RestTotal()
+    {
+        $Logger.debug("重置通讯连接的统计数据");
+        Map<String ,Object> v_TotalMap = XJava.getObjects(ServerOperation.class);
+        
+        if ( Help.isNull(v_TotalMap) )
+        {
+            return;
+        }
+        
+        for (Object v_Total : v_TotalMap.values())
+        {
+            ServerOperation v_Server  = (ServerOperation)v_Total;
+            v_Server.reset();
+        }
+    }
+    
+    
+    
+    /**
      * 功能1：本机日志引擎的监控信息
      * 
      * @author      ZhengWei(HY)
@@ -4338,6 +4614,20 @@ public class AnalyseBase extends Analyse
     private String getTemplateShowLoggerContent()
     {
         return this.getTemplateContent("template.showLoggerContent.html");
+    }
+    
+    
+    
+    private String getTemplateShowNet()
+    {
+        return this.getTemplateContent("template.showNet.html");
+    }
+    
+    
+    
+    private String getTemplateShowNetContent()
+    {
+        return this.getTemplateContent("template.showNetContent.html");
     }
     
 }

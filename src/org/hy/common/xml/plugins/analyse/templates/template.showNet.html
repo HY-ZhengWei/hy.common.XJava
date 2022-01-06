@@ -1,0 +1,498 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>:Title</title>
+<style type="text/css"> 
+
+html,body {
+    margin: 0px;
+    width: 100%;
+}
+
+.userInfoModify_logininfobody { 
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.userInfoModify_logininfo { 
+    width: 1650px;
+    margin:0 auto;
+    position: fixed;
+    top: 0px;
+}
+
+.userInfoModify_logininfo1{ width:1650px;margin:0 auto; margin-top:28px;}
+.userInfoModify_labeTag  ,.userInfoModify_ConnectName_Title ,.userInfoModify_SessionLimit_Title ,.userInfoModify_Connect_Title ,.userInfoModify_LoginTime_Title ,.userInfoModify_LogoutTime_Title ,.userInfoModify_IdleTime_Title ,.userInfoModify_RequestCount_Title ,.userInfoModify_SucceedCount_Title ,.userInfoModify_ErrorCount_Title ,.userInfoModify_ExecSumTime_Title ,.userInfoModify_ExecAvgTime_Title ,.userInfoModify_LastTime_Title {float:left; height:30px; line-height:30px; font-weight:bold; font-family:"微软雅黑"; font-size:14px; background-color:#D5DDF6;}
+.userInfoModify_labeTag1 ,.userInfoModify_ConnectName       ,.userInfoModify_SessionLimit       ,.userInfoModify_Connect       ,.userInfoModify_LoginTime       ,.userInfoModify_LogoutTime       ,.userInfoModify_IdleTime       ,.userInfoModify_RequestCount       ,.userInfoModify_SucceedCount       ,.userInfoModify_ErrorCount       ,.userInfoModify_ExecSumTime       ,.userInfoModify_ExecAvgTime       ,.userInfoModify_LastTime       {float:left; height:30px; line-height:30px;                   font-family:"微软雅黑"; font-size:12px;}
+.userInfoModify_labeTag2 ,.userInfoModify_ConnectName_Other ,.userInfoModify_SessionLimit_Other ,.userInfoModify_Connect_Other ,.userInfoModify_LoginTime_Other ,.userInfoModify_LogoutTime_Other ,.userInfoModify_IdleTime_Other ,.userInfoModify_RequestCount_Other ,.userInfoModify_SucceedCount_Other ,.userInfoModify_ErrorCount_Other ,.userInfoModify_ExecSumTime_Other ,.userInfoModify_ExecAvgTime_Other ,.userInfoModify_LastTime_Other {float:left; height:30px; line-height:30px;                   font-family:"微软雅黑"; font-size:12px; border:#97B0F8 solid 0px;}
+
+.userInfoModify_clearTag  {clear:both;height:36px;margin-top:0px;position:absolute;z-index:2008;} 
+.userInfoModify_clearTag1 {clear:both;height:36px;margin-top:0px;} 
+.userInfoModify_labeTag            { width:40px;  text-align:center; border:#97B0F8 solid 1px; } 
+.userInfoModify_ConnectName_Title  { width:400px; vertical-align:middle;text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
+.userInfoModify_SessionLimit_Title { width:90px;  text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_Connect_Title      { width:139px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_LoginTime_Title    { width:135px; text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_LogoutTime_Title   { width:135px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_IdleTime_Title     { width:90px;  text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_RequestCount_Title { width:90px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_SucceedCount_Title { width:90px;  text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_ErrorCount_Title   { width:70px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_ExecSumTime_Title  { width:110px; text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_ExecAvgTime_Title  { width:100px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_LastTime_Title     { width:135px; text-align:center; border: #97B0F8 solid 1px;}
+
+.userInfoModify_labeTag1     { width:40px;  text-align:center; border:#97B0F8 solid 1px;  } 
+.userInfoModify_ConnectName  { width:400px; text-align:left;   border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
+.userInfoModify_SessionLimit { width:90px;  text-align:center; border:#97B0F8 solid 1px;} 
+.userInfoModify_Connect      { width:139px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_LoginTime    { width:135px; text-align:center; border:#97B0F8 solid 1px;} 
+.userInfoModify_LogoutTime   { width:135px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_IdleTime     { width:90px;  text-align:center; border:#97B0F8 solid 1px;} 
+.userInfoModify_RequestCount { width:90px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_SucceedCount { width:90px;  text-align:center; border:#97B0F8 solid 1px;}  
+.userInfoModify_ErrorCount   { width:70px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_ExecSumTime  { width:110px; text-align:center; border:#97B0F8 solid 1px;}  
+.userInfoModify_ExecAvgTime  { width:100px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_LastTime     { width:135px; text-align:center; border:#97B0F8 solid 1px;}  
+
+.userInfoModify_labeTag2           { width:40px;  text-align:center;} 
+.userInfoModify_ConnectName_Other  { width:400px; text-align:left;}  
+.userInfoModify_SessionLimit_Other { width:90px;  text-align:left;} 
+.userInfoModify_Connect_Other      { width:139px; text-align:left;} 
+.userInfoModify_LoginTime_Other    { width:135px; text-align:left;}
+.userInfoModify_LogoutTime_Other   { width:135px; text-align:left;}  
+.userInfoModify_IdleTime_Other     { width:90px;  text-align:left;} 
+.userInfoModify_RequestCount_Other { width:90px;  text-align:left;} 
+.userInfoModify_SucceedCount_Other { width:90px;  text-align:left;} 
+.userInfoModify_ErrorCount_Other   { width:70px;  text-align:left;} 
+.userInfoModify_ExecSumTime_Other  { width:110px; text-align:left;} 
+.userInfoModify_ExecAvgTime_Other  { width:100px; text-align:left;} 
+.userInfoModify_LastTime_Other     { width:135px; text-align:left;} 
+
+.cont_show_ConnectName  { width:395px; margin-left:5px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_SessionLimit { width:90px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_Connect      { width:139px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_LoginTime    { width:135px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_LogoutTime   { width:135px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_IdleTime     { width:90px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_RequestCount { width:90px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_SucceedCount { width:90px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_ErrorCount   { width:70px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_ExecSumTime  { width:110px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_ExecAvgTime  { width:100px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_LastTime     { width:135px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+
+a { color:red; text-decoration:none; outline:none;}
+a:hover {color:red; text-decoration:none;}
+
+.input-text{ 
+    vertical-align:middle; 
+    height:22px; 
+    padding:2px; 
+    border:#7992bb solid 1px; 
+    color:#000000; 
+    font-family:"宋体" Arial, Helvetica, sans-serif;
+    width:256px;
+}
+
+.rightMenuBar {
+    position: fixed;
+    top: 36%;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.rightMenu {
+    width: 40px;
+    height: 40px;
+    background-color: #666666;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999990;
+    margin-bottom: 6px;
+}
+
+.rightMenuIcon {
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.rightMenuIsAutoRefresh {
+}
+
+.rightMenuToTop {
+}
+</style>
+
+<script type="text/javascript" src=":HttpBasePath/jquery/jquery.min.js"></script>
+<script type="text/javascript" src=":HttpBasePath/d3/d3.min.js"></script>
+
+</head>
+<body> 
+
+    <!-- 右侧浮动菜单 -->
+    <div class="rightMenuBar">
+        <div class="rightMenu" id="menuIsAutoRefresh">
+            <div class="rightMenuIcon rightMenuIsAutoRefresh" data-toggle="tooltip" data-placement="center" title="自动刷新">R</div>
+        </div>
+        
+        <div class="rightMenu" id="menuToTop">
+            <div class="rightMenuIcon rightMenuToTop"         data-toggle="tooltip" data-placement="center" title="置顶">Top</div>
+        </div>
+    </div>
+    
+    <input type="hidden" id="cluster"      name="cluster"      value=":Cluster" />
+    <input type="hidden" id="S"            name="S"            value=":Sort" />
+    <input type="hidden" id="TT"           name="TT"           value=":TotalType" />
+    <input type="hidden" id="Timer"        name="Timer"        value=":Timer" />
+     
+    <div class="userInfoModify_logininfobody" >
+       <div class="userInfoModify_logininfo" /> 
+       <div class="userInfoModify_clearTag">
+             <div>
+                 <input type="text" id="FilterConnectName" name="FilterConnectName" value=":FilterConnectName" class="input-text" style="width:1632px;" placeholder="服务端口、账户、客户IP的模糊过滤条件（不区分大小写）" />
+             </div>
+       
+             <div class="userInfoModify_labeTag">编号</div>
+             <div class="userInfoModify_ConnectName_Title">                                  <a id="Title_ConnectName"  href="#" style='color:#AA66CC'>分析类型</a>:GotoTitle</div>
+             <div class="userInfoModify_SessionLimit_Title" title="会话时长(秒):账户最大连接数">                                                            会话限制</div>
+             <div class="userInfoModify_Connect_Title"      title="连接数:在线数">            <a id="Title_Connect"      href="#" style='color:#AA66CC'>连接:在线数</a></div>
+             <div class="userInfoModify_LoginTime_Title">                                    <a id="Title_LoginTime"    href="#" style='color:#AA66CC'>登录时间</a></div>
+             <div class="userInfoModify_LogoutTime_Title">                                   <a id="Title_LogoutTime"   href="#" style='color:#AA66CC'>登出时间</a></div>
+             <div class="userInfoModify_IdleTime_Title">                                     <a id="Title_IdleTime"     href="#" style='color:#AA66CC'>心跳时间</a></div>
+             <div class="userInfoModify_RequestCount_Title">                                 <a id="Title_RequestCount" href="#" style='color:#AA66CC'>请求量</a></div>
+             <div class="userInfoModify_SucceedCount_Title">                                 <a id="Title_SucceedCount" href="#" style='color:#AA66CC'>成功量</a></div>
+             <div class="userInfoModify_ErrorCount_Title">                                   <a id="Title_ErrorCount"   href="#" style='color:#AA66CC'>未成功量</a></div>
+             <div class="userInfoModify_ExecSumTime_Title">                                  <a id="Title_ExecSumTime"  href="#" style='color:#AA66CC'>累计用时</a></div>
+             <div class="userInfoModify_ExecAvgTime_Title" title="单位：毫秒">                <a id="Title_ExecAvgTime"  href="#" style='color:#AA66CC'>平均用时</a></div>
+             <div class="userInfoModify_LastTime_Title">                                     <a id="Title_LastTime"     href="#" style='color:#AA66CC'>操作时间</a></div>
+       </div> 
+      
+    </div> 
+       
+<script language="javascript" type="text/javascript">
+
+function f_Goto()
+{
+    var v_Timestamp = new Date().getTime();
+    
+    if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+    {
+        window.location.href = "analyseObject?net=Y&S=" + $("#S").val() + "&TT=" + $("#TT").val() + "&cluster=Y&FCN=" + $("#FilterConnectName").val() + "&Timer=" + $("#Timer").val() + "&r=" + v_Timestamp;
+    }
+    else
+    {
+        window.location.href = "analyseObject?net=Y&S=" + $("#S").val() + "&TT=" + $("#TT").val() + "&FCN=" + $("#FilterConnectName").val() + "&Timer=" + $("#Timer").val() + "&r=" + v_Timestamp;
+    }
+}
+
+
+
+$(window).bind("scroll" ,function()
+{
+    if ( $(document).scrollTop() <= 0 )
+    {
+        d3.select("#menuToTop").style("visibility" ,"hidden");
+    } 
+    else
+    {
+        d3.select("#menuToTop").style("visibility" ,"visible");
+    }
+});
+d3.select("#menuToTop").style("visibility" ,"hidden");
+
+
+
+d3.selectAll(".rightMenu")
+.on("mouseover" ,function()
+{
+    d3.select(this).style("background-color" ,"#FEBB08");
+})
+.on("mouseout" ,function()
+{
+    d3.select(this).style("background-color" ,"#666666");
+});
+
+
+
+d3.select("#menuToTop")
+.on("click" ,function()
+{
+    $("html,body").animate({scrollTop:0} ,500);
+});
+
+
+
+$("#menuIsAutoRefresh").click(function()
+{   
+    if ( $("#Timer").val() == "" )
+    {
+        $("#Timer").val("5000");
+        d3.select("#menuIsAutoRefresh").select("div").html("Stop");
+        setTimeout(function()
+        {
+            if ( $("#Timer").val() != "" )
+            {
+                f_Goto();
+            }
+        } ,$("#Timer").val());
+    }
+    else
+    {
+        $("#Timer").val("");
+        d3.select("#menuIsAutoRefresh").select("div").html("R");
+    }
+});
+
+
+
+if ( $("#Timer").val() == "" )
+{
+    d3.select("#menuIsAutoRefresh").select("div").html("R");
+}
+else
+{
+    d3.select("#menuIsAutoRefresh").select("div").html("Stop");
+    setTimeout(function()
+    {
+        if ( $("#Timer").val() != "" )
+        {
+            f_Goto();
+        }
+    } ,$("#Timer").val());
+}
+
+
+
+$("#FilterConnectName").bind("keypress" ,function(event)
+{  
+    if ( event.keyCode == "13" )
+    {
+        f_Goto();
+    }
+});
+
+$("#FilterConnectName").focus();
+$("#FilterConnectName").select();
+
+
+
+$("#ByLocalSocketTotal").click(function()
+{  
+    $("#TT").val("LocalSocket");
+    f_Goto();
+});
+
+
+
+$("#ByUserTotal").click(function()
+{  
+    $("#TT").val("User");
+    f_Goto();
+})
+.attr("title" ,"系统名称+账号名称");
+
+
+
+$("#ByClientIPTotal").click(function()
+{  
+    $("#TT").val("ClientIP");
+    f_Goto();
+});
+
+
+
+$("#ByUserClientIPTotal").click(function()
+{  
+    $("#TT").val("UserClientIP");
+    f_Goto();
+});
+
+
+
+$("#Title_ConnectName").click(function()
+{
+    $("#S").val("ConnectName");
+    f_Goto();
+});
+
+
+
+$("#Title_Connect").click(function()
+{
+    $("#S").val("Connect");
+    f_Goto();
+});
+
+
+
+$("#Title_LoginTime").click(function()
+{
+    $("#S").val("LoginTime");
+    f_Goto();
+});
+
+
+
+$("#Title_LogoutTime").click(function()
+{
+    $("#S").val("LogoutTime");
+    f_Goto();
+});
+
+
+
+$("#Title_IdleTime").click(function()
+{
+    $("#S").val("IdleTime");
+    f_Goto();
+});
+
+
+
+$("#Title_RequestCount").click(function()
+{
+    $("#S").val("RequestCount");
+    f_Goto();
+});
+
+
+
+$("#Title_SucceedCount").click(function()
+{
+    $("#S").val("SucceedCount");
+    f_Goto();
+});
+
+
+
+$("#Title_ErrorCount").click(function()
+{
+    $("#S").val("ErrorCount");
+    f_Goto();
+});
+
+
+
+$("#Title_ExecSumTime").click(function()
+{
+    $("#S").val("ExecSumTime");
+    f_Goto();
+});
+
+
+
+$("#Title_ExecAvgTime").click(function()
+{
+    $("#S").val("ExecAvgTime");
+    f_Goto();
+});
+    
+    
+
+$("#Title_LastTime").click(function()
+{
+    $("#S").val("LastTime");
+    f_Goto();
+});
+
+
+
+if ( $("#S").val() == "Connect" )
+{
+    $("#Title_Connect").html("↓" + $("#Title_Connect").html());
+}
+else if ( $("#S").val() == "LoginTime" )
+{
+    $("#Title_LoginTime").html("↓" + $("#Title_LoginTime").html());
+}
+else if ( $("#S").val() == "LogoutTime" )
+{
+    $("#Title_LogoutTime").html("↓" + $("#Title_LogoutTime").html());
+}
+else if ( $("#S").val() == "IdleTime" )
+{
+    $("#Title_IdleTime").html("↓" + $("#Title_IdleTime").html());
+}
+else if ( $("#S").val() == "RequestCount" )
+{
+    $("#Title_RequestCount").html("↓" + $("#Title_RequestCount").html());
+}
+else if ( $("#S").val() == "SucceedCount" )
+{
+    $("#Title_SucceedCount").html("↓" + $("#Title_SucceedCount").html());
+}
+else if ( $("#S").val() == "ErrorCount" )
+{
+    $("#Title_ErrorCount").html("↓" + $("#Title_ErrorCount").html());
+}
+else if ( $("#S").val() == "ExecSumTime" )
+{
+    $("#Title_ExecSumTime").html("↓" + $("#Title_ExecSumTime").html());
+}
+else if ( $("#S").val() == "ExecAvgTime" )
+{
+    $("#Title_ExecAvgTime").html("↓" + $("#Title_ExecAvgTime").html());
+}
+else if ( $("#S").val() == "LastTime" )
+{
+    $("#Title_LastTime").html("↓" + $("#Title_LastTime").html());
+}
+else 
+{
+    $("#Title_ConnectName").html("↓" + $("#Title_ConnectName").html());
+}
+
+</script>
+       
+    <div id="info_fill" class="userInfoModify_logininfo1"> 
+    
+        <div class="userInfoModify_clearTag1">
+            <div class="userInfoModify_labeTag2"></div>
+            <div class="userInfoModify_ConnectName_Other"></div>
+            <div class="userInfoModify_SessionLimit_Other"></div>
+            <div class="userInfoModify_Connect_Other"></div>
+            <div class="userInfoModify_LoginTime_Other"></div>
+            <div class="userInfoModify_LogoutTime_Other"></div>
+            <div class="userInfoModify_IdleTime_Other"></div>
+            <div class="userInfoModify_RequestCount_Other"></div>
+            <div class="userInfoModify_SucceedCount_Other"></div>
+            <div class="userInfoModify_ErrorCount_Other"></div>
+            <div class="userInfoModify_ExecSumTime_Other"></div>
+            <div class="userInfoModify_ExecAvgTime_Other"></div>
+            <div class="userInfoModify_LastTime_Other"></div>
+        </div> 
+    
+        :Content 
+        
+        <div class="userInfoModify_clearTag1">
+            <div class="userInfoModify_labeTag2"></div>
+            <div class="userInfoModify_ConnectName_Other"></div>
+            <div class="userInfoModify_SessionLimit_Other"></div>
+            <div class="userInfoModify_Connect_Other"></div>
+            <div class="userInfoModify_LoginTime_Other"></div>
+            <div class="userInfoModify_LogoutTime_Other"></div>
+            <div class="userInfoModify_IdleTime_Other"></div>
+            <div class="userInfoModify_RequestCount_Other"></div>
+            <div class="userInfoModify_SucceedCount_Other"></div>
+            <div class="userInfoModify_ErrorCount_Other"></div>
+            <div class="userInfoModify_ExecSumTime_Other"></div>
+            <div class="userInfoModify_ExecAvgTime_Other"></div>
+            <div class="userInfoModify_LastTime_Other"></div>
+        </div>
+    </div>
+
+</body>
+</html>
