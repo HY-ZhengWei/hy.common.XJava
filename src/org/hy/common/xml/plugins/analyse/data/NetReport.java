@@ -1,7 +1,7 @@
 package org.hy.common.xml.plugins.analyse.data;
 
 import org.hy.common.Help;
-import org.hy.common.net.data.ClientUserInfo;
+import org.hy.common.net.data.SessionInfo;
 
 
 
@@ -14,10 +14,19 @@ import org.hy.common.net.data.ClientUserInfo;
  * @createDate  2022-01-05
  * @version     v1.0
  */
-public class NetReport extends ClientUserInfo
+public class NetReport extends SessionInfo
 {
 
     private static final long serialVersionUID = -5066726756027709286L;
+    
+    public  static final int  $Type_Server     = -1;
+    
+    public  static final int  $Type_Client     = 1;
+    
+    
+    
+    /** 类型（1：请求-客户端； -1:响应-服务端） */
+    private int     type;
     
     /** 统计编号 */
     private String  totalID;
@@ -44,9 +53,9 @@ public class NetReport extends ClientUserInfo
     
     
     
-    public NetReport(ClientUserInfo i_ClientUser)
+    public NetReport(SessionInfo i_Session)
     {
-        this.initNotNull(i_ClientUser);
+        this.initNotNull(i_Session);
         this.connectCount = 1;
         this.onlineCount  = this.isOnline() ? 1 : 0;
     }
@@ -60,70 +69,70 @@ public class NetReport extends ClientUserInfo
      * @createDate  2022-01-05
      * @version     v1.0
      * 
-     * @param i_ClientUser
+     * @param i_Session
      */
-    public void addTotal(ClientUserInfo i_ClientUser)
+    public void addTotal(SessionInfo i_Session)
     {
         this.connectCount++;
-        this.onlineCount += i_ClientUser.isOnline() ? 1 : 0;
-        this.setRequestCount( this.getRequestCount()  + i_ClientUser.getRequestCount());
-        this.setActiveCount(  this.getActiveCount()   + i_ClientUser.getActiveCount());
-        this.setActiveTimeLen(this.getActiveTimeLen() + i_ClientUser.getActiveTimeLen());
+        this.onlineCount += i_Session.isOnline() ? 1 : 0;
+        this.setRequestCount( this.getRequestCount()  + i_Session.getRequestCount());
+        this.setActiveCount(  this.getActiveCount()   + i_Session.getActiveCount());
+        this.setActiveTimeLen(this.getActiveTimeLen() + i_Session.getActiveTimeLen());
         
         // 登录时间：取最早
         if ( this.getLoginTime() == null )
         {
-            this.setLoginTime(i_ClientUser.getLoginTime());
+            this.setLoginTime(i_Session.getLoginTime());
         }
-        else if ( i_ClientUser.getLoginTime() == null )
+        else if ( i_Session.getLoginTime() == null )
         {
             // Nothing.
         }
-        else if ( this.getLoginTime().getTime() > i_ClientUser.getLoginTime().getTime() )
+        else if ( this.getLoginTime().getTime() > i_Session.getLoginTime().getTime() )
         {
-            this.setLoginTime(i_ClientUser.getLoginTime());
+            this.setLoginTime(i_Session.getLoginTime());
         }
         
         // 登出时间：取最新
         if ( this.getLogoutTime() == null )
         {
-            this.setLogoutTime(i_ClientUser.getLogoutTime());
+            this.setLogoutTime(i_Session.getLogoutTime());
         }
-        else if ( i_ClientUser.getLogoutTime() == null )
+        else if ( i_Session.getLogoutTime() == null )
         {
             // Nothing.
         }
-        else if ( this.getLogoutTime().getTime() < i_ClientUser.getLogoutTime().getTime() )
+        else if ( this.getLogoutTime().getTime() < i_Session.getLogoutTime().getTime() )
         {
-            this.setLogoutTime(i_ClientUser.getLogoutTime());
+            this.setLogoutTime(i_Session.getLogoutTime());
         }
         
         // 心跳时间：取最新
         if ( this.getIdleTime() == null )
         {
-            this.setIdleTime(i_ClientUser.getIdleTime());
+            this.setIdleTime(i_Session.getIdleTime());
         }
-        else if ( i_ClientUser.getIdleTime() == null )
+        else if ( i_Session.getIdleTime() == null )
         {
             // Nothing.
         }
-        else if ( this.getIdleTime().getTime() < i_ClientUser.getIdleTime().getTime() )
+        else if ( this.getIdleTime().getTime() < i_Session.getIdleTime().getTime() )
         {
-            this.setIdleTime(i_ClientUser.getIdleTime());
+            this.setIdleTime(i_Session.getIdleTime());
         }
         
         // 通讯时间：取最新
         if ( this.getActiveTime() == null )
         {
-            this.setActiveTime(i_ClientUser.getActiveTime());
+            this.setActiveTime(i_Session.getActiveTime());
         }
-        else if ( i_ClientUser.getActiveTime() == null )
+        else if ( i_Session.getActiveTime() == null )
         {
             // Nothing.
         }
-        else if ( this.getActiveTime().getTime() < i_ClientUser.getActiveTime().getTime() )
+        else if ( this.getActiveTime().getTime() < i_Session.getActiveTime().getTime() )
         {
-            this.setActiveTime(i_ClientUser.getActiveTime());
+            this.setActiveTime(i_Session.getActiveTime());
         }
     }
     
@@ -244,6 +253,26 @@ public class NetReport extends ClientUserInfo
     public void setOnlineCount(int onlineCount)
     {
         this.onlineCount = onlineCount;
+    }
+
+
+    /**
+     * 获取：类型（1：请求-客户端； -1:响应-服务端）
+     */
+    public int getType()
+    {
+        return type;
+    }
+
+
+    /**
+     * 设置：类型（1：请求-客户端； -1:响应-服务端）
+     * 
+     * @param type
+     */
+    public void setType(int type)
+    {
+        this.type = type;
     }
     
 }

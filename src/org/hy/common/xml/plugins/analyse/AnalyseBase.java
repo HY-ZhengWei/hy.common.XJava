@@ -23,6 +23,7 @@ import org.hy.common.db.DataSourceGroup;
 import org.hy.common.net.ClientSocketCluster;
 import org.hy.common.net.common.ClientCluster;
 import org.hy.common.net.common.ServerOperation;
+import org.hy.common.net.data.ClientTotal;
 import org.hy.common.net.data.CommunicationResponse;
 import org.hy.common.net.data.LoginRequest;
 import org.hy.common.thread.Job;
@@ -3563,57 +3564,57 @@ public class AnalyseBase extends Analyse
         
         if ( "Connect".equalsIgnoreCase(i_SortType) )
         {
-            Help.toSort(v_TotalList ,"connectCount DESC" ,"onlineCount DESC" ,"requestCount DESC" ,"activeTime DESC");
+            Help.toSort(v_TotalList ,"type ASC" ,"connectCount DESC" ,"onlineCount DESC" ,"requestCount DESC" ,"activeTime DESC");
         }
         // 排序类型(登录时间)
         else if ( "LoginTime".equalsIgnoreCase(i_SortType) )
         {
-            Help.toSort(v_TotalList ,"loginTime DESC" ,"requestCount DESC" ,"activeTime DESC");
+            Help.toSort(v_TotalList ,"type ASC" ,"loginTime DESC" ,"requestCount DESC" ,"activeTime DESC");
         }
         // 排序类型(登出时间)
         else if ( "LogoutTime".equalsIgnoreCase(i_SortType) )
         {
-            Help.toSort(v_TotalList ,"logoutTime DESC" ,"requestCount DESC" ,"activeTime DESC");
+            Help.toSort(v_TotalList ,"type ASC" ,"logoutTime DESC" ,"requestCount DESC" ,"activeTime DESC");
         }
         // 排序类型(心跳时间)
         else if ( "IdleTime".equalsIgnoreCase(i_SortType) )
         {
-            Help.toSort(v_TotalList ,"idleTime DESC" ,"requestCount DESC" ,"activeTime DESC");
+            Help.toSort(v_TotalList ,"type ASC" ,"idleTime DESC" ,"requestCount DESC" ,"activeTime DESC");
         }
         // 排序类型(请求量)
         else if ( "RequestCount".equalsIgnoreCase(i_SortType) )
         {
-            Help.toSort(v_TotalList ,"requestCount DESC" ,"activeTime DESC");
+            Help.toSort(v_TotalList ,"type ASC" ,"requestCount DESC" ,"activeTime DESC");
         }
         // 排序类型(成功量)
         else if ( "SucceedCount".equalsIgnoreCase(i_SortType) )
         {
-            Help.toSort(v_TotalList ,"activeCount DESC" ,"activeTime DESC");
+            Help.toSort(v_TotalList ,"type ASC" ,"activeCount DESC" ,"activeTime DESC");
         }
         // 排序类型(未成功量)
         else if ( "ErrorCount".equalsIgnoreCase(i_SortType) )
         {
-            Help.toSort(v_TotalList ,"errorCount DESC" ,"activeTime DESC");
+            Help.toSort(v_TotalList ,"type ASC" ,"errorCount DESC" ,"activeTime DESC");
         }
         // 排序类型(累计用时)
         else if ( "ExecSumTime".equalsIgnoreCase(i_SortType) )
         {
-            Help.toSort(v_TotalList ,"activeTimeLen DESC" ,"activeTime DESC");
+            Help.toSort(v_TotalList ,"type ASC" ,"activeTimeLen DESC" ,"activeTime DESC");
         }
         // 排序类型(平均用时)
         else if ( "ExecAvgTime".equalsIgnoreCase(i_SortType) )
         {
-            Help.toSort(v_TotalList ,"avgActiveTimeLen DESC" ,"activeTime DESC");
+            Help.toSort(v_TotalList ,"type ASC" ,"avgActiveTimeLen DESC" ,"activeTime DESC");
         }
         // 排序类型(操作时间)
         else if ( "LastTime".equalsIgnoreCase(i_SortType) )
         {
-            Help.toSort(v_TotalList ,"activeTime DESC" ,"requestCount DESC");
+            Help.toSort(v_TotalList ,"type ASC" ,"activeTime DESC" ,"requestCount DESC");
         }
         // 排序类型(连接标识) - 默认排序
         else
         {
-            Help.toSort(v_TotalList ,"totalID" ,"requestCount DESC" ,"activeTime DESC");
+            Help.toSort(v_TotalList ,"type ASC" ,"totalID" ,"requestCount DESC" ,"activeTime DESC");
         }
         
         long v_NowTime         = new Date().getMinutes(-2).getTime();
@@ -3623,13 +3624,21 @@ public class AnalyseBase extends Analyse
         long v_SumSucceedCount = 0L;
         long v_SumErrorCount   = 0L;
         long v_SumExecSumTime  = 0L;
+        
+        long v_SumServerConnectCount = 0L;
+        long v_SumServerOnlineCount  = 0L;
+        long v_SumServerRequestCount = 0L;
+        long v_SumServerSucceedCount = 0L;
+        long v_SumServerErrorCount   = 0L;
+        long v_SumServerExecSumTime  = 0L;
+        
         for (NetReport v_Report : v_TotalList)
         {
             Map<String ,String> v_RKey = new HashMap<String ,String>();
             
             v_RKey.put(":No"           ,String.valueOf(++v_Index));
             v_RKey.put(":ConnectName"  ,v_Report.getTotalID());
-            v_RKey.put(":SessionLimit" ,v_Report.getSessionLimit());
+            v_RKey.put(":SessionLimit" ,v_Report.getType() == NetReport.$Type_Server ? "<span class='SessionServer'>接收方</span>" : "<span class='SessionClient'>发送方</span>");
             v_RKey.put(":Connect"      ,"<span style='color:" + (v_Report.getOnlineCount()      > 0 ? "green;font-weight:bold" : "black") + ";'>" + v_Report.getConnectCount() + ":" + v_Report.getOnlineCount() + "</span>");
             v_RKey.put(":LoginTime"    ,v_Report.getLoginTime()  != null ? v_Report.getLoginTime() .getFull() : "-");
             v_RKey.put(":LogoutTime"   ,v_Report.getLogoutTime() != null ? v_Report.getLogoutTime().getFull() : "-");
@@ -3639,7 +3648,7 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":ErrorCount"   ,"<span style='color:" + (v_Report.getErrorCount()       > 0 ? "red;  font-weight:bold" : "gray") + ";'>" + (v_Report.getErrorCount()       > 0 ? "" + v_Report.getErrorCount() + "" : "0") + "</span>");
             v_RKey.put(":ExecSumTime"  ,"<span style='color:" + (v_Report.getActiveTimeLen()    > 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getActiveTimeLen()    > 0 ? Date.toTimeLen(v_Report.getActiveTimeLen()) : "-") + "</span>");
             v_RKey.put(":ExecAvgTime"  ,"<span style='color:" + (v_Report.getAvgActiveTimeLen() > 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getAvgActiveTimeLen() > 0 ? Help.round(v_Report.getAvgActiveTimeLen() ,2) : "-") + "</span>");
-            v_RKey.put(":LastTime"     ,v_Report.getActiveTime() == null ? "" : (v_Report.getActiveTime().getTime() >= v_NowTime ? v_Report.getActiveTime().getFull() : "<span style='color:gray;'>" + v_Report.getActiveTime().getFull() + "</span>"));
+            v_RKey.put(":LastTime"     ,v_Report.getActiveTime() == null ? "-" : (v_Report.getActiveTime().getTime() >= v_NowTime ? v_Report.getActiveTime().getFull() : "<span style='color:gray;'>" + v_Report.getActiveTime().getFull() + "</span>"));
             
             v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
             
@@ -3649,12 +3658,71 @@ public class AnalyseBase extends Analyse
             v_SumSucceedCount += v_Report.getActiveCount();
             v_SumErrorCount   += v_Report.getErrorCount();
             v_SumExecSumTime  += v_Report.getActiveTimeLen();
+            
+            if ( v_Report.getType() == NetReport.$Type_Server )
+            {
+                v_SumServerConnectCount += v_Report.getConnectCount();
+                v_SumServerOnlineCount  += v_Report.getOnlineCount();
+                v_SumServerRequestCount += v_Report.getRequestCount();
+                v_SumServerSucceedCount += v_Report.getActiveCount();
+                v_SumServerErrorCount   += v_Report.getErrorCount();
+                v_SumServerExecSumTime  += v_Report.getActiveTimeLen();
+            }
         }
         
-        // 合计
+        
+        // 合计接收方
         Map<String ,String> v_RKey = new HashMap<String ,String>();
         
         v_RKey.put(":No"           ,String.valueOf(++v_Index));
+        v_RKey.put(":ConnectName"  ,"合计接收方");
+        v_RKey.put(":SessionLimit" ,"接收方");
+        v_RKey.put(":Connect"      ,"<span style='color:" + (v_SumServerOnlineCount  > 0 ? "green;font-weight:bold" : "black") + ";'>" + v_SumServerConnectCount + ":" + v_SumServerOnlineCount + "</span>");
+        v_RKey.put(":LoginTime"    ,"-");
+        v_RKey.put(":LogoutTime"   ,"-");
+        v_RKey.put(":IdleTime"     ,"-");
+        v_RKey.put(":RequestCount" ,"<span style='color:" + (v_SumServerRequestCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SumServerRequestCount + "</span>");
+        v_RKey.put(":SucceedCount" ,"<span style='color:" + (v_SumServerSucceedCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SumServerSucceedCount + "</span>");
+        v_RKey.put(":ErrorCount"   ,"<span style='color:" + (v_SumServerErrorCount   > 0 ? "red;  font-weight:bold" : "gray") + ";'>" + v_SumServerErrorCount   + "</span>");
+        v_RKey.put(":ExecSumTime"  ,"<span style='color:" + (v_SumServerExecSumTime  > 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumServerExecSumTime >= 0 ? Date.toTimeLen(v_SumServerExecSumTime) : "-") + "</span>");
+        v_RKey.put(":ExecAvgTime"  ,"<span style='color:" + (v_SumServerExecSumTime  > 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumServerExecSumTime >= 0 ? Help.round(Help.division(v_SumServerExecSumTime ,Help.division(v_SumServerRequestCount , v_SumServerSucceedCount)) ,2) : "-") + "</span>");
+        v_RKey.put(":LastTime"     ,"-");
+        
+        v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
+        
+        
+        // 合计发送方
+        long v_SumClientConnectCount = v_SumConnectCount - v_SumServerConnectCount;
+        long v_SumClientOnlineCount  = v_SumOnlineCount  - v_SumServerOnlineCount ;
+        long v_SumClientRequestCount = v_SumRequestCount - v_SumServerRequestCount;
+        long v_SumClientSucceedCount = v_SumSucceedCount - v_SumServerSucceedCount;
+        long v_SumClientErrorCount   = v_SumErrorCount   - v_SumServerErrorCount  ;
+        long v_SumClientExecSumTime  = v_SumExecSumTime  - v_SumServerExecSumTime ;
+        
+        v_RKey = new HashMap<String ,String>();
+        
+        v_RKey.put(":No"           ,String.valueOf(++v_Index));
+        v_RKey.put(":ConnectName"  ,"合计发送方");
+        v_RKey.put(":SessionLimit" ,"发送方");
+        v_RKey.put(":Connect"      ,"<span style='color:" + (v_SumClientOnlineCount  > 0 ? "green;font-weight:bold" : "black") + ";'>" + v_SumClientConnectCount + ":" + v_SumClientOnlineCount + "</span>");
+        v_RKey.put(":LoginTime"    ,"-");
+        v_RKey.put(":LogoutTime"   ,"-");
+        v_RKey.put(":IdleTime"     ,"-");
+        v_RKey.put(":RequestCount" ,"<span style='color:" + (v_SumClientRequestCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SumClientRequestCount + "</span>");
+        v_RKey.put(":SucceedCount" ,"<span style='color:" + (v_SumClientSucceedCount > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_SumClientSucceedCount + "</span>");
+        v_RKey.put(":ErrorCount"   ,"<span style='color:" + (v_SumClientErrorCount   > 0 ? "red;  font-weight:bold" : "gray") + ";'>" + v_SumClientErrorCount   + "</span>");
+        v_RKey.put(":ExecSumTime"  ,"<span style='color:" + (v_SumClientExecSumTime  > 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumClientExecSumTime >= 0 ? Date.toTimeLen(v_SumClientExecSumTime) : "-") + "</span>");
+        v_RKey.put(":ExecAvgTime"  ,"<span style='color:" + (v_SumClientExecSumTime  > 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumClientExecSumTime >= 0 ? Help.round(Help.division(v_SumClientExecSumTime ,Help.division(v_SumClientRequestCount , v_SumClientSucceedCount)) ,2) : "-") + "</span>");
+        v_RKey.put(":LastTime"     ,"-");
+        
+        v_Buffer.append(StringHelp.replaceAll(v_Content ,v_RKey));
+        
+        
+        // 合计
+        v_RKey = new HashMap<String ,String>();
+        
+        v_RKey.put(":No"           ,String.valueOf(++v_Index));
+        v_RKey.put(":Direction"    ,"-");
         v_RKey.put(":ConnectName"  ,"合计");
         v_RKey.put(":SessionLimit" ,"-");
         v_RKey.put(":Connect"      ,"<span style='color:" + (v_SumOnlineCount  > 0 ? "green;font-weight:bold" : "black") + ";'>" + v_SumConnectCount + ":" + v_SumOnlineCount + "</span>");
@@ -3766,18 +3834,17 @@ public class AnalyseBase extends Analyse
     public void analyseNet_RestTotal()
     {
         $Logger.debug("重置通讯连接的统计数据");
-        Map<String ,Object> v_TotalMap = XJava.getObjects(ServerOperation.class);
+        Map<String ,Object> v_TotalServerSessions = XJava.getObjects(ServerOperation.class);
         
-        if ( Help.isNull(v_TotalMap) )
+        if ( !Help.isNull(v_TotalServerSessions) )
         {
-            return;
+            for (Object v_Session : v_TotalServerSessions.values())
+            {
+                ((ServerOperation)v_Session).reset();
+            }
         }
         
-        for (Object v_Total : v_TotalMap.values())
-        {
-            ServerOperation v_Server  = (ServerOperation)v_Total;
-            v_Server.reset();
-        }
+        ClientTotal.reset();
     }
     
     
@@ -4000,7 +4067,7 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":IsRunning"       ,v_IsRunning ? "运行中" : "-");
             v_RKey.put(":ExecSumTime"     ,"<span style='color:" + (v_Report.getExecSumTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecSumTime() >= 0 ? Date.toTimeLen(v_Report.getExecSumTime()) : "-") + "</span>");
             v_RKey.put(":ExecAvgTime"     ,"<span style='color:" + (v_Report.getExecAvgTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecAvgTime() >= 0 ? Help.round(v_Report.getExecAvgTime() ,2) : "-") + "</span>");
-            v_RKey.put(":LastTime"        ,v_Report.getLastTime() <= 0L ? "" : (v_Report.getLastTime() >= v_NowTime ? new Date(v_Report.getLastTime()).getFull() : "<span style='color:gray;'>" + new Date(v_Report.getLastTime()).getFull() + "</span>"));
+            v_RKey.put(":LastTime"        ,v_Report.getLastTime() <= 0L ? "-" : (v_Report.getLastTime() >= v_NowTime ? new Date(v_Report.getLastTime()).getFull() : "<span style='color:gray;'>" + new Date(v_Report.getLastTime()).getFull() + "</span>"));
             
             Map<String ,Object> v_MMErrors = v_Errors.get(v_Report.getId());
             if ( !Help.isNull(v_MMErrors) )

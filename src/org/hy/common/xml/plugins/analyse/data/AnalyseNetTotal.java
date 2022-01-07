@@ -6,7 +6,8 @@ import java.util.Map;
 
 import org.hy.common.Help;
 import org.hy.common.net.common.ServerOperation;
-import org.hy.common.net.data.ClientUserInfo;
+import org.hy.common.net.data.ClientTotal;
+import org.hy.common.net.data.SessionInfo;
 import org.hy.common.xml.SerializableDef;
 import org.hy.common.xml.XJava;
 
@@ -50,125 +51,221 @@ public class AnalyseNetTotal extends SerializableDef
     public AnalyseNetTotal(String i_TotalType)
     {
         this.reports = new Hashtable<String ,NetReport>();
-        Map<String ,Object> v_TotalMap = XJava.getObjects(ServerOperation.class);
         
-        if ( Help.isNull(v_TotalMap) )
+        Map<String ,Object> v_TotalServerSessions = XJava.getObjects(ServerOperation.class);
+        List<SessionInfo>   v_TotalClientSessions = ClientTotal.getSessions();
+        
+        if ( !Help.isNull(v_TotalClientSessions) )
         {
-            return;
+            // 按“客户IP”分组统计
+            if ( "ClientIP".equalsIgnoreCase(i_TotalType) )
+            {
+                for (SessionInfo v_Session : v_TotalClientSessions)
+                {
+                    String    v_TotalID = "C " + v_Session.getHost();
+                    NetReport v_Report  = this.reports.get(v_TotalID);
+                    
+                    if ( v_Report == null )
+                    {
+                        v_Report = new NetReport(v_Session);
+                        v_Report.setType(NetReport.$Type_Client);
+                        v_Report.setTotalID(v_TotalID);
+                        
+                        this.reports.put(v_TotalID ,v_Report);
+                    }
+                    else
+                    {
+                        v_Report.addTotal(v_Session);
+                    }
+                }
+            }
+            // 按“账户”分组统计
+            else if ( "User".equalsIgnoreCase(i_TotalType) )
+            {
+                for (SessionInfo v_Session : v_TotalClientSessions)
+                {
+                    String    v_TotalID = "C " + v_Session.getSystemName() + "_" + v_Session.getUserName();
+                    NetReport v_Report  = this.reports.get(v_TotalID);
+                    
+                    if ( v_Report == null )
+                    {
+                        v_Report = new NetReport(v_Session);
+                        v_Report.setType(NetReport.$Type_Client);
+                        v_Report.setTotalID(v_TotalID);
+                        
+                        this.reports.put(v_TotalID ,v_Report);
+                    }
+                    else
+                    {
+                        v_Report.addTotal(v_Session);
+                    }
+                }
+            }
+            // 按“本机开启的服务端口”分组统计
+            else if ( "LocalSocket".equalsIgnoreCase(i_TotalType) )
+            {
+                for (SessionInfo v_Session : v_TotalClientSessions)
+                {
+                    String    v_TotalID = "C " + v_Session.getPort() + "";
+                    NetReport v_Report  = this.reports.get(v_TotalID);
+                    
+                    if ( v_Report == null )
+                    {
+                        v_Report = new NetReport(v_Session);
+                        v_Report.setType(NetReport.$Type_Client);
+                        v_Report.setTotalID(v_TotalID);
+                        
+                        this.reports.put(v_TotalID ,v_Report);
+                    }
+                    else
+                    {
+                        v_Report.addTotal(v_Session);
+                    }
+                }
+            }
+            // 按“账户+客户IP+客户端口”分组统计。(默认分组方式)
+            else
+            {
+                for (SessionInfo v_Session : v_TotalClientSessions)
+                {
+                    String    v_TotalID = "C " + v_Session.getSystemName() + "_" + v_Session.getUserName() + "_" + v_Session.getHost() + ":" + v_Session.getPort();
+                    NetReport v_Report  = this.reports.get(v_TotalID);
+                    
+                    if ( v_Report == null )
+                    {
+                        v_Report = new NetReport(v_Session);
+                        v_Report.setType(NetReport.$Type_Client);
+                        v_Report.setTotalID(v_TotalID);
+                        
+                        this.reports.put(v_TotalID ,v_Report);
+                    }
+                    else
+                    {
+                        v_Report.addTotal(v_Session);
+                    }
+                }
+            }
         }
         
-        // 按“客户IP”分组统计
-        if ( "ClientIP".equalsIgnoreCase(i_TotalType) )
+        if ( !Help.isNull(v_TotalServerSessions) )
         {
-            for (Object v_Total : v_TotalMap.values())
+            // 按“客户IP”分组统计
+            if ( "ClientIP".equalsIgnoreCase(i_TotalType) )
             {
-                ServerOperation      v_Server  = (ServerOperation)v_Total;
-                List<ClientUserInfo> v_Clients = v_Server.getClientUsers();
-                
-                for (ClientUserInfo v_Client : v_Clients)
+                for (Object v_Total : v_TotalServerSessions.values())
                 {
-                    String    v_TotalID = v_Client.getHost();
-                    NetReport v_Report  = this.reports.get(v_TotalID);
+                    ServerOperation   v_Server   = (ServerOperation)v_Total;
+                    List<SessionInfo> v_Sessions = v_Server.getSessions();
                     
-                    if ( v_Report == null )
+                    for (SessionInfo v_Client : v_Sessions)
                     {
-                        v_Report = new NetReport(v_Client);
-                        v_Report.setTotalID(v_TotalID);
-                        v_Report.setServerPort(v_Server.getPort());
-                        v_Report.setSessionLimit(v_Server.getSessionTime() + ":" + v_Server.getSameUserOnlineMaxCount());
+                        String    v_TotalID = "S " + v_Client.getHost();
+                        NetReport v_Report  = this.reports.get(v_TotalID);
                         
-                        this.reports.put(v_TotalID ,v_Report);
-                    }
-                    else
-                    {
-                        v_Report.addTotal(v_Client);
+                        if ( v_Report == null )
+                        {
+                            v_Report = new NetReport(v_Client);
+                            v_Report.setType(NetReport.$Type_Server);
+                            v_Report.setTotalID(v_TotalID);
+                            v_Report.setServerPort(v_Server.getPort());
+                            v_Report.setSessionLimit(v_Server.getSessionTime() + ":" + v_Server.getSameUserOnlineMaxCount());
+                            
+                            this.reports.put(v_TotalID ,v_Report);
+                        }
+                        else
+                        {
+                            v_Report.addTotal(v_Client);
+                        }
                     }
                 }
             }
-        }
-        // 按“账户”分组统计
-        else if ( "User".equalsIgnoreCase(i_TotalType) )
-        {
-            for (Object v_Total : v_TotalMap.values())
+            // 按“账户”分组统计
+            else if ( "User".equalsIgnoreCase(i_TotalType) )
             {
-                ServerOperation      v_Server  = (ServerOperation)v_Total;
-                List<ClientUserInfo> v_Clients = v_Server.getClientUsers();
-                
-                for (ClientUserInfo v_Client : v_Clients)
+                for (Object v_Total : v_TotalServerSessions.values())
                 {
-                    String    v_TotalID = v_Client.getSystemName() + "_" + v_Client.getUserName();
-                    NetReport v_Report  = this.reports.get(v_TotalID);
+                    ServerOperation   v_Server   = (ServerOperation)v_Total;
+                    List<SessionInfo> v_Sessions = v_Server.getSessions();
                     
-                    if ( v_Report == null )
+                    for (SessionInfo v_Session : v_Sessions)
                     {
-                        v_Report = new NetReport(v_Client);
-                        v_Report.setTotalID(v_TotalID);
-                        v_Report.setServerPort(v_Server.getPort());
-                        v_Report.setSessionLimit(v_Server.getSessionTime() + ":" + v_Server.getSameUserOnlineMaxCount());
+                        String    v_TotalID = "S " + v_Session.getSystemName() + "_" + v_Session.getUserName();
+                        NetReport v_Report  = this.reports.get(v_TotalID);
                         
-                        this.reports.put(v_TotalID ,v_Report);
-                    }
-                    else
-                    {
-                        v_Report.addTotal(v_Client);
+                        if ( v_Report == null )
+                        {
+                            v_Report = new NetReport(v_Session);
+                            v_Report.setType(NetReport.$Type_Server);
+                            v_Report.setTotalID(v_TotalID);
+                            v_Report.setServerPort(v_Server.getPort());
+                            v_Report.setSessionLimit(v_Server.getSessionTime() + ":" + v_Server.getSameUserOnlineMaxCount());
+                            
+                            this.reports.put(v_TotalID ,v_Report);
+                        }
+                        else
+                        {
+                            v_Report.addTotal(v_Session);
+                        }
                     }
                 }
             }
-        }
-        // 按“本机开启的服务端口”分组统计
-        else if ( "LocalSocket".equalsIgnoreCase(i_TotalType) )
-        {
-            for (Object v_Total : v_TotalMap.values())
+            // 按“本机开启的服务端口”分组统计
+            else if ( "LocalSocket".equalsIgnoreCase(i_TotalType) )
             {
-                ServerOperation      v_Server  = (ServerOperation)v_Total;
-                List<ClientUserInfo> v_Clients = v_Server.getClientUsers();
-                
-                for (ClientUserInfo v_Client : v_Clients)
+                for (Object v_Total : v_TotalServerSessions.values())
                 {
-                    String    v_TotalID = v_Server.getPort() + "";
-                    NetReport v_Report  = this.reports.get(v_TotalID);
+                    ServerOperation   v_Server   = (ServerOperation)v_Total;
+                    List<SessionInfo> v_Sessions = v_Server.getSessions();
                     
-                    if ( v_Report == null )
+                    for (SessionInfo v_Session : v_Sessions)
                     {
-                        v_Report = new NetReport(v_Client);
-                        v_Report.setTotalID(v_TotalID);
-                        v_Report.setServerPort(v_Server.getPort());
-                        v_Report.setSessionLimit(v_Server.getSessionTime() + ":" + v_Server.getSameUserOnlineMaxCount());
+                        String    v_TotalID = "S " + v_Server.getPort() + "";
+                        NetReport v_Report  = this.reports.get(v_TotalID);
                         
-                        this.reports.put(v_TotalID ,v_Report);
-                    }
-                    else
-                    {
-                        v_Report.addTotal(v_Client);
+                        if ( v_Report == null )
+                        {
+                            v_Report = new NetReport(v_Session);
+                            v_Report.setType(NetReport.$Type_Server);
+                            v_Report.setTotalID(v_TotalID);
+                            v_Report.setServerPort(v_Server.getPort());
+                            v_Report.setSessionLimit(v_Server.getSessionTime() + ":" + v_Server.getSameUserOnlineMaxCount());
+                            
+                            this.reports.put(v_TotalID ,v_Report);
+                        }
+                        else
+                        {
+                            v_Report.addTotal(v_Session);
+                        }
                     }
                 }
             }
-        }
-        // 按“服务端口+账户+客户IP+客户端口”分组统计。(默认分组方式)
-        else
-        {
-            for (Object v_Total : v_TotalMap.values())
+            // 按“服务端口+账户+客户IP+客户端口”分组统计。(默认分组方式)
+            else
             {
-                ServerOperation      v_Server  = (ServerOperation)v_Total;
-                List<ClientUserInfo> v_Clients = v_Server.getClientUsers();
-                
-                for (ClientUserInfo v_Client : v_Clients)
+                for (Object v_Total : v_TotalServerSessions.values())
                 {
-                    String    v_TotalID = v_Server.getPort() + ":" + v_Client.getSystemName() + "_" + v_Client.getUserName() + "_" + v_Client.getHost() + ":" + v_Client.getPort();
-                    NetReport v_Report  = this.reports.get(v_TotalID);
+                    ServerOperation   v_Server   = (ServerOperation)v_Total;
+                    List<SessionInfo> v_Sessions = v_Server.getSessions();
                     
-                    if ( v_Report == null )
+                    for (SessionInfo v_Session : v_Sessions)
                     {
-                        v_Report = new NetReport(v_Client);
-                        v_Report.setTotalID(v_TotalID);
-                        v_Report.setServerPort(v_Server.getPort());
-                        v_Report.setSessionLimit(v_Server.getSessionTime() + ":" + v_Server.getSameUserOnlineMaxCount());
+                        String    v_TotalID = "S " + v_Server.getPort() + ":" + v_Session.getSystemName() + "_" + v_Session.getUserName() + "_" + v_Session.getHost() + ":" + v_Session.getPort();
+                        NetReport v_Report  = this.reports.get(v_TotalID);
                         
-                        this.reports.put(v_TotalID ,v_Report);
-                    }
-                    else
-                    {
-                        v_Report.addTotal(v_Client);
+                        if ( v_Report == null )
+                        {
+                            v_Report = new NetReport(v_Session);
+                            v_Report.setType(NetReport.$Type_Server);
+                            v_Report.setTotalID(v_TotalID);
+                            v_Report.setServerPort(v_Server.getPort());
+                            v_Report.setSessionLimit(v_Server.getSessionTime() + ":" + v_Server.getSameUserOnlineMaxCount());
+                            
+                            this.reports.put(v_TotalID ,v_Report);
+                        }
+                        else
+                        {
+                            v_Report.addTotal(v_Session);
+                        }
                     }
                 }
             }
