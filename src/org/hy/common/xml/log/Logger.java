@@ -1126,9 +1126,12 @@ public class Logger
             this.methodExecSumTime.set(v_Key ,0L);
         }
         
-        for (String v_Key : this.execptionLog.keySet())
+        if ( this.execptionLog != null )
         {
-            this.execptionLog.get(v_Key).clear();
+            for (String v_Key : this.execptionLog.keySet())
+            {
+                this.execptionLog.get(v_Key).clear();
+            }
         }
     }
     

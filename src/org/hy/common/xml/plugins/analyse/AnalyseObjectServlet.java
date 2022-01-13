@@ -612,17 +612,29 @@ public class AnalyseObjectServlet extends HttpServlet
             }
             else if ( !Help.isNull(v_Net) )
             {
-                String v_TotalType  = Help.NVL(i_Request.getParameter("TT"));
-                String v_Sort       = Help.NVL(i_Request.getParameter("S"));
-                String v_FilterName = Help.NVL(i_Request.getParameter("FCN"));
-                String v_Timer      = Help.NVL(i_Request.getParameter("Timer"));
+                String v_TotalType = Help.NVL(i_Request.getParameter("TT"));
+                String v_TotalID   = Help.NVL(i_Request.getParameter("NetID"));
                 
-                i_Response.getWriter().println(this.analyse.analyseNet(v_BasePath
-                                                                      ,i_Request.getRequestURL().toString()
-                                                                      ,v_TotalType
-                                                                      ,v_Sort
-                                                                      ,v_FilterName
-                                                                      ,v_Timer));
+                if ( !Help.isNull(v_TotalID) )
+                {
+                    i_Response.getWriter().println(this.analyse.analyseNetException(v_BasePath
+                                                                                   ,i_Request.getRequestURL().toString()
+                                                                                   ,v_TotalType
+                                                                                   ,v_TotalID));
+                }
+                else
+                {
+                    String v_Sort       = Help.NVL(i_Request.getParameter("S"));
+                    String v_FilterName = Help.NVL(i_Request.getParameter("FCN"));
+                    String v_Timer      = Help.NVL(i_Request.getParameter("Timer"));
+                    
+                    i_Response.getWriter().println(this.analyse.analyseNet(v_BasePath
+                                                                          ,i_Request.getRequestURL().toString()
+                                                                          ,v_TotalType
+                                                                          ,v_Sort
+                                                                          ,v_FilterName
+                                                                          ,v_Timer));
+                }
             }
             else if ( Help.isNull(v_XFile) && "Y".equalsIgnoreCase(v_Cluster) )
             {

@@ -26,6 +26,7 @@ import org.hy.common.net.common.ServerOperation;
 import org.hy.common.net.data.ClientTotal;
 import org.hy.common.net.data.CommunicationResponse;
 import org.hy.common.net.data.LoginRequest;
+import org.hy.common.net.data.NetException;
 import org.hy.common.thread.Job;
 import org.hy.common.thread.JobDisasterRecoveryReport;
 import org.hy.common.thread.JobReport;
@@ -3522,7 +3523,7 @@ public class AnalyseBase extends Analyse
      *
      * @param  i_BasePath   服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ReLoadPath 重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject?net=Y
-     * @param  i_TotalType  统计类型(User、ClientIP、UserClientIP)
+     * @param  i_TotalType  统计类型(LocalSocket、User、ClientIP、UserClientIP)
      * @param  i_SortType   排序类型(ConnectName、Connect、LoginTime、LogoutTime、IdleTime、RequestCount、SucceedCount、ErrorCount、ExecSumTime、ExecAvgTime、LastTime)
      * @param  i_FilterName 服务端口、账户、客户IP的模糊过滤条件
      * @param  i_Timer      定时刷新的时长（单位：毫秒）
@@ -3544,7 +3545,7 @@ public class AnalyseBase extends Analyse
         TablePartitionRID<String ,Object> v_Errors  = new TablePartitionRID<String ,Object>();
         
         // 本机统计
-        v_Total = this.analyseNet_Total(i_TotalType);
+        v_Total = this.analyseNet_Total(i_TotalType ,null);
         
         List<NetReport> v_TotalList = Help.toList(v_Total.getReports());
         
@@ -3636,6 +3637,11 @@ public class AnalyseBase extends Analyse
         {
             Map<String ,String> v_RKey = new HashMap<String ,String>();
             
+            String v_OperateURL = i_ReLoadPath
+                                + "?net=Y"
+                                + "&NetID=" + v_Report.getTotalID()
+                                + "&TT="    + i_TotalType;
+            
             v_RKey.put(":No"           ,String.valueOf(++v_Index));
             v_RKey.put(":ConnectName"  ,v_Report.getTotalID());
             v_RKey.put(":SessionLimit" ,v_Report.getType() == NetReport.$Type_Server ? "<span class='SessionServer'>接收方</span>" : "<span class='SessionClient'>发送方</span>");
@@ -3645,7 +3651,7 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":IdleTime"     ,v_Report.getIdleTime()   != null ? v_Report.getIdleTime()  .getHMS()  : "-");
             v_RKey.put(":RequestCount" ,"<span style='color:" + (v_Report.getRequestCount()     > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getRequestCount() + "</span>");
             v_RKey.put(":SucceedCount" ,"<span style='color:" + (v_Report.getActiveCount()      > 0 ? "green;font-weight:bold" : "gray") + ";'>" + v_Report.getActiveCount()  + "</span>");
-            v_RKey.put(":ErrorCount"   ,"<span style='color:" + (v_Report.getErrorCount()       > 0 ? "red;  font-weight:bold" : "gray") + ";'>" + (v_Report.getErrorCount()       > 0 ? "" + v_Report.getErrorCount() + "" : "0") + "</span>");
+            v_RKey.put(":ErrorCount"   ,"<span style='color:" + (v_Report.getErrorCount()       > 0 ? "red;  font-weight:bold" : "gray") + ";'>" + (v_Report.getErrorCount()       > 0 ? "<a href='" + v_OperateURL + "'>" + v_Report.getErrorCount() + "</a>" : "0") + "</span>");
             v_RKey.put(":ExecSumTime"  ,"<span style='color:" + (v_Report.getActiveTimeLen()    > 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getActiveTimeLen()    > 0 ? Date.toTimeLen(v_Report.getActiveTimeLen()) : "-") + "</span>");
             v_RKey.put(":ExecAvgTime"  ,"<span style='color:" + (v_Report.getAvgActiveTimeLen() > 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getAvgActiveTimeLen() > 0 ? Help.round(v_Report.getAvgActiveTimeLen() ,2) : "-") + "</span>");
             v_RKey.put(":LastTime"     ,v_Report.getActiveTime() == null ? "-" : (v_Report.getActiveTime().getTime() >= v_NowTime ? v_Report.getActiveTime().getFull() : "<span style='color:gray;'>" + v_Report.getActiveTime().getFull() + "</span>"));
@@ -3806,6 +3812,76 @@ public class AnalyseBase extends Analyse
     
     
     /**
+     * 功能1. 查看通讯执行异常的日志
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-01-08
+     * @version     v1.0
+     *
+     * @param  i_BasePath         服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ReLoadPath       重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject?net=Y
+     * @param  i_TotalType        统计类型(LocalSocket、User、ClientIP、UserClientIP)
+     * @param  i_TotalID          统计分析标识ID
+     * @return
+     */
+    public String analyseNetException(String i_BasePath
+                                     ,String i_ReLoadPath
+                                     ,String i_TotalType
+                                     ,String i_TotalID)
+    {
+        $Logger.debug("查看通讯执行异常的日志：" + i_TotalID);
+        
+        if ( Help.isNull(i_TotalID) )
+        {
+            return "";
+        }
+        
+        try
+        {
+            List<NetException> v_ErrorLogs = new ArrayList<NetException>();
+            AnalyseNetTotal    v_Total     = this.analyseNet_Total(i_TotalType ,i_TotalID);
+            
+            if ( v_Total != null && !Help.isNull(v_Total.getReports()) )
+            {
+                List<NetReport> v_TotalList = Help.toList(v_Total.getReports());
+                
+                if ( !Help.isNull(v_TotalList.get(0).getNetErrorLogs()) )
+                {
+                    v_ErrorLogs = v_TotalList.get(0).getNetErrorLogs();
+                }
+            }
+            
+            String v_Content      = "";
+            String v_OperateURL   = "#";
+            String v_OperateTitle = "";
+            XJSON  v_XJSON        = new XJSON();
+            v_XJSON.setReturnNVL(true);
+            v_XJSON.setAccuracy(true);
+            
+            XJSONObject v_Ret = v_XJSON.parser(v_ErrorLogs);
+            if ( null != v_Ret )
+            {
+                v_Content = v_Ret.toJSONString();
+            }
+            else
+            {
+                v_Content = "{}";
+            }
+            
+            return StringHelp.replaceAll(this.getTemplateShowObject()
+                                        ,new String[]{":HttpBasePath" ,":TitleInfo"   ,":XJavaObjectID" ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3" ,":OperateURL4" ,":OperateTitle4" ,":OperateURL5" ,":OperateTitle5"}
+                                        ,new String[]{i_BasePath      ,"通讯异常的日志" ,i_TotalID        ,v_Content  ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle});
+        }
+        catch (Exception exce)
+        {
+            $Logger.error(exce);
+            return exce.toString();
+        }
+    }
+    
+    
+    
+    /**
      * 获取通讯连接的分析信息
      * 
      * @author      ZhengWei(HY)
@@ -3813,11 +3889,12 @@ public class AnalyseBase extends Analyse
      * @version     v1.0
      *
      * @param  i_TotalType  统计类型(LocalSocket、User、ClientIP、UserClientIP)
+     * @param  i_TotalID    统计分析标识ID。不为空时，表示统计异常日志
      * @return
      */
-    public AnalyseNetTotal analyseNet_Total(String i_TotalType)
+    public AnalyseNetTotal analyseNet_Total(String i_TotalType ,String i_TotalID)
     {
-        return new AnalyseNetTotal(i_TotalType);
+        return new AnalyseNetTotal(i_TotalType ,i_TotalID);
     }
     
     

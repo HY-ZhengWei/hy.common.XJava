@@ -1,6 +1,10 @@
 package org.hy.common.xml.plugins.analyse.data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hy.common.Help;
+import org.hy.common.net.data.NetException;
 import org.hy.common.net.data.SessionInfo;
 
 
@@ -26,22 +30,25 @@ public class NetReport extends SessionInfo
     
     
     /** 类型（1：请求-客户端； -1:响应-服务端） */
-    private int     type;
-    
+    private int                type;
+                               
     /** 统计编号 */
-    private String  totalID;
+    private String             totalID;
     
     /** 服务端的端口 */
-    private int     serverPort;
-    
+    private int                serverPort;
+                               
     /** 会话限制 */
-    private String  sessionLimit;
-    
+    private String             sessionLimit;
+                               
     /** 连接数量 */
-    private int     connectCount;
-    
+    private int                connectCount;
+                               
     /** 在线数量 */
-    private int     onlineCount;
+    private int                onlineCount;
+    
+    /** 通讯异常日志 */
+    private List<NetException> netErrorLogs;
     
     
     
@@ -49,6 +56,7 @@ public class NetReport extends SessionInfo
     {
         this.connectCount = 0;
         this.onlineCount  = 0;
+        this.netErrorLogs = new ArrayList<NetException>();
     }
     
     
@@ -58,6 +66,16 @@ public class NetReport extends SessionInfo
         this.initNotNull(i_Session);
         this.connectCount = 1;
         this.onlineCount  = this.isOnline() ? 1 : 0;
+        this.netErrorLogs = new ArrayList<NetException>();
+        
+        if ( i_Session.getNetExceptions() != null )
+        {
+            NetException [] v_ErrorLogArr = i_Session.getNetExceptions().toArray(new NetException [] {});
+            for (NetException v_ErrorLog : v_ErrorLogArr)
+            {
+                this.netErrorLogs.add(v_ErrorLog);
+            }
+        }
     }
     
     
@@ -133,6 +151,15 @@ public class NetReport extends SessionInfo
         else if ( this.getActiveTime().getTime() < i_Session.getActiveTime().getTime() )
         {
             this.setActiveTime(i_Session.getActiveTime());
+        }
+        
+        if ( i_Session.getNetExceptions() != null )
+        {
+            NetException [] v_ErrorLogArr = i_Session.getNetExceptions().toArray(new NetException [] {});
+            for (NetException v_ErrorLog : v_ErrorLogArr)
+            {
+                this.netErrorLogs.add(v_ErrorLog);
+            }
         }
     }
     
@@ -273,6 +300,26 @@ public class NetReport extends SessionInfo
     public void setType(int type)
     {
         this.type = type;
+    }
+
+
+    /**
+     * 获取：通讯异常日志
+     */
+    public List<NetException> getNetErrorLogs()
+    {
+        return netErrorLogs;
+    }
+
+
+    /**
+     * 设置：通讯异常日志
+     * 
+     * @param i_NetErrorLogs
+     */
+    public void setNetErrorLogs(List<NetException> i_NetErrorLogs)
+    {
+        this.netErrorLogs = i_NetErrorLogs;
     }
     
 }

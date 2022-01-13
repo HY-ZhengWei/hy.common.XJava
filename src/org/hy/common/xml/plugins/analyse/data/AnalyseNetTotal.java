@@ -47,8 +47,9 @@ public class AnalyseNetTotal extends SerializableDef
      * @version     v1.0
      *
      * @param i_TotalType  统计类型(LocalSocket、User、ClientIP、UserClientIP)
+     * @param i_TotalID    统计分析标识ID
      */
-    public AnalyseNetTotal(String i_TotalType)
+    public AnalyseNetTotal(String i_TotalType ,String i_TotalID)
     {
         this.reports = new Hashtable<String ,NetReport>();
         
@@ -62,8 +63,17 @@ public class AnalyseNetTotal extends SerializableDef
             {
                 for (SessionInfo v_Session : v_TotalClientSessions)
                 {
-                    String    v_TotalID = "C " + v_Session.getHost();
-                    NetReport v_Report  = this.reports.get(v_TotalID);
+                    String v_TotalID = "C_" + v_Session.getHost();
+                    
+                    if ( i_TotalID != null )
+                    {
+                        if ( !v_TotalID.equals(i_TotalID) )
+                        {
+                            continue;  // 只匹配唯一的统计异常日志
+                        }
+                    }
+                    
+                    NetReport v_Report = this.reports.get(v_TotalID);
                     
                     if ( v_Report == null )
                     {
@@ -84,8 +94,17 @@ public class AnalyseNetTotal extends SerializableDef
             {
                 for (SessionInfo v_Session : v_TotalClientSessions)
                 {
-                    String    v_TotalID = "C " + v_Session.getSystemName() + "_" + v_Session.getUserName();
-                    NetReport v_Report  = this.reports.get(v_TotalID);
+                    String v_TotalID = "C_" + v_Session.getSystemName() + "_" + v_Session.getUserName();
+                    
+                    if ( i_TotalID != null )
+                    {
+                        if ( !v_TotalID.equals(i_TotalID) )
+                        {
+                            continue;  // 只匹配唯一的统计异常日志
+                        }
+                    }
+                    
+                    NetReport v_Report = this.reports.get(v_TotalID);
                     
                     if ( v_Report == null )
                     {
@@ -106,8 +125,17 @@ public class AnalyseNetTotal extends SerializableDef
             {
                 for (SessionInfo v_Session : v_TotalClientSessions)
                 {
-                    String    v_TotalID = "C " + v_Session.getPort() + "";
-                    NetReport v_Report  = this.reports.get(v_TotalID);
+                    String v_TotalID = "C_" + v_Session.getPort() + "";
+                    
+                    if ( i_TotalID != null )
+                    {
+                        if ( !v_TotalID.equals(i_TotalID) )
+                        {
+                            continue;  // 只匹配唯一的统计异常日志
+                        }
+                    }
+                    
+                    NetReport v_Report = this.reports.get(v_TotalID);
                     
                     if ( v_Report == null )
                     {
@@ -128,8 +156,17 @@ public class AnalyseNetTotal extends SerializableDef
             {
                 for (SessionInfo v_Session : v_TotalClientSessions)
                 {
-                    String    v_TotalID = "C " + v_Session.getSystemName() + "_" + v_Session.getUserName() + "_" + v_Session.getHost() + ":" + v_Session.getPort();
-                    NetReport v_Report  = this.reports.get(v_TotalID);
+                    String v_TotalID = "C_" + v_Session.getSystemName() + "_" + v_Session.getUserName() + "_" + v_Session.getHost() + ":" + v_Session.getPort();
+                    
+                    if ( i_TotalID != null )
+                    {
+                        if ( !v_TotalID.equals(i_TotalID) )
+                        {
+                            continue;  // 只匹配唯一的统计异常日志
+                        }
+                    }
+                    
+                    NetReport v_Report = this.reports.get(v_TotalID);
                     
                     if ( v_Report == null )
                     {
@@ -159,8 +196,17 @@ public class AnalyseNetTotal extends SerializableDef
                     
                     for (SessionInfo v_Client : v_Sessions)
                     {
-                        String    v_TotalID = "S " + v_Client.getHost();
-                        NetReport v_Report  = this.reports.get(v_TotalID);
+                        String v_TotalID = "S_" + v_Client.getHost();
+                        
+                        if ( i_TotalID != null )
+                        {
+                            if ( !v_TotalID.equals(i_TotalID) )
+                            {
+                                continue;  // 只匹配唯一的统计异常日志
+                            }
+                        }
+                        
+                        NetReport v_Report = this.reports.get(v_TotalID);
                         
                         if ( v_Report == null )
                         {
@@ -189,8 +235,17 @@ public class AnalyseNetTotal extends SerializableDef
                     
                     for (SessionInfo v_Session : v_Sessions)
                     {
-                        String    v_TotalID = "S " + v_Session.getSystemName() + "_" + v_Session.getUserName();
-                        NetReport v_Report  = this.reports.get(v_TotalID);
+                        String v_TotalID = "S_" + v_Session.getSystemName() + "_" + v_Session.getUserName();
+                        
+                        if ( i_TotalID != null )
+                        {
+                            if ( !v_TotalID.equals(i_TotalID) )
+                            {
+                                continue;  // 只匹配唯一的统计异常日志
+                            }
+                        }
+                        
+                        NetReport v_Report = this.reports.get(v_TotalID);
                         
                         if ( v_Report == null )
                         {
@@ -219,8 +274,17 @@ public class AnalyseNetTotal extends SerializableDef
                     
                     for (SessionInfo v_Session : v_Sessions)
                     {
-                        String    v_TotalID = "S " + v_Server.getPort() + "";
-                        NetReport v_Report  = this.reports.get(v_TotalID);
+                        String v_TotalID = "S_" + v_Server.getPort() + "";
+                        
+                        if ( i_TotalID != null )
+                        {
+                            if ( !v_TotalID.equals(i_TotalID) )
+                            {
+                                continue;  // 只匹配唯一的统计异常日志
+                            }
+                        }
+                        
+                        NetReport v_Report = this.reports.get(v_TotalID);
                         
                         if ( v_Report == null )
                         {
@@ -249,8 +313,17 @@ public class AnalyseNetTotal extends SerializableDef
                     
                     for (SessionInfo v_Session : v_Sessions)
                     {
-                        String    v_TotalID = "S " + v_Server.getPort() + ":" + v_Session.getSystemName() + "_" + v_Session.getUserName() + "_" + v_Session.getHost() + ":" + v_Session.getPort();
-                        NetReport v_Report  = this.reports.get(v_TotalID);
+                        String v_TotalID = "S_" + v_Server.getPort() + ":" + v_Session.getSystemName() + "_" + v_Session.getUserName() + "_" + v_Session.getHost() + ":" + v_Session.getPort();
+                        
+                        if ( i_TotalID != null )
+                        {
+                            if ( !v_TotalID.equals(i_TotalID) )
+                            {
+                                continue;  // 只匹配唯一的统计异常日志
+                            }
+                        }
+                        
+                        NetReport v_Report = this.reports.get(v_TotalID);
                         
                         if ( v_Report == null )
                         {
