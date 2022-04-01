@@ -57,9 +57,10 @@ import org.hy.common.xml.log.Logger;
  *           V4.0  2020-06-09  添加1：支持序列化接口、XJavaID接口
  *           V5.0  2020-06-24  添加1：通过日志引擎规范输出日志
  *           V6.0  2020-12-22  添加1：请求体中的独立数据与动态请求数据共存的请求处理功能
+ *           v7.0  2022-04-01  添加1：连接超时时长 和 读取数据的超时时长（建议人：王力）
  */
 public final class XHttp extends SerializableDef implements XJavaID
-{  
+{
     private static final long   serialVersionUID = 9198603998217342471L;
 
     private static final Logger $Logger = new Logger(XHttp.class);
@@ -93,7 +94,7 @@ public final class XHttp extends SerializableDef implements XJavaID
     private String                     url;
     
     /** HTTP请求参数 */
-    private List<XHttpParam>           httpParams; 
+    private List<XHttpParam>           httpParams;
     
     /** 请求参数无默认值的数量 */
     @SuppressWarnings("unused")
@@ -114,9 +115,9 @@ public final class XHttp extends SerializableDef implements XJavaID
     /** 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义。与 isToUnicode 互斥 */
     private boolean                    isEncode;
     
-    /** 
+    /**
      * 是否自动填充问号(?) 。默认:true
-     * 当生成访问URL时，是否生成如 http://ip:port/xx?yy=zz 中的问号 
+     * 当生成访问URL时，是否生成如 http://ip:port/xx?yy=zz 中的问号
      */
     private boolean                    haveQuestionMark;
     
@@ -135,6 +136,12 @@ public final class XHttp extends SerializableDef implements XJavaID
     /** 注释 */
     private String                     comment;
     
+    /** 连接超时（单位：毫秒）。零值：表示永远不超时 */
+    private int                        connectTimeout;
+    
+    /** 读取数据超时时长（单位：毫秒）。零值：表示永远不超时 */
+    private int                        readTimeout;
+    
     
     
     public XHttp()
@@ -150,6 +157,8 @@ public final class XHttp extends SerializableDef implements XJavaID
         this.haveQuestionMark          = true;
         this.proxy                     = null;
         this.cookie                    = new XHttpCookie();
+        this.connectTimeout            = 0;
+        this.readTimeout               = 0;
     }
     
     
@@ -163,7 +172,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      */
     public Return<?> request()
     {
-/*      
+/*
         // 代理服务器的IP
         String v_HttpProxy     = "";
         // 代理服务器的端口
@@ -172,7 +181,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         Properties v_SystemProperties = System.getProperties();
         v_SystemProperties.setProperty("http.proxyHost", v_HttpProxy);
         v_SystemProperties.setProperty("http.proxyPort", v_HttpProxyPort);
-*/  
+*/
         
         return this.request((Object)null);
     }
@@ -189,7 +198,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
      *                      1. 当为Get请求时，表示请求URL的动态请求参加
      *                      2. 当为Post请求时，表示请求体中的请求数据
-     *                      
+     * 
      * @return  返回是否请求成功。
      *          Return.paramStr  保存响应信息
      *          Return.exception 保存异常信息
@@ -212,12 +221,12 @@ public final class XHttp extends SerializableDef implements XJavaID
      * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
      *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
      *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
-     *                      
+     * 
      * @param   i_BodyData  请求体中的数据
      *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
      *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
      *                      3. 只用于Post请求
-     *                      
+     * 
      * @return  返回是否请求成功。
      *          Return.paramStr  保存响应信息
      *          Return.exception 保存异常信息
@@ -241,7 +250,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
      *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
      *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
-     *                      
+     * 
      * @param   i_BodyData  请求体中的数据
      *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
      *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
@@ -281,7 +290,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
      *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
      *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
-     *                      
+     * 
      * @param   i_BodyData  请求体中的数据
      *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
      *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
@@ -362,6 +371,8 @@ public final class XHttp extends SerializableDef implements XJavaID
                 v_URLConn.setRequestProperty("Content-Type" ,this.getContentType() + "; charset=" + this.getCharset());
                 v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
                 v_URLConn.setRequestProperty("Cookie"       ,this.cookie.toString());
+                v_URLConn.setConnectTimeout(this.connectTimeout);
+                v_URLConn.setReadTimeout(this.readTimeout);
                 
                 v_URLOut = v_URLConn.getOutputStream();
                 if ( v_URLOut != null )
@@ -434,6 +445,8 @@ public final class XHttp extends SerializableDef implements XJavaID
                 v_URLConn.setRequestProperty("Content-Type" ,this.getContentType() + "; charset=" + this.getCharset());
                 v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
                 v_URLConn.setRequestProperty("Cookie"       ,this.cookie.toString());
+                v_URLConn.setConnectTimeout(this.connectTimeout);
+                v_URLConn.setReadTimeout(this.readTimeout);
                 
                 
                 // 获取GET方式下，真实的客户端SessionID Add 2015-03-04
@@ -458,10 +471,10 @@ public final class XHttp extends SerializableDef implements XJavaID
             v_Reader   = new BufferedReader(new InputStreamReader(v_URLInput ,this.getCharset()));
             String v_LineData = "";
             
-            while ( (v_LineData = v_Reader.readLine()) != null ) 
-            {   
+            while ( (v_LineData = v_Reader.readLine()) != null )
+            {
                 v_RespBuffer.append(v_LineData);
-            }  
+            }
         }
         catch (Exception exce)
         {
@@ -532,7 +545,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
      *                      1. 当为Get请求时，表示请求URL的动态请求参加
      *                      2. 当为Post请求时，表示请求体中的请求数据
-     *                      
+     * 
      * @return  返回是否请求成功。
      *          Return.paramStr  保存响应信息
      *          Return.exception 保存异常信息
@@ -555,12 +568,12 @@ public final class XHttp extends SerializableDef implements XJavaID
      * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
      *                      1. 当为Get请求时，表示请求URL的动态请求参加
      *                      2. 当为Post请求时，表示请求体中的请求数据
-     *                      
+     * 
      * @param   i_BodyData  请求体中的数据
      *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
      *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
      *                      3. 只用于Post请求
-     *                      
+     * 
      * @return  返回是否请求成功。
      *          Return.paramStr  保存响应信息
      *          Return.exception 保存异常信息
@@ -583,7 +596,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
      *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
      *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
-     *                      
+     * 
      * @param   i_BodyData  请求体中的数据
      *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
      *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
@@ -623,7 +636,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      * @param   i_UrlData   请求URL路径中的参数，即普通的请求参数。
      *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
      *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
-     *                      
+     * 
      * @param   i_BodyData  请求体中的数据
      *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
      *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
@@ -711,6 +724,8 @@ public final class XHttp extends SerializableDef implements XJavaID
                 v_URLConn.setRequestProperty("Content-Type" ,this.getContentType() + "; charset=" + this.getCharset());
                 v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
                 v_URLConn.setRequestProperty("Cookie"       ,this.cookie.toString());
+                v_URLConn.setConnectTimeout(this.connectTimeout);
+                v_URLConn.setReadTimeout(this.readTimeout);
                 
                 v_URLOut = v_URLConn.getOutputStream();
                 if ( v_URLOut != null )
@@ -790,6 +805,8 @@ public final class XHttp extends SerializableDef implements XJavaID
                 v_URLConn.setRequestProperty("Content-Type" ,this.getContentType() + "; charset=" + this.getCharset());
                 v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/5.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
                 v_URLConn.setRequestProperty("Cookie"       ,this.cookie.toString());
+                v_URLConn.setConnectTimeout(this.connectTimeout);
+                v_URLConn.setReadTimeout(this.readTimeout);
                 
                 
                 // 获取GET方式下，真实的客户端SessionID Add 2015-03-04
@@ -813,8 +830,8 @@ public final class XHttp extends SerializableDef implements XJavaID
             v_Reader   = new BufferedReader(new InputStreamReader(v_URLInput ,this.getCharset()));
             String v_LineData = "";
             
-            while ( (v_LineData = v_Reader.readLine()) != null ) 
-            {   
+            while ( (v_LineData = v_Reader.readLine()) != null )
+            {
                 v_RespBuffer.append(v_LineData);
             }
         }
@@ -888,7 +905,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      *                      这个字符串已被外界拼接好了。
      *                      1. 当为Get请求时，表示请求URL的动态请求参加
      *                      2. 当为Post请求时，表示请求体中的请求数据
-     *                      
+     * 
      * @return  返回是否请求成功。
      *          Return.paramStr  保存响应信息
      *          Return.exception 保存异常信息
@@ -912,7 +929,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      *                      这个字符串已被外界拼接好了。
      *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
      *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
-     *                      
+     * 
      * @param   i_BodyData  请求体中的数据
      *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
      *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
@@ -941,7 +958,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      *                      这个字符串已被外界拼接好了。
      *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
      *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
-     *                      
+     * 
      * @param   i_BodyData  请求体中的数据
      *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
      *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
@@ -982,7 +999,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      *                      这个字符串已被外界拼接好了。
      *                      1. 当i_BodyData为空时，请求URL的参加不追加 i_UrlData
      *                      2. 当i_BodyData有值时，请求URL的参加追加   i_UrlData为新的请求参加
-     *                      
+     * 
      * @param   i_BodyData  请求体中的数据
      *                      1. 当i_BodyData为空时，请求体中的数据使用 i_UrlData
      *                      2. 当i_BodyData有值时，请求休中的数据使用 i_BodyData
@@ -1070,6 +1087,8 @@ public final class XHttp extends SerializableDef implements XJavaID
                 v_URLConn.setRequestProperty("Content-Type" ,this.getContentType() + "; charset=" + this.getCharset());
                 v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
                 v_URLConn.setRequestProperty("Cookie"       ,this.cookie.toString());
+                v_URLConn.setConnectTimeout(this.connectTimeout);
+                v_URLConn.setReadTimeout(this.readTimeout);
                 
                 v_URLOut = v_URLConn.getOutputStream();
                 if ( v_URLOut != null )
@@ -1142,6 +1161,8 @@ public final class XHttp extends SerializableDef implements XJavaID
                 v_URLConn.setRequestProperty("Content-Type" ,this.getContentType() + "; charset=" + this.getCharset());
                 v_URLConn.setRequestProperty("User-Agent"   ,"Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
                 v_URLConn.setRequestProperty("Cookie"       ,this.cookie.toString());
+                v_URLConn.setConnectTimeout(this.connectTimeout);
+                v_URLConn.setReadTimeout(this.readTimeout);
                 
                 
                 // 获取GET方式下，真实的客户端SessionID Add 2015-03-04
@@ -1166,10 +1187,10 @@ public final class XHttp extends SerializableDef implements XJavaID
             v_Reader   = new BufferedReader(new InputStreamReader(v_URLInput ,this.getCharset()));
             String v_LineData = "";
             
-            while ( (v_LineData = v_Reader.readLine()) != null ) 
-            {   
+            while ( (v_LineData = v_Reader.readLine()) != null )
+            {
                 v_RespBuffer.append(v_LineData);
-            }  
+            }
         }
         catch (Exception exce)
         {
@@ -1350,10 +1371,10 @@ public final class XHttp extends SerializableDef implements XJavaID
             v_Reader   = new BufferedReader(new InputStreamReader(v_URLInput ,"UTF-8"));
             String v_LineData = "";
             
-            while ( (v_LineData = v_Reader.readLine()) != null ) 
-            {   
+            while ( (v_LineData = v_Reader.readLine()) != null )
+            {
                 v_RespBuffer.append(v_LineData);
-            }  
+            }
         }
         catch (Exception exce)
         {
@@ -1540,7 +1561,7 @@ public final class XHttp extends SerializableDef implements XJavaID
         }
         else if ( v_Methods.size() >= 2 )
         {
-            throw new NoSuchMethodException("XHttp param name [" + i_XHttpParam.getParamName() + "] method is not only."); 
+            throw new NoSuchMethodException("XHttp param name [" + i_XHttpParam.getParamName() + "] method is not only.");
         }
         else
         {
@@ -1861,6 +1882,7 @@ public final class XHttp extends SerializableDef implements XJavaID
     
     
     
+    @Override
     public String toString()
     {
         StringBuilder v_Buffer = new StringBuilder();
@@ -1907,7 +1929,7 @@ public final class XHttp extends SerializableDef implements XJavaID
     /**
      * 设置：Cookie信息
      * 
-     * @param cookie 
+     * @param cookie
      */
     public void setCookieMap(Map<String ,?> i_CookieMap)
     {
@@ -1919,7 +1941,7 @@ public final class XHttp extends SerializableDef implements XJavaID
     /**
      * 设置：Cookie信息
      * 
-     * @param cookie 
+     * @param cookie
      */
     public void setCookie(XHttpCookie cookie)
     {
@@ -2042,7 +2064,7 @@ public final class XHttp extends SerializableDef implements XJavaID
 
     
     
-    /** 
+    /**
      * 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义。与 isToUnicode 互斥
      */
     public void setEncode(boolean isEncode)
@@ -2057,7 +2079,7 @@ public final class XHttp extends SerializableDef implements XJavaID
 
 
     
-    /** 
+    /**
      * 是否对请求参数转义(默认:false)。采用 URLEncoder.encode() 方式转义。与 isToUnicode 互斥
      */
     public boolean isEncode()
@@ -2082,7 +2104,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      * 设置：是否自动填充问号(?) 。默认:true
      * 当生成访问URL时，是否生成如 http://ip:port/xx?yy=zz 中的问号
      * 
-     * @param haveQuestionMark 
+     * @param haveQuestionMark
      */
     public void setHaveQuestionMark(boolean haveQuestionMark)
     {
@@ -2178,6 +2200,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      * 
      * @param i_XJavaID
      */
+    @Override
     public void setXJavaID(String i_XJavaID)
     {
         this.xjavaID = i_XJavaID;
@@ -2190,6 +2213,7 @@ public final class XHttp extends SerializableDef implements XJavaID
      * 
      * @return
      */
+    @Override
     public String getXJavaID()
     {
         return this.xjavaID;
@@ -2200,6 +2224,7 @@ public final class XHttp extends SerializableDef implements XJavaID
     /**
      * 获取：注释
      */
+    @Override
     public String getComment()
     {
         return comment;
@@ -2210,8 +2235,9 @@ public final class XHttp extends SerializableDef implements XJavaID
     /**
      * 设置：注释
      * 
-     * @param comment 
+     * @param comment
      */
+    @Override
     public void setComment(String comment)
     {
         this.comment = comment;
@@ -2220,10 +2246,11 @@ public final class XHttp extends SerializableDef implements XJavaID
     
 
     /**
-     * 类似于跳过 "继续浏览此网站(不推荐)" 这样的提醒 
+     * 类似于跳过 "继续浏览此网站(不推荐)" 这样的提醒
      */
     public static class TrustAnyHostnameVerifier implements HostnameVerifier
     {
+        @Override
         public boolean verify(String hostname ,SSLSession session)
         {
             return true;
@@ -2235,16 +2262,16 @@ public final class XHttp extends SerializableDef implements XJavaID
     /**
      * 获取 SSLContext 对象
      * 
-     * @throws KeyManagementException 
-     * @throws NoSuchAlgorithmException 
+     * @throws KeyManagementException
+     * @throws NoSuchAlgorithmException
      */
     public synchronized static SSLContext getSSLContext() throws KeyManagementException, NoSuchAlgorithmException
     {
         if ( $SSLContext == null )
         {
             $SSLContext = SSLContext.getInstance("SSL");
-            $SSLContext.init(null 
-                            ,new TrustManager[] {new TrustAnyTrustManager()} 
+            $SSLContext.init(null
+                            ,new TrustManager[] {new TrustAnyTrustManager()}
                             ,new java.security.SecureRandom());
         }
         
@@ -2254,23 +2281,26 @@ public final class XHttp extends SerializableDef implements XJavaID
     
     
     /**
-     * 类似于跳过 "继续浏览此网站(不推荐)" 这样的提醒 
+     * 类似于跳过 "继续浏览此网站(不推荐)" 这样的提醒
      */
     public static class TrustAnyTrustManager implements X509TrustManager
     {
 
+        @Override
         public void checkClientTrusted(X509Certificate [] chain ,String authType) throws CertificateException
         {
         }
 
 
 
+        @Override
         public void checkServerTrusted(X509Certificate [] chain ,String authType) throws CertificateException
         {
         }
 
 
 
+        @Override
         public X509Certificate [] getAcceptedIssuers()
         {
             return new X509Certificate[] {};
