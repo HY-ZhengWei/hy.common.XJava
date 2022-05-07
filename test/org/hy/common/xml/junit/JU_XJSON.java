@@ -17,6 +17,8 @@ import org.hy.common.xml.XJSONToJava;
 import org.hy.common.xml.log.Logger;
 import org.junit.Test;
 
+import net.minidev.json.JSONStyle;
+
 
 
 
@@ -34,6 +36,8 @@ public class JU_XJSON
     private static final Logger $Logger = new Logger(JU_XJSON.class ,true);
     
     private String     valueString;
+    
+    private String     valueStrDate;
     
     private Date       valueDate;
     
@@ -100,6 +104,7 @@ public class JU_XJSON
         v_DataD.setValueIntArr(new int[]{1 ,2});
         v_DataD.setValueIntegerArr(new Integer[]{1 ,2});
         v_DataD.setValueStringArr(new String[] {"D" ,"Arr"});
+        v_DataD.setValueStrDate("2022/05/05");
         
         v_DataList.add(v_DataD);
         
@@ -153,6 +158,43 @@ public class JU_XJSON
         v_JsonString = v_Json.toJson(v_DataA).toJSONString();
         v_DataNew    = (JU_XJSON) v_Json.toJava(v_JsonString ,JU_XJSON.class);
         
+        $Logger.info(v_JsonString);
+        $Logger.info(v_DataNew.getValueString());
+        $Logger.info(v_DataNew.getValueDate());
+        $Logger.info(v_DataNew.getValueObject() + " -> " + v_DataNew.getValueObject().getClass().getName());
+    }
+    
+    
+    
+    @Test
+    public void test_JsonDate() throws Exception
+    {
+        JU_XJSON v_DataA   = new JU_XJSON();
+        JU_XJSON v_DataNew = null;
+        
+        v_DataA.setValueString("日期字符串的/号符转义");
+        v_DataA.setValueStrDate("2022/05/05");
+        $Logger.info(v_DataA.getValueStrDate());
+        
+        
+        XJSON    v_Json       = new XJSON();
+        String   v_JsonString = "";
+        
+        $Logger.info("按种样式的区别");
+        $Logger.info(v_Json.toJson(v_DataA ,"data").toJSONString());
+        $Logger.info(v_Json.toJson(v_DataA ,"data").toJSONString(new JSONStyle(JSONStyle.FLAG_AGRESSIVE)));
+        $Logger.info(v_Json.toJson(v_DataA ,"data").toJSONString(new JSONStyle(JSONStyle.FLAG_IGNORE_NULL)));
+        $Logger.info(v_Json.toJson(v_DataA ,"data").toJSONString(new JSONStyle(JSONStyle.FLAG_PROTECT_4WEB)));
+        $Logger.info(v_Json.toJson(v_DataA ,"data").toJSONString(new JSONStyle(JSONStyle.FLAG_PROTECT_KEYS)));
+        $Logger.info(v_Json.toJson(v_DataA ,"data").toJSONString(new JSONStyle(JSONStyle.FLAG_PROTECT_VALUES)));
+        
+        v_JsonString = v_Json.toJson(v_DataA ,"data").toJSONString();
+        v_DataNew    = (JU_XJSON) v_Json.toJava(v_JsonString ,"data" ,JU_XJSON.class);
+        
+        v_JsonString = v_Json.toJson(v_DataA).toJSONString();
+        v_DataNew    = (JU_XJSON) v_Json.toJava(v_JsonString ,JU_XJSON.class);
+        
+
         $Logger.info(v_JsonString);
         $Logger.info(v_DataNew.getValueString());
         $Logger.info(v_DataNew.getValueDate());
@@ -360,6 +402,18 @@ public class JU_XJSON
     public void setValueStringArr(String [] valueStringArr)
     {
         this.valueStringArr = valueStringArr;
+    }
+
+    
+    public String getValueStrDate()
+    {
+        return valueStrDate;
+    }
+
+    
+    public void setValueStrDate(String valueStrDate)
+    {
+        this.valueStrDate = valueStrDate;
     }
     
 }

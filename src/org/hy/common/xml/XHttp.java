@@ -157,8 +157,8 @@ public final class XHttp extends SerializableDef implements XJavaID
         this.haveQuestionMark          = true;
         this.proxy                     = null;
         this.cookie                    = new XHttpCookie();
-        this.connectTimeout            = 0;
-        this.readTimeout               = 0;
+        this.connectTimeout            = 30 * 1000;
+        this.readTimeout               = 300 * 1000;
     }
     
     
@@ -2305,6 +2305,54 @@ public final class XHttp extends SerializableDef implements XJavaID
         {
             return new X509Certificate[] {};
         }
+    }
+
+
+    
+    /**
+     * 连接超时（单位：毫秒）。零值：表示永远不超时
+     * 
+     * @return
+     */
+    public int getConnectTimeout()
+    {
+        return connectTimeout;
+    }
+
+
+    
+    /**
+     * 设置：连接超时（单位：毫秒）。零值：表示永远不超时
+     * 
+     * @param connectTimeout
+     */
+    public void setConnectTimeout(int connectTimeout)
+    {
+        this.connectTimeout = connectTimeout;
+    }
+
+
+
+    /**
+     * 读取数据超时时长（单位：毫秒）。零值：表示永远不超时
+     * 
+     * @return
+     */
+    public int getReadTimeout()
+    {
+        return readTimeout;
+    }
+
+
+
+    /**
+     * 设置：读取数据超时时长（单位：毫秒）。零值：表示永远不超时
+     * 
+     * @param readTimeout
+     */
+    public void setReadTimeout(int readTimeout)
+    {
+        this.readTimeout = readTimeout;
     }
     
 }

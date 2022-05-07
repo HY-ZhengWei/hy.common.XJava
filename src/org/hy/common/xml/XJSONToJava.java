@@ -158,7 +158,16 @@ public class XJSONToJava
             return null;
         }
         
-        return v_ToJavaMethod.invoke(null ,new Object[] {i_XJson ,i_JsonData ,i_JsonDataType ,i_JsonDataClass});
+        if ( i_JsonDataType.isArray() )
+        {
+            // 2022-05-05
+            // 数组应当走另一个 executeToJava() 方法，但能走到此，表示 i_JsonData 是一个普通字符串（未启动高级转换），或是一个空字符串的情况
+            return v_ToJavaMethod.invoke(null ,new Object[] {i_XJson ,null       ,i_JsonDataType ,i_JsonDataClass});
+        }
+        else
+        {
+            return v_ToJavaMethod.invoke(null ,new Object[] {i_XJson ,i_JsonData ,i_JsonDataType ,i_JsonDataClass});
+        }
     }
     
     
