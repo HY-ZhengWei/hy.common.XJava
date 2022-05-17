@@ -9,8 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.management.RuntimeErrorException;
-
 import org.hy.common.Date;
 import org.hy.common.GenericsReturn;
 import org.hy.common.Help;
@@ -29,7 +27,7 @@ import org.hy.common.comparate.MethodComparator;
  * 
  * 主要目的是：对没有继承org.hy.common.Serializable接口的Java类，通过外界静态方法进行处理
  * 
- * 注意：1. getPropertyValue() 方法永远返回 null。
+ * 注意：1.继承父接口的 gatPropertyValue() 方法，永远返回 null。
  *      2. 只要 Setter 与 Getter(Is) 方法成对出现的 Getter(Is) 方法
  *
  * @author   ZhengWei(HY)
@@ -106,6 +104,7 @@ public class SerializableClass implements Serializable
      * 
      * @return
      */
+    @Override
     public int gatPropertySize()
     {
         return this.propertyMethods.size();
@@ -119,6 +118,7 @@ public class SerializableClass implements Serializable
      * @param i_PropertyIndex  下标从0开始
      * @return
      */
+    @Override
     public String gatPropertyName(int i_PropertyIndex)
     {
         return this.propertyMethods.get(i_PropertyIndex).toMethod(this).getName();
@@ -142,6 +142,7 @@ public class SerializableClass implements Serializable
     /**
      * 注意：只能返回空。因为本类自己的实例化对象，是无法获取属性值的
      */
+    @Override
     public Object gatPropertyValue(int i_PropertyIndex)
     {
         return null;
@@ -233,7 +234,7 @@ public class SerializableClass implements Serializable
     /**
      * 对象转为Map集合(递归转换)
      * 
-     * @param i_DefaultValue  当对象属性值为 null 时，Map集合填充的默认值 
+     * @param i_DefaultValue  当对象属性值为 null 时，Map集合填充的默认值
      * @return
      */
     public Map<String ,Object> toMap(Object i_DefaultValue)
@@ -247,7 +248,7 @@ public class SerializableClass implements Serializable
      * 对象转为Map集合
      * 
      * @param i_IsRecursive   是否递归转换
-     * @param i_DefaultValue  当对象属性值为 null 时，Map集合填充的默认值 
+     * @param i_DefaultValue  当对象属性值为 null 时，Map集合填充的默认值
      * @return
      */
     public Map<String ,Object> toMap(boolean i_IsRecursive ,Object i_DefaultValue)
@@ -396,7 +397,7 @@ public class SerializableClass implements Serializable
             {
                 v_Ret.remove(v_DocFieldName);
             }
-            else 
+            else
             {
                 // 如果方法的返回值也是一个SerializableClass类型的，则对其深入 getDocs()
                 Method v_Method = v_Methods.get(v_MethodName);
@@ -431,7 +432,7 @@ public class SerializableClass implements Serializable
                 else if ( MethodReflect.isExtendImplement(v_Method.getReturnType() ,List.class) )
                 {
                     GenericsReturn v_GR      = MethodReflect.getGenericsReturn(v_Method);
-                    DocInfo        v_DocInfo = v_Ret.get(v_DocFieldName); 
+                    DocInfo        v_DocInfo = v_Ret.get(v_DocFieldName);
                     
                     if ( !Help.isNull(v_GR.getMasterTypes()) )
                     {
@@ -775,6 +776,7 @@ public class SerializableClass implements Serializable
     /**
      * 释放资源
      */
+    @Override
     public void freeResource()
     {
         if ( this.propertyMethods != null )
@@ -793,7 +795,7 @@ public class SerializableClass implements Serializable
     
     一些与finalize相关的方法，由于一些致命的缺陷，已经被废弃了
     protected void finalize() throws Throwable
-    {   
+    {
         this.freeResource();
         
         super.finalize();
