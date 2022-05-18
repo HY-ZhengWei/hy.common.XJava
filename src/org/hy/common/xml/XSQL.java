@@ -4420,6 +4420,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @author      ZhengWei(HY)
      * @createDate  2016-08-03
      * @version     v1.0
+     * @version     v2.0  2022-05-18  1. 修改：统计数据中的 "请求数" ，从原来的集合元素个数，调整为提交次数
      * 
      * @param i_ObjList          占位符SQL的填充对象的集合。
      *                           1. 集合元素可以是Object
@@ -4435,13 +4436,14 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     @SuppressWarnings("unchecked")
     private int executeUpdatesPrepared_Inner(List<?> i_ObjList ,Connection i_Conn)
     {
-        DataSourceGroup   v_DSG        = null;
-        Connection        v_Conn       = null;
-        PreparedStatement v_PStatement = null;
-        boolean           v_AutoCommit = false;
-        int               v_Ret        = 0;
-        long              v_BeginTime  = this.request().getTime();
-        String            v_SQL        = null;
+        DataSourceGroup   v_DSG         = null;
+        Connection        v_Conn        = null;
+        PreparedStatement v_PStatement  = null;
+        boolean           v_AutoCommit  = false;
+        int               v_Ret         = 0;
+        int               v_CommitCount = 0;
+        long              v_BeginTime   = this.request().getTime();
+        String            v_SQL         = null;
         
         try
         {
@@ -4504,6 +4506,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 if ( i_Conn == null )
                 {
                     v_Conn.commit();  // 它与i_Conn.commit();同作用
+                    v_CommitCount++;
                 }
                 
                 for (int v_Count : v_CountArr)
@@ -4556,6 +4559,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                         {
                             int [] v_CountArr = v_PStatement.executeBatch();
                             v_Conn.commit();
+                            v_CommitCount++;
                             
                             for (int v_Count : v_CountArr)
                             {
@@ -4584,6 +4588,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 {
                     int [] v_CountArr = v_PStatement.executeBatch();
                     v_Conn.commit();
+                    v_CommitCount++;
                     
                     for (int v_Count : v_CountArr)
                     {
@@ -4602,7 +4607,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             
             log(v_SQL);
             Date v_EndTime = Date.getNowTime();
-            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,i_ObjList.size() ,v_Ret);
+            this.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,v_CommitCount ,v_Ret);
             
             return v_Ret;
         }
