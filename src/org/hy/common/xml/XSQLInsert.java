@@ -46,11 +46,15 @@ public class XSQLInsert
     public static XSQLData executeInsert(final XSQL i_XSQL)
     {
         i_XSQL.checkContent();
-        boolean v_IsError = false;
+        boolean         v_IsError = false;
+        DataSourceGroup v_DSG     = null;
+        String          v_SQL     = null;
 
         try
         {
-            return XSQLInsert.executeInsert_Inner(i_XSQL ,i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()));
+            v_DSG = i_XSQL.getDataSourceGroup();
+            v_SQL = i_XSQL.getContent().getSQL(v_DSG);
+            return XSQLInsert.executeInsert_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
@@ -58,7 +62,7 @@ public class XSQLInsert
             v_IsError = true;
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
             }
             throw exce;
         }
@@ -67,7 +71,7 @@ public class XSQLInsert
             v_IsError = true;
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
             }
             throw exce;
         }
@@ -99,12 +103,16 @@ public class XSQLInsert
     public static XSQLData executeInsert(final XSQL i_XSQL ,final Map<String ,?> i_Values)
     {
         i_XSQL.checkContent();
-        boolean v_IsError = false;
+        boolean         v_IsError = false;
+        DataSourceGroup v_DSG     = null;
+        String          v_SQL     = null;
 
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
-            XSQLData v_Ret = XSQLInsert.executeInsert_Inner(i_XSQL ,i_XSQL.getContent().getSQL(i_Values ,i_XSQL.getDataSourceGroup()));
+            v_DSG = i_XSQL.getDataSourceGroup();
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            XSQLData v_Ret = XSQLInsert.executeInsert_Inner(i_XSQL ,v_SQL ,v_DSG);
             i_XSQL.executeUpdate_AfterWriteLob(i_Values ,(int)v_Ret.getRowCount());
             return v_Ret;
         }
@@ -114,7 +122,7 @@ public class XSQLInsert
             v_IsError = true;
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_Values ,i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesMap(i_Values));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
             }
             throw exce;
         }
@@ -123,7 +131,7 @@ public class XSQLInsert
             v_IsError = true;
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_Values ,i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesMap(i_Values));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
             }
             throw exce;
         }
@@ -155,12 +163,16 @@ public class XSQLInsert
     public static XSQLData executeInsert(final XSQL i_XSQL ,final Object i_Obj)
     {
         i_XSQL.checkContent();
-        boolean v_IsError = false;
+        boolean         v_IsError = false;
+        DataSourceGroup v_DSG     = null;
+        String          v_SQL     = null;
 
         try
         {
             i_XSQL.fireBeforeRule(i_Obj);
-            XSQLData v_Ret = XSQLInsert.executeInsert_Inner(i_XSQL ,i_XSQL.getContent().getSQL(i_Obj ,i_XSQL.getDataSourceGroup()));
+            v_DSG = i_XSQL.getDataSourceGroup();
+            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
+            XSQLData v_Ret = XSQLInsert.executeInsert_Inner(i_XSQL ,v_SQL ,v_DSG);
             i_XSQL.executeUpdate_AfterWriteLob(i_Obj ,(int)v_Ret.getRowCount());
             return v_Ret;
         }
@@ -170,7 +182,7 @@ public class XSQLInsert
             v_IsError = true;
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_Obj ,i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
             }
             throw exce;
         }
@@ -179,7 +191,7 @@ public class XSQLInsert
             v_IsError = true;
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_Obj ,i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
             }
             throw exce;
         }
@@ -210,7 +222,7 @@ public class XSQLInsert
 
         try
         {
-            return XSQLInsert.executeInsert_Inner(i_XSQL ,i_SQL);
+            return XSQLInsert.executeInsert_Inner(i_XSQL ,i_SQL ,i_XSQL.getDataSourceGroup());
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
@@ -252,17 +264,15 @@ public class XSQLInsert
      * @param i_SQL              常规SQL语句
      * @return                   返回语句影响的记录数及自增长ID。
      */
-    private static XSQLData executeInsert_Inner(final XSQL i_XSQL ,final String i_SQL)
+    private static XSQLData executeInsert_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG)
     {
-        DataSourceGroup v_DSG       = null;
-        Connection      v_Conn      = null;
-        Statement       v_Statement = null;
-        long            v_BeginTime = i_XSQL.request().getTime();
+        Connection v_Conn      = null;
+        Statement  v_Statement = null;
+        long       v_BeginTime = i_XSQL.request().getTime();
         
         try
         {
-            v_DSG = i_XSQL.getDataSourceGroup();
-            if ( !v_DSG.isValid() )
+            if ( !i_DSG.isValid() )
             {
                 throw new RuntimeException("DataSourceGroup is not valid.");
             }
@@ -272,7 +282,7 @@ public class XSQLInsert
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = i_XSQL.getConnection(v_DSG);
+            v_Conn      = i_XSQL.getConnection(i_DSG);
             v_Statement = v_Conn.createStatement();
             
             int           v_Count     = v_Statement.executeUpdate(i_SQL);
@@ -316,11 +326,15 @@ public class XSQLInsert
     public static XSQLData executeInsert(final XSQL i_XSQL ,final Connection i_Conn)
     {
         i_XSQL.checkContent();
-        boolean v_IsError = false;
+        boolean         v_IsError = false;
+        DataSourceGroup v_DSG     = null;
+        String          v_SQL     = null;
 
         try
         {
-            return XSQLInsert.executeInsert_Inner(i_XSQL ,i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,i_Conn);
+            v_DSG = i_XSQL.getDataSourceGroup();
+            v_SQL = i_XSQL.getContent().getSQL(v_DSG);
+            return XSQLInsert.executeInsert_Inner(i_XSQL ,v_SQL ,i_Conn);
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
@@ -328,7 +342,7 @@ public class XSQLInsert
             v_IsError = true;
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
             }
             throw exce;
         }
@@ -337,7 +351,7 @@ public class XSQLInsert
             v_IsError = true;
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
             }
             throw exce;
         }
@@ -748,7 +762,7 @@ public class XSQLInsert
                 {
                     if ( i_ObjList.get(i) != null )
                     {
-                        v_SQL       = i_XSQL.getContent().getSQL(i_ObjList.get(i) ,i_XSQL.getDataSourceGroup());
+                        v_SQL       = i_XSQL.getContent().getSQL(i_ObjList.get(i) ,v_DSG);
                         v_SQLCount = v_Statement.executeUpdate(v_SQL);
                         if ( v_SQLCount >= 1 )
                         {
@@ -772,7 +786,7 @@ public class XSQLInsert
                 {
                     if ( i_ObjList.get(i) != null )
                     {
-                        v_SQL      = i_XSQL.getContent().getSQL(i_ObjList.get(i) ,i_XSQL.getDataSourceGroup());
+                        v_SQL      = i_XSQL.getContent().getSQL(i_ObjList.get(i) ,v_DSG);
                         v_SQLCount = v_Statement.executeUpdate(v_SQL);
                         if ( v_SQLCount >= 1 )
                         {
