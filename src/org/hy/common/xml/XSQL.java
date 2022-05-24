@@ -140,6 +140,7 @@ import oracle.sql.CLOB;
  *              v19.0 2020-05-26  添加：执行SQL前的规则引擎。针对SQL参数、占位符的规则引擎
  *                                添加：执行SQL后的规则引擎。针对SQL查询结果集的规则引擎。
  *              v20.0 2020-06-24  添加：通过日志引擎规范输出日志
+ *              v21.0 2022-05-24  添加：executeInsert(...)系列方法，它与executeUpdate方法的核心区别是：将尝试返回【数据库级的自增ID】，方法返回类型为：XSQLData。建议人：张宇
  */
 /*
  * 游标类型的说明
@@ -413,7 +414,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     
-    private synchronized Date request()
+    protected synchronized Date request()
     {
         ++this.requestCount;
         this.executeTime = new Date();
@@ -422,7 +423,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     
-    private synchronized void success(Date i_ExecuteTime ,double i_TimeLen ,int i_SumCount ,long i_IORowCount)
+    protected synchronized void success(Date i_ExecuteTime ,double i_TimeLen ,int i_SumCount ,long i_IORowCount)
     {
         this.requestCount   += i_SumCount - 1;
         this.successCount   += i_SumCount;
@@ -505,7 +506,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @version     v1.0
      *
      */
-    private void checkContent()
+    protected void checkContent()
     {
         if ( this.content == null )
         {
@@ -529,7 +530,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @param i_IsError  主XSQL在执行时是否异常？
      * @return
      */
-    private boolean isTriggers(boolean i_IsError)
+    protected boolean isTriggers(boolean i_IsError)
     {
         if ( this.isTriggers() )
         {
@@ -3267,7 +3268,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @param i_DataCount  插入或更新语句影响的记录数
      * @return
      */
-    private int executeUpdate_AfterWriteLob(Map<String ,?> i_Values ,int i_DataCount)
+    protected int executeUpdate_AfterWriteLob(Map<String ,?> i_Values ,int i_DataCount)
     {
         if ( i_DataCount <= 0 )
         {
@@ -3336,7 +3337,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @param i_DataCount  插入或更新语句影响的记录数
      * @return
      */
-    private int executeUpdate_AfterWriteLob(Object i_Obj ,int i_DataCount)
+    protected int executeUpdate_AfterWriteLob(Object i_Obj ,int i_DataCount)
     {
         if ( i_DataCount <= 0 )
         {
@@ -3386,6 +3387,271 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     /**
+     * 占位符SQL的Insert语句的执行。 -- 无填充值的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-05-23
+     * @version     v3.0
+     * 
+     * @param i_XSQL
+     * @return        返回语句影响的记录数及自增长ID。
+     */
+    public XSQLData executeInsert()
+    {
+        return XSQLInsert.executeInsert(this);
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的Insert语句的执行。
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-05-23
+     * @version     v3.0
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @return                   返回语句影响的记录数及自增长ID。
+     */
+    public XSQLData executeInsert(final Map<String ,?> i_Values)
+    {
+        return XSQLInsert.executeInsert(this ,i_Values);
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的Insert语句的执行。
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-05-23
+     * @version     v3.0
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @return                   返回语句影响的记录数及自增长ID。
+     */
+    public XSQLData executeInsert(final Object i_Obj)
+    {
+        return XSQLInsert.executeInsert(this ,i_Obj);
+    }
+    
+    
+    
+    /**
+     * 常规Insert语句的执行。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-05-23
+     * @version     v3.0
+     * 
+     * @param i_SQL              常规SQL语句
+     * @return                   返回语句影响的记录数及自增长ID。
+     */
+    public XSQLData executeInsert(final String i_SQL)
+    {
+        return XSQLInsert.executeInsert(this ,i_SQL);
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的Insert语句的执行。 -- 无填充值的（内部不再关闭数据库连接）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-05-23
+     * @version     v3.0
+     * 
+     * @param i_Conn             数据库连接
+     * @return                   返回语句影响的记录数及自增长ID。
+     */
+    public XSQLData executeInsert(final Connection i_Conn)
+    {
+        return XSQLInsert.executeInsert(this ,i_Conn);
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的Insert语句的执行。（内部不再关闭数据库连接）
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-05-23
+     * @version     v3.0
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @param i_Conn             数据库连接
+     * @return                   返回语句影响的记录数及自增长ID。
+     */
+    public XSQLData executeInsert(final Map<String ,?> i_Values ,final Connection i_Conn)
+    {
+        return XSQLInsert.executeInsert(this ,i_Values ,i_Conn);
+    }
+    
+    
+    
+    /**
+     * 占位符SQL的Insert语句的执行。（内部不再关闭数据库连接）
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-05-23
+     * @version     v3.0
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Conn             数据库连接
+     * @return                   返回语句影响的记录数及自增长ID。
+     */
+    public XSQLData executeInsert(final Object i_Obj ,final Connection i_Conn)
+    {
+        return XSQLInsert.executeInsert(this ,i_Obj ,i_Conn);
+    }
+    
+    
+    
+    /**
+     * 常规Insert语句的执行。（内部不再关闭数据库连接）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-05-23
+     * @version     v3.0
+     * 
+     * @param i_SQL              常规SQL语句
+     * @param i_Conn             数据库连接
+     * @return                   返回语句影响的记录数及自增长ID。
+     */
+    public XSQLData executeInsert(final String i_SQL ,final Connection i_Conn)
+    {
+        return XSQLInsert.executeInsert(this ,i_SQL ,i_Conn);
+    }
+    
+    
+    
+    /**
+     * 批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * 注：只支持单一SQL语句的执行
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-05-23
+     * @version     v3.0
+     * 
+     * @param i_ObjList          占位符SQL的填充对象的集合。
+     *                           1. 集合元素可以是Object
+     *                           2. 集合元素可以是Map<String ,?>
+     *                           3. 更可以是上面两者的混合元素组成的集合
+     * @return                   返回语句影响的记录数。
+     */
+    public XSQLData executeInserts(final List<?> i_ObjList)
+    {
+        return XSQLInsert.executeInserts(this ,i_ObjList);
+    }
+    
+    
+    
+    /**
+     * 批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 
+     *   注意：不支持Delete语句
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * 注：只支持单一SQL语句的执行
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-05-23
+     * @version     v3.0
+     * 
+     * @param i_ObjList          占位符SQL的填充对象的集合。
+     *                           1. 集合元素可以是Object
+     *                           2. 集合元素可以是Map<String ,?>
+     *                           3. 更可以是上面两者的混合元素组成的集合
+     * @param i_Conn             数据库连接。
+     *                           1. 当为空时，内部自动获取一个新的数据库连接。
+     *                           2. 当有值时，内部将不关闭数据库连接，而是交给外部调用者来关闭。
+     *                           3. 当有值时，内部也不执行"提交"操作（但分批提交this.batchCommit大于0时除外），而是交给外部调用者来执行"提交"。
+     *                           4. 当有值时，出现异常时，内部也不执行"回滚"操作，而是交给外部调用者来执行"回滚"。
+     * @return                   返回语句影响的记录数。
+     */
+    public XSQLData executeInserts(final List<?> i_ObjList ,final Connection i_Conn)
+    {
+        return XSQLInsert.executeInserts(this ,i_ObjList ,i_Conn);
+    }
+    
+    
+    
+    /**
+     * 批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 
+     *   注意：不支持Delete语句
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * 注：只支持单一SQL语句的执行
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2016-08-03
+     * @version     v1.0
+     *              v2.0  2022-05-24  1. 添加：支持自增长ID的获取及返回
+     * 
+     * @param i_ObjList          占位符SQL的填充对象的集合。
+     *                           1. 集合元素可以是Object
+     *                           2. 集合元素可以是Map<String ,?>
+     *                           3. 更可以是上面两者的混合元素组成的集合
+     * @return                   返回语句影响的记录数。
+     */
+    public XSQLData executeInsertsPrepared(final List<?> i_ObjList)
+    {
+        return XSQLInsert.executeInsertsPrepared(this ,i_ObjList);
+    }
+    
+    
+    
+    /**
+     * 批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 
+     *   注意：不支持Delete语句
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * 注：只支持单一SQL语句的执行
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2016-08-03
+     * @version     v1.0
+     *              v2.0  2022-05-24  1. 添加：支持自增长ID的获取及返回
+     * 
+     * @param i_ObjList          占位符SQL的填充对象的集合。
+     *                           1. 集合元素可以是Object
+     *                           2. 集合元素可以是Map<String ,?>
+     *                           3. 更可以是上面两者的混合元素组成的集合
+     * @param i_Conn             数据库连接。
+     *                           1. 当为空时，内部自动获取一个新的数据库连接。
+     *                           2. 当有值时，内部将不关闭数据库连接，而是交给外部调用者来关闭。
+     *                           3. 当有值时，内部也不执行"提交"操作（但分批提交this.batchCommit大于0时除外），而是交给外部调用者来执行"提交"。
+     *                           4. 当有值时，出现异常时，内部也不执行"回滚"操作，而是交给外部调用者来执行"回滚"。
+     * @return                   返回语句影响的记录数。
+     */
+    public XSQLData executeInsertsPrepared(final List<?> i_ObjList ,final Connection i_Conn)
+    {
+        return XSQLInsert.executeInsertsPrepared(this ,i_ObjList ,i_Conn);
+    }
+    
+    
+    
+    /**
      * 占位符SQL的Insert语句与Update语句的执行。 -- 无填充值的
      * 
      * @return                   返回语句影响的记录数。
@@ -3400,6 +3666,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         {
             return this.executeUpdate(this.content.getSQL(this.getDataSourceGroup()));
         }
+        /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
             v_IsError = true;
@@ -3452,6 +3719,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             
             return executeUpdate_AfterWriteLob(i_Values ,v_Ret);
         }
+        /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
             v_IsError = true;
@@ -3503,6 +3771,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             int v_Ret = this.executeUpdate(this.content.getSQL(i_Obj ,this.getDataSourceGroup()));
             return executeUpdate_AfterWriteLob(i_Obj ,v_Ret);
         }
+        /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
             v_IsError = true;
@@ -3597,6 +3866,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         {
             return this.executeUpdate(this.content.getSQL(this.getDataSourceGroup()) ,i_Conn);
         }
+        /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
             v_IsError = true;
@@ -3646,6 +3916,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             this.fireBeforeRule(i_Values);
             return this.executeUpdate(this.content.getSQL(i_Values ,this.getDataSourceGroup()) ,i_Conn);
         }
+        /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
             v_IsError = true;
@@ -3695,6 +3966,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             this.fireBeforeRule(i_Obj);
             return this.executeUpdate(this.content.getSQL(i_Obj ,this.getDataSourceGroup()) ,i_Conn);
         }
+        /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
             v_IsError = true;
@@ -4055,7 +4327,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    private void preparedStatementSetValue(PreparedStatement io_PStatement ,int i_ParamIndex ,Object i_Value ,Class<?> i_ValueClass) throws SQLException, IllegalArgumentException, IllegalAccessException, InvocationTargetException
+    protected void preparedStatementSetValue(PreparedStatement io_PStatement ,int i_ParamIndex ,Object i_Value ,Class<?> i_ValueClass) throws SQLException, IllegalArgumentException, IllegalAccessException, InvocationTargetException
     {
         Class<?> v_Class = null;
         if ( i_Value == null )
@@ -7765,7 +8037,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @param i_SQL
      * @param i_Exce
      */
-    private static void erroring(String i_SQL ,Exception i_Exce ,XSQL i_XSQL)
+    protected static void erroring(String i_SQL ,Exception i_Exce ,XSQL i_XSQL)
     {
         $SQLBusway     .put(new XSQLLog(i_SQL ,i_Exce));
         $SQLBuswayError.put(new XSQLLog(i_SQL ,i_Exce ,i_XSQL == null ? "" : i_XSQL.getObjectID()));
@@ -7822,7 +8094,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      *
      * @param i_SQL
      */
-    private void log(String i_SQL)
+    protected void log(String i_SQL)
     {
         $SQLBusway.put(new XSQLLog(i_SQL));
         
@@ -7987,7 +8259,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      *
      * @param i_XSQLParams
      */
-    private void fireBeforeRule(Object i_XSQLParams)
+    protected void fireBeforeRule(Object i_XSQLParams)
     {
         if ( this.beforeRule != null && i_XSQLParams != null )
         {

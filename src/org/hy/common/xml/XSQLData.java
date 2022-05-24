@@ -1,5 +1,7 @@
 package org.hy.common.xml;
 
+import java.util.List;
+
 
 
 
@@ -12,30 +14,31 @@ package org.hy.common.xml;
  * @author      ZhengWei(HY)
  * @createDate  2019-03-19
  * @version     v1.0
+ *              v2.0  2022-05-23  添加：Insert语句影响生成的自增长ID的集合
  */
 public class XSQLData
 {
     
     /** 查询返回的结果 */
-    private Object datas;
+    private Object        datas;
     
     /** 将数据库结果集转化为Java实例对象的行数(已读取的行数) */
-    private long   rowCount;
+    private long          rowCount;
     
     /** 将数据库结果集转化为Java实例对象的列数(有效列数) */
-    private int    colCount;
+    private int           colCount;
     
     /** 将数据库结果集转化为Java实例对象的用时时长(单位：毫秒) */
-    private long   timeLen;
+    private long          timeLen;
     
     
     
     public XSQLData(Object i_Datas ,long i_RowCount ,int i_ColCount ,long i_TimeLen)
     {
-        this.datas    = i_Datas;
-        this.rowCount = i_RowCount;
-        this.colCount = i_ColCount;
-        this.timeLen  = i_TimeLen;
+        this.datas     = i_Datas;
+        this.rowCount  = i_RowCount;
+        this.colCount  = i_ColCount;
+        this.timeLen   = i_TimeLen;
     }
 
     
@@ -76,6 +79,17 @@ public class XSQLData
     public long getTimeLen()
     {
         return timeLen;
+    }
+
+
+    
+    /**
+     * 获取：Insert语句影响生成的自增长ID的集合
+     */
+    @SuppressWarnings("unchecked")
+    public List<Integer> getIdentitys()
+    {
+        return (List<Integer>)datas;
     }
     
 }
