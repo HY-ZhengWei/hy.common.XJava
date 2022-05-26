@@ -30,7 +30,7 @@ import org.hy.common.db.DataSourceGroup;
  * @createDate  2022-05-23
  * @version     v1.0
  */
-public class XSQLInsert
+public class XSQLOPInsert
 {
     
     /**
@@ -46,6 +46,7 @@ public class XSQLInsert
     public static XSQLData executeInsert(final XSQL i_XSQL)
     {
         i_XSQL.checkContent();
+        
         boolean         v_IsError = false;
         DataSourceGroup v_DSG     = null;
         String          v_SQL     = null;
@@ -54,7 +55,7 @@ public class XSQLInsert
         {
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
-            return XSQLInsert.executeInsert_Inner(i_XSQL ,v_SQL ,v_DSG);
+            return XSQLOPInsert.executeInsert_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
@@ -103,6 +104,7 @@ public class XSQLInsert
     public static XSQLData executeInsert(final XSQL i_XSQL ,final Map<String ,?> i_Values)
     {
         i_XSQL.checkContent();
+        
         boolean         v_IsError = false;
         DataSourceGroup v_DSG     = null;
         String          v_SQL     = null;
@@ -112,8 +114,8 @@ public class XSQLInsert
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            XSQLData v_Ret = XSQLInsert.executeInsert_Inner(i_XSQL ,v_SQL ,v_DSG);
-            i_XSQL.executeUpdate_AfterWriteLob(i_Values ,(int)v_Ret.getRowCount());
+            XSQLData v_Ret = XSQLOPInsert.executeInsert_Inner(i_XSQL ,v_SQL ,v_DSG);
+            XSQLOPUpdate.executeUpdate_AfterWriteLob(i_XSQL ,i_Values ,(int)v_Ret.getRowCount());
             return v_Ret;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
@@ -163,6 +165,7 @@ public class XSQLInsert
     public static XSQLData executeInsert(final XSQL i_XSQL ,final Object i_Obj)
     {
         i_XSQL.checkContent();
+        
         boolean         v_IsError = false;
         DataSourceGroup v_DSG     = null;
         String          v_SQL     = null;
@@ -172,8 +175,8 @@ public class XSQLInsert
             i_XSQL.fireBeforeRule(i_Obj);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            XSQLData v_Ret = XSQLInsert.executeInsert_Inner(i_XSQL ,v_SQL ,v_DSG);
-            i_XSQL.executeUpdate_AfterWriteLob(i_Obj ,(int)v_Ret.getRowCount());
+            XSQLData v_Ret = XSQLOPInsert.executeInsert_Inner(i_XSQL ,v_SQL ,v_DSG);
+            XSQLOPUpdate.executeUpdate_AfterWriteLob(i_XSQL ,i_Obj ,(int)v_Ret.getRowCount());
             return v_Ret;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
@@ -222,7 +225,7 @@ public class XSQLInsert
 
         try
         {
-            return XSQLInsert.executeInsert_Inner(i_XSQL ,i_SQL ,i_XSQL.getDataSourceGroup());
+            return XSQLOPInsert.executeInsert_Inner(i_XSQL ,i_SQL ,i_XSQL.getDataSourceGroup());
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
@@ -291,7 +294,7 @@ public class XSQLInsert
             
             if ( v_Count >= 1 )
             {
-                v_Identitys = XSQLInsert.readIdentitys(v_Statement);
+                v_Identitys = XSQLOPInsert.readIdentitys(v_Statement);
             }
             
             Date v_EndTime = Date.getNowTime();
@@ -326,6 +329,7 @@ public class XSQLInsert
     public static XSQLData executeInsert(final XSQL i_XSQL ,final Connection i_Conn)
     {
         i_XSQL.checkContent();
+        
         boolean         v_IsError = false;
         DataSourceGroup v_DSG     = null;
         String          v_SQL     = null;
@@ -334,7 +338,7 @@ public class XSQLInsert
         {
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
-            return XSQLInsert.executeInsert_Inner(i_XSQL ,v_SQL ,i_Conn);
+            return XSQLOPInsert.executeInsert_Inner(i_XSQL ,v_SQL ,i_Conn);
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
@@ -382,12 +386,17 @@ public class XSQLInsert
     public static XSQLData executeInsert(final XSQL i_XSQL ,final Map<String ,?> i_Values ,final Connection i_Conn)
     {
         i_XSQL.checkContent();
-        boolean v_IsError = false;
+        
+        boolean         v_IsError = false;
+        DataSourceGroup v_DSG     = null;
+        String          v_SQL     = null;
 
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
-            return XSQLInsert.executeInsert_Inner(i_XSQL ,i_XSQL.getContent().getSQL(i_Values ,i_XSQL.getDataSourceGroup()) ,i_Conn);
+            v_DSG = i_XSQL.getDataSourceGroup();
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            return XSQLOPInsert.executeInsert_Inner(i_XSQL ,v_SQL ,i_Conn);
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
@@ -395,7 +404,7 @@ public class XSQLInsert
             v_IsError = true;
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_Values ,i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesMap(i_Values));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
             }
             throw exce;
         }
@@ -404,7 +413,7 @@ public class XSQLInsert
             v_IsError = true;
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_Values ,i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesMap(i_Values));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
             }
             throw exce;
         }
@@ -435,12 +444,17 @@ public class XSQLInsert
     public static XSQLData executeInsert(final XSQL i_XSQL ,final Object i_Obj ,final Connection i_Conn)
     {
         i_XSQL.checkContent();
-        boolean v_IsError = false;
+        
+        boolean         v_IsError = false;
+        DataSourceGroup v_DSG     = null;
+        String          v_SQL     = null;
 
         try
         {
             i_XSQL.fireBeforeRule(i_Obj);
-            return XSQLInsert.executeInsert_Inner(i_XSQL ,i_XSQL.getContent().getSQL(i_Obj ,i_XSQL.getDataSourceGroup()) ,i_Conn);
+            v_DSG = i_XSQL.getDataSourceGroup();
+            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
+            return XSQLOPInsert.executeInsert_Inner(i_XSQL ,v_SQL ,i_Conn);
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
@@ -448,7 +462,7 @@ public class XSQLInsert
             v_IsError = true;
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_Obj ,i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
             }
             throw exce;
         }
@@ -457,7 +471,7 @@ public class XSQLInsert
             v_IsError = true;
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_Obj ,i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
             }
             throw exce;
         }
@@ -489,7 +503,7 @@ public class XSQLInsert
 
         try
         {
-            return XSQLInsert.executeInsert_Inner(i_XSQL ,i_SQL ,i_Conn);
+            return XSQLOPInsert.executeInsert_Inner(i_XSQL ,i_SQL ,i_Conn);
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
@@ -557,7 +571,7 @@ public class XSQLInsert
             
             if ( v_Count >= 1 )
             {
-                v_Identitys = XSQLInsert.readIdentitys(v_Statement);
+                v_Identitys = XSQLOPInsert.readIdentitys(v_Statement);
             }
             
             Date v_EndTime = Date.getNowTime();
@@ -603,7 +617,7 @@ public class XSQLInsert
         try
         {
             i_XSQL.fireBeforeRule(i_ObjList);
-            return XSQLInsert.executeInserts_Inner(i_XSQL ,i_ObjList ,null);
+            return XSQLOPInsert.executeInserts_Inner(i_XSQL ,i_ObjList ,null);
         }
         catch (NullPointerException exce)
         {
@@ -665,7 +679,7 @@ public class XSQLInsert
         try
         {
             i_XSQL.fireBeforeRule(i_ObjList);
-            return XSQLInsert.executeInserts_Inner(i_XSQL ,i_ObjList ,i_Conn);
+            return XSQLOPInsert.executeInserts_Inner(i_XSQL ,i_ObjList ,i_Conn);
         }
         catch (NullPointerException exce)
         {
@@ -767,7 +781,7 @@ public class XSQLInsert
                         if ( v_SQLCount >= 1 )
                         {
                             v_Ret += v_SQLCount;
-                            XSQLInsert.readIdentitys(v_Statement ,v_Identitys);
+                            XSQLOPInsert.readIdentitys(v_Statement ,v_Identitys);
                         }
                         i_XSQL.log(v_SQL);
                     }
@@ -791,7 +805,7 @@ public class XSQLInsert
                         if ( v_SQLCount >= 1 )
                         {
                             v_Ret += v_SQLCount;
-                            XSQLInsert.readIdentitys(v_Statement ,v_Identitys);
+                            XSQLOPInsert.readIdentitys(v_Statement ,v_Identitys);
                         }
                         i_XSQL.log(v_SQL);
                         v_EC++;
@@ -891,7 +905,7 @@ public class XSQLInsert
         try
         {
             i_XSQL.fireBeforeRule(i_ObjList);
-            return XSQLInsert.executeInsertsPrepared_Inner(i_XSQL ,i_ObjList ,null);
+            return XSQLOPInsert.executeInsertsPrepared_Inner(i_XSQL ,i_ObjList ,null);
         }
         catch (NullPointerException exce)
         {
@@ -954,7 +968,7 @@ public class XSQLInsert
         try
         {
             i_XSQL.fireBeforeRule(i_ObjList);
-            return XSQLInsert.executeInsertsPrepared_Inner(i_XSQL ,i_ObjList ,i_Conn);
+            return XSQLOPInsert.executeInsertsPrepared_Inner(i_XSQL ,i_ObjList ,i_Conn);
         }
         catch (NullPointerException exce)
         {
@@ -1063,7 +1077,7 @@ public class XSQLInsert
                             {
                                 Object v_Value = MethodReflect.getMapValue((Map<String ,?>)v_Object ,v_PlaceHolder);
                                 
-                                i_XSQL.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_Value ,null);
+                                XSQLOPUpdate.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_Value ,null);
                             }
                         }
                         else
@@ -1073,7 +1087,7 @@ public class XSQLInsert
                             {
                                 MethodReflect v_MethodReflect = new MethodReflect(v_Object ,v_PlaceHolder ,true ,MethodReflect.$NormType_Getter);
                                 
-                                i_XSQL.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_MethodReflect.invoke() ,v_MethodReflect.getReturnType());
+                                XSQLOPUpdate.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_MethodReflect.invoke() ,v_MethodReflect.getReturnType());
                             }
                         }
                         
@@ -1082,7 +1096,7 @@ public class XSQLInsert
                 }
                 
                 int [] v_CountArr = v_PStatement.executeBatch();
-                XSQLInsert.readIdentitys(v_PStatement ,v_Identitys);
+                XSQLOPInsert.readIdentitys(v_PStatement ,v_Identitys);
                 
                 if ( i_Conn == null )
                 {
@@ -1119,7 +1133,7 @@ public class XSQLInsert
                             {
                                 Object v_Value = MethodReflect.getMapValue((Map<String ,?>)v_Object ,v_PlaceHolder);
                                 
-                                i_XSQL.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_Value ,null);
+                                XSQLOPUpdate.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_Value ,null);
                             }
                         }
                         else
@@ -1129,7 +1143,7 @@ public class XSQLInsert
                             {
                                 MethodReflect v_MethodReflect = new MethodReflect(v_Object ,v_PlaceHolder ,true ,MethodReflect.$NormType_Getter);
                                 
-                                i_XSQL.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_MethodReflect.invoke() ,v_MethodReflect.getReturnType());
+                                XSQLOPUpdate.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_MethodReflect.invoke() ,v_MethodReflect.getReturnType());
                             }
                         }
                         
@@ -1139,7 +1153,7 @@ public class XSQLInsert
                         if ( v_EC % i_XSQL.getBatchCommit() == 0 )
                         {
                             int [] v_CountArr = v_PStatement.executeBatch();
-                            XSQLInsert.readIdentitys(v_PStatement ,v_Identitys);
+                            XSQLOPInsert.readIdentitys(v_PStatement ,v_Identitys);
                             v_Conn.commit();
                             v_CommitCount++;
                             
@@ -1169,7 +1183,7 @@ public class XSQLInsert
                 if ( !v_IsCommit )
                 {
                     int [] v_CountArr = v_PStatement.executeBatch();
-                    XSQLInsert.readIdentitys(v_PStatement ,v_Identitys);
+                    XSQLOPInsert.readIdentitys(v_PStatement ,v_Identitys);
                     v_Conn.commit();
                     v_CommitCount++;
                     
@@ -1253,7 +1267,7 @@ public class XSQLInsert
      */
     public static List<Integer> readIdentitys(Statement i_Statement) throws SQLException
     {
-        return XSQLInsert.readIdentitys(i_Statement.getGeneratedKeys());
+        return XSQLOPInsert.readIdentitys(i_Statement.getGeneratedKeys());
     }
     
     
@@ -1274,7 +1288,7 @@ public class XSQLInsert
      */
     public static List<Integer> readIdentitys(Statement i_Statement ,List<Integer> io_Identitys) throws SQLException
     {
-        return XSQLInsert.readIdentitys(i_Statement.getGeneratedKeys() ,io_Identitys);
+        return XSQLOPInsert.readIdentitys(i_Statement.getGeneratedKeys() ,io_Identitys);
     }
     
     
@@ -1327,7 +1341,7 @@ public class XSQLInsert
     /**
      * 本类不允许构建
      */
-    private XSQLInsert()
+    private XSQLOPInsert()
     {
         
     }
