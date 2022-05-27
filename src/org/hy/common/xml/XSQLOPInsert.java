@@ -92,7 +92,7 @@ public class XSQLOPInsert
      * 
      * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
      * 
-     * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
+     * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert的写入操作。
      * 
      * @author      ZhengWei(HY)
      * @createDate  2022-05-23
@@ -153,7 +153,7 @@ public class XSQLOPInsert
      * 
      * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
      * 
-     * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
+     * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert的写入操作。
      * 
      * @author      ZhengWei(HY)
      * @createDate  2022-05-23
@@ -288,7 +288,7 @@ public class XSQLOPInsert
             v_Conn      = i_XSQL.getConnection(i_DSG);
             v_Statement = v_Conn.createStatement();
             
-            int           v_Count     = v_Statement.executeUpdate(i_SQL);
+            int           v_Count     = v_Statement.executeUpdate(i_SQL ,Statement.RETURN_GENERATED_KEYS);
             List<Integer> v_Identitys = null;
             i_XSQL.log(i_SQL);
             
@@ -558,14 +558,14 @@ public class XSQLOPInsert
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            if ( null == i_Conn)
+            if ( null == i_Conn )
             {
                 throw new NullPointerException("Connection is null of XSQL.");
             }
             
             v_Statement = i_Conn.createStatement();
             
-            int           v_Count     = v_Statement.executeUpdate(i_SQL);
+            int           v_Count     = v_Statement.executeUpdate(i_SQL ,Statement.RETURN_GENERATED_KEYS);
             List<Integer> v_Identitys = null;
             i_XSQL.log(i_SQL);
             
@@ -594,7 +594,7 @@ public class XSQLOPInsert
     
     
     /**
-     * 批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 批量执行：占位符SQL的Insert语句的执行。
      * 
      * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
      * 
@@ -612,6 +612,8 @@ public class XSQLOPInsert
      */
     public static XSQLData executeInserts(final XSQL i_XSQL ,final List<?> i_ObjList)
     {
+        i_XSQL.checkContent();
+        
         boolean v_IsError = false;
 
         try
@@ -649,7 +651,7 @@ public class XSQLOPInsert
     
     
     /**
-     * 批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 批量执行：占位符SQL的Insert语句的执行。
      * 
      *   注意：不支持Delete语句
      * 
@@ -674,6 +676,8 @@ public class XSQLOPInsert
      */
     public static XSQLData executeInserts(final XSQL i_XSQL ,final List<?> i_ObjList ,final Connection i_Conn)
     {
+        i_XSQL.checkContent();
+        
         boolean v_IsError = false;
 
         try
@@ -748,11 +752,6 @@ public class XSQLOPInsert
         
         try
         {
-            if ( i_XSQL.getContent() == null )
-            {
-                throw new NullPointerException("Content is null of XSQL.");
-            }
-            
             v_DSG = i_XSQL.getDataSourceGroup();
             if ( !v_DSG.isValid() )
             {
@@ -777,7 +776,7 @@ public class XSQLOPInsert
                     if ( i_ObjList.get(i) != null )
                     {
                         v_SQL       = i_XSQL.getContent().getSQL(i_ObjList.get(i) ,v_DSG);
-                        v_SQLCount = v_Statement.executeUpdate(v_SQL);
+                        v_SQLCount = v_Statement.executeUpdate(v_SQL ,Statement.RETURN_GENERATED_KEYS);
                         if ( v_SQLCount >= 1 )
                         {
                             v_Ret += v_SQLCount;
@@ -801,7 +800,7 @@ public class XSQLOPInsert
                     if ( i_ObjList.get(i) != null )
                     {
                         v_SQL      = i_XSQL.getContent().getSQL(i_ObjList.get(i) ,v_DSG);
-                        v_SQLCount = v_Statement.executeUpdate(v_SQL);
+                        v_SQLCount = v_Statement.executeUpdate(v_SQL ,Statement.RETURN_GENERATED_KEYS);
                         if ( v_SQLCount >= 1 )
                         {
                             v_Ret += v_SQLCount;
@@ -879,7 +878,7 @@ public class XSQLOPInsert
     
     
     /**
-     * 批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 批量执行：占位符SQL的Insert语句的执行。
      * 
      *   注意：不支持Delete语句
      * 
@@ -900,6 +899,8 @@ public class XSQLOPInsert
      */
     public static XSQLData executeInsertsPrepared(final XSQL i_XSQL ,final List<?> i_ObjList)
     {
+        i_XSQL.checkContent();
+        
         boolean v_IsError = false;
 
         try
@@ -937,7 +938,7 @@ public class XSQLOPInsert
     
     
     /**
-     * 批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 批量执行：占位符SQL的Insert语句的执行。
      * 
      *   注意：不支持Delete语句
      * 
@@ -963,6 +964,8 @@ public class XSQLOPInsert
      */
     public static XSQLData executeInsertsPrepared(final XSQL i_XSQL ,final List<?> i_ObjList ,final Connection i_Conn)
     {
+        i_XSQL.checkContent();
+        
         boolean v_IsError = false;
         
         try
@@ -1000,7 +1003,7 @@ public class XSQLOPInsert
     
     
     /**
-     * 批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 批量执行：占位符SQL的Insert语句的执行。
      * 
      *   注意：不支持Delete语句
      * 
@@ -1040,11 +1043,6 @@ public class XSQLOPInsert
         
         try
         {
-            if ( i_XSQL.getContent() == null )
-            {
-                throw new NullPointerException("Content is null of XSQL.");
-            }
-            
             v_DSG = i_XSQL.getDataSourceGroup();
             if ( !v_DSG.isValid() )
             {
@@ -1060,7 +1058,7 @@ public class XSQLOPInsert
             v_AutoCommit = v_Conn.getAutoCommit();
             v_Conn.setAutoCommit(false);
             v_SQL        = i_XSQL.getContent().getPreparedSQL().getSQL();
-            v_PStatement = v_Conn.prepareStatement(v_SQL);
+            v_PStatement = v_Conn.prepareStatement(v_SQL ,Statement.RETURN_GENERATED_KEYS);
             v_Identitys  = new ArrayList<Integer>();
             
             if ( i_XSQL.getBatchCommit() <= 0 )

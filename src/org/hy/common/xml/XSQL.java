@@ -126,6 +126,7 @@ import org.hy.common.xml.plugins.XRule;
  *                                优化：execute      (...)系列方法，代理化，具体实现转移到 XSQLOPDDL       类中，减少 XSQL 的代码量
  *                                优化：call         (...)系列方法，代理化，具体实现转移到 XSQLOPProcedure 类中，减少 XSQL 的代码量
  *                                优化：query        (...)系列方法，代理化，具体实现转移到 XSQLOPQuery     类中，减少 XSQL 的代码量
+ *                                添加：isGetID()参数影响executeUpdate(...)系统方法返回值的含义
  */
 /*
  * 游标类型的说明
@@ -339,6 +340,17 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     private XRule                          afterRule;
     
+    /**
+     * 在Insert时，是否返回DB表上绑定的自增长ID的值
+     * 
+     * 此属性将影响int executeUpdate(...)系统方法返回值的含义。
+     *   当 getID=false 时，executeUpdate()系统方法返回值表示：影响的记录行数
+     *   当 getID=true  时，executeUpdate()系统方法返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
+     * 
+     * 默认为：false
+     */
+    private boolean                        getID;
+    
     
     
     public XSQL()
@@ -368,6 +380,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         this.error              = (XSQLError)XJava.getObject($XSQLErrors);
         this.beforeRule         = null;
         this.afterRule          = null;
+        this.getID              = false;
     }
     
     
@@ -1813,7 +1826,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 
      * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
      * 
-     * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
+     * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert语法的写入操作。
      * 
      * @author      ZhengWei(HY)
      * @createDate  2022-05-23
@@ -1834,7 +1847,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 
      * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
      * 
-     * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
+     * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert语法的写入操作。
      * 
      * @author      ZhengWei(HY)
      * @createDate  2022-05-23
@@ -1967,7 +1980,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     /**
-     * 批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 批量执行：占位符SQL的Insert语句的执行。
      * 
      *   注意：不支持Delete语句
      * 
@@ -1998,7 +2011,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     /**
-     * 批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 批量执行：占位符SQL的Insert语句的执行。
      * 
      *   注意：不支持Delete语句
      * 
@@ -2025,7 +2038,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     /**
-     * 批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 批量执行：占位符SQL的Insert语句的执行。
      * 
      *   注意：不支持Delete语句
      * 
@@ -2059,7 +2072,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /**
      * 占位符SQL的Insert语句与Update语句的执行。 -- 无填充值的
      * 
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public int executeUpdate()
     {
@@ -2076,7 +2091,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
      * 
      * @param i_Values           占位符SQL的填充集合。
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public int executeUpdate(Map<String ,?> i_Values)
     {
@@ -2093,7 +2110,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
      * 
      * @param i_Obj              占位符SQL的填充对象。
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public int executeUpdate(Object i_Obj)
     {
@@ -2106,7 +2125,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 常规Insert语句与Update语句的执行。
      * 
      * @param i_SQL              常规SQL语句
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public int executeUpdate(String i_SQL)
     {
@@ -2119,7 +2140,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 占位符SQL的Insert语句与Update语句的执行。 -- 无填充值的（内部不再关闭数据库连接）
      * 
      * @param i_Conn             数据库连接
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public int executeUpdate(Connection i_Conn)
     {
@@ -2135,7 +2158,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 
      * @param i_Values           占位符SQL的填充集合。
      * @param i_Conn             数据库连接
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public int executeUpdate(Map<String ,?> i_Values ,Connection i_Conn)
     {
@@ -2151,7 +2176,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 
      * @param i_Obj              占位符SQL的填充对象。
      * @param i_Conn             数据库连接
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public int executeUpdate(Object i_Obj ,Connection i_Conn)
     {
@@ -2165,7 +2192,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * 
      * @param i_SQL              常规SQL语句
      * @param i_Conn             数据库连接
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public int executeUpdate(String i_SQL ,Connection i_Conn)
     {
@@ -2185,7 +2214,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      *                           1. 集合元素可以是Object
      *                           2. 集合元素可以是Map<String ,?>
      *                           3. 更可以是上面两者的混合元素组成的集合
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public int executeUpdates(List<?> i_ObjList)
     {
@@ -2212,7 +2243,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      *                           2. 当有值时，内部将不关闭数据库连接，而是交给外部调用者来关闭。
      *                           3. 当有值时，内部也不执行"提交"操作（但分批提交this.batchCommit大于0时除外），而是交给外部调用者来执行"提交"。
      *                           4. 当有值时，出现异常时，内部也不执行"回滚"操作，而是交给外部调用者来执行"回滚"。
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public int executeUpdates(List<?> i_ObjList ,Connection i_Conn)
     {
@@ -2238,7 +2271,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      *                           1. 集合元素可以是Object
      *                           2. 集合元素可以是Map<String ,?>
      *                           3. 更可以是上面两者的混合元素组成的集合
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public int executeUpdatesPrepared(List<?> i_ObjList)
     {
@@ -2269,7 +2304,9 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      *                           2. 当有值时，内部将不关闭数据库连接，而是交给外部调用者来关闭。
      *                           3. 当有值时，内部也不执行"提交"操作（但分批提交this.batchCommit大于0时除外），而是交给外部调用者来执行"提交"。
      *                           4. 当有值时，出现异常时，内部也不执行"回滚"操作，而是交给外部调用者来执行"回滚"。
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public int executeUpdatesPrepared(List<?> i_ObjList ,Connection i_Conn)
     {
@@ -4157,6 +4194,39 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     protected void setLobXSQLID(String lobXSQLID)
     {
         this.lobXSQLID = lobXSQLID;
+    }
+
+
+
+    
+    /**
+     * 在Insert时，是否返回DB表上绑定的自增长ID的值
+     * 
+     * 此属性将影响int executeUpdate(...)系统方法返回值的含义。
+     *   当 getID=false 时，executeUpdate()系统方法返回值表示：影响的记录行数
+     *   当 getID=true  时，executeUpdate()系统方法返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
+     * 
+     * 默认为：false
+     */
+    public boolean isGetID()
+    {
+        return getID;
+    }
+
+
+
+    /**
+     * 在Insert时，是否返回DB表上绑定的自增长ID的值
+     * 
+     * 此属性将影响int executeUpdate(...)系统方法返回值的含义。
+     *   当 getID=false 时，executeUpdate()系统方法返回值表示：影响的记录行数
+     *   当 getID=true  时，executeUpdate()系统方法返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
+     * 
+     * 默认为：false
+     */
+    public void setGetID(boolean i_GetID)
+    {
+        this.getID = i_GetID;
     }
 
 

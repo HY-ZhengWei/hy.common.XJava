@@ -19,6 +19,7 @@ import java.lang.annotation.Target;
  *              v2.0  2018-01-27  添加：batch()属性，支持预解析方式的批量执行。
  *              v3.0  2018-07-21  添加：paging()属性，支持分页查询。建议人：李浩
  *              v4.0  2018-08-08  添加：execute()属性，支持多种类不同的SQL在同一XSQL中执行。
+ *              v5.0  2022-05-27  添加：getID()属性，支持自增长ID值的获取
  */
 @Documented
 @Target({ElementType.METHOD})
@@ -142,7 +143,7 @@ public @interface Xsql
      * 当方法入参类型为List集合
      *    1. batch = false 时，按普通批量方式执行，统一提交及回滚。如果XSQL设置了batchCommit属性，可再分批提交。
      *    2. batch = true  时，按预解析的方式执行，统一提交及回滚。如果XSQL设置了batchCommit属性，可再分批提交。
-     *    
+     * 
      * 上面两种方式，在写SQL模板时，略有不同。
      */
     public boolean batch() default false;
@@ -175,5 +176,40 @@ public @interface Xsql
      * @return
      */
     public boolean paging() default false;
+    
+    
+    
+    /**
+     * 针对Insert操作，是否返回数据库表上绑定的自增长ID的值。
+     * 
+     * 两类定义冲突时的解决方案：
+     *   1. 当 Xsql.getID() = true  时，实例对象 XSQL.isGetID() = false 时，
+     *      因为注解是写在Java中的，并且编释后其值固定不变，所以本类权限优先级是最高的，按本类getID尝试获取自增长ID的值。
+     * 
+     *   2. 当 Xsql.getID() = false 时，实例对象 XSQL.isGetID() = true  时，
+     *      因为本类getID默认值为false，所以按实例对象的 XSQL.isGetID() 参数为准，控制尝试获取自增长ID的值
+     * 
+     * 显式定义
+     *      使用本属性定义，显式定义尝试获取自增长ID的值。如：
+     *      @Xsql(id="xxx" ,getID=true)
+     *      public int yyy();             // 返回类型为 int 时，主要用于单记录添加时返回自增长ID
+     * 
+     * 隐式定义
+     *      接口方法的返回值类型为 XSQLData 或 List<Integer> 时，并且为Insert语句时，也将尝试获取自增长ID的值。如：
+     *      @xsql("xxx")
+     *      public XSQLData yyy();        // 返回类型为 XSQLData 时，主要用于批量添加时返回所有自增长ID集合，并返回影响的记录总行数
+     * 
+     *      或
+     * 
+     *      @xsql("xxx")
+     *      public List<Integer> yyy();   // 返回类型为 List<Integer> 时，主要用于批量添加时返回自增长ID集合
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-05-27
+     * @version     v1.0
+     *
+     * @return
+     */
+    public boolean getID() default false;
     
 }

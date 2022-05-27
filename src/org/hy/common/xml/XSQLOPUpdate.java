@@ -49,6 +49,7 @@ import oracle.sql.CLOB;
  * @author      ZhengWei(HY)
  * @createDate  2022-05-24
  * @version     v1.0
+ *              v2.0  2022-05-26  添加：isGetID()参数影响executeUpdate(...)系统方法返回值的含义
  */
 public class XSQLOPUpdate
 {
@@ -56,10 +57,26 @@ public class XSQLOPUpdate
     /**
      * 占位符SQL的Insert语句与Update语句的执行。 -- 无填充值的
      * 
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public static int executeUpdate(final XSQL i_XSQL)
     {
+        if ( i_XSQL.isGetID() )
+        {
+            XSQLData v_XData = XSQLOPInsert.executeInsert(i_XSQL);
+            if ( v_XData.getIdentitys().size() >= 1 )
+            {
+                return v_XData.getIdentitys().get(0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
+        
         i_XSQL.checkContent();
         
         boolean         v_IsError = false;
@@ -109,11 +126,27 @@ public class XSQLOPUpdate
      * 
      * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
      * 
-     * @param i_Values           占位符SQL的填充集合。
-     * @return                   返回语句影响的记录数。
+     * @param i_Values  占位符SQL的填充集合。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public static int executeUpdate(final XSQL i_XSQL ,final Map<String ,?> i_Values)
     {
+        if ( i_XSQL.isGetID() )
+        {
+            XSQLData v_XData = XSQLOPInsert.executeInsert(i_XSQL ,i_Values);
+            if ( v_XData.getIdentitys().size() >= 1 )
+            {
+                return v_XData.getIdentitys().get(0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
+        
         i_XSQL.checkContent();
         
         boolean         v_IsError = false;
@@ -166,11 +199,27 @@ public class XSQLOPUpdate
      * 
      * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
      * 
-     * @param i_Obj              占位符SQL的填充对象。
-     * @return                   返回语句影响的记录数。
+     * @param i_Obj  占位符SQL的填充对象。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public static int executeUpdate(final XSQL i_XSQL ,final Object i_Obj)
     {
+        if ( i_XSQL.isGetID() )
+        {
+            XSQLData v_XData = XSQLOPInsert.executeInsert(i_XSQL ,i_Obj);
+            if ( v_XData.getIdentitys().size() >= 1 )
+            {
+                return v_XData.getIdentitys().get(0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
+        
         i_XSQL.checkContent();
         
         boolean         v_IsError = false;
@@ -218,11 +267,27 @@ public class XSQLOPUpdate
     /**
      * 常规Insert语句与Update语句的执行。
      * 
-     * @param i_SQL              常规SQL语句
-     * @return                   返回语句影响的记录数。
+     * @param i_SQL  常规SQL语句
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public static int executeUpdate(final XSQL i_XSQL ,final String i_SQL)
     {
+        if ( i_XSQL.isGetID() )
+        {
+            XSQLData v_XData = XSQLOPInsert.executeInsert(i_XSQL ,i_SQL);
+            if ( v_XData.getIdentitys().size() >= 1 )
+            {
+                return v_XData.getIdentitys().get(0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
+        
         boolean v_IsError = false;
 
         try
@@ -309,11 +374,27 @@ public class XSQLOPUpdate
     /**
      * 占位符SQL的Insert语句与Update语句的执行。 -- 无填充值的（内部不再关闭数据库连接）
      * 
-     * @param i_Conn             数据库连接
-     * @return                   返回语句影响的记录数。
+     * @param i_Conn  数据库连接
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public static int executeUpdate(final XSQL i_XSQL ,final Connection i_Conn)
     {
+        if ( i_XSQL.isGetID() )
+        {
+            XSQLData v_XData = XSQLOPInsert.executeInsert(i_XSQL ,i_Conn);
+            if ( v_XData.getIdentitys().size() >= 1 )
+            {
+                return v_XData.getIdentitys().get(0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
+        
         i_XSQL.checkContent();
         
         boolean         v_IsError = false;
@@ -361,12 +442,28 @@ public class XSQLOPUpdate
      * 
      * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
      * 
-     * @param i_Values           占位符SQL的填充集合。
-     * @param i_Conn             数据库连接
-     * @return                   返回语句影响的记录数。
+     * @param i_Values 占位符SQL的填充集合。
+     * @param i_Conn   数据库连接
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public static int executeUpdate(final XSQL i_XSQL ,final Map<String ,?> i_Values ,Connection i_Conn)
     {
+        if ( i_XSQL.isGetID() )
+        {
+            XSQLData v_XData = XSQLOPInsert.executeInsert(i_XSQL ,i_Values ,i_Conn);
+            if ( v_XData.getIdentitys().size() >= 1 )
+            {
+                return v_XData.getIdentitys().get(0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
+        
         i_XSQL.checkContent();
         
         boolean         v_IsError = false;
@@ -415,12 +512,28 @@ public class XSQLOPUpdate
      * 
      * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
      * 
-     * @param i_Obj              占位符SQL的填充对象。
-     * @param i_Conn             数据库连接
-     * @return                   返回语句影响的记录数。
+     * @param i_Obj   占位符SQL的填充对象。
+     * @param i_Conn  数据库连接
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public static int executeUpdate(final XSQL i_XSQL ,final Object i_Obj ,Connection i_Conn)
     {
+        if ( i_XSQL.isGetID() )
+        {
+            XSQLData v_XData = XSQLOPInsert.executeInsert(i_XSQL ,i_Obj ,i_Conn);
+            if ( v_XData.getIdentitys().size() >= 1 )
+            {
+                return v_XData.getIdentitys().get(0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
+        
         i_XSQL.checkContent();
         
         boolean         v_IsError = false;
@@ -467,12 +580,28 @@ public class XSQLOPUpdate
     /**
      * 常规Insert语句与Update语句的执行。（内部不再关闭数据库连接）
      * 
-     * @param i_SQL              常规SQL语句
-     * @param i_Conn             数据库连接
-     * @return                   返回语句影响的记录数。
+     * @param i_SQL   常规SQL语句
+     * @param i_Conn  数据库连接
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public static int executeUpdate(final XSQL i_XSQL ,final String i_SQL ,Connection i_Conn)
     {
+        if ( i_XSQL.isGetID() )
+        {
+            XSQLData v_XData = XSQLOPInsert.executeInsert(i_XSQL ,i_SQL ,i_Conn);
+            if ( v_XData.getIdentitys().size() >= 1 )
+            {
+                return v_XData.getIdentitys().get(0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
+        
         boolean v_IsError = false;
 
         try
@@ -512,9 +641,9 @@ public class XSQLOPUpdate
     /**
      * 常规Insert语句与Update语句的执行。（内部不再关闭数据库连接）
      * 
-     * @param i_SQL              常规SQL语句
-     * @param i_Conn             数据库连接
-     * @return                   返回语句影响的记录数。
+     * @param i_SQL   常规SQL语句
+     * @param i_Conn  数据库连接
+     * @return  返回语句影响的记录数。
      */
     private static int executeUpdate_Inner(final XSQL i_XSQL ,final String i_SQL ,Connection i_Conn)
     {
@@ -528,7 +657,7 @@ public class XSQLOPUpdate
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            if ( null == i_Conn)
+            if ( null == i_Conn )
             {
                 throw new NullPointerException("Connection is null of XSQL.");
             }
@@ -566,10 +695,28 @@ public class XSQLOPUpdate
      *                           1. 集合元素可以是Object
      *                           2. 集合元素可以是Map<String ,?>
      *                           3. 更可以是上面两者的混合元素组成的集合
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public static int executeUpdates(final XSQL i_XSQL ,final List<?> i_ObjList)
     {
+        if ( i_XSQL.isGetID() )
+        {
+            XSQLData v_XData = XSQLOPInsert.executeInserts(i_XSQL ,i_ObjList);
+            if ( v_XData.getIdentitys().size() >= 1 )
+            {
+                return v_XData.getIdentitys().get(0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
+        
+        i_XSQL.checkContent();
+        
         boolean v_IsError = false;
 
         try
@@ -625,10 +772,28 @@ public class XSQLOPUpdate
      *                           2. 当有值时，内部将不关闭数据库连接，而是交给外部调用者来关闭。
      *                           3. 当有值时，内部也不执行"提交"操作（但分批提交i_XSQL.getBatchCommit()大于0时除外），而是交给外部调用者来执行"提交"。
      *                           4. 当有值时，出现异常时，内部也不执行"回滚"操作，而是交给外部调用者来执行"回滚"。
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public static int executeUpdates(final XSQL i_XSQL ,final List<?> i_ObjList ,Connection i_Conn)
     {
+        if ( i_XSQL.isGetID() )
+        {
+            XSQLData v_XData = XSQLOPInsert.executeInserts(i_XSQL ,i_ObjList ,i_Conn);
+            if ( v_XData.getIdentitys().size() >= 1 )
+            {
+                return v_XData.getIdentitys().get(0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
+        
+        i_XSQL.checkContent();
+        
         boolean v_IsError = false;
 
         try
@@ -699,11 +864,6 @@ public class XSQLOPUpdate
         
         try
         {
-            if ( i_XSQL.getContent() == null )
-            {
-                throw new NullPointerException("Content is null of XSQL.");
-            }
-            
             v_DSG = i_XSQL.getDataSourceGroup();
             if ( !v_DSG.isValid() )
             {
@@ -842,10 +1002,28 @@ public class XSQLOPUpdate
      *                           1. 集合元素可以是Object
      *                           2. 集合元素可以是Map<String ,?>
      *                           3. 更可以是上面两者的混合元素组成的集合
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public static int executeUpdatesPrepared(final XSQL i_XSQL ,final List<?> i_ObjList)
     {
+        if ( i_XSQL.isGetID() )
+        {
+            XSQLData v_XData = XSQLOPInsert.executeInsertsPrepared(i_XSQL ,i_ObjList);
+            if ( v_XData.getIdentitys().size() >= 1 )
+            {
+                return v_XData.getIdentitys().get(0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
+        
+        i_XSQL.checkContent();
+        
         boolean v_IsError = false;
 
         try
@@ -905,10 +1083,28 @@ public class XSQLOPUpdate
      *                           2. 当有值时，内部将不关闭数据库连接，而是交给外部调用者来关闭。
      *                           3. 当有值时，内部也不执行"提交"操作（但分批提交i_XSQL.getBatchCommit()大于0时除外），而是交给外部调用者来执行"提交"。
      *                           4. 当有值时，出现异常时，内部也不执行"回滚"操作，而是交给外部调用者来执行"回滚"。
-     * @return                   返回语句影响的记录数。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
     public static int executeUpdatesPrepared(final XSQL i_XSQL ,final List<?> i_ObjList ,final Connection i_Conn)
     {
+        if ( i_XSQL.isGetID() )
+        {
+            XSQLData v_XData = XSQLOPInsert.executeInsertsPrepared(i_XSQL ,i_ObjList ,i_Conn);
+            if ( v_XData.getIdentitys().size() >= 1 )
+            {
+                return v_XData.getIdentitys().get(0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
+        
+        i_XSQL.checkContent();
+        
         boolean v_IsError = false;
         
         try
@@ -985,11 +1181,6 @@ public class XSQLOPUpdate
         
         try
         {
-            if ( i_XSQL.getContent() == null )
-            {
-                throw new NullPointerException("Content is null of XSQL.");
-            }
-            
             v_DSG = i_XSQL.getDataSourceGroup();
             if ( !v_DSG.isValid() )
             {
