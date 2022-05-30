@@ -58,7 +58,6 @@ import org.xml.sax.InputSource;
 
 
 
-
 /**
  * 解释Xml文件，并且可以直接将Xml文件内容转为Java对象实例。
  * 
@@ -93,6 +92,7 @@ import org.xml.sax.InputSource;
  *              v1.15 2021-01-16  添加：构造器constructor参数支持属性加密、回写配置文件的功能
  *              v1.16 2022-01-05  添加：日志机制启用内部的Logger，不再强关联Apache
  *                                添加：getObjects(Class)支持对接口类的猜想
+ *              v1.17 2022-05-30  添加：XJavaID在对象构造出后，立刻赋值，方便后续操作的使用。建议人：邹德福
  */
 public final class XJava
 {
@@ -2565,8 +2565,14 @@ public final class XJava
                     {
                         if ( io_SuperInstance == null )
                         {
-                            io_SuperInstance = this.constructor(i_SuperClass ,v_Node ,v_TreeNode);
+                            io_SuperInstance    = this.constructor(i_SuperClass ,v_Node ,v_TreeNode);
                             v_SuperInstance_New = true;
+                            
+                            // 确保XJavaID优先被setter，好方便后续功能使用ID
+                            if ( !Help.isNull(v_ID) && io_SuperInstance instanceof XJavaID )
+                            {
+                                ((XJavaID)io_SuperInstance).setXJavaID(v_ID);
+                            }
                         }
                         else
                         {
@@ -2591,8 +2597,14 @@ public final class XJava
                                 {
                                     try
                                     {
-                                        io_SuperInstance = i_SuperClass.newInstance();
+                                        io_SuperInstance    = i_SuperClass.newInstance();
                                         v_SuperInstance_New = true;
+                                        
+                                        // 确保XJavaID优先被setter，好方便后续功能使用ID
+                                        if ( !Help.isNull(v_ID) && io_SuperInstance instanceof XJavaID )
+                                        {
+                                            ((XJavaID)io_SuperInstance).setXJavaID(v_ID);
+                                        }
                                     }
                                     catch (Exception exce)
                                     {
@@ -2616,7 +2628,7 @@ public final class XJava
                         
                         if ( "String".equalsIgnoreCase(v_Node.getNodeName()) )
                         {
-                            v_TreeNode.setInfo(new XJavaObject("" ,v_AttrInstance));
+                            v_TreeNode.setInfo(new XJavaObject(v_ID ,v_AttrInstance));
                         }
                     }
                     else
@@ -4328,7 +4340,12 @@ public final class XJava
             {
                 if ( this.object instanceof XJavaID )
                 {
-                    ((XJavaID)this.object).setXJavaID(i_XJavaID);
+                    XJavaID v_XJavaID = (XJavaID)this.object;
+                    if ( Help.isNull(v_XJavaID.getXJavaID()) )
+                    {
+                        // 不重复赋值
+                        v_XJavaID.setXJavaID(i_XJavaID);
+                    }
                 }
             }
         }
