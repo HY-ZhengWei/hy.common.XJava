@@ -48,11 +48,11 @@
 	<classpathentry kind="lib" path="lib/c3p0-0.9.2-pre5.jar"/>
 	<classpathentry kind="lib" path="lib/json/json-smart-2.4.7.jar" sourcepath="C:/Users/hyzhe/.m2/net/minidev/json-smart/2.4.7/json-smart-2.4.7-sources.jar"/>
 	<classpathentry kind="lib" path="lib/netty/netty-all-4.1.67.Final.jar"/>
-	<classpathentry kind="lib" path="lib/protobuf/protobuf-java-3.17.3.jar"/>
 	<classpathentry kind="lib" path="lib/json/accessors-smart-2.4.7.jar"/>
 	<classpathentry kind="lib" path="lib/json/asm-9.1.jar"/>
 	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-api-2.15.0.jar"/>
 	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-core-2.15.0.jar"/>
 	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-slf4j-impl-2.15.0.jar"/>
+	<classpathentry kind="lib" path="lib/protobuf/protobuf-java-3.21.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

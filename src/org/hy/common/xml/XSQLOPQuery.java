@@ -726,7 +726,7 @@ public class XSQLOPQuery
             
             if ( !i_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + i_DSG.getXJavaID() + "] is not valid.");
             }
             
             if ( Help.isNull(i_SQL) )
@@ -1185,7 +1185,7 @@ public class XSQLOPQuery
             
             if ( !i_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + i_DSG.getXJavaID() + "] is not valid.");
             }
             
             if ( Help.isNull(i_SQL) )
@@ -1248,7 +1248,7 @@ public class XSQLOPQuery
             
             if ( !i_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + i_DSG.getXJavaID() + "] is not valid.");
             }
             
             if ( Help.isNull(i_SQL) )
@@ -1311,7 +1311,7 @@ public class XSQLOPQuery
             
             if ( !i_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + i_DSG.getXJavaID() + "] is not valid.");
             }
             
             if ( Help.isNull(i_SQL) )
@@ -1881,7 +1881,7 @@ public class XSQLOPQuery
             
             if ( !i_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + i_DSG.getXJavaID() + "] is not valid.");
             }
             
             if ( Help.isNull(i_SQL) )
@@ -2401,7 +2401,7 @@ public class XSQLOPQuery
             
             if ( !i_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + i_DSG.getXJavaID() + "] is not valid.");
             }
             
             if ( Help.isNull(i_SQL) )
@@ -2409,7 +2409,7 @@ public class XSQLOPQuery
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_RowSize   = XSQLOPQuery.getSQLCount(i_XSQL ,"SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
+            v_RowSize   = XSQLOPQuery.querySQLCount(i_XSQL ,"SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
             v_Conn      = i_XSQL.getConnection(i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
@@ -2463,7 +2463,7 @@ public class XSQLOPQuery
             
             if ( !i_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + i_DSG.getXJavaID() + "] is not valid.");
             }
             
             if ( Help.isNull(i_SQL) )
@@ -2471,7 +2471,7 @@ public class XSQLOPQuery
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_RowSize   = XSQLOPQuery.getSQLCount_Inner(i_XSQL ,"SELECT COUNT(1) FROM ( " + i_SQL + " ) HY" ,i_DSG);
+            v_RowSize   = XSQLOPQuery.querySQLCount_Inner(i_XSQL ,"SELECT COUNT(1) FROM ( " + i_SQL + " ) HY" ,i_DSG);
             v_Conn      = i_XSQL.getConnection(i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
@@ -2525,7 +2525,7 @@ public class XSQLOPQuery
             
             if ( !i_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + i_DSG.getXJavaID() + "] is not valid.");
             }
             
             if ( Help.isNull(i_SQL) )
@@ -2533,7 +2533,7 @@ public class XSQLOPQuery
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_RowSize   = XSQLOPQuery.getSQLCount(i_XSQL ,"SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
+            v_RowSize   = XSQLOPQuery.querySQLCount(i_XSQL ,"SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
             v_Conn      = i_XSQL.getConnection(i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
@@ -2572,7 +2572,7 @@ public class XSQLOPQuery
      * @return
      * @throws Exception
      */
-    public static long getSQLCount(final XSQL i_XSQL ,final Map<String ,?> i_Values)
+    public static long querySQLCount(final XSQL i_XSQL ,final Map<String ,?> i_Values)
     {
         i_XSQL.checkContent();
         
@@ -2585,7 +2585,7 @@ public class XSQLOPQuery
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            return XSQLOPQuery.getSQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
+            return XSQLOPQuery.querySQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
         catch (NullPointerException exce)
         {
@@ -2628,7 +2628,7 @@ public class XSQLOPQuery
      * @return
      * @throws Exception
      */
-    public static long getSQLCount(final XSQL i_XSQL ,final Object i_Obj)
+    public static long querySQLCount(final XSQL i_XSQL ,final Object i_Obj)
     {
         i_XSQL.checkContent();
         
@@ -2641,7 +2641,7 @@ public class XSQLOPQuery
             i_XSQL.fireBeforeRule(i_Obj);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            return XSQLOPQuery.getSQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
+            return XSQLOPQuery.querySQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
         catch (NullPointerException exce)
         {
@@ -2680,7 +2680,7 @@ public class XSQLOPQuery
      * @return
      * @throws Exception
      */
-    public static long getSQLCount(final XSQL i_XSQL)
+    public static long querySQLCount(final XSQL i_XSQL)
     {
         i_XSQL.checkContent();
         
@@ -2692,7 +2692,7 @@ public class XSQLOPQuery
         {
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
-            return XSQLOPQuery.getSQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
+            return XSQLOPQuery.querySQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
         catch (NullPointerException exce)
         {
@@ -2732,7 +2732,7 @@ public class XSQLOPQuery
      * @return
      * @throws Exception
      */
-    public static long getSQLCount(final XSQL i_XSQL ,final String i_SQL)
+    public static long querySQLCount(final XSQL i_XSQL ,final String i_SQL)
     {
         i_XSQL.checkContent();
         
@@ -2744,7 +2744,7 @@ public class XSQLOPQuery
         {
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
-            return XSQLOPQuery.getSQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
+            return XSQLOPQuery.querySQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
         catch (NullPointerException exce)
         {
@@ -2784,7 +2784,7 @@ public class XSQLOPQuery
      * @return
      * @throws Exception
      */
-    private static long getSQLCount_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG)
+    private static long querySQLCount_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG)
     {
         Connection v_Conn      = null;
         Statement  v_Statement = null;
@@ -2797,7 +2797,7 @@ public class XSQLOPQuery
         {
             if ( !i_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + i_DSG.getXJavaID() + "] is not valid.");
             }
             
             if ( Help.isNull(i_SQL) )

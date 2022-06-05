@@ -157,7 +157,7 @@ public class AnalyseFS extends Analyse
                         
                         if ( v_ResponseData.getResult() == 0 )
                         {
-                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof Map )
+                            if ( v_ResponseData.getData() instanceof Map )
                             {
                                 Map<String ,FileReport> v_TempTotal = (Map<String ,FileReport>)v_ResponseData.getData();
                                 

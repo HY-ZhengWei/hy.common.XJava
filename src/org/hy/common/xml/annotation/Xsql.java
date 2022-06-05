@@ -153,6 +153,8 @@ public @interface Xsql
     /**
      * 针对DDL、DML等各类操作，当为真时，将按 execute() 方法执行。
      * 
+     * 并支持以 XSQL.$Executes_Split 分割的多段SQL的顺次执行
+     * 
      * @author      ZhengWei(HY)
      * @createDate  2018-08-08
      * @version     v1.0

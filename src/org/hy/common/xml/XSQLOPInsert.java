@@ -277,7 +277,7 @@ public class XSQLOPInsert
         {
             if ( !i_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + i_DSG.getXJavaID() + "] is not valid.");
             }
             
             if ( Help.isNull(i_SQL) )
@@ -755,7 +755,7 @@ public class XSQLOPInsert
             v_DSG = i_XSQL.getDataSourceGroup();
             if ( !v_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + v_DSG.getXJavaID() + "] is not valid.");
             }
             
             if ( Help.isNull(i_ObjList) )
@@ -1046,7 +1046,7 @@ public class XSQLOPInsert
             v_DSG = i_XSQL.getDataSourceGroup();
             if ( !v_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + v_DSG.getXJavaID() + "] is not valid..");
             }
             
             if ( Help.isNull(i_ObjList) )

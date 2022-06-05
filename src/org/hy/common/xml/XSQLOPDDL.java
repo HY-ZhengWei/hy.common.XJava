@@ -248,7 +248,7 @@ public class XSQLOPDDL
         {
             if ( !i_DSG.isValid() )
             {
-                throw new RuntimeException("DataSourceGroup is not valid.");
+                throw new RuntimeException("DataSourceGroup[" + i_DSG.getXJavaID() + "] is not valid.");
             }
             
             if ( Help.isNull(v_SQL) )

@@ -825,7 +825,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( v_IsQueryCount )
             {
-                long v_Count = i_XSQL.getSQLCount();
+                long v_Count = i_XSQL.querySQLCount();
                 return v_IsLong ? v_Count : Integer.parseInt("" + v_Count);
             }
             else
@@ -837,7 +837,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             if ( v_IsQueryCount )
             {
-                long v_Count = i_XSQL.getSQLCount(v_Params);
+                long v_Count = i_XSQL.querySQLCount(v_Params);
                 return v_IsLong ? v_Count : Integer.parseInt("" + v_Count);
             }
             else

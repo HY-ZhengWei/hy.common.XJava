@@ -717,7 +717,7 @@ public class AnalyseBase extends Analyse
                         
                         if ( v_ResponseData.getResult() == 0 )
                         {
-                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseDBTotal )
+                            if ( v_ResponseData.getData() instanceof AnalyseDBTotal )
                             {
                                 AnalyseDBTotal v_TempTotal = (AnalyseDBTotal)v_ResponseData.getData();
                                 
@@ -976,7 +976,7 @@ public class AnalyseBase extends Analyse
                         
                         if ( v_ResponseData.getResult() == 0 )
                         {
-                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseDBTotal )
+                            if ( v_ResponseData.getData() instanceof AnalyseDBTotal )
                             {
                                 AnalyseDBTotal v_TempTotal = (AnalyseDBTotal)v_ResponseData.getData();
                                 
@@ -1432,7 +1432,7 @@ public class AnalyseBase extends Analyse
                             
                             if ( v_ResponseData.getResult() == 0 )
                             {
-                                if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof List )
+                                if ( v_ResponseData.getData() instanceof List )
                                 {
                                     List<XSQLLog> v_XSQLLogs = (List<XSQLLog>)v_ResponseData.getData();
                                     
@@ -2371,7 +2371,7 @@ public class AnalyseBase extends Analyse
                     v_Ret.append(v_ResponseData.getEndTime().getFullMilli()).append("：").append(v_Item.getKey().getHost()).append(" execute ");
                     if ( v_ResponseData.getResult() == 0 )
                     {
-                        if ( v_ResponseData.getData() == null || !(v_ResponseData.getData() instanceof Return) )
+                        if ( !(v_ResponseData.getData() instanceof Return) )
                         {
                             v_Ret.append("is Error.");
                         }
@@ -2759,7 +2759,7 @@ public class AnalyseBase extends Analyse
                     
                     if ( v_ResponseData.getResult() == 0 )
                     {
-                        if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof ClusterReport )
+                        if ( v_ResponseData.getData() instanceof ClusterReport )
                         {
                             v_ClusterReport = (ClusterReport)v_ResponseData.getData();
                             v_ClusterReport.setServerStatus("正常");
@@ -3007,7 +3007,7 @@ public class AnalyseBase extends Analyse
                         
                         if ( v_ResponseData.getResult() == 0 )
                         {
-                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseThreadPoolTotal )
+                            if ( v_ResponseData.getData() instanceof AnalyseThreadPoolTotal )
                             {
                                 AnalyseThreadPoolTotal v_TempTotal = (AnalyseThreadPoolTotal)v_ResponseData.getData();
                                 
@@ -3163,7 +3163,7 @@ public class AnalyseBase extends Analyse
                         
                         if ( v_ResponseData.getResult() == 0 )
                         {
-                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseJobTotal )
+                            if ( v_ResponseData.getData() instanceof AnalyseJobTotal )
                             {
                                 AnalyseJobTotal v_TempTotal = (AnalyseJobTotal)v_ResponseData.getData();
                                 
@@ -3406,7 +3406,7 @@ public class AnalyseBase extends Analyse
                         
                         if ( v_ResponseData.getResult() == 0 )
                         {
-                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseDSGTotal )
+                            if ( v_ResponseData.getData() instanceof AnalyseDSGTotal )
                             {
                                 AnalyseDSGTotal v_TempTotal = (AnalyseDSGTotal)v_ResponseData.getData();
                                 
@@ -3999,7 +3999,7 @@ public class AnalyseBase extends Analyse
                         
                         if ( v_ResponseData.getResult() == 0 )
                         {
-                            if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof AnalyseLoggerTotal )
+                            if ( v_ResponseData.getData() instanceof AnalyseLoggerTotal )
                             {
                                 AnalyseLoggerTotal v_TempTotal = (AnalyseLoggerTotal)v_ResponseData.getData();
                                 
@@ -4339,7 +4339,7 @@ public class AnalyseBase extends Analyse
                             
                             if ( v_ResponseData.getResult() == 0 )
                             {
-                                if ( v_ResponseData.getData() != null && v_ResponseData.getData() instanceof List )
+                                if ( v_ResponseData.getData() instanceof List )
                                 {
                                     List<LogException> v_ELogs = (List<LogException>)v_ResponseData.getData();
                                     

@@ -1747,9 +1747,78 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * @return
      * @throws Exception
      */
+    public long querySQLCount(Map<String ,?> i_Values)
+    {
+        return XSQLOPQuery.querySQLCount(this ,i_Values);
+    }
+    
+    
+    
+    /**
+     * 统计记录数据：占位符SQL的查询。
+     * 
+     * 模块SQL的形式如：SELECT COUNT(1) FROM ...
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @return
+     * @throws Exception
+     */
+    public long querySQLCount(Object i_Obj)
+    {
+        return XSQLOPQuery.querySQLCount(this ,i_Obj);
+    }
+    
+    
+    
+    /**
+     * 查询记录总数
+     * 
+     * 模块SQL的形式如：SELECT COUNT(1) FROM ...
+     * 
+     * @return
+     * @throws Exception
+     */
+    public long querySQLCount()
+    {
+        return XSQLOPQuery.querySQLCount(this);
+    }
+    
+    
+    
+    /**
+     * 查询记录总数
+     * 
+     * 模块SQL的形式如：SELECT COUNT(1) FROM ...
+     * 
+     * @param i_SQL
+     * @return
+     * @throws Exception
+     */
+    public long querySQLCount(String i_SQL)
+    {
+        return XSQLOPQuery.querySQLCount(this ,i_SQL);
+    }
+    
+    
+    
+    /**
+     * 统计记录数据：占位符SQL的查询。
+     * 
+     * 模块SQL的形式如：SELECT COUNT(1) FROM ...
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @return
+     * @throws Exception
+     */
     public long getSQLCount(Map<String ,?> i_Values)
     {
-        return XSQLOPQuery.getSQLCount(this ,i_Values);
+        return XSQLOPQuery.querySQLCount(this ,i_Values);
     }
     
     
@@ -1768,22 +1837,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     public long getSQLCount(Object i_Obj)
     {
-        return XSQLOPQuery.getSQLCount(this ,i_Obj);
-    }
-    
-    
-    
-    /**
-     * 查询记录总数
-     * 
-     * 模块SQL的形式如：SELECT COUNT(1) FROM ...
-     * 
-     * @return
-     * @throws Exception
-     */
-    public long getSQLCount()
-    {
-        return XSQLOPQuery.getSQLCount(this);
+        return XSQLOPQuery.querySQLCount(this ,i_Obj);
     }
     
     
@@ -1799,7 +1853,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     public long getSQLCount(String i_SQL)
     {
-        return XSQLOPQuery.getSQLCount(this ,i_SQL);
+        return XSQLOPQuery.querySQLCount(this ,i_SQL);
     }
     
     

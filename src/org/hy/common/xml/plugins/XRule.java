@@ -31,11 +31,11 @@ import org.kie.internal.io.ResourceFactory;
  *    方法1：以规则文件的方式注入并生成规则引擎    （本地文件）
  *    方法2：以规则文本的方式注入并生成规则引擎    （文本信息）
  *    方法3：以规则远端请求的方式注入并生成规则引擎（远端请求）
- *    
- *    
+ * 
+ * 
  * 当三种方法均注入规则时，解释的优先级为：
  *     本地文件 > 文本信息 > 远端请求
- *     
+ * 
  *     即，文本优先，远端请求最后解释
  *
  * @author      ZhengWei(HY)
@@ -300,6 +300,11 @@ public class XRule extends SerializableDef implements XJavaID
      */
     public String getPackage()
     {
+        if ( Help.isNull(this.ruleInfo) )
+        {
+            return null;
+        }
+        
         Pattern v_Pattern = Pattern.compile($REGEX_Package);
         Matcher v_Matcher = v_Pattern.matcher(this.ruleInfo);
         
@@ -324,9 +329,14 @@ public class XRule extends SerializableDef implements XJavaID
      */
     public List<String> getImports()
     {
+        if ( Help.isNull(this.ruleInfo) )
+        {
+            return null;
+        }
+        
+        List<String> v_Imports = new ArrayList<String>();
         Pattern      v_Pattern = Pattern.compile($REGEX_Import);
         Matcher      v_Matcher = v_Pattern.matcher(this.ruleInfo);
-        List<String> v_Imports = new ArrayList<String>();
         
         while ( v_Matcher.find() )
         {
@@ -351,7 +361,7 @@ public class XRule extends SerializableDef implements XJavaID
     /**
      * 设置：规则引擎的文本信息
      * 
-     * @param i_RuleInfo 
+     * @param i_RuleInfo
      */
     public void setValue(String i_RuleInfo)
     {
@@ -379,7 +389,7 @@ public class XRule extends SerializableDef implements XJavaID
     /**
      * 设置：规则引擎的文件路径
      * 
-     * @param i_RuleFile 
+     * @param i_RuleFile
      */
     public void setFile(String i_RuleFile)
     {
@@ -407,7 +417,7 @@ public class XRule extends SerializableDef implements XJavaID
     /**
      * 设置：通过Http请求获取规则引擎的远程文本信息
      * 
-     * @param i_RuleRemote 
+     * @param i_RuleRemote
      */
     public void setRuleRemote(XHttp i_RuleRemote)
     {
@@ -437,6 +447,7 @@ public class XRule extends SerializableDef implements XJavaID
      * 
      * @param i_XJavaID
      */
+    @Override
     public void setXJavaID(String i_XJavaID)
     {
         this.xjavaID = i_XJavaID;
@@ -449,6 +460,7 @@ public class XRule extends SerializableDef implements XJavaID
      * 
      * @return
      */
+    @Override
     public String getXJavaID()
     {
         return this.xjavaID;
@@ -459,6 +471,7 @@ public class XRule extends SerializableDef implements XJavaID
     /**
      * 获取：注释。可用于日志的输出等帮助性的信息
      */
+    @Override
     public String getComment()
     {
         return comment;
@@ -469,8 +482,9 @@ public class XRule extends SerializableDef implements XJavaID
     /**
      * 设置：注释。可用于日志的输出等帮助性的信息
      * 
-     * @param comment 
+     * @param comment
      */
+    @Override
     public void setComment(String comment)
     {
         this.comment = comment;
@@ -491,7 +505,7 @@ public class XRule extends SerializableDef implements XJavaID
     /**
      * 设置：是否为“懒汉模式”，即只在需要时才加载。默认为：false（预先加载模式）
      * 
-     * @param isLazyMode 
+     * @param isLazyMode
      */
     public void setLazyMode(boolean isLazyMode)
     {

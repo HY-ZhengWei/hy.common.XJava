@@ -1468,6 +1468,11 @@ public class XJSONToJson
                         // 防止死循环：方法返回值的类型就是类自己
                         continue;
                     }
+                    if ( v_Method.getReturnType() == java.sql.Connection.class || v_Method.getReturnType() == org.hy.common.db.Connection.class )
+                    {
+                        // 不解释数据库连接
+                        continue;
+                    }
                     
                     String v_Name  = null;
                     Object v_Value = null;
