@@ -1014,7 +1014,14 @@ public final class XJSON
         
         if ( v_Object == null )
         {
-            throw new NullPointerException("JSON Parser Object is null.");
+            try
+            {
+                return i_Class.newInstance();
+            }
+            catch (Exception exce)
+            {
+                throw new NullPointerException("JSON Parser Object is null.");
+            }
         }
         else if ( v_Object.getClass() == JSONArray.class )
         {
