@@ -11,11 +11,12 @@ import org.hy.common.xml.SerializableDef;
 
 /**
  * 1. 数据库访问量的概要统计数据
- * 2. 数据库组合SQL访问量的概要统计数据 
+ * 2. 数据库组合SQL访问量的概要统计数据
  *
  * @author      ZhengWei(HY)
  * @createDate  2017-01-22
  * @version     v1.0
+ *              v2.0  2022-06-09  添加：最大总时长 和 清理缓存的方法
  */
 public class AnalyseDBTotal extends SerializableDef
 {
@@ -48,6 +49,9 @@ public class AnalyseDBTotal extends SerializableDef
     /** 总时长。K:为XSQL的ID */
     private Sum<String>     totalTimeLen;
     
+    /** 最大总时长。K:为XSQL的ID */
+    private Max<String>     totalTimeLenMax;
+    
     
     
     public AnalyseDBTotal()
@@ -60,6 +64,22 @@ public class AnalyseDBTotal extends SerializableDef
         this.triggerSucCount = new Counter<String>();
         this.maxExecTime     = new Max<String>();
         this.totalTimeLen    = new Sum<String>();
+        this.totalTimeLenMax = new Max<String>();
+    }
+    
+    
+    
+    public void clear()
+    {
+        this.requestCount   .clear();
+        this.successCount   .clear();
+        this.ioRowCount     .clear();
+        this.triggerCount   .clear();
+        this.triggerReqCount.clear();
+        this.triggerSucCount.clear();
+        this.maxExecTime    .clear();
+        this.totalTimeLen   .clear();
+        this.totalTimeLenMax.clear();
     }
     
     
@@ -77,7 +97,7 @@ public class AnalyseDBTotal extends SerializableDef
     /**
      * 设置：请求量。K:为XSQL的ID
      * 
-     * @param requestCount 
+     * @param requestCount
      */
     public void setRequestCount(Counter<String> requestCount)
     {
@@ -99,7 +119,7 @@ public class AnalyseDBTotal extends SerializableDef
     /**
      * 设置：成功量。K:为XSQL的ID
      * 
-     * @param successCount 
+     * @param successCount
      */
     public void setSuccessCount(Counter<String> successCount)
     {
@@ -121,7 +141,7 @@ public class AnalyseDBTotal extends SerializableDef
     /**
      * 设置：读写行数。K:为XSQL的ID
      * 
-     * @param ioRowCount 
+     * @param ioRowCount
      */
     public void setIoRowCount(Counter<String> ioRowCount)
     {
@@ -143,7 +163,7 @@ public class AnalyseDBTotal extends SerializableDef
     /**
      * 设置：XSQL应用级触发器的个数。K:为XSQL的ID
      * 
-     * @param triggerCount 
+     * @param triggerCount
      */
     public void setTriggerCount(Counter<String> triggerCount)
     {
@@ -165,7 +185,7 @@ public class AnalyseDBTotal extends SerializableDef
     /**
      * 设置：触发器的请求量。K:为XSQL的ID
      * 
-     * @param triggerReqCount 
+     * @param triggerReqCount
      */
     public void setTriggerReqCount(Counter<String> triggerReqCount)
     {
@@ -187,7 +207,7 @@ public class AnalyseDBTotal extends SerializableDef
     /**
      * 设置：触发器的成功量。K:为XSQL的ID
      * 
-     * @param triggerSucCount 
+     * @param triggerSucCount
      */
     public void setTriggerSucCount(Counter<String> triggerSucCount)
     {
@@ -209,7 +229,7 @@ public class AnalyseDBTotal extends SerializableDef
     /**
      * 设置：最后一次的操作时间。K:为XSQL的ID
      * 
-     * @param maxExecTime 
+     * @param maxExecTime
      */
     public void setMaxExecTime(Max<String> maxExecTime)
     {
@@ -231,11 +251,33 @@ public class AnalyseDBTotal extends SerializableDef
     /**
      * 设置：总时长。K:为XSQL的ID
      * 
-     * @param totalTimeLen 
+     * @param totalTimeLen
      */
     public void setTotalTimeLen(Sum<String> totalTimeLen)
     {
         this.totalTimeLen = totalTimeLen;
     }
 
+
+
+    /**
+     * 获取：最大总时长。K:为XSQL的ID
+     */
+    public Max<String> getTotalTimeLenMax()
+    {
+        return totalTimeLenMax;
+    }
+
+
+
+    /**
+     * 设置：最大总时长。K:为XSQL的ID
+     * 
+     * @param totalTimeLen
+     */
+    public void setTotalTimeLenMax(Max<String> totalTimeLenMax)
+    {
+        this.totalTimeLenMax = totalTimeLenMax;
+    }
+    
 }

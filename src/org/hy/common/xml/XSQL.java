@@ -127,6 +127,7 @@ import org.hy.common.xml.plugins.XRule;
  *                                优化：call         (...)系列方法，代理化，具体实现转移到 XSQLOPProcedure 类中，减少 XSQL 的代码量
  *                                优化：query        (...)系列方法，代理化，具体实现转移到 XSQLOPQuery     类中，减少 XSQL 的代码量
  *                                添加：isGetID()参数影响executeUpdate(...)系统方法返回值的含义
+ *              v21.1 2022-06-09  添加：最大用时的统计
  */
 /*
  * 游标类型的说明
@@ -302,6 +303,11 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     private double                         successTimeLen;
     
+    /**
+     * 请求成功，并成功返回的最大用时时长。
+     */
+    private double                         successTimeLenMax;
+    
     /** 读写行数。查询结果的行数或写入数据库的记录数 */
     private long                           ioRowCount;
     
@@ -374,6 +380,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         this.requestCount       = 0L;
         this.successCount       = 0L;
         this.successTimeLen     = 0D;
+        this.successTimeLenMax  = 0D;
         this.ioRowCount         = 0L;
         this.executeTime        = null;
         this.comment            = null;
@@ -395,11 +402,12 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     public void reset()
     {
-        this.requestCount   = 0L;
-        this.successCount   = 0L;
-        this.successTimeLen = 0D;
-        this.ioRowCount     = 0L;
-        this.executeTime    = null;
+        this.requestCount      = 0L;
+        this.successCount      = 0L;
+        this.successTimeLen    = 0D;
+        this.successTimeLenMax = 0D;
+        this.ioRowCount        = 0L;
+        this.executeTime       = null;
         
         if ( this.isTriggers() )
         {
@@ -423,11 +431,12 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     protected synchronized void success(Date i_ExecuteTime ,double i_TimeLen ,int i_SumCount ,long i_IORowCount)
     {
-        this.requestCount   += i_SumCount - 1;
-        this.successCount   += i_SumCount;
-        this.successTimeLen += i_TimeLen;
-        this.executeTime     = i_ExecuteTime;
-        this.ioRowCount     += i_IORowCount;
+        this.requestCount     += i_SumCount - 1;
+        this.successCount     += i_SumCount;
+        this.successTimeLen   += i_TimeLen;
+        this.successTimeLenMax = Math.max(this.successTimeLenMax ,i_TimeLen);
+        this.executeTime       = i_ExecuteTime;
+        this.ioRowCount       += i_IORowCount;
     }
     
     
@@ -459,6 +468,16 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     public double getSuccessTimeLen()
     {
         return successTimeLen;
+    }
+    
+    
+    
+    /**
+     * 获取：请求成功，并成功返回的最大用时时长。
+     */
+    public double getSuccessTimeLenMax()
+    {
+        return successTimeLenMax;
     }
 
 

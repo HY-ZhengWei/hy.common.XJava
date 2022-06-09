@@ -165,6 +165,7 @@ import org.hy.common.xml.log.Logger;
  *              v27.0 2021-01-13  1.修正：组级停止状态。用于组内某一任务发起“停止”后，任务池中的其它任务及马上将要执行的任务均能不抛异常的停止。
  *              v28.0 2021-02-23  1.添加：集中清理计算过程中产生的缓存。而不是边计算边清理缓存，这样会在多线程的计算中造成正在使用的数据被清理掉的问题。
  *              v29.0 2021-03-24  1.添加：配合多线程任务组的改造，添加：准备添加的任务数量。解决：任务组误判任务组整体完成的问题。
+ *              v30.0 2022-06-09  1.添加：最大用时统计
  */
 public final class XSQLGroup implements XJavaID
 {
@@ -278,6 +279,9 @@ public final class XSQLGroup implements XJavaID
     /** 请求成功，并成功返回的累计用时时长 */
     private double                   successTimeLen;
     
+    /** 请求成功，并成功返回的最大用时时长 */
+    private double                   successTimeLenMax;
+    
     /**
      * 最后执行时间点。
      *   1. 在开始执行时，此时间点会记录一次。
@@ -306,6 +310,7 @@ public final class XSQLGroup implements XJavaID
         this.requestCount       = 0L;
         this.successCount       = 0L;
         this.successTimeLen     = 0D;
+        this.successTimeLenMax  = 0D;
         this.executeTime        = null;
         this.comment            = null;
     }
@@ -322,10 +327,11 @@ public final class XSQLGroup implements XJavaID
      */
     public void reset()
     {
-        this.requestCount   = 0L;
-        this.successCount   = 0L;
-        this.successTimeLen = 0D;
-        this.executeTime    = null;
+        this.requestCount      = 0L;
+        this.successCount      = 0L;
+        this.successTimeLen    = 0D;
+        this.successTimeLenMax = 0D;
+        this.executeTime       = null;
     }
     
     
@@ -343,6 +349,7 @@ public final class XSQLGroup implements XJavaID
     {
         ++this.successCount;
         this.successTimeLen += i_TimeLen;
+        this.successTimeLenMax = Math.max(this.successTimeLenMax ,i_TimeLen);
         this.executeTime = new Date();
         
         // 不能在此对ioRowCount累加，因为当XSQL组嵌套时，可能会多次重复累加
@@ -377,6 +384,16 @@ public final class XSQLGroup implements XJavaID
     public double getSuccessTimeLen()
     {
         return successTimeLen;
+    }
+    
+    
+    
+    /**
+     * 请求成功，并成功返回的累计用时时长
+     */
+    public double getSuccessTimeLenMax()
+    {
+        return successTimeLenMax;
     }
     
     
@@ -1060,14 +1077,14 @@ public final class XSQLGroup implements XJavaID
         
         XSQLNode v_Node = this.xsqlNodes.get(v_NodeIndex);
         
-        debug(v_Node);
-        
         // 在整个组合XSQLGroup的最后执行，并只执行一次。不在查询类型XSQL节点的循环之中执行
         if ( v_Node.isLastOnce() )
         {
             // 不检查，继续向后击鼓传花
             return this.executeGroup(v_NodeIndex ,io_Params ,v_Ret ,io_DSGConns);
         }
+        
+        debug(v_Node);
         
         // 检查条件是否通过
         if ( !v_Node.isPass(io_Params) )

@@ -17,16 +17,16 @@ html,body {
 }
 
 .userInfoModify_logininfo { 
-    width: 1410px;
+    width: 1550px;
     margin:0 auto;
     position: fixed;
     top: 0px;
 }
 
-.userInfoModify_logininfo1{ width:1410px;margin:0 auto; }
-.userInfoModify_labeTag,.userInfoModify_inputTag,.userInfoModify_HaveTrigger_Title,.userInfoModify_RequestCount_Title,.userInfoModify_SuccessCount_Title,.userInfoModify_FailCount_Title,.userInfoModify_ExecuteTime_Title,.userInfoModify_IORowCount_Title,.userInfoModify_SumTime_Title,.userInfoModify_AvgTime_Title{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px; background-color:#D5DDF6;}
-.userInfoModify_labeTag1,.userInfoModify_HaveTrigger,.userInfoModify_SuccessCount,.userInfoModify_FailCount,.userInfoModify_ExecuteTime,.userInfoModify_RequestCount,.userInfoModify_IORowCount,.userInfoModify_SumTime,.userInfoModify_AvgTime{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
-.userInfoModify_labeTag2,.userInfoModify_HaveTrigger_Other,.userInfoModify_RequestCount_Other,.userInfoModify_SuccessCount_Other,.userInfoModify_FailCount_Other,.userInfoModify_ExecuteTime_Other,.userInfoModify_IORowCount_Other,.userInfoModify_SumTime_Other,.userInfoModify_AvgTime_Other{float:left; height:30px; line-height:30px;font-family:"微软雅黑"; font-size:12px;}
+.userInfoModify_logininfo1{ width:1550px;margin:0 auto; }
+.userInfoModify_labeTag,.userInfoModify_inputTag,.userInfoModify_HaveTrigger_Title,.userInfoModify_RequestCount_Title,.userInfoModify_SuccessCount_Title,.userInfoModify_FailCount_Title,.userInfoModify_ExecuteTime_Title,.userInfoModify_IORowCount_Title,.userInfoModify_SumTime_Title,.userInfoModify_MaxTime_Title,.userInfoModify_AvgTime_Title{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px; background-color:#D5DDF6;}
+.userInfoModify_labeTag1,.userInfoModify_HaveTrigger,.userInfoModify_SuccessCount,.userInfoModify_FailCount,.userInfoModify_ExecuteTime,.userInfoModify_RequestCount,.userInfoModify_IORowCount,.userInfoModify_SumTime,.userInfoModify_MaxTime,.userInfoModify_AvgTime{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
+.userInfoModify_labeTag2,.userInfoModify_HaveTrigger_Other,.userInfoModify_RequestCount_Other,.userInfoModify_SuccessCount_Other,.userInfoModify_FailCount_Other,.userInfoModify_ExecuteTime_Other,.userInfoModify_IORowCount_Other,.userInfoModify_SumTime_Other,.userInfoModify_MaxTime_Other,.userInfoModify_AvgTime_Other{float:left; height:30px; line-height:30px;font-family:"微软雅黑"; font-size:12px;}
 
 .userInfoModify_inputTag1,.userInfoModify_inputTag2 {
     float:left; 
@@ -47,7 +47,8 @@ html,body {
 .userInfoModify_ExecuteTime_Title  { width:140px; text-align:center;border:#97B0F8 solid 1px;} 
 .userInfoModify_IORowCount_Title   { width:100px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
 .userInfoModify_SumTime_Title      { width:120px; text-align:center;border:#97B0F8 solid 1px;} 
-.userInfoModify_AvgTime_Title      { width:120px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
+.userInfoModify_MaxTime_Title      { width:120px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_AvgTime_Title      { width:120px; text-align:center;border:#97B0F8 solid 1px;} 
 
 
 .userInfoModify_labeTag1     { width:40px;  text-align:center;border:#97B0F8 solid 1px;} 
@@ -59,7 +60,8 @@ html,body {
 .userInfoModify_ExecuteTime  { width:140px; text-align:center;border:#97B0F8 solid 1px;} 
 .userInfoModify_IORowCount   { width:100px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
 .userInfoModify_SumTime      { width:120px; text-align:center;border:#97B0F8 solid 1px;} 
-.userInfoModify_AvgTime      { width:120px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
+.userInfoModify_MaxTime      { width:120px; text-align:center;border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_AvgTime      { width:120px; text-align:center;border:#97B0F8 solid 1px;} 
 
 
 .userInfoModify_labeTag2           { width:40px;  text-align:center;} 
@@ -71,6 +73,7 @@ html,body {
 .userInfoModify_ExecuteTime_Other  { width:140px; text-align:center;} 
 .userInfoModify_IORowCount_Other   { width:100px; text-align:center;} 
 .userInfoModify_SumTime_Other      { width:120px; text-align:center;} 
+.userInfoModify_MaxTime_Other      { width:120px; text-align:center;} 
 .userInfoModify_AvgTime_Other      { width:90px;  text-align:center;} 
 
 
@@ -82,6 +85,7 @@ html,body {
 .cont_show_ExecuteTime  { width:135px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_IORowCount   { width:95px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; }
 .cont_show_SumTime      { width:115px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; }
+.cont_show_MaxTime      { width:115px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_AvgTime      { width:115px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 a{ color:red; text-decoration:none; outline:none;}
 a:hover{color:red;text-decoration:none;}
@@ -161,7 +165,8 @@ a:hover{color:red;text-decoration:none;}
                <div class="userInfoModify_ExecuteTime_Title"> <a id="Title_ExecuteTime"  href="#" style='color:#AA66CC'>操作时间</a></div>
                <div class="userInfoModify_IORowCount_Title">  <a id="Title_IORowCount"   href="#" style='color:#AA66CC'>读写行数</a></div>
                <div class="userInfoModify_SumTime_Title">     <a id="Title_SumTime"      href="#" style='color:#AA66CC'>总时长</a></div>
-               <div class="userInfoModify_AvgTime_Title">     <a id="Title_AvgTime"      href="#" style='color:#AA66CC'>平均用时(毫秒)</a>
+               <div class="userInfoModify_MaxTime_Title">     <a id="Title_MaxTime"      href="#" style='color:#AA66CC'>最大用时</a></div>
+               <div class="userInfoModify_AvgTime_Title">     <a id="Title_AvgTime"      href="#" style='color:#AA66CC'>平均用时(毫秒)</a></div>
            </div>
        </div> 
     </div> 
@@ -337,6 +342,14 @@ $("#Title_HaveTrigger").click(function()
 
 
 
+$("#Title_MaxTime").click(function()
+{
+    $("#S").val("9");
+    f_Goto();
+});
+
+
+
 if ( $("#S").val() == "1" )
 {
     $("#Title_RequestCount").html("↓" + $("#Title_RequestCount").html());
@@ -369,6 +382,10 @@ else if ( $("#S").val() == "8" )
 {
     $("#Title_HaveTrigger").html("↓" + $("#Title_HaveTrigger").html());
 }
+else if ( $("#S").val() == "9" )
+{
+    $("#Title_MaxTime").html("↓" + $("#Title_MaxTime").html());
+}
 else
 {
     $("#Title_NameTitle").html("↓" + $("#Title_NameTitle").html());
@@ -388,6 +405,7 @@ else
            <div class="userInfoModify_ExecuteTime_Other"></div>
            <div class="userInfoModify_IORowCount_Other"></div>
            <div class="userInfoModify_SumTime_Other"></div>
+           <div class="userInfoModify_MaxTime_Other"></div>
            <div class="userInfoModify_AvgTime_Other"></div>
        </div> 
    
@@ -403,6 +421,7 @@ else
            <div class="userInfoModify_ExecuteTime_Other"></div>
            <div class="userInfoModify_IORowCount_Other"></div> 
            <div class="userInfoModify_SumTime_Other"></div> 
+           <div class="userInfoModify_MaxTime_Other"></div> 
            <div class="userInfoModify_AvgTime_Other"></div>
        </div> 
    </div>

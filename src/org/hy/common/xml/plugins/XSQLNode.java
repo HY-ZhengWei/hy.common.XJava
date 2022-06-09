@@ -280,6 +280,22 @@ public class XSQLNode implements XJavaID
     private boolean                      returnQuery;
     
     /**
+     * 返回查询结果集中是否填充查询参数。
+     * 
+     * 如，查询参数有 A、B、C 三个字段，查询结果仅有一个字段 D，
+     *     当 returnParam = false 时，什么都不做，仅只返回字段 D
+     *     当 returnParam = true  时，分三种情况
+     *         1> 查询结果类型为 Map  时，查询条件逐一put到Map中，条件名称put到Map.key，条件值put到Map.value;
+     *         2> 查询结果类型为 Set  时，查询条件的值逐一add到Set中;
+     *         3> 查询结果类型为 List 时，查询条件的值逐一add到List中;
+     * 
+     * 默认为：false（查询结果不填充查询参数）
+     * 
+     * ZhengWei(HY) Add 2022-05-18
+     */
+    private boolean                      returnParam;
+    
+    /**
      * 查询结果当作其后节点的SQL入参的同时，还返回查询结果
      * 
      * 专用于查询类型的XSQL节点。

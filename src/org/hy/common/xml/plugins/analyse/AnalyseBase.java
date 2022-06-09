@@ -118,6 +118,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *                                修正：执行Java方法时，防止Json格式的字符无法正常显示的问题
  *              v23.0 2021-12-13  优化：使用新版本net 3.0.0。
  *              v23.1 2022-01-05  添加：通讯连接分析
+ *              v24.1 2022-06-09  添加：XSQL & XSQLGroup 最大用时的统计
  * 
  */
 @Xjava
@@ -666,18 +667,19 @@ public class AnalyseBase extends Analyse
     {
         $Logger.debug("XSQL组概要统计");
         
-        StringBuilder       v_Buffer       = new StringBuilder();
-        int                 v_Index        = 0;
-        String              v_Content      = this.getTemplateShowXSQLGroupContent();
-        long                v_RequestCount = 0;
-        long                v_SuccessCount = 0;
-        long                v_FailCount    = 0;
-        long                v_IORowCount   = 0;
-        double              v_TotalTimeLen = 0;
-        double              v_AvgTimeLen   = 0;
-        Date                v_MaxExecTime  = null;
-        long                v_NowTime      = 0L;
-        AnalyseDBTotal      v_Total        = null;
+        StringBuilder       v_Buffer          = new StringBuilder();
+        int                 v_Index           = 0;
+        String              v_Content         = this.getTemplateShowXSQLGroupContent();
+        long                v_RequestCount    = 0L;
+        long                v_SuccessCount    = 0L;
+        long                v_FailCount       = 0L;
+        long                v_IORowCount      = 0L;
+        double              v_TotalTimeLen    = 0D;
+        double              v_TotalTimeLenMax = 0D;
+        double              v_AvgTimeLen      = 0;
+        Date                v_MaxExecTime     = null;
+        long                v_NowTime         = 0L;
+        AnalyseDBTotal      v_Total           = null;
         
         // 本机统计
         if ( !i_Cluster )
@@ -752,8 +754,9 @@ public class AnalyseBase extends Analyse
                 continue;
             }
             
-            v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
-            v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
+            v_SuccessCount    = v_Total.getSuccessCount()   .getSumValue(v_XSQLID);
+            v_TotalTimeLen    = v_Total.getTotalTimeLen()   .getSumValue(v_XSQLID);
+            v_TotalTimeLenMax = v_Total.getTotalTimeLenMax().getMaxValue(v_XSQLID);
             
             v_FailCounts.put(v_XSQLID ,v_RequestCount - v_SuccessCount);
             v_AvgTimes  .put(v_XSQLID ,Help.division(v_TotalTimeLen ,v_SuccessCount));
@@ -795,6 +798,11 @@ public class AnalyseBase extends Analyse
             // 按IO读写行数排序
             v_XSQLIDs = Help.toReverseByMap(v_Total.getIoRowCount()).keySet();
         }
+        else if ( "8".equalsIgnoreCase(i_SortType) )
+        {
+            // 按IO读写行数排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getTotalTimeLenMax()).keySet();
+        }
         else
         {
             v_XSQLIDs = Help.toSort(v_Total.getRequestCount()).keySet();
@@ -804,13 +812,14 @@ public class AnalyseBase extends Analyse
         v_NowTime = new Date().getMinutes(-2).getTime();
         for (String v_XSQLID : v_XSQLIDs)
         {
-            v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
-            v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
-            v_FailCount    = v_RequestCount - v_SuccessCount;
-            v_IORowCount   = v_Total.getIoRowCount()  .getSumValue(v_XSQLID);
-            v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
-            v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
-            v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue(v_XSQLID).longValue());
+            v_RequestCount    = v_Total.getRequestCount()   .getSumValue(v_XSQLID);
+            v_SuccessCount    = v_Total.getSuccessCount()   .getSumValue(v_XSQLID);
+            v_FailCount       = v_RequestCount - v_SuccessCount;
+            v_IORowCount      = v_Total.getIoRowCount()     .getSumValue(v_XSQLID);
+            v_TotalTimeLen    = v_Total.getTotalTimeLen()   .getSumValue(v_XSQLID);
+            v_TotalTimeLenMax = v_Total.getTotalTimeLenMax().getMaxValue(v_XSQLID);
+            v_AvgTimeLen      = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
+            v_MaxExecTime     = new Date(v_Total.getMaxExecTime().getMaxValue(v_XSQLID).longValue());
             
             v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
                                      .replaceAll(":Name"         ,"<a href='analyseObject?XSGFlow=Y&xid=" + v_XSQLID + "' class='Flow'>" + v_XSQLID + "</a>")
@@ -821,18 +830,20 @@ public class AnalyseBase extends Analyse
                                      .replaceAll(":ParamURL"     ,"#")
                                      .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : (v_MaxExecTime.getTime() >= v_NowTime ? v_MaxExecTime.getFull() : "<span style='color:gray;'>" + v_MaxExecTime.getFull() + "</span>"))
                                      .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
+                                     .replaceAll(":MaxTime"      ,Date.toTimeLen((long)v_TotalTimeLenMax))
                                      .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                            );
                 
         }
         
-        v_RequestCount = v_Total.getRequestCount().getSumValue();
-        v_SuccessCount = v_Total.getSuccessCount().getSumValue();
-        v_FailCount    = v_RequestCount - v_SuccessCount;
-        v_IORowCount   = v_Total.getIoRowCount()  .getSumValue();
-        v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue();
-        v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
-        v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue().longValue());
+        v_RequestCount    = v_Total.getRequestCount()   .getSumValue();
+        v_SuccessCount    = v_Total.getSuccessCount()   .getSumValue();
+        v_FailCount       = v_RequestCount - v_SuccessCount;
+        v_IORowCount      = v_Total.getIoRowCount()     .getSumValue();
+        v_TotalTimeLen    = v_Total.getTotalTimeLen()   .getSumValue();
+        v_TotalTimeLenMax = v_Total.getTotalTimeLenMax().getMaxValue();
+        v_AvgTimeLen      = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
+        v_MaxExecTime     = new Date(v_Total.getMaxExecTime().getMaxValue().longValue());
         
         v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
                                  .replaceAll(":Name"         ,"合计")
@@ -843,6 +854,7 @@ public class AnalyseBase extends Analyse
                                  .replaceAll(":ParamURL"     ,"#")
                                  .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : v_MaxExecTime.getFull())
                                  .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
+                                 .replaceAll(":MaxTime"      ,Date.toTimeLen((long)v_TotalTimeLenMax))
                                  .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                        );
         
@@ -876,6 +888,9 @@ public class AnalyseBase extends Analyse
             v_Goto += "<a href='../analyseObject?xid=AnalyseBase&call=analyseDBGroup_Reset' style='color:#AA66CC'>重置统计</a>";
         }
         
+        v_Total.clear();
+        v_Total = null;
+        
         v_FailCounts.clear();
         v_FailCounts = null;
         
@@ -904,6 +919,7 @@ public class AnalyseBase extends Analyse
      *              v2.0  2019-05-29  添加：显示XSQL拥有的应用级触发器的个数
      *                                删除：不再显示触发器的请求量、成功量、失败量。因为，触发器将独立成为一行统计数据来显示。
      *              v3.0  2020-06-21  添加：定时刷新页面的功能
+     *              v4.0  2022-06-09  添加：最大用时的统计
      *
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject/analyseDB
@@ -922,18 +938,19 @@ public class AnalyseBase extends Analyse
         int                 v_Index           = 0;
         String              v_Content         = this.getTemplateShowXSQLContent();
         String              v_OperateURL      = "";
-        long                v_RequestCount    = 0;
-        long                v_SuccessCount    = 0;
-        long                v_FailCount       = 0;
-        long                v_IORowCount      = 0;
-        long                v_TriggerCount    = 0;
+        long                v_RequestCount    = 0L;
+        long                v_SuccessCount    = 0L;
+        long                v_FailCount       = 0L;
+        long                v_IORowCount      = 0L;
+        long                v_TriggerCount    = 0L;
         /*
         long                v_TriggerReqCount = 0;
         long                v_TriggerSucCount = 0;
         long                v_TriggerFaiCount = 0;
         */
-        double              v_TotalTimeLen    = 0;
-        double              v_AvgTimeLen      = 0;
+        double              v_TotalTimeLen    = 0D;
+        double              v_TotalTimeLenMax = 0D;
+        double              v_AvgTimeLen      = 0D;
         Date                v_MaxExecTime     = null;
         long                v_NowTime         = 0L;
         AnalyseDBTotal      v_Total           = null;
@@ -985,6 +1002,7 @@ public class AnalyseBase extends Analyse
                                 v_Total.getIoRowCount()     .putAll(v_TempTotal.getIoRowCount());
                                 v_Total.getMaxExecTime()    .putAll(v_TempTotal.getMaxExecTime());
                                 v_Total.getTotalTimeLen()   .putAll(v_TempTotal.getTotalTimeLen());
+                                v_Total.getTotalTimeLenMax().putAll(v_TempTotal.getTotalTimeLenMax());
                                 v_Total.getTriggerCount()   .putAll(v_TempTotal.getTriggerCount());
                                 /*
                                 v_Total.getTriggerReqCount().putAll(v_TempTotal.getTriggerReqCount());
@@ -1012,6 +1030,7 @@ public class AnalyseBase extends Analyse
                 v_Total.getIoRowCount()     .remove(v_XSQLID);
                 v_Total.getMaxExecTime()    .remove(v_XSQLID);
                 v_Total.getTotalTimeLen()   .remove(v_XSQLID);
+                v_Total.getTotalTimeLenMax().remove(v_XSQLID);
                 v_Total.getTriggerCount()   .remove(v_XSQLID);
                 /*
                 v_Total.getTriggerReqCount().remove(v_XSQLID);
@@ -1021,8 +1040,9 @@ public class AnalyseBase extends Analyse
                 continue;
             }
             
-            v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
-            v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
+            v_SuccessCount    = v_Total.getSuccessCount()   .getSumValue(v_XSQLID);
+            v_TotalTimeLen    = v_Total.getTotalTimeLen()   .getSumValue(v_XSQLID);
+            v_TotalTimeLenMax = v_Total.getTotalTimeLenMax().getMaxValue(v_XSQLID);
             
             v_FailCounts.put(v_XSQLID ,v_RequestCount - v_SuccessCount);
             v_AvgTimes  .put(v_XSQLID ,Help.division(v_TotalTimeLen ,v_SuccessCount));
@@ -1069,6 +1089,11 @@ public class AnalyseBase extends Analyse
             // 按XSQL应用级触发器的个数排序
             v_XSQLIDs = Help.toReverseByMap(v_Total.getTriggerCount()).keySet();
         }
+        else if ( "9".equalsIgnoreCase(i_SortType) )
+        {
+            // 按最大总时长排序
+            v_XSQLIDs = Help.toReverseByMap(v_Total.getTotalTimeLenMax()).keySet();
+        }
         else
         {
             v_XSQLIDs = Help.toSort(v_Total.getRequestCount()).keySet();
@@ -1078,13 +1103,14 @@ public class AnalyseBase extends Analyse
         v_NowTime = new Date().getMinutes(-2).getTime();
         for (String v_XSQLID : v_XSQLIDs)
         {
-            v_RequestCount = v_Total.getRequestCount().getSumValue(v_XSQLID);
-            v_SuccessCount = v_Total.getSuccessCount().getSumValue(v_XSQLID);
-            v_FailCount    = v_RequestCount - v_SuccessCount;
-            v_IORowCount   = v_Total.getIoRowCount()  .getSumValue(v_XSQLID);
-            v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue(v_XSQLID);
-            v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
-            v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue(v_XSQLID).longValue());
+            v_RequestCount    = v_Total.getRequestCount()   .getSumValue(v_XSQLID);
+            v_SuccessCount    = v_Total.getSuccessCount()   .getSumValue(v_XSQLID);
+            v_FailCount       = v_RequestCount - v_SuccessCount;
+            v_IORowCount      = v_Total.getIoRowCount()     .getSumValue(v_XSQLID);
+            v_TotalTimeLen    = v_Total.getTotalTimeLen()   .getSumValue(v_XSQLID);
+            v_TotalTimeLenMax = v_Total.getTotalTimeLenMax().getMaxValue(v_XSQLID);
+            v_AvgTimeLen      = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
+            v_MaxExecTime     = new Date(v_Total.getMaxExecTime().getMaxValue(v_XSQLID).longValue());
             
             if ( v_RequestCount > v_SuccessCount )
             {
@@ -1131,18 +1157,20 @@ public class AnalyseBase extends Analyse
                                      .replaceAll(":ParamURL"     ,v_OperateURL)
                                      .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : (v_MaxExecTime.getTime() >= v_NowTime ? v_MaxExecTime.getFull() : "<span style='color:gray;'>" + v_MaxExecTime.getFull() + "</span>"))
                                      .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
+                                     .replaceAll(":MaxTime"      ,Date.toTimeLen((long)v_TotalTimeLenMax))
                                      .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                            );
         }
         
-        v_TriggerCount = v_Total.getTriggerCount().getSumValue();
-        v_RequestCount = v_Total.getRequestCount().getSumValue();
-        v_SuccessCount = v_Total.getSuccessCount().getSumValue();
-        v_FailCount    = v_RequestCount - v_SuccessCount;
-        v_IORowCount   = v_Total.getIoRowCount()  .getSumValue();
-        v_TotalTimeLen = v_Total.getTotalTimeLen().getSumValue();
-        v_AvgTimeLen   = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
-        v_MaxExecTime  = new Date(v_Total.getMaxExecTime().getMaxValue().longValue());
+        v_TriggerCount    = v_Total.getTriggerCount()   .getSumValue();
+        v_RequestCount    = v_Total.getRequestCount()   .getSumValue();
+        v_SuccessCount    = v_Total.getSuccessCount()   .getSumValue();
+        v_FailCount       = v_RequestCount - v_SuccessCount;
+        v_IORowCount      = v_Total.getIoRowCount()     .getSumValue();
+        v_TotalTimeLen    = v_Total.getTotalTimeLen()   .getSumValue();
+        v_TotalTimeLenMax = v_Total.getTotalTimeLenMax().getMaxValue();
+        v_AvgTimeLen      = Help.round(Help.division(v_TotalTimeLen ,v_SuccessCount) ,2);
+        v_MaxExecTime     = new Date(v_Total.getMaxExecTime().getMaxValue().longValue());
         
         v_Buffer.append(v_Content.replaceAll(":No"           ,String.valueOf(++v_Index))
                                  .replaceAll(":Name"         ,"合计")
@@ -1154,6 +1182,7 @@ public class AnalyseBase extends Analyse
                                  .replaceAll(":ParamURL"     ,"#")
                                  .replaceAll(":ExecuteTime"  ,v_MaxExecTime == null || v_MaxExecTime.getTime() <= 0L ? "" : v_MaxExecTime.getFull())
                                  .replaceAll(":SumTime"      ,Date.toTimeLen((long)v_TotalTimeLen))
+                                 .replaceAll(":MaxTime"      ,Date.toTimeLen((long)v_TotalTimeLenMax))
                                  .replaceAll(":AvgTime"      ,String.valueOf(v_AvgTimeLen))
                        );
         
@@ -1186,6 +1215,9 @@ public class AnalyseBase extends Analyse
         {
             v_Goto += "<a href='../analyseObject?xid=AnalyseBase&call=analyseDB_RestTotal' style='color:#AA66CC'>重置统计</a>";
         }
+        
+        v_Total.clear();
+        v_Total = null;
         
         v_FailCounts.clear();
         v_FailCounts = null;
@@ -1229,11 +1261,12 @@ public class AnalyseBase extends Analyse
             {
                 XSQLGroup v_XSQLGroup = (XSQLGroup)v_Item.getValue();
                 
-                v_Total.getRequestCount().put(v_Item.getKey() ,v_XSQLGroup.getRequestCount());
-                v_Total.getSuccessCount().put(v_Item.getKey() ,v_XSQLGroup.getSuccessCount());
-                v_Total.getIoRowCount()  .put(v_Item.getKey() ,v_XSQLGroup.getIoRowCount());
-                v_Total.getMaxExecTime() .put(v_Item.getKey() ,v_XSQLGroup.getExecuteTime() == null ? 0L : v_XSQLGroup.getExecuteTime().getTime());
-                v_Total.getTotalTimeLen().put(v_Item.getKey() ,v_XSQLGroup.getSuccessTimeLen());
+                v_Total.getRequestCount()   .put(v_Item.getKey() ,v_XSQLGroup.getRequestCount());
+                v_Total.getSuccessCount()   .put(v_Item.getKey() ,v_XSQLGroup.getSuccessCount());
+                v_Total.getIoRowCount()     .put(v_Item.getKey() ,v_XSQLGroup.getIoRowCount());
+                v_Total.getMaxExecTime()    .put(v_Item.getKey() ,v_XSQLGroup.getExecuteTime() == null ? 0L : v_XSQLGroup.getExecuteTime().getTime());
+                v_Total.getTotalTimeLen()   .put(v_Item.getKey() ,v_XSQLGroup.getSuccessTimeLen());
+                v_Total.getTotalTimeLenMax().put(v_Item.getKey() ,v_XSQLGroup.getSuccessTimeLenMax());
             }
         }
         
@@ -1251,6 +1284,7 @@ public class AnalyseBase extends Analyse
      * @author      ZhengWei(HY)
      * @createDate  2017-01-20
      * @version     v1.0
+     *              v2.0  2022-06-09  添加：最大用时的统计
      *
      * @return
      */
@@ -1287,8 +1321,9 @@ public class AnalyseBase extends Analyse
                     */
                 }
                 
-                v_Total.getMaxExecTime() .put(v_Item.getKey() ,v_XSQL.getExecuteTime() == null ? 0L : v_XSQL.getExecuteTime().getTime());
-                v_Total.getTotalTimeLen().put(v_Item.getKey() ,v_XSQL.getSuccessTimeLen());
+                v_Total.getMaxExecTime()    .put(v_Item.getKey() ,v_XSQL.getExecuteTime() == null ? 0L : v_XSQL.getExecuteTime().getTime());
+                v_Total.getTotalTimeLen()   .put(v_Item.getKey() ,v_XSQL.getSuccessTimeLen());
+                v_Total.getTotalTimeLenMax().put(v_Item.getKey() ,v_XSQL.getSuccessTimeLenMax());
             }
         }
         
