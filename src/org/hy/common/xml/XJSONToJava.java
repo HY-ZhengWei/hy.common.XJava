@@ -158,7 +158,7 @@ public class XJSONToJava
             return null;
         }
         
-        if ( i_JsonDataType.isArray() )
+        if ( i_JsonDataType.isArray() && Help.isNull(i_JsonData) )
         {
             // 2022-05-05
             // 数组应当走另一个 executeToJava() 方法，但能走到此，表示 i_JsonData 是一个普通字符串（未启动高级转换），或是一个空字符串的情况

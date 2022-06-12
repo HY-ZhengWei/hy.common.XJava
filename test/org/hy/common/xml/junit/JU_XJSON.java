@@ -210,6 +210,9 @@ public class JU_XJSON
         String  v_JsonStr = "";
         Command v_Command = null;
         
+        v_JsonStr = "{\"XJavaCloudDatas\":{\"methodName\":\"cloneFileUpload\",\"params\":{\"0@java.lang.String\":\"$WebHome\\/META-INF\",\"1@org.hy.common.file.FileDataPacket\":{\"dataByte\":\"TWFuaWZlc3QtVmVyc2lvbjogMS4wDQpCdWlsZC1KZGstU3BlYzogMTUNCkltcGxlbWVudGF0aW9uLVRpdGxlOiB0aW1pbmcNCkltcGxlbWVudGF0aW9uLVZlcnNpb246IDEuMC4wDQpDcmVhdGVkLUJ5OiBNYXZlbiBJbnRlZ3JhdGlvbiBmb3IgRWNsaXBzZQ0KDQo=\",\"dataCount\":\"1\",\"dataNo\":\"1\",\"name\":\"MANIFEST.MF\",\"size\":\"149\"}}}}";
+        v_Command = (Command) v_XJson.toJava(v_JsonStr ,"XJavaCloudDatas" ,Command.class);
+        
         v_JsonStr = "{\"XJavaCloudDatas\":{\"methodName\":\"zipFile\",\"params\":{\"0@java.lang.String\":\"$WebHome\",\"1@java.lang.String\":\"windows\",\"2@java.lang.String\":\"20211213153722613\"}}}";
         v_Command = (Command) v_XJson.toJava(v_JsonStr ,"XJavaCloudDatas" ,Command.class);
         

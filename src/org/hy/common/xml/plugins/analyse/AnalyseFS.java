@@ -531,8 +531,11 @@ public class AnalyseFS extends Analyse
     {
         $Logger.debug("显示文件内容：" + i_FPath + Help.getSysPathSeparator() + i_FName);
         
-        File     v_File     = new File(toTruePath(i_FPath) + Help.getSysPathSeparator() + i_FName);
-        FileHelp v_FileHelp = new FileHelp();
+        String   v_FTrueName = toTruePath(i_FPath) + Help.getSysPathSeparator() + i_FName;
+        File     v_File      = new File(v_FTrueName);
+        FileHelp v_FileHelp  = new FileHelp();
+        
+        $Logger.debug("显示文件内容：" + v_FTrueName);
         
         if ( !v_File.exists() || !v_File.isFile() )
         {
@@ -549,7 +552,7 @@ public class AnalyseFS extends Analyse
             exce.printStackTrace();
         }
         
-        return v_Content;
+        return Help.NVL(v_Content);
     }
     
     
@@ -924,7 +927,12 @@ public class AnalyseFS extends Analyse
      */
     public int cloneFileUpload(String i_Dir ,FileDataPacket i_DataPacket)
     {
-        $Logger.debug("克隆文件：" + i_Dir + Help.getSysPathSeparator() + i_DataPacket.getName() + " is " + i_DataPacket.getDataNo() + "/" + i_DataPacket.getDataCount());
+        int v_Size = 0;
+        if ( i_DataPacket.getDataByte() != null )
+        {
+            v_Size = i_DataPacket.getDataByte().length;
+        }
+        $Logger.debug("克隆文件：" + i_Dir + Help.getSysPathSeparator() + i_DataPacket.getName() + " is " + i_DataPacket.getDataNo() + "/" + i_DataPacket.getDataCount() + " size=" + v_Size);
         
         String v_Dir     = toTruePath(i_Dir);
         File   v_DirFile = new File(v_Dir);
@@ -979,7 +987,12 @@ public class AnalyseFS extends Analyse
                     }
                 }
                 
-                return v_FileHelp.uploadServer(v_Dir ,i_DataPacket);
+                int v_Ret = v_FileHelp.uploadServer(v_Dir ,i_DataPacket);
+                if ( v_Ret != FileHelp.$Upload_Finish || v_Ret != FileHelp.$Upload_GoOn )
+                {
+                    $Logger.warn("克隆文件异常：" + v_Ret);
+                }
+                return v_Ret;
             }
             else
             {
