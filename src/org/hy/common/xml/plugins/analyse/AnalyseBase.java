@@ -2280,8 +2280,7 @@ public class AnalyseBase extends Analyse
             return v_RetInfo.paramStr("XID is not exists.");
         }
         
-        int          v_ParamCount = Help.isNull(i_CallParams) ? 0 : i_CallParams.length;
-        List<Method> v_Methods    = MethodReflect.getMethodsIgnoreCase(v_Object.getClass() ,i_CallMethod ,v_ParamCount);
+        List<Method> v_Methods = MethodReflect.getMethodsBest(v_Object.getClass() ,i_CallMethod ,i_CallParams);
         if ( Help.isNull(v_Methods) )
         {
             return v_RetInfo.paramStr("Can not find method [" + i_XJavaObjectID + "." + i_CallMethod + "()]!");

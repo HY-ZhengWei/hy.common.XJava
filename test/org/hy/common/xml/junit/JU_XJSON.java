@@ -321,6 +321,52 @@ public class JU_XJSON
         
         $Logger.info(v_Mes);
     }
+    
+    
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void test_JsonToList()
+    {
+        String v_Json = "{\r\n"
+                + " \"body\":[\r\n"
+                + "  \"XF1C047F76A9664B1B9F21207C0085B1BF\",\r\n"
+                + "  \"XF228E1D462E3A469D90A975226133E6A1\",\r\n"
+                + "  \"XF41E0045D7DC841F89B220E6B60EBB6F7\",\r\n"
+                + "  \"XF4E072FAAD23143FA99BDFFACC6A327B8\",\r\n"
+                + "  \"XF5BEBEDC292B344B5A4CFA5B6811A2875\",\r\n"
+                + "  \"XF6F8A9FDB90D14E059EBD2B42C5704505\",\r\n"
+                + "  \"XF7AF4C1761A33417389E3DC7CA3B9FBC2\",\r\n"
+                + "  \"XFAC742E2387854F3696D837BD6D1BD58D\",\r\n"
+                + "  \"XFC564D445AF2549BDAAB92FC9E54B5B5A\"\r\n"
+                + " ],\r\n"
+                + " \"encry\":\"\",\r\n"
+                + " \"format\":\"\",\r\n"
+                + " \"rc\":\"0\",\r\n"
+                + " \"result\":\"true\",\r\n"
+                + " \"ri\":\"\",\r\n"
+                + " \"serialNo\":\"2022061314145136656728XFlowWeb\",\r\n"
+                + " \"session\":\"\",\r\n"
+                + " \"sid\":\"I004QueryWorkIDs\",\r\n"
+                + " \"sidv\":\"\",\r\n"
+                + " \"sign\":\"\",\r\n"
+                + " \"sysid\":\"xx\",\r\n"
+                + " \"tokenSec\":\"\"\r\n"
+                + "}";
+        
+        XJSON  v_XJson = new XJSON();
+        
+        try
+        {
+            List<String> v_Datas = (List<String>)v_XJson.parser(v_Json ,"body" ,String.class);
+            
+            Help.print(v_Datas);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     
     

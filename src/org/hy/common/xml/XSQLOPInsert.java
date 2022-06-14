@@ -1086,6 +1086,9 @@ public class XSQLOPInsert
                                 MethodReflect v_MethodReflect = new MethodReflect(v_Object ,v_PlaceHolder ,true ,MethodReflect.$NormType_Getter);
                                 
                                 XSQLOPUpdate.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_MethodReflect.invoke() ,v_MethodReflect.getReturnType());
+                                
+                                v_MethodReflect.clearDestroy();
+                                v_MethodReflect = null;
                             }
                         }
                         
@@ -1142,6 +1145,9 @@ public class XSQLOPInsert
                                 MethodReflect v_MethodReflect = new MethodReflect(v_Object ,v_PlaceHolder ,true ,MethodReflect.$NormType_Getter);
                                 
                                 XSQLOPUpdate.preparedStatementSetValue(v_PStatement ,++v_ParamIndex ,v_MethodReflect.invoke() ,v_MethodReflect.getReturnType());
+                                
+                                v_MethodReflect.clearDestroy();
+                                v_MethodReflect = null;
                             }
                         }
                         
