@@ -6,8 +6,8 @@
 <style type="text/css"> 
 html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
 .userInfoModify_logininfobody{ width:100%;height:100%;overflow-y:scroll;overflow-x:auto;}
-.userInfoModify_logininfo{ width:1200px;margin:0 auto;}
-.userInfoModify_logininfo1{ width:1200px;margin:0 auto; }
+.userInfoModify_logininfo { width:1600px;margin:0 auto;}
+.userInfoModify_logininfo1{ width:1600px;margin:0 auto; }
 .userInfoModify_labeTag,.userInfoModify_ThreadNo_Title,.userInfoModify_TaskName_Title,.userInfoModify_TotalTime_Title,.userInfoModify_RunStatus_Title,.userInfoModify_LastTime_Title,.userInfoModify_ExecCount_Title,.userInfoModify_TaskDesc_Title{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px; background-color:#D5DDF6;}
 .userInfoModify_labeTag1,.userInfoModify_ThreadNo,.userInfoModify_TaskName,.userInfoModify_TotalTime,.userInfoModify_RunStatus,.userInfoModify_LastTime,.userInfoModify_ExecCount,.userInfoModify_TaskDesc{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
 .userInfoModify_labeTag2,.userInfoModify_ThreadNo_Other,.userInfoModify_TaskName_Other,.userInfoModify_TotalTime_Other,.userInfoModify_RunStatus_Other,.userInfoModify_LastTime_Other,.userInfoModify_ExecCount_Other,.userInfoModify_TaskDesc_Other{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;border:#97B0F8 solid 0px;}
@@ -21,7 +21,7 @@ html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
 .userInfoModify_RunStatus_Title { width:90px;  text-align:center; border: #97B0F8 solid 1px;}
 .userInfoModify_LastTime_Title  { width:135px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
 .userInfoModify_ExecCount_Title { width:90px;  text-align:center; border: #97B0F8 solid 1px;}
-.userInfoModify_TaskDesc_Title  { width:340px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
+.userInfoModify_TaskDesc_Title  { width:740px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
 
 
 .userInfoModify_labeTag1  { width:40px;  text-align:center; border:#97B0F8 solid 1px;  } 
@@ -31,7 +31,7 @@ html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
 .userInfoModify_RunStatus { width:90px;  text-align:center; border:#97B0F8 solid 1px;} 
 .userInfoModify_LastTime  { width:135px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
 .userInfoModify_ExecCount { width:90px;  text-align:center; border:#97B0F8 solid 1px;} 
-.userInfoModify_TaskDesc  { width:340px; text-align:left;   border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
+.userInfoModify_TaskDesc  { width:740px; text-align:left;   border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
 
 .userInfoModify_labeTag2        { width:40px;  text-align:center;} 
 .userInfoModify_ThreadNo_Other  { width:180px; text-align:left;}  
@@ -40,7 +40,7 @@ html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
 .userInfoModify_RunStatus_Other { width:90px;  text-align:left;}  
 .userInfoModify_LastTime_Other  { width:135px; text-align:left;} 
 .userInfoModify_ExecCount_Other { width:90px;  text-align:left;} 
-.userInfoModify_TaskDesc_Other  { width:340px; text-align:left;} 
+.userInfoModify_TaskDesc_Other  { width:740px; text-align:left;} 
 
 .cont_show_ThreadNo  { width:175px; margin-left:5px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_TaskName  { width:175px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
@@ -48,7 +48,7 @@ html,body { overflow:hidden; margin:0px;width:100%;height:100%;}
 .cont_show_RunStatus { width:85px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_LastTime  { width:130px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_ExecCount { width:85px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
-.cont_show_TaskDesc  { width:335px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_TaskDesc  { width:735px; margin-left:5px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 
 
 a{ color:#669900; text-decoration:none; outline:none;}
@@ -56,51 +56,107 @@ a:hover{color:#99CC00;text-decoration:none;}
 </style>
 
 <script type="text/javascript" src=":HttpBasePath/jquery/jquery.min.js"></script>
+<script type="text/javascript" src=":HttpBasePath/d3/d3.min.js"></script>
 
 </head>
 <body> 
-		
-	   <div class="userInfoModify_logininfobody" >
-	   	  <div class="userInfoModify_logininfo" /> 
-	      <div class="userInfoModify_clearTag">
-	            <div class="userInfoModify_labeTag">编号</div>
-	            <div class="userInfoModify_ThreadNo_Title">线程编号</div>
-	            <div class="userInfoModify_TaskName_Title">任务编号</div>
-	            <div class="userInfoModify_TotalTime_Title">累计用时</div>
-	            <div class="userInfoModify_RunStatus_Title">运行状态</div>
-	            <div class="userInfoModify_LastTime_Title">更新时间</div>
-	            <div class="userInfoModify_ExecCount_Title">执行次数</div>
-	            <div class="userInfoModify_TaskDesc_Title">任务描述:GotoTitle</div>
-	      </div> 
-		 
-	   </div> 
-	   
-   		<div id="info_fill" class="userInfoModify_logininfo1"> 
-   		
-   			<div class="userInfoModify_clearTag1">
-	            <div class="userInfoModify_labeTag2"></div>
-	            <div class="userInfoModify_ThreadNo_Other"></div>
-	            <div class="userInfoModify_TaskName_Other"></div>
-	            <div class="userInfoModify_TotalTime_Other"></div>
-	            <div class="userInfoModify_RunStatus_Other"></div>
-	            <div class="userInfoModify_LastTime_Other"></div>
-	            <div class="userInfoModify_ExecCount_Other"></div>
-	            <div class="userInfoModify_TaskDesc_Other"></div>
-     	    </div> 
-   		
-    		:Content 
-    		
-    		<div class="userInfoModify_clearTag1">
-	            <div class="userInfoModify_labeTag2"></div>
-	            <div class="userInfoModify_ThreadNo_Other"></div>
-	            <div class="userInfoModify_TaskName_Other"></div>
-	            <div class="userInfoModify_TotalTime_Other"></div>
-	            <div class="userInfoModify_RunStatus_Other"></div>
-	            <div class="userInfoModify_LastTime_Other"></div>
-	            <div class="userInfoModify_ExecCount_Other"></div>
-	            <div class="userInfoModify_TaskDesc_Other"></div>
-     	    </div>
-   		</div>
-	   		
+       
+       <input type="hidden" id="cluster" name="cluster" value=":cluster" />
+       <input type="hidden" id="S"       name="S"       value=":Sort" />
+        
+       <div class="userInfoModify_logininfobody" >
+          <div class="userInfoModify_logininfo" /> 
+          <div class="userInfoModify_clearTag">
+                <div class="userInfoModify_labeTag">编号</div>
+                <div class="userInfoModify_ThreadNo_Title"><a id="Title_ThreadNo" href="#" style='color:#AA66CC'>线程编号</a></div>
+                <div class="userInfoModify_TaskName_Title">任务编号</div>
+                <div class="userInfoModify_TotalTime_Title">累计用时</div>
+                <div class="userInfoModify_RunStatus_Title"><a id="Title_RunStatus" href="#" style='color:#AA66CC'>运行状态</a></div>
+                <div class="userInfoModify_LastTime_Title">更新时间</div>
+                <div class="userInfoModify_ExecCount_Title">执行次数</div>
+                <div class="userInfoModify_TaskDesc_Title">任务描述:GotoTitle</div>
+          </div> 
+         
+       </div> 
+
+
+
+<script language="javascript" type="text/javascript">
+function f_Goto()
+{
+    var v_Timestamp = new Date().getTime();
+    var v_GroupFlag = "";
+    if ( $("#IsGroup").val() == "Y" )
+    {
+        v_GroupFlag = "&type=Group";
+    }
+    
+    if ( $("#cluster").val() == "Y" || $("#cluster").val() == "y" )
+    {
+        window.location.href = "analyseObject?ThreadPool=Y&cluster=Y&S=" + $("#S").val() + "&r=" + v_Timestamp;
+    }
+    else
+    {
+        window.location.href = "analyseObject?ThreadPool=Y&S=" + $("#S").val() + "&r=" + v_Timestamp;
+    }
+}
+
+
+
+$("#Title_ThreadNo").click(function()
+{
+    $("#S").val("");
+    f_Goto();
+});
+
+
+
+$("#Title_RunStatus").click(function()
+{
+    $("#S").val("1");
+    f_Goto();
+});
+
+
+
+if ( $("#S").val() == "1" )
+{
+    $("#Title_RunStatus").html("↓" + $("#Title_RunStatus").html());
+}
+else
+{
+    $("#Title_ThreadNo").html("↓" + $("#Title_ThreadNo").html());
+}
+</script>
+
+
+       
+        <div id="info_fill" class="userInfoModify_logininfo1"> 
+        
+            <div class="userInfoModify_clearTag1">
+                <div class="userInfoModify_labeTag2"></div>
+                <div class="userInfoModify_ThreadNo_Other"></div>
+                <div class="userInfoModify_TaskName_Other"></div>
+                <div class="userInfoModify_TotalTime_Other"></div>
+                <div class="userInfoModify_RunStatus_Other"></div>
+                <div class="userInfoModify_LastTime_Other"></div>
+                <div class="userInfoModify_ExecCount_Other"></div>
+                <div class="userInfoModify_TaskDesc_Other"></div>
+            </div> 
+        
+            :Content 
+            
+            <div class="userInfoModify_clearTag1">
+                <div class="userInfoModify_labeTag2"></div>
+                <div class="userInfoModify_ThreadNo_Other"></div>
+                <div class="userInfoModify_TaskName_Other"></div>
+                <div class="userInfoModify_TotalTime_Other"></div>
+                <div class="userInfoModify_RunStatus_Other"></div>
+                <div class="userInfoModify_LastTime_Other"></div>
+                <div class="userInfoModify_ExecCount_Other"></div>
+                <div class="userInfoModify_TaskDesc_Other"></div>
+            </div>
+        </div>
+
 </body>
 </html>

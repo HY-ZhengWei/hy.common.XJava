@@ -32,6 +32,7 @@ import org.hy.common.thread.JobDisasterRecoveryReport;
 import org.hy.common.thread.JobReport;
 import org.hy.common.thread.Jobs;
 import org.hy.common.thread.ThreadReport;
+import org.hy.common.thread.ThreadRunStatus;
 import org.hy.common.xml.XJSON;
 import org.hy.common.xml.XJSONObject;
 import org.hy.common.xml.XJava;
@@ -1235,8 +1236,8 @@ public class AnalyseBase extends Analyse
         v_XSQLs = null;
         
         return StringHelp.replaceAll(this.getTemplateShowXSQL()
-                                    ,new String[]{":NameTitle" ,":GotoTitle" ,":Title"                   ,":HttpBasePath"  ,":cluster"            ,":Sort"    ,":IsGroup" ,":scope"          ,":Timer" ,":Content"}
-                                    ,new String[]{"SQL访问标识" ,v_Goto       ,"数据库访问量的概要统计" ,i_BasePath      ,(i_Cluster ? "Y" : "") ,i_SortType ,"N"        ,(i_IsAll?"Y":"N") ,i_Timer ,v_Buffer.toString()});
+                                    ,new String[]{":NameTitle" ,":GotoTitle" ,":Title"               ,":HttpBasePath"  ,":cluster"             ,":Sort"    ,":IsGroup" ,":scope"          ,":Timer" ,":Content"}
+                                    ,new String[]{"SQL访问标识" ,v_Goto       ,"数据库访问量的概要统计" ,i_BasePath       ,(i_Cluster ? "Y" : "") ,i_SortType ,"N"        ,(i_IsAll?"Y":"N") ,i_Timer ,v_Buffer.toString()});
     }
     
     
@@ -2991,9 +2992,10 @@ public class AnalyseBase extends Analyse
      * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject?ThreadPool=Y
      * @param  i_Cluster         是否为集群
+     * @param  i_SortType        排序类型
      * @return
      */
-    public String analyseThreadPool(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster)
+    public String analyseThreadPool(String i_BasePath ,String i_ObjectValuePath ,boolean i_Cluster ,String i_SortType)
     {
         $Logger.debug("查看线程池运行情况：" + " is cluster " +  (i_Cluster ? "Yes" : "No"));
         
@@ -3065,17 +3067,35 @@ public class AnalyseBase extends Analyse
             }
         }
         
-        Help.toSort(v_Total.getReports() ,"threadNo");
+        if ( "1".equalsIgnoreCase(i_SortType) )
+        {
+            // 按线程状态
+            Help.toSort(v_Total.getReports() ,"runStatus DESC" ,"threadNo");
+        }
+        else
+        {
+            Help.toSort(v_Total.getReports() ,"threadNo");
+        }
         
         for (ThreadReport v_TReport : v_Total.getReports())
         {
-            Map<String ,String> v_RKey = new HashMap<String ,String>();
+            Map<String ,String> v_RKey      = new HashMap<String ,String>();
+            String              v_RunStatus = v_TReport.getRunStatus();
+            
+            if ( ThreadRunStatus.$Working.getName().equals(v_RunStatus) )
+            {
+                v_RunStatus = "<font color='red'>"   + v_RunStatus + "</font>";
+            }
+            else if ( ThreadRunStatus.$Rest.getName().equals(v_RunStatus) )
+            {
+                v_RunStatus = "<font color='green'>" + v_RunStatus + "</font>";
+            }
             
             v_RKey.put(":No"        ,String.valueOf(++v_Index));
             v_RKey.put(":ThreadNo"  ,v_TReport.getThreadNo());
             v_RKey.put(":TaskName"  ,v_TReport.getTaskName());
             v_RKey.put(":TotalTime" ,Date.toTimeLen(v_TReport.getTotalTime()));
-            v_RKey.put(":RunStatus" ,v_TReport.getRunStatus());
+            v_RKey.put(":RunStatus" ,v_RunStatus);
             v_RKey.put(":LastTime"  ,v_TReport.getLastTime());
             v_RKey.put(":ExecCount" ,v_TReport.getExecCount() + "");
             v_RKey.put(":TaskDesc"  ,v_TReport.getTaskDesc());
@@ -3101,11 +3121,11 @@ public class AnalyseBase extends Analyse
         String v_Goto = StringHelp.lpad("" ,4 ,"&nbsp;");
         if ( i_Cluster )
         {
-            v_Goto += "<a href='analyseObject?ThreadPool=Y' style='color:#AA66CC'>查看本机</a>";
+            v_Goto += "<a href='analyseObject?ThreadPool=Y&S='" + i_SortType + " style='color:#AA66CC'>查看本机</a>";
         }
         else
         {
-            v_Goto += "<a href='analyseObject?ThreadPool=Y&cluster=Y' style='color:#AA66CC'>查看集群</a>";
+            v_Goto += "<a href='analyseObject?ThreadPool=Y&cluster=Y&S='" + i_SortType + " style='color:#AA66CC'>查看集群</a>";
         }
         
         v_Goto += StringHelp.lpad("" ,4 ,"&nbsp;") + Date.getNowTime().getFull();
@@ -3114,8 +3134,8 @@ public class AnalyseBase extends Analyse
         v_Total.setReports(null);
         
         return StringHelp.replaceAll(this.getTemplateShowThreadPool()
-                                    ,new String[]{":GotoTitle" ,":Title"       ,":HttpBasePath" ,":Content"}
-                                    ,new String[]{v_Goto       ,"线程池运行情况" ,i_BasePath      ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle" ,":Title"       ,":HttpBasePath" ,":Sort"   ,":Cluster"               ,":Content"}
+                                    ,new String[]{v_Goto       ,"线程池运行情况" ,i_BasePath     ,i_SortType ,(i_Cluster ? "Y" : "N") ,v_Buffer.toString()});
     }
     
     

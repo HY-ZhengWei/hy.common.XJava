@@ -565,7 +565,8 @@ public class AnalyseObjectServlet extends HttpServlet
             }
             else if ( !Help.isNull(v_ThreadPool) )
             {
-                i_Response.getWriter().println(this.analyse.analyseThreadPool(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster)));
+                String v_Sort = Help.NVL(i_Request.getParameter("S"));
+                i_Response.getWriter().println(this.analyse.analyseThreadPool(v_BasePath ,i_Request.getRequestURL().toString() ,"Y".equalsIgnoreCase(v_Cluster) ,v_Sort));
             }
             else if ( !Help.isNull(v_CreateList) )
             {
