@@ -3233,13 +3233,25 @@ public class AnalyseBase extends Analyse
         
         for (JobReport v_JReport : v_Total.getReports())
         {
-            Map<String ,String> v_RKey = new HashMap<String ,String>();
+            Map<String ,String> v_RKey       = new HashMap<String ,String>();
+            String              v_ErrorInfo  = "";
+            long                v_ErrorCount = v_JReport.getRunCount() - v_JReport.getRunOKCount();
+            
+            if ( v_ErrorCount >= 1 )
+            {
+                v_ErrorInfo = "<a href='analyseObject?xid=" + v_JReport.getJobID() + "' style='font-weight:bold'><font color='red'>" + v_ErrorCount + "</font></a>";
+            }
+            else
+            {
+                v_ErrorInfo = "0";
+            }
             
             v_RKey.put(":No"           ,String.valueOf(++v_Index));
             v_RKey.put(":JobID"        ,v_JReport.getJobID());
             v_RKey.put(":IntervalType" ,v_JReport.getIntervalType());
             v_RKey.put(":IntervalLen"  ,v_JReport.getIntervalLen());
             v_RKey.put(":RunCount"     ,v_JReport.getRunCount() + "");
+            v_RKey.put(":RunErrCount"  ,v_ErrorInfo);
             v_RKey.put(":LastTime"     ,v_JReport.getLastTime());
             v_RKey.put(":NextTime"     ,v_JReport.getNextTime());
             v_RKey.put(":JobDesc"      ,v_JReport.getJobDesc());

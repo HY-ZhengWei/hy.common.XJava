@@ -18,16 +18,16 @@ html,body {
 }
 
 .userInfoModify_logininfo { 
-    width: 1400px;
+    width: 1480px;
     margin:0 auto;
     position: fixed;
     top: 0px;
 }
 
-.userInfoModify_logininfo1{ width:1400px;margin:0 auto; }
-.userInfoModify_labeTag,.userInfoModify_JobID_Title,.userInfoModify_IntervalType_Title,.userInfoModify_IntervalLen_Title,.userInfoModify_RunCount_Title,.userInfoModify_LastTime_Title,.userInfoModify_NextTime_Title,.userInfoModify_CloudServer_Title,.userInfoModify_JobDesc_Title{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px; background-color:#D5DDF6;}
-.userInfoModify_labeTag1,.userInfoModify_JobID,.userInfoModify_IntervalType,.userInfoModify_IntervalLen,.userInfoModify_RunCount,.userInfoModify_LastTime,.userInfoModify_NextTime,.userInfoModify_CloudServer,.userInfoModify_JobDesc{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
-.userInfoModify_labeTag2,.userInfoModify_JobID_Other,.userInfoModify_IntervalType_Other,.userInfoModify_IntervalLen_Other.userInfoModify_RunCount_Other,.userInfoModify_LastTime_Other,.userInfoModify_NextTime_Other,.userInfoModify_CloudServer_Other,.userInfoModify_JobDesc_Other{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;border:#97B0F8 solid 0px;}
+.userInfoModify_logininfo1{ width:1480px;margin:0 auto; }
+.userInfoModify_labeTag,.userInfoModify_JobID_Title,.userInfoModify_IntervalType_Title,.userInfoModify_IntervalLen_Title,.userInfoModify_RunCount_Title,.userInfoModify_RunErrCount_Title,.userInfoModify_LastTime_Title,.userInfoModify_NextTime_Title,.userInfoModify_CloudServer_Title,.userInfoModify_JobDesc_Title{float:left; height:30px; line-height:30px; font-weight:bold;font-family:"微软雅黑";   font-size:14px; background-color:#D5DDF6;}
+.userInfoModify_labeTag1,.userInfoModify_JobID,.userInfoModify_IntervalType,.userInfoModify_IntervalLen,.userInfoModify_RunCount,.userInfoModify_RunErrCount,.userInfoModify_LastTime,.userInfoModify_NextTime,.userInfoModify_CloudServer,.userInfoModify_JobDesc{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;}
+.userInfoModify_labeTag2,.userInfoModify_JobID_Other,.userInfoModify_IntervalType_Other,.userInfoModify_IntervalLen_Other,.userInfoModify_RunCount_Other,.userInfoModify_RunErrCount_Other,.userInfoModify_LastTime_Other,.userInfoModify_NextTime_Other,.userInfoModify_CloudServer_Other,.userInfoModify_JobDesc_Other{float:left; height:30px; line-height:30px;font-family:"微软雅黑";   font-size:12px;border:#97B0F8 solid 0px;}
 
 .userInfoModify_clearTag {clear:both;height:36px;margin-top:0px;position:absolute;z-index:2008;} 
 .userInfoModify_clearTag1 {clear:both;height:36px;margin-top:0px;} 
@@ -36,26 +36,29 @@ html,body {
 .userInfoModify_IntervalType_Title { width:80px;  text-align:center; border: #97B0F8 solid 1px;}
 .userInfoModify_IntervalLen_Title  { width:60px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
 .userInfoModify_RunCount_Title     { width:80px;  text-align:center; border: #97B0F8 solid 1px;}
-.userInfoModify_LastTime_Title     { width:135px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
-.userInfoModify_NextTime_Title     { width:135px; text-align:center; border: #97B0F8 solid 1px;}
-.userInfoModify_CloudServer_Title  { width:135px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
-.userInfoModify_JobDesc_Title      { width:400px; text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_RunErrCount_Title  { width:80px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_LastTime_Title     { width:135px; text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_NextTime_Title     { width:135px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}
+.userInfoModify_CloudServer_Title  { width:135px; text-align:center; border: #97B0F8 solid 1px;}
+.userInfoModify_JobDesc_Title      { width:400px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
 
 .userInfoModify_labeTag1     { width:40px;text-align:center;border:#97B0F8 solid 1px;  } 
 .userInfoModify_JobID        { width:280px; text-align:left;   border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;}  
 .userInfoModify_IntervalType { width:80px;  text-align:center; border:#97B0F8 solid 1px;} 
 .userInfoModify_IntervalLen  { width:60px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
 .userInfoModify_RunCount     { width:80px;  text-align:center; border:#97B0F8 solid 1px;} 
-.userInfoModify_LastTime     { width:135px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
-.userInfoModify_NextTime     { width:135px; text-align:center; border:#97B0F8 solid 1px;} 
-.userInfoModify_CloudServer  { width:135px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
-.userInfoModify_JobDesc      { width:400px; text-align:left;   border:#97B0F8 solid 1px;} 
+.userInfoModify_RunErrCount  { width:80px;  text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_LastTime     { width:135px; text-align:center; border:#97B0F8 solid 1px;} 
+.userInfoModify_NextTime     { width:135px; text-align:center; border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;} 
+.userInfoModify_CloudServer  { width:135px; text-align:center; border:#97B0F8 solid 1px;} 
+.userInfoModify_JobDesc      { width:400px; text-align:left;   border-top: #97B0F8 solid 1px;border-bottom: #97B0F8 solid 1px;border-right: #97B0F8 solid 1px;}
 
 .userInfoModify_labeTag2           { width:40px;  text-align:center;} 
 .userInfoModify_JobID_Other        { width:280px; text-align:left;}  
 .userInfoModify_IntervalType_Other { width:80px;  text-align:left;} 
 .userInfoModify_IntervalLen_Other  { width:60px;  text-align:left;}
 .userInfoModify_RunCount_Other     { width:80px;  text-align:left;}  
+.userInfoModify_RunErrCount_Other  { width:80px;  text-align:left;}  
 .userInfoModify_LastTime_Other     { width:135px; text-align:left;}  
 .userInfoModify_NextTime_Other     { width:135px; text-align:left;} 
 .userInfoModify_CloudServer_Other  { width:135px; text-align:left;} 
@@ -65,6 +68,7 @@ html,body {
 .cont_show_IntervalType { width:75px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_IntervalLen  { width:55px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_RunCount     { width:75px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
+.cont_show_RunErrCount  { width:75px;  margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_LastTime     { width:130px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_NextTime     { width:130px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
 .cont_show_CloudServer  { width:130px; margin-left:0px;white-space:nowrap;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis; } 
@@ -138,6 +142,7 @@ a:hover{color:#99CC00;text-decoration:none;}
              <div class="userInfoModify_IntervalType_Title">间隔类型</div>
              <div class="userInfoModify_IntervalLen_Title">间隔</div>
              <div class="userInfoModify_RunCount_Title">执行次数</div>
+             <div class="userInfoModify_RunErrCount_Title">异常次数</div>
              <div class="userInfoModify_LastTime_Title">最后执行时间</div>
              <div class="userInfoModify_NextTime_Title">计划执行时间</div>
              <div class="userInfoModify_CloudServer_Title">云主机</div>
@@ -242,6 +247,7 @@ else
             <div class="userInfoModify_IntervalType_Other"></div>
             <div class="userInfoModify_IntervalLen_Other"></div>
             <div class="userInfoModify_RunCount_Other"></div>
+            <div class="userInfoModify_RunErrCount_Other"></div>
             <div class="userInfoModify_LastTime_Other"></div>
             <div class="userInfoModify_NextTime_Other"></div>
             <div class="userInfoModify_CloudServer_Other"></div>
@@ -256,6 +262,7 @@ else
             <div class="userInfoModify_IntervalType_Other"></div>
             <div class="userInfoModify_IntervalLen_Other"></div>
             <div class="userInfoModify_RunCount_Other"></div>
+            <div class="userInfoModify_RunErrCount_Other"></div>
             <div class="userInfoModify_LastTime_Other"></div>
             <div class="userInfoModify_NextTime_Other"></div>
             <div class="userInfoModify_CloudServer_Other"></div>
