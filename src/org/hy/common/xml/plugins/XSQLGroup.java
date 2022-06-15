@@ -3242,7 +3242,7 @@ public final class XSQLGroup implements XJavaID
         @Override
         public String getTaskDesc()
         {
-            return this.getTaskType();
+            return this.xsqlGroup.getXJavaID();
         }
 
 
