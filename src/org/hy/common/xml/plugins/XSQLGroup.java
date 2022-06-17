@@ -22,6 +22,7 @@ import org.hy.common.thread.Task;
 import org.hy.common.thread.TaskGroup;
 import org.hy.common.thread.ThreadPool;
 import org.hy.common.xml.XJava;
+import org.hy.common.xml.XSQL;
 import org.hy.common.xml.XSQLBigData;
 import org.hy.common.xml.XSQLData;
 import org.hy.common.xml.log.Logger;
@@ -166,6 +167,7 @@ import org.hy.common.xml.log.Logger;
  *              v28.0 2021-02-23  1.添加：集中清理计算过程中产生的缓存。而不是边计算边清理缓存，这样会在多线程的计算中造成正在使用的数据被清理掉的问题。
  *              v29.0 2021-03-24  1.添加：配合多线程任务组的改造，添加：准备添加的任务数量。解决：任务组误判任务组整体完成的问题。
  *              v30.0 2022-06-09  1.添加：最大用时统计
+ *              v31.0 2022-06-17  1.修正：跟随XSQL的配置，设定NULL值的情况：发现人：李秉坤
  */
 public final class XSQLGroup implements XJavaID
 {
@@ -909,11 +911,11 @@ public final class XSQLGroup implements XJavaID
                         {
                             if ( v_Node.isFreeConnection() )
                             {
-                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params));
+                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()));
                             }
                             else
                             {
-                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params) ,this.getConnection(v_Node ,io_DSGConns));
+                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection(v_Node ,io_DSGConns));
                             }
                             
                             io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
@@ -1665,11 +1667,11 @@ public final class XSQLGroup implements XJavaID
                         {
                             if ( v_Node.isFreeConnection() )
                             {
-                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params));
+                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()));
                             }
                             else
                             {
-                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params) ,this.getConnection(v_Node ,io_DSGConns));
+                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection(v_Node ,io_DSGConns));
                             }
                             
                             io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
@@ -2310,7 +2312,7 @@ public final class XSQLGroup implements XJavaID
      * @throws InvocationTargetException
      */
     @SuppressWarnings("unchecked")
-    private List<Map<String ,Object>> getCollectionToDB(List<Object> i_CollectionList ,Map<String ,Object> io_Params) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    private List<Map<String ,Object>> getCollectionToDB(List<Object> i_CollectionList ,Map<String ,Object> io_Params ,XSQL i_XSQL) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         List<Map<String ,Object>> v_CollectionMap = new ArrayList<Map<String ,Object>>();
         Object                    v_OneObject     = i_CollectionList.get(0);
@@ -2329,12 +2331,15 @@ public final class XSQLGroup implements XJavaID
         }
         else
         {
+            // 2022-06-17 跟随XSQL的配置，设定NULL值的情况：发现人：李秉坤
+            String  v_DefaultValue = i_XSQL.getContent().isDefaultNull() ? null : "";
+            boolean v_HaveNull     = !i_XSQL.getContent().isDefaultNull();
             for (Object v_Item : i_CollectionList)
             {
                 Map<String ,Object> v_ItemMap = new HashMap<String ,Object>();
                 
                 v_ItemMap.putAll(io_Params);
-                v_ItemMap.putAll(Help.toMap(v_Item ,null ,false));
+                v_ItemMap.putAll(Help.toMap(v_Item ,v_DefaultValue ,v_HaveNull));
                 
                 v_CollectionMap.add(v_ItemMap);
             }
