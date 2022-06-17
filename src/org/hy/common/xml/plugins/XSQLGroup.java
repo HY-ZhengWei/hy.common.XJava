@@ -3242,7 +3242,14 @@ public final class XSQLGroup implements XJavaID
         @Override
         public String getTaskDesc()
         {
-            return this.xsqlGroup.getXJavaID();
+            if ( this.xsqlGroup != null )
+            {
+                return this.xsqlGroup.getXJavaID();
+            }
+            else
+            {
+                return super.getTaskName();
+            }
         }
 
 

@@ -78,7 +78,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     /**
      * 设置：主机名称
      * 
-     * @param hostName 
+     * @param hostName
      */
     public void setHostName(String hostName)
     {
@@ -130,7 +130,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     /**
      * 设置：线程的总个数
      * 
-     * @param threadCount 
+     * @param threadCount
      */
     public void setThreadCount(long threadCount)
     {
@@ -142,7 +142,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     /**
      * 设置：空闲的线程数
      * 
-     * @param idleThreadCount 
+     * @param idleThreadCount
      */
     public void setIdleThreadCount(long idleThreadCount)
     {
@@ -154,7 +154,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     /**
      * 设置：活动的线程数
      * 
-     * @param activeThreadCount 
+     * @param activeThreadCount
      */
     public void setActiveThreadCount(long activeThreadCount)
     {
@@ -166,7 +166,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     /**
      * 设置：线程池监控信息
      * 
-     * @param reports 
+     * @param reports
      */
     public void setReports(List<ThreadReport> reports)
     {
@@ -188,7 +188,7 @@ public class AnalyseThreadPoolTotal extends SerializableDef
     /**
      * 设置：队排中等待的任务数
      * 
-     * @param waitTaskCount 
+     * @param waitTaskCount
      */
     public void setWaitTaskCount(long waitTaskCount)
     {
