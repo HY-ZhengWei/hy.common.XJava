@@ -2568,10 +2568,12 @@ public final class XJava
                             io_SuperInstance    = this.constructor(i_SuperClass ,v_Node ,v_TreeNode);
                             v_SuperInstance_New = true;
                             
+                            String v_SuperID = getNodeAttribute(i_SuperNode ,$XML_OBJECT_ID);
+                            
                             // 确保XJavaID优先被setter，好方便后续功能使用ID
-                            if ( !Help.isNull(v_ID) && io_SuperInstance instanceof XJavaID )
+                            if ( (!Help.isNull(v_ID) || !Help.isNull(v_SuperID)) && io_SuperInstance instanceof XJavaID )
                             {
-                                ((XJavaID)io_SuperInstance).setXJavaID(v_ID);
+                                ((XJavaID)io_SuperInstance).setXJavaID(Help.NVL(v_ID ,v_SuperID));
                             }
                         }
                         else
@@ -2600,10 +2602,12 @@ public final class XJava
                                         io_SuperInstance    = i_SuperClass.newInstance();
                                         v_SuperInstance_New = true;
                                         
+                                        String v_SuperID = getNodeAttribute(i_SuperNode ,$XML_OBJECT_ID);
+                                        
                                         // 确保XJavaID优先被setter，好方便后续功能使用ID
-                                        if ( !Help.isNull(v_ID) && io_SuperInstance instanceof XJavaID )
+                                        if ( (!Help.isNull(v_ID) || !Help.isNull(v_SuperID)) && io_SuperInstance instanceof XJavaID )
                                         {
-                                            ((XJavaID)io_SuperInstance).setXJavaID(v_ID);
+                                            ((XJavaID)io_SuperInstance).setXJavaID(Help.NVL(v_ID ,v_SuperID));
                                         }
                                     }
                                     catch (Exception exce)
