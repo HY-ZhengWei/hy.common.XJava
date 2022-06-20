@@ -145,7 +145,12 @@ public class AnalyseBase extends Analyse
     
     private LoginRequest getLoginRequest()
     {
-        return new LoginRequest("XJava" ,"").setSystemName("Analyses");
+        LoginRequest v_LoginRequest = (LoginRequest)XJava.getObject("XJava_LoginRequest");
+        if ( v_LoginRequest == null )
+        {
+            v_LoginRequest = new LoginRequest("XJava" ,"").setSystemName("Analyses");
+        }
+        return v_LoginRequest;
     }
     
     

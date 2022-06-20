@@ -41,7 +41,13 @@ public class Cluster
     @SuppressWarnings("unchecked")
     public static List<ClientCluster> getClusters()
     {
-        List<ClientCluster> v_Clusters = (List<ClientCluster>)XJava.getObject("ClusterServers");
+        List<ClientCluster> v_Clusters = (List<ClientCluster>)XJava.getObject("XJava_ClusterServers");
+        
+        // 兼容老服务的命名
+        if ( v_Clusters == null )
+        {
+            v_Clusters = (List<ClientCluster>)XJava.getObject("ClusterServers");
+        }
         
         if ( v_Clusters == null )
         {
