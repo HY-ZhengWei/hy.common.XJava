@@ -4051,7 +4051,7 @@ public class AnalyseBase extends Analyse
                     // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
                     ClientSocketCluster.startServer(v_Servers);
                     ClientSocketCluster.login(v_Servers ,getLoginRequest());
-                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseLogger_Total" ,new Object[] {i_TotalType} ,true ,"日志引擎");
+                    v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseLogger_Total" ,new Object[] {Help.NVL(i_TotalType ,"method")} ,true ,"日志引擎");
                 }
                 catch (Exception exce)
                 {
