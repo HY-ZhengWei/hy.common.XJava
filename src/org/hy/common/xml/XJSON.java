@@ -13,6 +13,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.hy.common.ExpireMap;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.Return;
@@ -83,6 +84,7 @@ import net.minidev.json.parser.JSONParser;
  *                                     是否在Json字符串中包含getter方法的返回值的真实Java类型（ClassName）。
  *                                     控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
  *              2021-12-09  V4.1  添加：Json字符串转Java对象时，当Setter方法的入传为数组时支持
+ *              2022-06-22  V4.2  添加：支持特殊类型ExpireMap的转Json，或转Java
  */
 public final class XJSON
 {
@@ -550,7 +552,14 @@ public final class XJSON
                         v_Value = Help.toObject(v_MapValueClass ,v_Value.toString());
                     }
                     
-                    ((Map<String ,Object>)v_NewObj).put(v_MapKeyName ,v_Value);
+                    if ( v_NewObj instanceof ExpireMap )
+                    {
+                        XJSONToJava.mapValueToJava(this ,(ExpireMap<String ,Object>)v_NewObj ,v_MapKeyName ,v_Value);
+                    }
+                    else
+                    {
+                        XJSONToJava.mapValueToJava(this ,(Map<Object ,Object>)      v_NewObj ,v_MapKeyName ,v_Value);
+                    }
                 }
                 else
                 {

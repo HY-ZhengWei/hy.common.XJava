@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hy.common.Date;
+import org.hy.common.ExpireMap;
 import org.hy.common.Help;
 import org.hy.common.Queue;
 import org.hy.common.Queue.QueueType;
@@ -366,6 +367,43 @@ public class JU_XJSON
         {
             e.printStackTrace();
         }
+    }
+    
+    
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void test_ExpireMap() throws Exception
+    {
+        ExpireMap<String ,Date> v_ExpireMapOld = new ExpireMap<String ,Date>();
+        ExpireMap<String ,Date> v_ExpireMapNew = new ExpireMap<String ,Date>();
+        
+        long   v_Second = 5L;
+        Date   v_Now    = new Date();
+        Date   v_Time   = new Date(v_Now.getTime() + v_Second * 1000L);
+        String v_Key    = v_Time.getFullMilli();
+        
+        v_ExpireMapOld.put(v_Key ,v_Time ,v_Second);
+        
+        XJSON  v_XJson = new XJSON();
+        v_XJson.setSerializable(true);
+        String v_JsonData = v_XJson.toJson(v_ExpireMapOld ,"XJSON").toJSONString();
+        
+        $Logger.info(v_JsonData);
+        $Logger.info("-- 原集合能否得到值：" + v_ExpireMapOld.get(v_Key));
+        
+        ExpireMap<String ,Date> v_JsonToJava = (ExpireMap<String ,Date>) v_XJson.toJava(v_JsonData ,"XJSON" ,ExpireMap.class);
+        $Logger.info("-- Json序列化后能否得到值：" + v_JsonToJava.get(v_Key) + " 过期时长：" + v_JsonToJava.getExpireTimeLen(v_Key));
+        
+        // 等待过期
+        Thread.sleep((v_Second + 2) * 1000L);
+        
+        v_ExpireMapNew.putAll(v_JsonToJava);
+
+        $Logger.info("-- 过期后，复制到新集合中");
+        $Logger.info("-- 原集合能否得到值：" + v_ExpireMapOld.get(v_Key));
+        $Logger.info("-- 新集合能否得到值：" + v_ExpireMapNew.get(v_Key));
+        $Logger.info("-- 序列化能否得到值：" + v_JsonToJava  .get(v_Key));
     }
 
     

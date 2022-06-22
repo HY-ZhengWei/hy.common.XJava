@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.hy.common.ByteHelp;
 import org.hy.common.Date;
+import org.hy.common.ExpireMap;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.StaticReflect;
@@ -30,6 +31,7 @@ import net.minidev.json.JSONArray;
  *
  * @author   ZhengWei(HY)
  * @version  V1.0  2021-12-10
+ *           V2.0  2022-06-22 添加：支持特殊类型ExpireMap的转Java
  */
 public class XJSONToJava
 {
@@ -1558,6 +1560,49 @@ public class XJSONToJava
         }
         
         return v_VValue;
+    }
+    
+    
+    /**
+     * Json转Map中的元素值
+     * 
+     * 注：内部不做NULL效验
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-06-22
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_Map
+     * @param i_MapKey
+     * @param i_MapValue
+     */
+    public static void mapValueToJava(XJSON i_XJson ,Map<Object ,Object> i_Map ,Object i_MapKey ,Object i_MapValue)
+    {
+        i_Map.put(i_MapKey ,i_MapValue);
+    }
+    
+    
+    
+    /**
+     * Json转Map中的元素值
+     * 
+     * 注：内部不做NULL效验
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-06-22
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_Map
+     * @param i_MapKey
+     * @param i_MapValue
+     */
+    @SuppressWarnings("unchecked")
+    public static void mapValueToJava(XJSON i_XJson ,ExpireMap<String ,Object> i_Map ,String i_MapKey ,Object i_MapValue)
+    {
+        Map<String ,Object> v_MapValue = (Map<String ,Object>)i_MapValue;
+        i_Map.putMilli(i_MapKey ,v_MapValue.get("value") ,(Date)v_MapValue.get("createTime") ,(Long)v_MapValue.get("time"));
     }
     
     
