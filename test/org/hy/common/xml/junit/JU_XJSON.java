@@ -11,6 +11,8 @@ import org.hy.common.ExpireMap;
 import org.hy.common.Help;
 import org.hy.common.Queue;
 import org.hy.common.Queue.QueueType;
+import org.hy.common.StringHelp;
+import org.hy.common.file.FileHelp;
 import org.hy.common.net.data.Command;
 import org.hy.common.thread.Jobs;
 import org.hy.common.xml.XJSON;
@@ -51,6 +53,26 @@ public class JU_XJSON
     private Integer [] valueIntegerArr;
     
     private String  [] valueStringArr;
+    
+    
+    
+    @Test
+    public void 剪影字幕提取() throws Exception
+    {
+        FileHelp          v_FileHelp = new FileHelp();
+        String            v_FileName = "C:\\Users\\hyzhe\\Desktop\\draft_content.json";   // 请将剪影字幕转一下格式后再使用哈
+        String            v_JsonData = v_FileHelp.getContent(v_FileName ,"GBK");
+        XJSON             v_XJson    = new XJSON();
+        
+        v_JsonData = StringHelp.replaceAll(v_JsonData ,"�" ,"");
+        
+        JU_JSON_Materials v_Data = (JU_JSON_Materials)v_XJson.toJava(v_JsonData ,"materials" ,JU_JSON_Materials.class);
+        
+        for (JU_JSON_Text v_Text : v_Data.getTexts())
+        {
+            System.out.println(v_Text.getContent());
+        }
+    }
     
     
     

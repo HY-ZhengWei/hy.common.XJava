@@ -2203,13 +2203,35 @@ public final class XJava
                 String        v_Content  = v_FileHelp.getContent(this.xmlURL ,"UTF-8" ,true);
                 String []     v_Rows     = v_Content.split("\r\n");
                 int           v_Index    = 0;
+                int           v_CommendS = -1;
+                int           v_CommendE = -1;
                 
                 for (int v_RI=0; v_RI<v_Rows.length; v_RI++)
                 {
                     String v_Row          = v_Rows[v_RI];
                     int    v_EncryptIndex = v_Row.indexOf($XML_OBJECT_ENCRYPT);
-                    int    v_CommendS     = v_Row.indexOf("<!--");
-                    int    v_CommendE     = v_Row.lastIndexOf("-->");
+                    
+                    // 跳过跨行(即多行)注释
+                    if ( v_CommendS >= 0 && v_CommendE < 0 )
+                    {
+                        v_CommendE = v_Row.lastIndexOf("-->");
+                        if ( v_CommendE >= 0 )
+                        {
+                            if ( v_EncryptIndex < v_CommendE )
+                            {
+                                v_CommendS = -1;
+                                v_CommendE = -1;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    
+                    v_CommendS = v_Row.indexOf("<!--");
+                    v_CommendE = v_Row.lastIndexOf("-->");
                     
                     if ( v_EncryptIndex >= 0 && !(v_CommendS < v_EncryptIndex && v_EncryptIndex < v_CommendE) )
                     {
