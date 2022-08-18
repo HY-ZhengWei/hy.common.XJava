@@ -2117,8 +2117,9 @@ public final class XJava
         }
         catch (Exception exce)
         {
-            $Logger.error(exce);
-            return null;
+            String v_XMLURL = this.xmlURL == null ? "" : this.xmlURL.toString();
+            $Logger.error(Help.NVL(this.treeNodeRootKey ,v_XMLURL) ,exce);
+            throw new java.lang.RuntimeException(exce);
         }
         
         

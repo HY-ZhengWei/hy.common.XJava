@@ -2,36 +2,85 @@
 
 <config>
 
-	<import name="sqls"            class="java.util.ArrayList" />
-	<import name="sql"             class="org.hy.common.xml.XSQL" />
+    <import name="sqls"            class="java.util.ArrayList" />
+    <import name="sql"             class="org.hy.common.xml.XSQL" />
 
 
 
-	<sqls>
+    <sqls>
 
         <sql id="XSQL_User_Condition_002">
 
             <content>
                 <![CDATA[
-					SELECT
-					    id
-					FROM overduePrepareMaterialRealTimeData
-					WHERE 1 = 1
-						<[ AND (:prepareMaterialDate) ]>
-					ORDER BY planstarttime,planNo
-				]]>
+                    SELECT
+                        id
+                    FROM overduePrepareMaterialRealTimeData
+                    WHERE 1 = 1
+                        <[ AND (:prepareMaterialDate) ]>
+                    ORDER BY planstarttime,planNo
+                ]]>
             </content>
             
             <condition>
                 <name>prepareMaterialDate</name>
                 <if>:prepareMaterialDate == '1'</if>
                 <true>'1' != '满足' AND '1' != '2'</true>
-				<if>:prepareMaterialDate == '0'</if>
-				<true>prepareMaterialDate IS NOT NULL OR ISNULL(LTRIM(RTRIM(prepareMaterialState)) , '') = '满足'</true>
+                <if>:prepareMaterialDate == '0'</if>
+                <true>prepareMaterialDate IS NOT NULL OR ISNULL(LTRIM(RTRIM(prepareMaterialState)) , '') = '满足'</true>
             </condition>
             
         </sql>
+        
+        
+        
+        <sql id="XSQL_User_Condition_003">
+            <content>
+                <![CDATA[
+                    SELECT
+                        ROW_NUMBER() over(ORDER BY a.djh,a.lb,a.lbmc,a.jkr,a.kxyt,a.je,a.tgje,a.cnqrr,a.rq,a.lrr,a.dycs,b.billcode desc) AS rowNumber,
+                        a.djh djh, a.lb lb,
+                        a.lbmc lbmc, a.jkr jkr,
+                        a.kxyt kxyt,a.je je,
+                        a.tgje tgje,a.cnqrr cnqrr,
+                        a.rq rq,a.lrr lrr,a.dycs dycs,
+                        b.billcode billcode
+                    from oaext_sale_bill a
+                    LEFT JOIN oa_voucher_record b
+                    on a.djh=b.maindjh
+                    where 1 = 1
+                     <[AND a.djh like '%:djh%']>
+                     <[AND a.jkr like '%:jkr%']>
+                     <[AND a.lbmc = ':lbmc']>
+                     :billcode
+                ]]>
+            </content>
+            
+            <condition>  
+                <name>billcode</name>  
+                <if><![CDATA[:billcode == '0']]></if>
+                <true>
+                    AND b.billcode IS NULL
+                    GROUP BY a.djh,a.lb,a.lbmc,a.jkr,a.kxyt,a.je,a.tgje,a.cnqrr,a.rq,a.lrr,a.dycs,b.billcode
+                    order by a.rq desc
+                </true>  
+                <if><![CDATA[:billcode == '1']]></if>
+                <true>
+                    AND b.billcode IS NOT NULL
+                    GROUP BY a.djh,a.lb,a.lbmc,a.jkr,a.kxyt,a.je,a.tgje,a.cnqrr,a.rq,a.lrr,a.dycs,b.billcode
+                    order by b.billcode,a.rq desc
+                </true>
+                <false>
+                    GROUP BY a.djh,a.lb,a.lbmc,a.jkr,a.kxyt,a.je,a.tgje,a.cnqrr,a.rq,a.lrr,a.dycs,b.billcode
+                    order by a.rq desc
+                </false>
+            </condition>  
+            <result>
+               <row>com.fms.ftl.cpmp.FinancialAccounting.model.Document</row>
+                <cfill>setter(colValue)</cfill>
+            </result>
+        </sql>
 
-	</sqls>
-	
+    </sqls>
+    
 </config>
