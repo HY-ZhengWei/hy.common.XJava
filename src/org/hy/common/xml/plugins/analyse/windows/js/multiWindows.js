@@ -464,13 +464,21 @@ function calcAllChildComponentSize(i_SuperWidth ,i_SuperHeight ,i_SuperComponent
         
         if ( "COL" == v_SuperLayout )
         {
+            v_MWNull.css("width"  ,0 + "px");
+            v_MWNull.css("height" ,0 + "px");
+            /*
             v_MWNull.css("width"  ,i_SuperWidth + "px");
             v_MWNull.css("height" ,150 + "px");
+            */
         }
         else
         {
+            v_MWNull.css("width"  ,0 + "px");
+            v_MWNull.css("height" ,0 + "px");
+            /*
             v_MWNull.css("width"  ,150 + "px");
             v_MWNull.css("height" ,i_SuperHeight + "px");
+            */
         }
         
         if ( v_HVSize <= 0 )

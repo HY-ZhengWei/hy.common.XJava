@@ -93,6 +93,7 @@ import org.xml.sax.InputSource;
  *              v1.16 2022-01-05  添加：日志机制启用内部的Logger，不再强关联Apache
  *                                添加：getObjects(Class)支持对接口类的猜想
  *              v1.17 2022-05-30  添加：XJavaID在对象构造出后，立刻赋值，方便后续操作的使用。建议人：邹德福
+ *              v1.18 2022-09-20  添加：getObject(class)类似的方法实现递归从父类、父父类中查询。建议人：李彦宏
  */
 public final class XJava
 {
@@ -738,6 +739,11 @@ public final class XJava
                             // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2017-11-24
                             v_Maybe.put(v_TreeNode ,null);
                         }
+                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObject(false) ,i_Class) )
+                        {
+                            // 尝试递归查找 ZhengWei(HY) Add 2022-09-20
+                            v_Maybe.put(v_TreeNode ,null);
+                        }
                     }
                 }
             }
@@ -805,6 +811,11 @@ public final class XJava
                         else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
                         {
                             // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2017-11-24
+                            v_Maybe.put(v_TreeNode.getInfo() ,null);
+                        }
+                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObject(false) ,i_Class) )
+                        {
+                            // 尝试递归查找 ZhengWei(HY) Add 2022-09-20
                             v_Maybe.put(v_TreeNode.getInfo() ,null);
                         }
                     }
@@ -887,6 +898,11 @@ public final class XJava
                         else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
                         {
                             // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2017-11-24
+                            v_Maybe.put(v_TreeNode.getInfo() ,null);
+                        }
+                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObject(false) ,i_Class) )
+                        {
+                            // 尝试递归查找 ZhengWei(HY) Add 2022-09-20
                             v_Maybe.put(v_TreeNode.getInfo() ,null);
                         }
                     }
@@ -1112,6 +1128,11 @@ public final class XJava
                             // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2022-01-05
                             v_Maybe.put(v_ID ,v_TreeNode.getInfo());
                         }
+                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObject(false) ,i_Class) )
+                        {
+                            // 尝试递归查找 ZhengWei(HY) Add 2022-09-20
+                            v_Maybe.put(v_ID ,v_TreeNode.getInfo());
+                        }
                     }
                 }
             }
@@ -1202,6 +1223,11 @@ public final class XJava
                         else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
                         {
                             // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2022-01-05
+                            v_Maybe.put(v_ID ,v_TreeNode.getInfo());
+                        }
+                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObject(false) ,i_Class) )
+                        {
+                            // 尝试递归查找 ZhengWei(HY) Add 2022-09-20
                             v_Maybe.put(v_ID ,v_TreeNode.getInfo());
                         }
                     }
