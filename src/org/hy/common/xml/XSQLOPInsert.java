@@ -301,7 +301,7 @@ public class XSQLOPInsert
             long v_TimeLen = v_EndTime.getTime() - v_BeginTime;
             i_XSQL.success(v_EndTime ,v_TimeLen ,1 ,v_Count);
             
-            return new XSQLData(v_Identitys ,v_Count ,1 ,v_TimeLen);
+            return new XSQLData(v_Identitys ,v_Count ,1 ,v_TimeLen ,null);
         }
         catch (Exception exce)
         {
@@ -578,7 +578,7 @@ public class XSQLOPInsert
             long v_TimeLen = v_EndTime.getTime() - v_BeginTime;
             i_XSQL.success(v_EndTime ,v_TimeLen ,1 ,v_Count);
             
-            return new XSQLData(v_Identitys ,v_Count ,1 ,v_TimeLen);
+            return new XSQLData(v_Identitys ,v_Count ,1 ,v_TimeLen ,null);
         }
         catch (Exception exce)
         {
@@ -830,7 +830,7 @@ public class XSQLOPInsert
             Date v_EndTime = Date.getNowTime();
             long v_TimeLen = v_EndTime.getTime() - v_BeginTime;
             i_XSQL.success(v_EndTime ,v_TimeLen ,i_ObjList.size() ,v_Ret);
-            return new XSQLData(v_Identitys ,v_Ret ,1 ,v_TimeLen);
+            return new XSQLData(v_Identitys ,v_Ret ,1 ,v_TimeLen ,null);
         }
         catch (Exception exce)
         {
@@ -1211,7 +1211,7 @@ public class XSQLOPInsert
             long v_TimeLen = v_EndTime.getTime() - v_BeginTime;
             i_XSQL.success(v_EndTime ,v_TimeLen ,v_CommitCount ,v_Ret);
             
-            return new XSQLData(v_Identitys ,v_Ret ,1 ,v_TimeLen);
+            return new XSQLData(v_Identitys ,v_Ret ,1 ,v_TimeLen ,null);
         }
         catch (Exception exce)
         {

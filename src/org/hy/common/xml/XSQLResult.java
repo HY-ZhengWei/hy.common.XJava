@@ -13,13 +13,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hy.common.db.DBNameStyle;
-import org.hy.common.db.DBTableMetaData;
-import org.hy.common.xml.event.DefaultXSQLResultFillEvent;
 import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.StringHelp;
+import org.hy.common.db.DBNameStyle;
+import org.hy.common.db.DBTableMetaData;
+import org.hy.common.xml.event.DefaultXSQLResultFillEvent;
 
 
 
@@ -30,7 +30,7 @@ import org.hy.common.StringHelp;
  * 
  * @author      ZhengWei(HY)
  * @createDate  2012-11-01
- * @version     v1.0  
+ * @version     v1.0
  *              v2.0  2015-07-04  添加：对象A的属性还是一个对象B，现对对象B的属性进行填充的功能
  *              v3.0  2015-10-09  添加：可由外部控制字段名称的样式
  *              v4.0  2016-01-26  添加：行级对象填充到表级对象时，在填充之前触发的事件接口（fillEvent）
@@ -42,18 +42,18 @@ import org.hy.common.StringHelp;
  *                                      改成通过方法返回值返回。优化后，整个getDatas()方法不用加同步锁，性能大幅提升。
  *              v9.0  2020-05-26  添加：判定表级对象、行级对象的Java类型是否为接口，接口是不能实例化，应预先抛出异常给出提醒。
  */
-public final class XSQLResult 
+public final class XSQLResult
 {
-    /** 
+    /**
      * 正则表达式对：row 关键字的识别 -- 表示行级对象
      * 如：add(row)
      */
     @SuppressWarnings("unused")
     private final static String $REGEX_ROW            = "[ \\(,][Rr][Oo][Ww][ \\),\\.]";
     
-    /** 
+    /**
      * 正则表达式对：row.xxx 关键字的识别 -- 表示行级对象某一属性值的引用
-     * 如：put(row.serialNo ,row) 
+     * 如：put(row.serialNo ,row)
      */
     @SuppressWarnings("unused")
     private final static String $REGEX_ROW_GETTER     = "[ \\(,][Rr][Oo][Ww]\\.\\w+[ \\),]";
@@ -64,6 +64,13 @@ public final class XSQLResult
      */
     @SuppressWarnings("unused")
     private final static String $REGEX_ROWNO          = "[ \\(,][Rr][Oo][Ww][Nn][Oo][ \\),]";
+    
+    /**
+     * 正则表达式对：colNo 关键字的识别 -- 表示列号
+     * 如：addColumnValue(rowNo ,colNo ,colValue)
+     */
+    @SuppressWarnings("unused")
+    private final static String $REGEX_COLNAME        = "[ \\(,][Cc][Oo][Ll][Nn][Aa][Mm][Ee][ \\),]";
     
     /**
      * 正则表达式对：colNo 关键字的识别 -- 表示列号
@@ -131,7 +138,7 @@ public final class XSQLResult
     /** 列级对象填充到行级对象的填充方法字符串 */
     private String              cfill;
     
-    /** 
+    /**
      * 列级对象填充到行级对象中行级对象的方法类型(解释 cfill 后生成)
      * 
      * 1. 固定方法 -- 如：cfill = "addColumnValue(colNo ,colValue)"   -- $CFILL_METHOD_FIXED
@@ -139,7 +146,7 @@ public final class XSQLResult
      */
     private int                 cfillMethodType;
     
-    /** 
+    /**
      * 列级对象填充到行级对象的填充方法(解释 cfill 后生成)
      * 
      * 当为固定方法时，cfillMethodArr只有一个元素
@@ -380,7 +387,7 @@ public final class XSQLResult
      * @param i_FilterType       过滤类型。0: 无过滤填充
      *                                   1: 按输出字段名称过滤填充
      *                                   2: 按输出字段位置过滤填充
-     *                             
+     * 
      * @param i_FilterColNames   过滤输出字段。只对结果集输出字段在这个集合 i_FilterColNames 中的字段才进行填充动作，即输出列可选择。
      * @param i_FilterColNoArr   过滤输出字段的位置。字段位置下标从零开始。只对结果集输出字段在这个数组 i_FilterColNoArr 中的字段才进行填充动作，即输出列可选择。
      * @param i_StartRow         开始读取的行号。下标从0开始。
@@ -388,9 +395,9 @@ public final class XSQLResult
      * @return
      */
     @SuppressWarnings("unchecked")
-    private XSQLData getDatas(ResultSet    i_ResultSet 
-                             ,int          i_FilterType 
-                             ,List<String> i_FilterColNames 
+    private XSQLData getDatas(ResultSet    i_ResultSet
+                             ,int          i_FilterType
+                             ,List<String> i_FilterColNames
                              ,int []       i_FilterColNoArr
                              ,int          i_StartRow
                              ,int          i_PagePerSize)
@@ -479,7 +486,7 @@ public final class XSQLResult
                     for (int i=0; i<v_Temp_ColList.size(); i++)
                     {
                         int     v_Temp_ColNo   = v_Temp_ColList.get(i).intValue();
-                        boolean v_Temp_IsExist = false; 
+                        boolean v_Temp_IsExist = false;
                         
                         for (int j=0; j<this.cfillMethodArr_ValidIndex.length && !v_Temp_IsExist; j++)
                         {
@@ -513,7 +520,7 @@ public final class XSQLResult
             {
                 int v_Count = 0;
                 /*
-                while ( v_Count < i_StartRow && i_ResultSet.next() ) 
+                while ( v_Count < i_StartRow && i_ResultSet.next() )
                 {
                     v_Count++;
                 }
@@ -527,7 +534,7 @@ public final class XSQLResult
                     // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
                     if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
                     {
-                        while ( v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        while ( v_Count < i_PagePerSize && i_ResultSet.next() )
                         {
                             Object v_Row = this.newRowObject();
                             
@@ -546,7 +553,7 @@ public final class XSQLResult
                     // 列级对象填充到行级对象中行级对象的方法类型: 变化方法 -- setter(colValue)
                     else
                     {
-                        while ( v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        while ( v_Count < i_PagePerSize && i_ResultSet.next() )
                         {
                             Object v_Row = this.newRowObject();
                             
@@ -577,7 +584,7 @@ public final class XSQLResult
                     // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
                     if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
                     {
-                        while ( v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        while ( v_Count < i_PagePerSize && i_ResultSet.next() )
                         {
                             Object v_Row = this.newRowObject();
                             
@@ -602,7 +609,7 @@ public final class XSQLResult
                     // 列级对象填充到行级对象中行级对象的方法类型: 变化方法 -- setter(colValue)
                     else
                     {
-                        while ( v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        while ( v_Count < i_PagePerSize && i_ResultSet.next() )
                         {
                             Object v_Row = this.newRowObject();
                             
@@ -639,7 +646,7 @@ public final class XSQLResult
                     // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
                     if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
                     {
-                        while ( i_ResultSet.next() ) 
+                        while ( i_ResultSet.next() )
                         {
                             Object v_Row = this.newRowObject();
                             
@@ -657,7 +664,7 @@ public final class XSQLResult
                     // 列级对象填充到行级对象中行级对象的方法类型: 变化方法 -- setter(colValue)
                     else
                     {
-                        while ( i_ResultSet.next() ) 
+                        while ( i_ResultSet.next() )
                         {
                             Object v_Row = this.newRowObject();
                             
@@ -687,7 +694,7 @@ public final class XSQLResult
                     // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
                     if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
                     {
-                        while ( i_ResultSet.next() ) 
+                        while ( i_ResultSet.next() )
                         {
                             Object v_Row = this.newRowObject();
                             
@@ -711,7 +718,7 @@ public final class XSQLResult
                     // 列级对象填充到行级对象中行级对象的方法类型: 变化方法 -- setter(colValue)
                     else
                     {
-                        while ( i_ResultSet.next() ) 
+                        while ( i_ResultSet.next() )
                         {
                             Object v_Row = this.newRowObject();
                             
@@ -752,7 +759,7 @@ public final class XSQLResult
             }
         }
         
-        return new XSQLData(v_Table ,v_RowNo ,v_ColArr.length ,Date.getNowTime().differ(v_ExecBeginTime));
+        return new XSQLData(v_Table ,v_RowNo ,v_ColArr.length ,Date.getNowTime().differ(v_ExecBeginTime) ,this.dbMetaData);
     }
     
     
@@ -768,7 +775,7 @@ public final class XSQLResult
      * @param i_FilterType       过滤类型。0: 无过滤填充
      *                                   1: 按输出字段名称过滤填充
      *                                   2: 按输出字段位置过滤填充
-     *                             
+     * 
      * @param i_FilterColNames   过滤输出字段。只对结果集输出字段在这个集合 i_FilterColNames 中的字段才进行填充动作，即输出列可选择。
      * @param i_FilterColNoArr   过滤输出字段的位置。字段位置下标从零开始。只对结果集输出字段在这个数组 i_FilterColNoArr 中的字段才进行填充动作，即输出列可选择。
      * @param i_StartRow         开始读取的行号。下标从0开始。
@@ -777,9 +784,9 @@ public final class XSQLResult
      * @return
      */
     @SuppressWarnings("unchecked")
-    private XSQLData getBigDatas(ResultSet    i_ResultSet 
-                                ,int          i_FilterType 
-                                ,List<String> i_FilterColNames 
+    private XSQLData getBigDatas(ResultSet    i_ResultSet
+                                ,int          i_FilterType
+                                ,List<String> i_FilterColNames
                                 ,int []       i_FilterColNoArr
                                 ,int          i_StartRow
                                 ,int          i_PagePerSize
@@ -869,7 +876,7 @@ public final class XSQLResult
                     for (int i=0; i<v_Temp_ColList.size(); i++)
                     {
                         int     v_Temp_ColNo   = v_Temp_ColList.get(i).intValue();
-                        boolean v_Temp_IsExist = false; 
+                        boolean v_Temp_IsExist = false;
                         
                         for (int j=0; j<this.cfillMethodArr_ValidIndex.length && !v_Temp_IsExist; j++)
                         {
@@ -910,7 +917,7 @@ public final class XSQLResult
             {
                 int v_Count = 0;
                 /*
-                while ( v_Count < i_StartRow && i_ResultSet.next() ) 
+                while ( v_Count < i_StartRow && i_ResultSet.next() )
                 {
                     v_Count++;
                 }
@@ -940,7 +947,7 @@ public final class XSQLResult
                             v_Count++;
                         }
                         
-                        while ( v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        while ( v_Count < i_PagePerSize && i_ResultSet.next() )
                         {
                             v_RowNext = this.newRowObject();
                             
@@ -985,7 +992,7 @@ public final class XSQLResult
                             v_Count++;
                         }
                         
-                        while ( v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        while ( v_Count < i_PagePerSize && i_ResultSet.next() )
                         {
                             v_RowNext = this.newRowObject();
                             
@@ -1021,7 +1028,7 @@ public final class XSQLResult
                     if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
                     {
                         v_FillEventBefore = false;
-                        while ( !v_FillEventBefore && v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        while ( !v_FillEventBefore && v_Count < i_PagePerSize && i_ResultSet.next() )
                         {
                             v_Row = this.newRowObject();
                             
@@ -1043,7 +1050,7 @@ public final class XSQLResult
                             v_Count++;
                         }
                         
-                        while ( v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        while ( v_Count < i_PagePerSize && i_ResultSet.next() )
                         {
                             v_RowNext = this.newRowObject();
                             
@@ -1075,7 +1082,7 @@ public final class XSQLResult
                     else
                     {
                         v_FillEventBefore = false;
-                        while ( !v_FillEventBefore && v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        while ( !v_FillEventBefore && v_Count < i_PagePerSize && i_ResultSet.next() )
                         {
                             v_Row = this.newRowObject();
                             
@@ -1101,7 +1108,7 @@ public final class XSQLResult
                             v_Count++;
                         }
                         
-                        while ( v_Count < i_PagePerSize && i_ResultSet.next() ) 
+                        while ( v_Count < i_PagePerSize && i_ResultSet.next() )
                         {
                             v_RowNext = this.newRowObject();
                             
@@ -1144,7 +1151,7 @@ public final class XSQLResult
                     // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
                     if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
                     {
-                        if ( i_ResultSet.next() ) 
+                        if ( i_ResultSet.next() )
                         {
                             v_Row = this.newRowObject();
                             
@@ -1159,7 +1166,7 @@ public final class XSQLResult
                             this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
                         }
                         
-                        while ( i_ResultSet.next() ) 
+                        while ( i_ResultSet.next() )
                         {
                             v_RowNext = this.newRowObject();
                             
@@ -1183,7 +1190,7 @@ public final class XSQLResult
                     // 列级对象填充到行级对象中行级对象的方法类型: 变化方法 -- setter(colValue)
                     else
                     {
-                        if ( i_ResultSet.next() ) 
+                        if ( i_ResultSet.next() )
                         {
                             v_Row = this.newRowObject();
                             
@@ -1202,7 +1209,7 @@ public final class XSQLResult
                             this.fillMethod.invoke(v_Table ,v_Row ,v_RowNo ,null);
                         }
                         
-                        while ( i_ResultSet.next() ) 
+                        while ( i_ResultSet.next() )
                         {
                             v_RowNext = this.newRowObject();
                             
@@ -1237,7 +1244,7 @@ public final class XSQLResult
                     if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
                     {
                         v_FillEventBefore = false;
-                        while ( !v_FillEventBefore && i_ResultSet.next() ) 
+                        while ( !v_FillEventBefore && i_ResultSet.next() )
                         {
                             v_Row = this.newRowObject();
                             
@@ -1258,7 +1265,7 @@ public final class XSQLResult
                             }
                         }
                         
-                        while ( i_ResultSet.next() ) 
+                        while ( i_ResultSet.next() )
                         {
                             v_RowNext = this.newRowObject();
                             
@@ -1289,7 +1296,7 @@ public final class XSQLResult
                     else
                     {
                         v_FillEventBefore = false;
-                        while ( !v_FillEventBefore && i_ResultSet.next() ) 
+                        while ( !v_FillEventBefore && i_ResultSet.next() )
                         {
                             v_Row = this.newRowObject();
                             
@@ -1314,7 +1321,7 @@ public final class XSQLResult
                             }
                         }
                         
-                        while ( i_ResultSet.next() ) 
+                        while ( i_ResultSet.next() )
                         {
                             v_RowNext = this.newRowObject();
                             
@@ -1375,7 +1382,7 @@ public final class XSQLResult
             }
         }
         
-        return new XSQLData(v_Table ,v_RowNo ,v_ColArr.length ,Date.getNowTime().differ(v_ExecBeginTime));
+        return new XSQLData(v_Table ,v_RowNo ,v_ColArr.length ,Date.getNowTime().differ(v_ExecBeginTime) ,this.dbMetaData);
     }
     
     
@@ -1388,9 +1395,9 @@ public final class XSQLResult
      * @param i_FilterType       过滤类型。0: 无过滤填充
      *                                   1: 按输出字段名称过滤填充
      *                                   2: 按输出字段位置过滤填充
-     *                             
+     * 
      * @param i_FilterColNames   过滤输出字段。只对结果集输出字段在这个集合 i_FilterColNames 中的字段才进行填充动作，即输出列可选择。
-     *                     
+     * 
      * @param i_FilterColNoArr   过滤输出字段的位置。字段位置下标从零开始。只对结果集输出字段在这个数组 i_FilterColNoArr 中的字段才进行填充动作，即输出列可选择。
      * @return
      */
@@ -1473,7 +1480,7 @@ public final class XSQLResult
                     for (int i=0; i<v_Temp_ColList.size(); i++)
                     {
                         int     v_Temp_ColNo   = v_Temp_ColList.get(i).intValue();
-                        boolean v_Temp_IsExist = false; 
+                        boolean v_Temp_IsExist = false;
                         
                         for (int j=0; j<this.cfillMethodArr_ValidIndex.length && !v_Temp_IsExist; j++)
                         {
@@ -1533,7 +1540,7 @@ public final class XSQLResult
         
         if ( !i_Bigger.isBiggerNextPage() )
         {
-            return new XSQLData(i_Bigger.getBiggerMemory().getMemory() ,0L ,0 ,0L);
+            return new XSQLData(i_Bigger.getBiggerMemory().getMemory() ,0L ,0 ,0L ,this.dbMetaData);
         }
         
         
@@ -1543,7 +1550,7 @@ public final class XSQLResult
         Date      v_ExecBeginTime = new Date();
         
         try
-        {   
+        {
             v_RowNo         = v_ResultSet.getRow();
             int  v_PerIndex = 1;
             int  v_PerSize  = i_Bigger.getPerSize();
@@ -1551,7 +1558,7 @@ public final class XSQLResult
             // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
             if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
             {
-                while ( v_PerIndex <= v_PerSize && v_ResultSet.next() ) 
+                while ( v_PerIndex <= v_PerSize && v_ResultSet.next() )
                 {
                     Object v_Row = this.newRowObject();
                     
@@ -1572,7 +1579,7 @@ public final class XSQLResult
             // 列级对象填充到行级对象中行级对象的方法类型: 变化方法 -- setter(colValue)
             else
             {
-                while ( v_PerIndex <= v_PerSize && v_ResultSet.next() ) 
+                while ( v_PerIndex <= v_PerSize && v_ResultSet.next() )
                 {
                     Object v_Row = this.newRowObject();
                     
@@ -1607,7 +1614,7 @@ public final class XSQLResult
             }
         }
         
-        return new XSQLData(i_Bigger.getBiggerMemory().getMemory() ,v_RowNo ,this.cfill_ValidIndex_BiggerMemory.length ,Date.getNowTime().differ(v_ExecBeginTime));
+        return new XSQLData(i_Bigger.getBiggerMemory().getMemory() ,v_RowNo ,this.cfill_ValidIndex_BiggerMemory.length ,Date.getNowTime().differ(v_ExecBeginTime) ,this.dbMetaData);
     }
     
     
@@ -1620,7 +1627,7 @@ public final class XSQLResult
      * 注意：1. 此方法直接返回下一行的行级数据，而不是表级数据。
      *      2. 并且，生成的行级数据不向表级数据填充。
      *      3. 此方法不再统计 getDatasTimes 时长。一行数据，没有什么好统计的。
-     *      
+     * 
      * 
      * @param i_Bigger           超级大结果集的存储器处理类
      * @return
@@ -1650,13 +1657,13 @@ public final class XSQLResult
         int       v_ColNo     = 0;
         
         try
-        {   
+        {
             v_RowNo = v_ResultSet.getRow();
             
             // 列级对象填充到行级对象中行级对象的方法类型: 固定方法
             if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
             {
-                if ( v_ResultSet.next() ) 
+                if ( v_ResultSet.next() )
                 {
                     v_Row = this.newRowObject();
                     
@@ -1672,7 +1679,7 @@ public final class XSQLResult
             // 列级对象填充到行级对象中行级对象的方法类型: 变化方法 -- setter(colValue)
             else
             {
-                if ( v_ResultSet.next() ) 
+                if ( v_ResultSet.next() )
                 {
                     v_Row = this.newRowObject();
                     
@@ -1836,7 +1843,7 @@ public final class XSQLResult
         }
         
         
-        // 获取行级填充方法 
+        // 获取行级填充方法
         v_MethodList = MethodReflect.getMethodsIgnoreCase(this.table ,v_MethodName ,v_ParamArr.length);
         if ( v_MethodList.size() == 1 )
         {
@@ -1969,7 +1976,7 @@ public final class XSQLResult
                         this.cfillMethodArr[v_ColNo].setCollectionElement(  v_CollectionElement);
                         
                         // 按 call 方法的入参类型，决定 java.sql.ResultSet 获取字段值的方法
-                        this.cfillMethodArr[v_ColNo].parseResultSet_Getter();  
+                        this.cfillMethodArr[v_ColNo].parseResultSet_Getter();
                         
                         v_VaildIndexList.add(Integer.valueOf(v_ColNo));
                     }
@@ -2035,7 +2042,7 @@ public final class XSQLResult
             }
             
             
-            // 获取列级填充方法 
+            // 获取列级填充方法
             v_MethodList = MethodReflect.getMethodsIgnoreCase(this.row ,v_MethodName ,v_ParamArr.length);
             if ( v_MethodList.size() == 1 )
             {
@@ -2185,7 +2192,7 @@ public final class XSQLResult
      * 
      * @return
      * @throws ClassNotFoundException
-     * @throws InstantiationException 
+     * @throws InstantiationException
      */
     private Object newTableObject() throws ClassNotFoundException, InstantiationException
     {
@@ -2210,7 +2217,7 @@ public final class XSQLResult
      * 
      * @return
      * @throws ClassNotFoundException
-     * @throws InstantiationException 
+     * @throws InstantiationException
      */
     private Object newRowObject() throws ClassNotFoundException, InstantiationException
     {
@@ -2254,14 +2261,14 @@ public final class XSQLResult
     
     
     
-    public String getCfill() 
+    public String getCfill()
     {
         return cfill;
     }
     
     
 
-    public void setCfill(String i_CFill) 
+    public void setCfill(String i_CFill)
     {
         if ( Help.isNull(i_CFill) )
         {
@@ -2290,14 +2297,14 @@ public final class XSQLResult
     
     
 
-    public String getFill() 
+    public String getFill()
     {
         return fill;
     }
 
     
     
-    public void setFill(String i_Fill) 
+    public void setFill(String i_Fill)
     {
         if ( Help.isNull(i_Fill) )
         {
@@ -2335,7 +2342,7 @@ public final class XSQLResult
      * 
      * 此事件接口，只允许有一个监听者，所以此变量的类型没有定义为集合。
      * 
-     * @param fillEvent 
+     * @param fillEvent
      */
     public void setFillEvent(XSQLResultFillEvent fillEvent)
     {
@@ -2395,7 +2402,7 @@ public final class XSQLResult
      * 
      * @return
      */
-    public Class<?> getTable() 
+    public Class<?> getTable()
     {
         return this.table;
     }
@@ -2449,7 +2456,7 @@ public final class XSQLResult
     /**
      * 设置：字段名称的样式(默认为全部大写)
      * 
-     * @param cstyle 
+     * @param cstyle
      */
     public void setCstyle(String i_CStyleName)
     {
@@ -2485,7 +2492,7 @@ public final class XSQLResult
      * 
      * ZhengWei(HY) Add 2017-03-01
      * 
-     * @param i_RelationKeys 
+     * @param i_RelationKeys
      */
     public void setRelationKeys(String i_RelationKeys)
     {
@@ -2504,6 +2511,22 @@ public final class XSQLResult
     public boolean isParsed()
     {
         return !this.isAgainParse;
+    }
+    
+    
+    
+    /**
+     * 获取查询结果集的字段结构
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-10-06
+     * @version     v1.0
+     *
+     * @return
+     */
+    public DBTableMetaData getDBTableMetaData()
+    {
+        return this.dbMetaData;
     }
     
 }

@@ -2,6 +2,8 @@ package org.hy.common.xml;
 
 import java.util.List;
 
+import org.hy.common.db.DBTableMetaData;
+
 
 
 
@@ -20,25 +22,29 @@ public class XSQLData
 {
     
     /** 查询返回的结果 */
-    private Object        datas;
+    private Object          datas;
     
     /** 将数据库结果集转化为Java实例对象的行数(已读取的行数) */
-    private long          rowCount;
+    private long            rowCount;
     
     /** 将数据库结果集转化为Java实例对象的列数(有效列数) */
-    private int           colCount;
+    private int             colCount;
     
     /** 将数据库结果集转化为Java实例对象的用时时长(单位：毫秒) */
-    private long          timeLen;
+    private long            timeLen;
+    
+    /** 结果集的字段结构 */
+    private DBTableMetaData metaData;
     
     
     
-    public XSQLData(Object i_Datas ,long i_RowCount ,int i_ColCount ,long i_TimeLen)
+    public XSQLData(Object i_Datas ,long i_RowCount ,int i_ColCount ,long i_TimeLen ,DBTableMetaData i_MetaData)
     {
         this.datas     = i_Datas;
         this.rowCount  = i_RowCount;
         this.colCount  = i_ColCount;
         this.timeLen   = i_TimeLen;
+        this.metaData  = i_MetaData;
     }
 
     
@@ -90,6 +96,17 @@ public class XSQLData
     public List<Integer> getIdentitys()
     {
         return (List<Integer>)datas;
+    }
+
+
+
+    
+    /**
+     * 获取：结果集的字段结构
+     */
+    public DBTableMetaData getMetaData()
+    {
+        return metaData;
     }
     
 }
