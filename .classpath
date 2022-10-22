@@ -23,9 +23,9 @@
 	<classpathentry kind="lib" path="lib/drools/drools-core-dynamic-7.37.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/drools/drools-core-reflective-7.37.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/drools/drools-decisiontables-7.37.0.Final.jar"/>
-	<classpathentry kind="lib" path="lib/drools/kie-api-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/kie-api-7.37.0.Final.jar" sourcepath="lib/drools/kie-api-7.37.0.Final-sources.jar"/>
 	<classpathentry kind="lib" path="lib/drools/kie-ci-7.37.0.Final.jar"/>
-	<classpathentry kind="lib" path="lib/drools/kie-internal-7.37.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/drools/kie-internal-7.37.0.Final.jar" sourcepath="lib/drools/kie-internal-7.37.0.Final-sources.jar"/>
 	<classpathentry kind="lib" path="lib/drools/kie-pmml-7.37.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/drools/kie-soup-commons-7.37.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/drools/kie-soup-maven-integration-7.37.0.Final.jar"/>
@@ -49,7 +49,6 @@
 	<classpathentry kind="lib" path="lib/netty/netty-all-4.1.67.Final.jar"/>
 	<classpathentry kind="lib" path="lib/json/accessors-smart-2.4.7.jar"/>
 	<classpathentry kind="lib" path="lib/json/asm-9.1.jar"/>
-	<classpathentry kind="lib" path="lib/protobuf/protobuf-java-3.21.1.jar"/>
 	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-api-2.18.0.jar"/>
 	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/log4j-core-2.18.0.jar"/>
 	<classpathentry kind="lib" path="lib/log_slf4j_log4j_2x/slf4j-api-1.7.36.jar"/>
@@ -57,5 +56,6 @@
 	<classpathentry kind="lib" path="lib/mq/rocketmq-client-4.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/mq/rocketmq-common-4.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/mq/rocketmq-remoting-4.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/protobuf/3.21.1/protobuf-java-3.21.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
