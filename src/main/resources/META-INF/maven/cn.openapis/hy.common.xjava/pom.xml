@@ -6,7 +6,7 @@
 
     <groupId>org</groupId>
     <artifactId>hy.common.xjava</artifactId>
-    <version>4.1.7</version>
+    <version>4.1.8</version>
     <packaging>jar</packaging>
 
     <name>cn.openapis.hy.common.xjava</name>
@@ -241,7 +241,7 @@
     </dependencies>
 
     <scm>
-        <tag>main</tag>
+        <tag>master</tag>
         <url>git@github.com:HY-ZhengWei/hy.common.xjava.git</url>
         <connection>git@github.com:HY-ZhengWei/hy.common.xjava.git</connection>
         <developerConnection>git@github.com:HY-ZhengWei/hy.common.xjava.git</developerConnection>

@@ -15,6 +15,7 @@ import org.hy.common.StringHelp;
 import org.hy.common.xml.XJSON;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.log.Logger;
+import org.hy.common.xml.plugins.analyse.checkimage.v1.CheckImageUtil;
 
 
 

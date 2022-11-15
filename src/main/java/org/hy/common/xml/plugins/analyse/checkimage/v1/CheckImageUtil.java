@@ -1,4 +1,4 @@
-package org.hy.common.xml.plugins.analyse;
+package org.hy.common.xml.plugins.analyse.checkimage.v1;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -14,7 +14,7 @@ import org.hy.common.xml.log.Logger;
 
 
 /**
- * 图形验证码
+ * 图形验证码：滑块拼图
  *
  * @author      ZhengWei(HY)
  * @createDate  2021-05-18
