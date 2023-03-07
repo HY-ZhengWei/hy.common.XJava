@@ -2807,6 +2807,12 @@ public class XSQLOPQuery
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
+            // XSQL getSQLCount() 自行判定是否有count(1) or count(*)
+            if ( i_SQL.toUpperCase().indexOf(" COUNT(") <= 0 )
+            {
+                throw new RuntimeException("XSQL.querySQLCount()'s SQL is not find COUNT(1) or COUNT(*).");
+            }
+            
             v_Conn      = i_XSQL.getConnection(i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
