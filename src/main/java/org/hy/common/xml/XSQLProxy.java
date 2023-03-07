@@ -4,11 +4,13 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.MethodInfo;
 import org.hy.common.MethodReflect;
@@ -44,6 +46,7 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  *              v1.6  2018-07-26  优化：及时释放资源，自动的GC太慢了。
  *              v1.7  2018-08-08  添加：@Xsql.execute()属性，支持多种类不同的SQL在同一XSQL中执行。
  *              v1.8  2020-06-24  添加：通过日志引擎规范输出日志
+ *              v1.9  2023-03-07  添加：方法返回类型是String、Double、Float、BigDecimal、Date的，则按第一行第一列数据返回
  */
 public class XSQLProxy implements InvocationHandler ,Serializable
 {
@@ -629,14 +632,17 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      */
     private Object execute(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
+        // 执行语句（用 execute 属性判定的）：如DDL
         if (  i_Anno.getXsql().execute() )
         {
             return executeXSQL_Execute(i_Method ,i_Anno ,i_XSQL ,i_Args);
         }
+        // 查询语句：如Select * From ...
         else if ( i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_SELECT )
         {
             return executeXSQL_Query(i_Method ,i_Anno ,i_XSQL ,i_Args);
         }
+        // 插入语句：如Insert ...
         else if ( i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_INSERT )
         {
             if ( XSQLData.class == i_Method.getReturnType() )
@@ -665,15 +671,18 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                 return executeXSQL_ExecuteUpdate(i_Method ,i_Anno ,i_XSQL ,i_Args);
             }
         }
+        // 更新 & 删除语句
         else if ( i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_UPDATE
                || i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_DELETE )
         {
             return executeXSQL_ExecuteUpdate(i_Method ,i_Anno ,i_XSQL ,i_Args);
         }
+        // 执行语句（用 SQL 类型的）：如DDL
         else if ( i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_DDL )
         {
             return executeXSQL_Execute(i_Method ,i_Anno ,i_XSQL ,i_Args);
         }
+        // 存储过程
         else if ( i_XSQL.getContentDB().getSQLType() == DBSQL.$DBSQL_TYPE_CALL )
         {
             return executeXSQL_Call(i_Method ,i_Anno ,i_XSQL ,i_Args);
@@ -715,14 +724,17 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             }
         }
         
+        // 更新缓存ID
         if ( !Help.isNull(i_Anno.getXsql().updateCacheID()) )
         {
             return executeXSQL_Query_UpdateCache(i_Method ,i_Anno ,v_XSQL ,i_Args);
         }
+        // 定义缓存ID。
         else if ( !Help.isNull(i_Anno.getXsql().cacheID()) )
         {
             return executeXSQL_Query_Cache      (i_Method ,i_Anno ,v_XSQL ,i_Args);
         }
+        // 常规查询
         else
         {
             return executeXSQL_Query_Normal     (i_Method ,i_Anno ,v_XSQL ,i_Args);
@@ -784,7 +796,9 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @author      ZhengWei(HY)
      * @createDate  2017-12-15
      * @version     v1.0
-     *              v2.0  2018-04-27  添加：returnOne注解属性支持Map、Set集合随机获取一个元素的功能。
+     *              v2.0  2018-01-25 添加：方法返回值是整数，则按查询记录行数的SELECT Count(1) FROM ... 返回
+     *              v3.0  2018-04-27 添加：returnOne注解属性支持Map、Set集合随机获取一个元素的功能。
+     *              v4.0  2023-03-07 添加：方法返回类型是String、Double、Float、BigDecimal、Date的，则按第一行第一列数据返回
      *
      * @param i_Method
      * @param i_Anno
@@ -806,27 +820,91 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             return this.errorLog(i_Method ,null ,exce);
         }
         
-        // 2018-01-25 Add 如果方法返回值是整数，则按查询记录行数的SELECT Count(1) FROM ... 返回
-        boolean v_IsQueryCount = false;
-        boolean v_IsLong       = false;
-        if ( i_Method.getReturnType() == Integer.class
-          || i_Method.getReturnType() == int.class )
-        {
-            v_IsQueryCount = true;
-        }
-        else if ( i_Method.getReturnType() == Long.class
-               || i_Method.getReturnType() == long.class )
-        {
-            v_IsQueryCount = true;
-            v_IsLong       = true;
-        }
-        
         if ( i_Args == null || i_Args.length == 0 )
         {
-            if ( v_IsQueryCount )
+            if ( i_Method.getReturnType() == String.class )
             {
-                long v_Count = i_XSQL.querySQLCount();
-                return v_IsLong ? v_Count : Integer.parseInt("" + v_Count);
+                v_Ret = i_XSQL.querySQLValue();
+                if ( v_Ret != null )
+                {
+                    v_Ret = v_Ret.toString();
+                }
+                return v_Ret;
+            }
+            else if ( i_Method.getReturnType() == Date.class
+                   || i_Method.getReturnType() == java.util.Date.class )
+            {
+                v_Ret = i_XSQL.querySQLValue();
+                if ( v_Ret != null )
+                {
+                    v_Ret = new Date(v_Ret.toString());
+                }
+                return v_Ret;
+            }
+            else if ( i_Method.getReturnType() == Integer.class
+                   || i_Method.getReturnType() == int.class )
+            {
+                 v_Ret = i_XSQL.querySQLValue();
+                 if ( v_Ret != null )
+                 {
+                     v_Ret = Integer.valueOf(v_Ret.toString());
+                 }
+                 else if ( i_Method.getReturnType() == int.class )
+                 {
+                     return 0;
+                 }
+                 return v_Ret;
+            }
+            else if ( i_Method.getReturnType() == Long.class
+                   || i_Method.getReturnType() == long.class )
+            {
+                  v_Ret = i_XSQL.querySQLValue();
+                  if ( v_Ret != null )
+                  {
+                      v_Ret = Long.valueOf(v_Ret.toString());
+                  }
+                  else if ( i_Method.getReturnType() == long.class )
+                  {
+                      return 0L;
+                  }
+                  return v_Ret;
+            }
+            else if ( i_Method.getReturnType() == Double.class
+                   || i_Method.getReturnType() == double.class )
+            {
+                v_Ret = i_XSQL.querySQLValue();
+                if ( v_Ret != null )
+                {
+                    v_Ret = Double.valueOf(v_Ret.toString());
+                }
+                else if ( i_Method.getReturnType() == double.class )
+                {
+                    return 0D;
+                }
+                return v_Ret;
+            }
+            else if ( i_Method.getReturnType() == Float.class
+                   || i_Method.getReturnType() == float.class )
+            {
+                 v_Ret = i_XSQL.querySQLValue();
+                 if ( v_Ret != null )
+                 {
+                     v_Ret = Float.valueOf(v_Ret.toString());
+                 }
+                 else if ( i_Method.getReturnType() == float.class )
+                 {
+                     return 0F;
+                 }
+                 return v_Ret;
+            }
+            else if ( i_Method.getReturnType() == BigDecimal.class )
+            {
+                  v_Ret = i_XSQL.querySQLValue();
+                  if ( v_Ret != null )
+                  {
+                      v_Ret = new BigDecimal(v_Ret.toString());
+                  }
+                  return v_Ret;
             }
             else
             {
@@ -835,24 +913,108 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         }
         else
         {
-            if ( v_IsQueryCount )
+            try
             {
-                long v_Count = i_XSQL.querySQLCount(v_Params);
-                return v_IsLong ? v_Count : Integer.parseInt("" + v_Count);
+                if ( i_Method.getReturnType() == String.class )
+                {
+                    v_Ret = i_XSQL.querySQLValue(v_Params);
+                    if ( v_Ret != null )
+                    {
+                        v_Ret = v_Ret.toString();
+                    }
+                    return v_Ret;
+                }
+                else if ( i_Method.getReturnType() == Date.class
+                       || i_Method.getReturnType() == java.util.Date.class )
+                {
+                    v_Ret = i_XSQL.querySQLValue(v_Params);
+                    if ( v_Ret != null )
+                    {
+                        v_Ret = new Date(v_Ret.toString());
+                    }
+                }
+                else if ( i_Method.getReturnType() == Integer.class
+                       || i_Method.getReturnType() == int.class )
+                {
+                     v_Ret = i_XSQL.querySQLValue(v_Params);
+                     if ( v_Ret != null )
+                     {
+                         v_Ret = Integer.valueOf(v_Ret.toString());
+                     }
+                     else if ( i_Method.getReturnType() == int.class )
+                     {
+                         return 0;
+                     }
+                     return v_Ret;
+                }
+                else if ( i_Method.getReturnType() == Long.class
+                       || i_Method.getReturnType() == long.class)
+                {
+                      v_Ret = i_XSQL.querySQLValue(v_Params);
+                      if ( v_Ret != null )
+                      {
+                          v_Ret = Long.valueOf(v_Ret.toString());
+                      }
+                      else if ( i_Method.getReturnType() == long.class )
+                      {
+                          return 0L;
+                      }
+                      return v_Ret;
+                }
+                else if ( i_Method.getReturnType() == Double.class
+                       || i_Method.getReturnType() == double.class )
+                {
+                    v_Ret = i_XSQL.querySQLValue(v_Params);
+                    if ( v_Ret != null )
+                    {
+                        v_Ret = Double.valueOf(v_Ret.toString());
+                    }
+                    else if ( i_Method.getReturnType() == double.class )
+                    {
+                        return 0D;
+                    }
+                    return v_Ret;
+                }
+                else if ( i_Method.getReturnType() == Float.class
+                       || i_Method.getReturnType() == float.class )
+                {
+                     v_Ret = i_XSQL.querySQLValue(v_Params);
+                     if ( v_Ret != null )
+                     {
+                         v_Ret = Float.valueOf(v_Ret.toString());
+                     }
+                     else if ( i_Method.getReturnType() == float.class )
+                     {
+                         return 0F;
+                     }
+                     return v_Ret;
+                }
+                else if ( i_Method.getReturnType() == BigDecimal.class )
+                {
+                      v_Ret = i_XSQL.querySQLValue(v_Params);
+                      if ( v_Ret != null )
+                      {
+                          v_Ret = new BigDecimal(v_Ret.toString());
+                      }
+                      return v_Ret;
+                }
+                else
+                {
+                    v_Ret = i_XSQL.query(v_Params);
+                }
             }
-            else
+            finally
             {
-                v_Ret = i_XSQL.query(v_Params);
+                // 及时释放资源
+                if ( i_Args != null && i_Args.length > 1 && MethodReflect.isExtendImplement(v_Params ,Map.class) )
+                {
+                    ((Map<? ,?>)v_Params).clear();
+                }
+                v_Params = null;
             }
-            
-            // 及时释放资源
-            if ( i_Args != null && i_Args.length > 1 && MethodReflect.isExtendImplement(v_Params ,Map.class) )
-            {
-                ((Map<? ,?>)v_Params).clear();
-            }
-            v_Params = null;
         }
         
+        // 复杂返回对象类型的处理。简单返回类型的已在上面return了
         if ( v_Ret != null )
         {
             if ( Void.TYPE == i_Method.getReturnType() )

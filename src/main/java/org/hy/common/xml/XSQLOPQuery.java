@@ -24,6 +24,7 @@ import org.hy.common.db.DataSourceGroup;
  * @author      ZhengWei(HY)
  * @createDate  2022-05-26
  * @version     v1.0
+ *              v2.0  2023-03-07  添加：querySQLValue，常用于查询返回仅只一个字符串的场景。建议人：王雨墨
  */
 public class XSQLOPQuery
 {
@@ -2568,9 +2569,9 @@ public class XSQLOPQuery
      * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
-     * @param i_Values           占位符SQL的填充集合。
+     * @param i_XSQL    查询对象
+     * @param i_Values  占位符SQL的填充集合。
      * @return
-     * @throws Exception
      */
     public static long querySQLCount(final XSQL i_XSQL ,final Map<String ,?> i_Values)
     {
@@ -2624,9 +2625,9 @@ public class XSQLOPQuery
      * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
-     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_XSQL  查询对象
+     * @param i_Obj   占位符SQL的填充对象。
      * @return
-     * @throws Exception
      */
     public static long querySQLCount(final XSQL i_XSQL ,final Object i_Obj)
     {
@@ -2677,8 +2678,8 @@ public class XSQLOPQuery
      * 
      * 模块SQL的形式如：SELECT COUNT(1) FROM ...
      * 
+     * @param i_XSQL  查询对象
      * @return
-     * @throws Exception
      */
     public static long querySQLCount(final XSQL i_XSQL)
     {
@@ -2728,9 +2729,9 @@ public class XSQLOPQuery
      * 
      * 模块SQL的形式如：SELECT COUNT(1) FROM ...
      * 
-     * @param i_SQL
+     * @param i_XSQL  查询对象
+     * @param i_SQL   查询SQL
      * @return
-     * @throws Exception
      */
     public static long querySQLCount(final XSQL i_XSQL ,final String i_SQL)
     {
@@ -2779,10 +2780,11 @@ public class XSQLOPQuery
      * 查询记录总数
      * 
      * 模块SQL的形式如：SELECT COUNT(1) FROM ...
-     * 
-     * @param i_SQL
+     *
+     * @param i_XSQL  查询对象
+     * @param i_SQL   查询SQL
+     * @param i_DSG   查询数据源连接池组
      * @return
-     * @throws Exception
      */
     private static long querySQLCount_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG)
     {
@@ -2830,6 +2832,293 @@ public class XSQLOPQuery
         
         
         return v_SQLCount;
+    }
+    
+    
+    
+    /**
+     * 查询返回第一行第一列上的数值。常用于查询返回一个字符串
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-03-07
+     * @version     v1.0
+     * 
+     * @param i_XSQL    查询对象
+     * @param i_Values  占位符SQL的填充集合。
+     * @return
+     * @throws Exception
+     */
+    public static Object querySQLValue(final XSQL i_XSQL ,final Map<String ,?> i_Values)
+    {
+        i_XSQL.checkContent();
+        
+        boolean         v_IsError = false;
+        DataSourceGroup v_DSG     = null;
+        String          v_SQL     = null;
+
+        try
+        {
+            i_XSQL.fireBeforeRule(i_Values);
+            v_DSG = i_XSQL.getDataSourceGroup();
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            return XSQLOPQuery.querySQLValue_Inner(i_XSQL ,v_SQL ,v_DSG);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            if ( i_XSQL.getError() != null )
+            {
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            if ( i_XSQL.getError() != null )
+            {
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
+            }
+            throw exce;
+        }
+        finally
+        {
+            if ( i_XSQL.isTriggers(v_IsError) )
+            {
+                i_XSQL.getTrigger().executes(i_Values);
+            }
+        }
+    }
+    
+    
+    
+    /**
+     * 查询返回第一行第一列上的数值。常用于查询返回一个字符串
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-03-07
+     * @version     v1.0
+     * 
+     * @param i_XSQL  查询对象
+     * @param i_Obj   占位符SQL的填充对象。
+     * @return
+     * @throws Exception
+     */
+    public static Object querySQLValue(final XSQL i_XSQL ,final Object i_Obj)
+    {
+        i_XSQL.checkContent();
+        
+        boolean         v_IsError = false;
+        DataSourceGroup v_DSG     = null;
+        String          v_SQL     = null;
+
+        try
+        {
+            i_XSQL.fireBeforeRule(i_Obj);
+            v_DSG = i_XSQL.getDataSourceGroup();
+            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
+            return XSQLOPQuery.querySQLValue_Inner(i_XSQL ,v_SQL ,v_DSG);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            if ( i_XSQL.getError() != null )
+            {
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            if ( i_XSQL.getError() != null )
+            {
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+            }
+            throw exce;
+        }
+        finally
+        {
+            if ( i_XSQL.isTriggers(v_IsError) )
+            {
+                i_XSQL.getTrigger().executes(i_Obj);
+            }
+        }
+    }
+    
+    
+    
+    /**
+     * 查询返回第一行第一列上的数值。常用于查询返回一个字符串
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-03-07
+     * @version     v1.0
+     * 
+     * @param i_XSQL  查询对象
+     * @return
+     */
+    public static Object querySQLValue(final XSQL i_XSQL)
+    {
+        i_XSQL.checkContent();
+        
+        boolean         v_IsError = false;
+        DataSourceGroup v_DSG     = null;
+        String          v_SQL     = null;
+
+        try
+        {
+            v_DSG = i_XSQL.getDataSourceGroup();
+            v_SQL = i_XSQL.getContent().getSQL(v_DSG);
+            return XSQLOPQuery.querySQLValue_Inner(i_XSQL ,v_SQL ,v_DSG);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            if ( i_XSQL.getError() != null )
+            {
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            if ( i_XSQL.getError() != null )
+            {
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
+            }
+            throw exce;
+        }
+        finally
+        {
+            if ( i_XSQL.isTriggers(v_IsError) )
+            {
+                i_XSQL.getTrigger().executes();
+            }
+        }
+    }
+    
+    
+    
+    /**
+     * 查询返回第一行第一列上的数值。常用于查询返回一个字符串
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-03-07
+     * @version     v1.0
+     * 
+     * @param i_XSQL  查询对象
+     * @param i_SQL   查询SQL
+     * @return
+     */
+    public static Object querySQLValue(final XSQL i_XSQL ,final String i_SQL)
+    {
+        i_XSQL.checkContent();
+        
+        boolean         v_IsError = false;
+        DataSourceGroup v_DSG     = null;
+        String          v_SQL     = null;
+
+        try
+        {
+            v_DSG = i_XSQL.getDataSourceGroup();
+            v_SQL = i_XSQL.getContent().getSQL(v_DSG);
+            return XSQLOPQuery.querySQLValue_Inner(i_XSQL ,v_SQL ,v_DSG);
+        }
+        catch (NullPointerException exce)
+        {
+            v_IsError = true;
+            if ( i_XSQL.getError() != null )
+            {
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
+            }
+            throw exce;
+        }
+        catch (RuntimeException exce)
+        {
+            v_IsError = true;
+            if ( i_XSQL.getError() != null )
+            {
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
+            }
+            throw exce;
+        }
+        finally
+        {
+            if ( i_XSQL.isTriggers(v_IsError) )
+            {
+                i_XSQL.getTrigger().executes();
+            }
+        }
+    }
+    
+    
+
+    /**
+     * 查询返回第一行第一列上的数值。常用于查询返回一个字符串
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-03-07
+     * @version     v1.0
+     *
+     * @param i_XSQL   查询对象
+     * @param i_SQL    查询SQL
+     * @param i_DSG    数据库连接池组
+     * @return
+     */
+    private static Object querySQLValue_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG)
+    {
+        Connection v_Conn      = null;
+        Statement  v_Statement = null;
+        ResultSet  v_Resultset = null;
+        Object     v_SQLValue  = null;
+        long       v_BeginTime = i_XSQL.request().getTime();
+
+        
+        try
+        {
+            if ( !i_DSG.isValid() )
+            {
+                throw new RuntimeException("DataSourceGroup[" + i_DSG.getXJavaID() + "] is not valid.");
+            }
+            
+            if ( Help.isNull(i_SQL) )
+            {
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+            }
+            
+            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
+            v_Resultset = v_Statement.executeQuery(i_SQL);
+            i_XSQL.log(i_SQL);
+            
+            if ( v_Resultset.next() )
+            {
+                v_SQLValue = v_Resultset.getObject(1);
+            }
+            
+            Date v_EndTime = Date.getNowTime();
+            i_XSQL.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,1L);
+        }
+        catch (Exception exce)
+        {
+            XSQL.erroring(i_SQL ,exce ,i_XSQL);
+            throw new RuntimeException(exce.getMessage());
+        }
+        finally
+        {
+            i_XSQL.closeDB(v_Resultset ,v_Statement ,v_Conn);
+        }
+        
+        
+        return v_SQLValue;
     }
     
     

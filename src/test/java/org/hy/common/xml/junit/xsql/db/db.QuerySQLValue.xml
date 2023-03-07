@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="sqls"            class="java.util.ArrayList" />
+    <import name="sqlGroup"        class="org.hy.common.xml.plugins.XSQLGroup" />
+    <import name="sql"             class="org.hy.common.xml.XSQL" />
+
+
+
+    <sqls>
+    
+        <sql id="XSQL_Junit_QuerySQLValue_Integer"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  CInt
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+        
+        <sql id="XSQL_Junit_QuerySQLValue_Long"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  CLong
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+        
+        <sql id="XSQL_Junit_QuerySQLValue_Double"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  CDouble
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+        
+        <sql id="XSQL_Junit_QuerySQLValue_String"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  CString
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+        
+        <sql id="XSQL_Junit_QuerySQLValue_Date"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  CDate
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+        
+        <sql id="XSQL_Junit_QuerySQLValue_BigDecimal"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  CBigDecimal
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+    </sqls>
+    
+</config>
