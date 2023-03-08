@@ -53,8 +53,8 @@ public class AnalyseNetTotal extends SerializableDef
     {
         this.reports = new Hashtable<String ,NetReport>();
         
-        Map<String ,Object> v_TotalServerSessions = XJava.getObjects(ServerOperation.class);
-        List<SessionInfo>   v_TotalClientSessions = ClientTotal.getSessions();
+        Map<String ,ServerOperation> v_TotalServerSessions = XJava.getObjects(ServerOperation.class);
+        List<SessionInfo>            v_TotalClientSessions = ClientTotal.getSessions();
         
         if ( !Help.isNull(v_TotalClientSessions) )
         {
@@ -189,9 +189,8 @@ public class AnalyseNetTotal extends SerializableDef
             // 按“客户IP”分组统计
             if ( "ClientIP".equalsIgnoreCase(i_TotalType) )
             {
-                for (Object v_Total : v_TotalServerSessions.values())
+                for (ServerOperation v_Server : v_TotalServerSessions.values())
                 {
-                    ServerOperation   v_Server   = (ServerOperation)v_Total;
                     List<SessionInfo> v_Sessions = v_Server.getSessions();
                     
                     for (SessionInfo v_Client : v_Sessions)

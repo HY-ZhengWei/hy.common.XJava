@@ -11,12 +11,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -93,7 +95,9 @@ import org.xml.sax.InputSource;
  *              v1.16 2022-01-05  添加：日志机制启用内部的Logger，不再强关联Apache
  *                                添加：getObjects(Class)支持对接口类的猜想
  *              v1.17 2022-05-30  添加：XJavaID在对象构造出后，立刻赋值，方便后续操作的使用。建议人：邹德福
- *              v1.18 2022-09-20  添加：getObject(class)类似的方法实现递归从父类、父父类中查询。建议人：李彦宏
+ *              v1.18 2022-09-20  添加：getObject(class)类似的方法实现递归从父类、父父类中查询。建议人：李红彦
+ *              v1.19 2023-03-08  添加：支持@Xjava的集合同一类型的整体的注入。
+ *                                      如将多个对象打包成List/Map/Set后注入。建议人：李红彦
  */
 public final class XJava
 {
@@ -783,7 +787,8 @@ public final class XJava
      * @param i_ID
      * @return
      */
-    public static Object getObject(Class<?> i_Class)
+    @SuppressWarnings("unchecked")
+    public static <E> E getObject(Class<E> i_Class)
     {
         if ( i_Class == null )
         {
@@ -806,7 +811,7 @@ public final class XJava
                     {
                         if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
                         {
-                            return v_TreeNode.getInfo().getObject();
+                            return (E) v_TreeNode.getInfo().getObject();
                         }
                         else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
                         {
@@ -836,7 +841,7 @@ public final class XJava
                 
                 if ( null != v_Ret && i_Class == v_Ret.getClass() )
                 {
-                    return v_Ret;
+                    return (E) v_Ret;
                 }
             }
             
@@ -844,7 +849,7 @@ public final class XJava
             {
                 try
                 {
-                    return v_Maybe.keySet().iterator().next().getObject();
+                    return (E) v_Maybe.keySet().iterator().next().getObject();
                 }
                 catch (Exception exce)
                 {
@@ -870,7 +875,8 @@ public final class XJava
      * @param i_IsNew   是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
      * @return
      */
-    public static Object getObject(Class<?> i_Class ,boolean i_IsNew)
+    @SuppressWarnings("unchecked")
+    public static <E> E getObject(Class<E> i_Class ,boolean i_IsNew)
     {
         if ( i_Class == null )
         {
@@ -893,7 +899,7 @@ public final class XJava
                     {
                         if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
                         {
-                            return v_TreeNode.getInfo().getObject(i_IsNew);
+                            return (E) v_TreeNode.getInfo().getObject(i_IsNew);
                         }
                         else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
                         {
@@ -927,11 +933,11 @@ public final class XJava
                     {
                         if ( i_IsNew )
                         {
-                            return XJava.clone(v_Ret);
+                            return (E) XJava.clone(v_Ret);
                         }
                         else
                         {
-                            return v_Ret;
+                            return (E) v_Ret;
                         }
                     }
                 }
@@ -946,7 +952,7 @@ public final class XJava
             {
                 try
                 {
-                    return v_Maybe.keySet().iterator().next().getObject(i_IsNew);
+                    return (E) v_Maybe.keySet().iterator().next().getObject(i_IsNew);
                 }
                 catch (Exception exce)
                 {
@@ -1094,9 +1100,10 @@ public final class XJava
      * @param i_Class
      * @return
      */
-    public static Map<String ,Object> getObjects(Class<?> i_Class)
+    @SuppressWarnings("unchecked")
+    public static <E> Map<String ,E> getObjects(Class<E> i_Class)
     {
-        Map<String ,Object> v_Objs = new HashMap<String ,Object>();
+        Map<String ,E> v_Objs = new HashMap<String ,E>();
         
         if ( i_Class == null )
         {
@@ -1121,7 +1128,7 @@ public final class XJava
                     {
                         if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
                         {
-                            v_Objs.put(v_ID ,v_TreeNode.getInfo().getObject());
+                            v_Objs.put(v_ID ,(E) v_TreeNode.getInfo().getObject());
                         }
                         else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
                         {
@@ -1150,7 +1157,7 @@ public final class XJava
                 
                 if ( null != v_Object && i_Class == v_Object.getClass() )
                 {
-                    v_Objs.put(v_ID ,v_Object);
+                    v_Objs.put(v_ID ,(E) v_Object);
                 }
             }
             
@@ -1160,7 +1167,7 @@ public final class XJava
                 {
                     for (Map.Entry<String ,XJavaObject> v_XItem : v_Maybe.entrySet())
                     {
-                        v_Objs.put(v_XItem.getKey() ,v_XItem.getValue().getObject());
+                        v_Objs.put(v_XItem.getKey() ,(E) v_XItem.getValue().getObject());
                     }
                 }
                 catch (Exception exce)
@@ -1184,9 +1191,10 @@ public final class XJava
      * @param i_IsNew   是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
      * @return
      */
-    public static Map<String ,Object> getObjects(Class<?> i_Class ,boolean i_IsNew)
+    @SuppressWarnings("unchecked")
+    public static <E> Map<String ,E> getObjects(Class<E> i_Class ,boolean i_IsNew)
     {
-        Map<String ,Object> v_Objs = new HashMap<String ,Object>();
+        Map<String ,E> v_Objs = new HashMap<String ,E>();
         
         if ( i_Class == null )
         {
@@ -1210,7 +1218,7 @@ public final class XJava
                       && null    != v_TreeNode.getInfo().getObject()
                       && i_Class == v_TreeNode.getInfo().getObject().getClass() )
                     {
-                        v_Objs.put(v_ID ,v_TreeNode.getInfo().getObject(i_IsNew));
+                        v_Objs.put(v_ID ,(E) v_TreeNode.getInfo().getObject(i_IsNew));
                     }
                     
                     if ( null != v_TreeNode.getInfo()
@@ -1218,7 +1226,7 @@ public final class XJava
                     {
                         if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
                         {
-                            v_Objs.put(v_ID ,v_TreeNode.getInfo().getObject(i_IsNew));
+                            v_Objs.put(v_ID ,(E) v_TreeNode.getInfo().getObject(i_IsNew));
                         }
                         else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
                         {
@@ -1251,11 +1259,11 @@ public final class XJava
                     {
                         if ( i_IsNew )
                         {
-                            v_Objs.put(v_ID ,XJava.clone(v_Object));
+                            v_Objs.put(v_ID ,(E) XJava.clone(v_Object));
                         }
                         else
                         {
-                            v_Objs.put(v_ID ,v_Object);
+                            v_Objs.put(v_ID ,(E) v_Object);
                         }
                     }
                     catch (Exception exce)
@@ -1272,7 +1280,7 @@ public final class XJava
                 {
                     for (Map.Entry<String ,XJavaObject> v_XItem : v_Maybe.entrySet())
                     {
-                        v_Objs.put(v_XItem.getKey() ,v_XItem.getValue().getObject(i_IsNew));
+                        v_Objs.put(v_XItem.getKey() ,(E) v_XItem.getValue().getObject(i_IsNew));
                     }
                 }
                 catch (Exception exce)
@@ -1783,7 +1791,7 @@ public final class XJava
                             // 无命名注解
                             if ( Help.isNull(v_AnnoRef.ref()) )
                             {
-                                v_ObjectRef = getObject(v_Method.getParameterTypes()[0].getClass());
+                                v_ObjectRef = getObject(v_Method.getParameterTypes()[0]);
                                 
                                 // 当参数类型找不到时，按方法名称找
                                 if ( v_ObjectRef == null )
@@ -1801,7 +1809,45 @@ public final class XJava
                             // 命名注解
                             else
                             {
-                                v_ObjectRef = getObject(v_AnnoRef.ref());
+                                // 支持@Xjava的集合对象的注入  2023-03-08
+                                if ( MethodReflect.isExtendImplement(v_Method.getParameterTypes()[0] ,List.class) )
+                                {
+                                    v_ObjectRef = getObject(v_AnnoRef.ref());
+                                    if ( v_ObjectRef == null )                   // 当具体ID查无时，才查前缀通配
+                                    {
+                                        Map<String ,Object> v_ObjectRefMap = getObjects(v_AnnoRef.ref());
+                                        
+                                        if ( !Help.isNull(v_ObjectRefMap) )
+                                        {
+                                            v_ObjectRef = Help.toList(v_ObjectRefMap);
+                                        }
+                                    }
+                                }
+                                else if ( MethodReflect.isExtendImplement(v_Method.getParameterTypes()[0] ,Set.class) )
+                                {
+                                    v_ObjectRef = getObject(v_AnnoRef.ref());   // 当具体ID查无时，才查前缀通配
+                                    if ( v_ObjectRef == null )
+                                    {
+                                        Map<String ,Object> v_ObjectRefMap = getObjects(v_AnnoRef.ref());
+                                        
+                                        if ( !Help.isNull(v_ObjectRefMap) )
+                                        {
+                                            v_ObjectRef = new HashSet<Object>(v_ObjectRefMap.values());
+                                        }
+                                    }
+                                }
+                                else if ( MethodReflect.isExtendImplement(v_Method.getParameterTypes()[0] ,Map.class) )
+                                {
+                                    v_ObjectRef = getObject(v_AnnoRef.ref());   // 当具体ID查无时，才查前缀通配
+                                    if ( v_ObjectRef == null )
+                                    {
+                                        v_ObjectRef = getObjects(v_AnnoRef.ref());
+                                    }
+                                }
+                                else
+                                {
+                                    v_ObjectRef = getObject(v_AnnoRef.ref());
+                                }
                             }
                             
                             if ( v_ObjectRef == null )
@@ -1905,7 +1951,45 @@ public final class XJava
                             // 命名注解
                             else
                             {
-                                v_ObjectRef = getObject(v_AnnoRef.ref());
+                                // 支持@Xjava的集合对象的注入  2023-03-08
+                                if ( MethodReflect.isExtendImplement(v_Field.getType() ,List.class) )
+                                {
+                                    v_ObjectRef = getObject(v_AnnoRef.ref());   // 当具体ID查无时，才查前缀通配
+                                    if ( v_ObjectRef == null )
+                                    {
+                                        Map<String ,Object> v_ObjectRefMap = getObjects(v_AnnoRef.ref());
+                                        
+                                        if ( !Help.isNull(v_ObjectRefMap) )
+                                        {
+                                            v_ObjectRef = Help.toList(v_ObjectRefMap);
+                                        }
+                                    }
+                                }
+                                else if ( MethodReflect.isExtendImplement(v_Field.getType() ,Set.class) )
+                                {
+                                    v_ObjectRef = getObject(v_AnnoRef.ref());   // 当具体ID查无时，才查前缀通配
+                                    if ( v_ObjectRef == null )
+                                    {
+                                        Map<String ,Object> v_ObjectRefMap = getObjects(v_AnnoRef.ref());
+                                        
+                                        if ( !Help.isNull(v_ObjectRefMap) )
+                                        {
+                                            v_ObjectRef = new HashSet<Object>(v_ObjectRefMap.values());
+                                        }
+                                    }
+                                }
+                                else if ( MethodReflect.isExtendImplement(v_Field.getType() ,Map.class) )
+                                {
+                                    v_ObjectRef = getObject(v_AnnoRef.ref());   // 当具体ID查无时，才查前缀通配
+                                    if ( v_ObjectRef == null )
+                                    {
+                                        v_ObjectRef = getObjects(v_AnnoRef.ref());
+                                    }
+                                }
+                                else
+                                {
+                                    v_ObjectRef = getObject(v_AnnoRef.ref());
+                                }
                             }
                             
                             if ( v_ObjectRef == null )

@@ -939,27 +939,27 @@ public class AnalyseBase extends Analyse
     {
         $Logger.debug("XSQL概要统计");
         
-        Map<String ,Object> v_XSQLs           = XJava.getObjects(XSQL.class);
-        StringBuilder       v_Buffer          = new StringBuilder();
-        int                 v_Index           = 0;
-        String              v_Content         = this.getTemplateShowXSQLContent();
-        String              v_OperateURL      = "";
-        long                v_RequestCount    = 0L;
-        long                v_SuccessCount    = 0L;
-        long                v_FailCount       = 0L;
-        long                v_IORowCount      = 0L;
-        long                v_TriggerCount    = 0L;
+        Map<String ,XSQL> v_XSQLs           = XJava.getObjects(XSQL.class);
+        StringBuilder     v_Buffer          = new StringBuilder();
+        int               v_Index           = 0;
+        String            v_Content         = this.getTemplateShowXSQLContent();
+        String            v_OperateURL      = "";
+        long              v_RequestCount    = 0L;
+        long              v_SuccessCount    = 0L;
+        long              v_FailCount       = 0L;
+        long              v_IORowCount      = 0L;
+        long              v_TriggerCount    = 0L;
         /*
-        long                v_TriggerReqCount = 0;
-        long                v_TriggerSucCount = 0;
-        long                v_TriggerFaiCount = 0;
+        long              v_TriggerReqCount = 0;
+        long              v_TriggerSucCount = 0;
+        long              v_TriggerFaiCount = 0;
         */
-        double              v_TotalTimeLen    = 0D;
-        double              v_TotalTimeLenMax = 0D;
-        double              v_AvgTimeLen      = 0D;
-        Date                v_MaxExecTime     = null;
-        long                v_NowTime         = 0L;
-        AnalyseDBTotal      v_Total           = null;
+        double            v_TotalTimeLen    = 0D;
+        double            v_TotalTimeLenMax = 0D;
+        double            v_AvgTimeLen      = 0D;
+        Date              v_MaxExecTime     = null;
+        long              v_NowTime         = 0L;
+        AnalyseDBTotal    v_Total           = null;
         
         // 本机统计
         if ( !i_Cluster )
@@ -1133,7 +1133,7 @@ public class AnalyseBase extends Analyse
             }
            
             // 触发器的执行统计
-            XSQL v_XSQL = (XSQL)v_XSQLs.get(v_XSQLID);
+            XSQL v_XSQL = v_XSQLs.get(v_XSQLID);
             if ( v_XSQL != null && v_XSQL.isTriggers() )
             {
                 v_TriggerCount    = v_Total.getTriggerCount()   .getSumValue(v_XSQLID);
@@ -1258,14 +1258,14 @@ public class AnalyseBase extends Analyse
      */
     public AnalyseDBTotal analyseDBGroup_Total()
     {
-        AnalyseDBTotal      v_Total = new AnalyseDBTotal();
-        Map<String ,Object> v_Objs  = XJava.getObjects(XSQLGroup.class);
+        AnalyseDBTotal         v_Total = new AnalyseDBTotal();
+        Map<String ,XSQLGroup> v_Objs  = XJava.getObjects(XSQLGroup.class);
         
-        for (Map.Entry<String, Object> v_Item : v_Objs.entrySet())
+        for (Map.Entry<String, XSQLGroup> v_Item : v_Objs.entrySet())
         {
             if ( v_Item.getValue() != null )
             {
-                XSQLGroup v_XSQLGroup = (XSQLGroup)v_Item.getValue();
+                XSQLGroup v_XSQLGroup = v_Item.getValue();
                 
                 v_Total.getRequestCount()   .put(v_Item.getKey() ,v_XSQLGroup.getRequestCount());
                 v_Total.getSuccessCount()   .put(v_Item.getKey() ,v_XSQLGroup.getSuccessCount());
@@ -1296,14 +1296,14 @@ public class AnalyseBase extends Analyse
      */
     public AnalyseDBTotal analyseDB_Total()
     {
-        AnalyseDBTotal      v_Total = new AnalyseDBTotal();
-        Map<String ,Object> v_Objs  = XJava.getObjects(XSQL.class);
+        AnalyseDBTotal    v_Total = new AnalyseDBTotal();
+        Map<String ,XSQL> v_Objs  = XJava.getObjects(XSQL.class);
         
-        for (Map.Entry<String, Object> v_Item : v_Objs.entrySet())
+        for (Map.Entry<String, XSQL> v_Item : v_Objs.entrySet())
         {
             if ( v_Item.getValue() != null )
             {
-                XSQL v_XSQL = (XSQL)v_Item.getValue();
+                XSQL v_XSQL = v_Item.getValue();
                 
                 v_Total.getRequestCount().put(v_Item.getKey() ,v_XSQL.getRequestCount());
                 v_Total.getSuccessCount().put(v_Item.getKey() ,v_XSQL.getSuccessCount());
@@ -1354,15 +1354,13 @@ public class AnalyseBase extends Analyse
     {
         $Logger.debug("重置XSQL组的概要统计");
         
-        Map<String ,Object> v_Objs = XJava.getObjects(XSQLGroup.class);
+        Map<String ,XSQLGroup> v_Objs = XJava.getObjects(XSQLGroup.class);
         
-        for (Map.Entry<String, Object> v_Item : v_Objs.entrySet())
+        for (Map.Entry<String, XSQLGroup> v_Item : v_Objs.entrySet())
         {
             if ( v_Item.getValue() != null )
             {
-                XSQLGroup v_XSQLGroup = (XSQLGroup)v_Item.getValue();
-                
-                v_XSQLGroup.reset();
+                v_Item.getValue().reset();
             }
         }
         
@@ -1385,15 +1383,13 @@ public class AnalyseBase extends Analyse
     {
         $Logger.debug("重置XSQL的概要统计");
         
-        Map<String ,Object> v_Objs = XJava.getObjects(XSQL.class);
+        Map<String ,XSQL> v_Objs = XJava.getObjects(XSQL.class);
         
-        for (Map.Entry<String, Object> v_Item : v_Objs.entrySet())
+        for (Map.Entry<String, XSQL> v_Item : v_Objs.entrySet())
         {
             if ( v_Item.getValue() != null )
             {
-                XSQL v_XSQL = (XSQL)v_Item.getValue();
-                
-                v_XSQL.reset();
+                v_Item.getValue().reset();
             }
         }
         
@@ -1588,20 +1584,20 @@ public class AnalyseBase extends Analyse
     {
         $Logger.debug("查看XSQL创建DB对象列表");
         
-        Map<String ,Object> v_XSQLMap = XJava.getObjects(XSQL.class);
-        Map<String ,XSQL>   v_XSQLs   = new HashMap<String ,XSQL>();
-        StringBuilder       v_Buffer  = new StringBuilder();
-        int                 v_Index   = 0;
-        String              v_Content = this.getTemplateShowObjectsContent2URL();
+        Map<String ,XSQL> v_XSQLMap = XJava.getObjects(XSQL.class);
+        Map<String ,XSQL> v_XSQLs   = new HashMap<String ,XSQL>();
+        StringBuilder     v_Buffer  = new StringBuilder();
+        int               v_Index   = 0;
+        String            v_Content = this.getTemplateShowObjectsContent2URL();
         
-        for (Map.Entry<String, Object> v_Item : v_XSQLMap.entrySet())
+        for (Map.Entry<String, XSQL> v_Item : v_XSQLMap.entrySet())
         {
             if ( v_Item.getValue() == null )
             {
                 continue;
             }
             
-            XSQL v_XSQL = (XSQL)v_Item.getValue();
+            XSQL v_XSQL = v_Item.getValue();
             if ( Help.isNull(v_XSQL.getCreateObjectName()) || v_XSQL.getDataSourceGroup() == null )
             {
                 continue;
@@ -1676,23 +1672,23 @@ public class AnalyseBase extends Analyse
     {
         $Logger.debug("删除并重新创建数据库对象");
         
-        Map<String ,Object> v_XSQLMap      = XJava.getObjects(XSQL.class);
-        StringBuilder       v_Buffer       = new StringBuilder();
-        int                 v_Index        = 0;
-        String              v_Content      = this.getTemplateShowResultContent();
-        int                 v_TotalCount   = 0;
-        int                 v_DropCount    = 0;
-        int                 v_CreateCount  = 0;
+        Map<String ,XSQL> v_XSQLMap      = XJava.getObjects(XSQL.class);
+        StringBuilder     v_Buffer       = new StringBuilder();
+        int               v_Index        = 0;
+        String            v_Content      = this.getTemplateShowResultContent();
+        int               v_TotalCount   = 0;
+        int               v_DropCount    = 0;
+        int               v_CreateCount  = 0;
         
         
-        for (Map.Entry<String, Object> v_Item : v_XSQLMap.entrySet())
+        for (Map.Entry<String, XSQL> v_Item : v_XSQLMap.entrySet())
         {
             if ( v_Item.getValue() == null )
             {
                 continue;
             }
             
-            XSQL v_XSQL = (XSQL)v_Item.getValue();
+            XSQL v_XSQL = v_Item.getValue();
             if ( Help.isNull(v_XSQL.getCreateObjectName()) )
             {
                 continue;
@@ -1829,8 +1825,8 @@ public class AnalyseBase extends Analyse
         
         try
         {
-            Map<String ,Object> v_DSGMap  = XJava.getObjects(DataSourceGroup.class);
-            Map<String ,Object> v_XSQLMap = XJava.getObjects(XSQL.class);
+            Map<String ,DataSourceGroup> v_DSGMap  = XJava.getObjects(DataSourceGroup.class);
+            Map<String ,XSQL>            v_XSQLMap = XJava.getObjects(XSQL.class);
             
             if ( !Help.isNull(v_DSGMap) && !Help.isNull(v_XSQLMap) )
             {
@@ -1847,9 +1843,9 @@ public class AnalyseBase extends Analyse
                 if ( !Help.isNull(v_Objects) )
                 {
                     // 生成XSQL信息列表
-                    for (Map.Entry<String ,Object> v_XSQLItem : v_XSQLMap.entrySet())
+                    for (Map.Entry<String ,XSQL> v_XSQLItem : v_XSQLMap.entrySet())
                     {
-                        XSQL v_XSQL = (XSQL)v_XSQLItem.getValue();
+                        XSQL v_XSQL = v_XSQLItem.getValue();
                         
                         if ( v_DSG == v_XSQL.getDataSourceGroup() )
                         {
@@ -1966,8 +1962,8 @@ public class AnalyseBase extends Analyse
         
         try
         {
-            Map<String ,Object> v_DSGMap  = XJava.getObjects(DataSourceGroup.class);
-            Map<String ,Object> v_XSQLMap = XJava.getObjects(XSQL.class);
+            Map<String ,DataSourceGroup> v_DSGMap  = XJava.getObjects(DataSourceGroup.class);
+            Map<String ,XSQL>            v_XSQLMap = XJava.getObjects(XSQL.class);
             
             if ( !Help.isNull(v_DSGMap) && !Help.isNull(v_XSQLMap) )
             {
@@ -1984,9 +1980,9 @@ public class AnalyseBase extends Analyse
                 if ( !Help.isNull(v_Objects) )
                 {
                     // 生成XSQL信息列表
-                    for (Map.Entry<String ,Object> v_XSQLItem : v_XSQLMap.entrySet())
+                    for (Map.Entry<String ,XSQL> v_XSQLItem : v_XSQLMap.entrySet())
                     {
-                        XSQL v_XSQL = (XSQL)v_XSQLItem.getValue();
+                        XSQL v_XSQL = v_XSQLItem.getValue();
                         
                         if ( v_DSG == v_XSQL.getDataSourceGroup() )
                         {
@@ -3982,13 +3978,13 @@ public class AnalyseBase extends Analyse
     public void analyseNet_RestTotal()
     {
         $Logger.debug("重置通讯连接的统计数据");
-        Map<String ,Object> v_TotalServerSessions = XJava.getObjects(ServerOperation.class);
+        Map<String ,ServerOperation> v_TotalServerSessions = XJava.getObjects(ServerOperation.class);
         
         if ( !Help.isNull(v_TotalServerSessions) )
         {
-            for (Object v_Session : v_TotalServerSessions.values())
+            for (ServerOperation v_Session : v_TotalServerSessions.values())
             {
-                ((ServerOperation)v_Session).reset();
+                v_Session.reset();
             }
         }
         

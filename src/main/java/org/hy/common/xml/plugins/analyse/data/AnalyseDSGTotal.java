@@ -47,12 +47,10 @@ public class AnalyseDSGTotal extends SerializableDef
         this.hostName = "";
         this.reports  = new HashMap<String ,DataSourceGroupReport>();
         
-        Map<String ,Object> v_DSGs = XJava.getObjects(DataSourceGroup.class ,false);
-        for (Entry<String, Object> v_Item : v_DSGs.entrySet())
+        Map<String ,DataSourceGroup> v_DSGs = XJava.getObjects(DataSourceGroup.class ,false);
+        for (Entry<String, DataSourceGroup> v_Item : v_DSGs.entrySet())
         {
-            DataSourceGroup v_DSG = (DataSourceGroup)v_Item.getValue();
-            
-            this.reports.put(v_Item.getKey() ,new DataSourceGroupReport(v_Item.getKey() ,v_DSG));
+            this.reports.put(v_Item.getKey() ,new DataSourceGroupReport(v_Item.getKey() ,v_Item.getValue()));
         }
     }
     
@@ -81,7 +79,7 @@ public class AnalyseDSGTotal extends SerializableDef
     /**
      * 设置：主机名称
      * 
-     * @param hostName 
+     * @param hostName
      */
     public void setHostName(String hostName)
     {
@@ -93,7 +91,7 @@ public class AnalyseDSGTotal extends SerializableDef
     /**
      * 设置：数据库连接池信息
      * 
-     * @param reports 
+     * @param reports
      */
     public void setReports(Map<String ,DataSourceGroupReport> reports)
     {

@@ -1,10 +1,13 @@
 package org.hy.common.xml.junit.xsql;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
 import org.hy.common.app.Param;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.junit.xsql.dao.IQuerySQLValueDAO;
+import org.hy.common.xml.junit.xsql.dao.XSQLDao;
 import org.hy.common.xml.log.Logger;
 import org.hy.common.xml.plugins.AppInitConfig;
 import org.junit.Test;
@@ -70,6 +73,14 @@ public class JU_XSQL_QuerySQLValue extends AppInitConfig
         $Logger.info("queryDateJava   = " + v_DAO.queryDateJava());
         $Logger.info("queryString     = " + v_DAO.queryString());
         $Logger.info("queryBigDecimal = " + v_DAO.queryBigDecimal());
+    }
+    
+    
+    
+    @Test
+    public void test_XSQLDao()
+    {
+        assertTrue(((XSQLDao) XJava.getObject("XSQLDao")).test());
     }
     
 }

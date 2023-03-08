@@ -49,10 +49,10 @@ public class AnalyseJobTotal extends SerializableDef
         this.hostName = "";
         this.reports  = new ArrayList<JobReport>();
         
-        Map<String ,Object> v_Jobs = XJava.getObjects(Job.class ,false);
-        for (Entry<String, Object> v_Item : v_Jobs.entrySet())
+        Map<String ,Job> v_Jobs = XJava.getObjects(Job.class ,false);
+        for (Entry<String, Job> v_Item : v_Jobs.entrySet())
         {
-            this.reports.add(new JobReport(v_Item.getKey() ,(Job)v_Item.getValue()));
+            this.reports.add(new JobReport(v_Item.getKey() ,v_Item.getValue()));
         }
     }
     
@@ -81,7 +81,7 @@ public class AnalyseJobTotal extends SerializableDef
     /**
      * 设置：主机名称
      * 
-     * @param hostName 
+     * @param hostName
      */
     public void setHostName(String hostName)
     {
@@ -93,7 +93,7 @@ public class AnalyseJobTotal extends SerializableDef
     /**
      * 设置：定时任务监控信息
      * 
-     * @param reports 
+     * @param reports
      */
     public void setReports(List<JobReport> reports)
     {
