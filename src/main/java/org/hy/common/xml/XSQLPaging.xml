@@ -23,6 +23,10 @@
         </sql>
         
         
+        <!-- 查询MariaDB的分页模板SQL -->
+        <sql id="XSQLPaging_MARIADB" this="XSQLPaging_MYSQL" />
+        
+        
         <!-- 查询SQLite的分页模板SQL -->
         <!-- :StartIndex  下标从0开始 -->
         <sql id="XSQLPaging_SQLITE">

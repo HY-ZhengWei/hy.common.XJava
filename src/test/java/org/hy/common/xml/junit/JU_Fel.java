@@ -31,9 +31,24 @@ import com.greenpineyu.fel.context.FelContext;
  * @createDate  2016-01-21
  * @version     v1.0
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING) 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JU_Fel
 {
+    
+    @Test
+    public void test_Like()
+    {
+        FelEngine           v_Fel            = new FelEngineImpl();
+        FelContext          v_FelContext     = v_Fel.getContext();
+        
+        v_FelContext.set("A" ,"23320102A1");
+        System.out.println(v_Fel.eval("A.indexOf(\"32\") == 2"));
+        
+        v_FelContext.set("A" ,"232X0102A1");
+        System.out.println(v_Fel.eval("A.indexOf(\"32\") == 2"));
+    }
+    
+    
     
     @Test
     public void test_IndexOf()
@@ -344,11 +359,11 @@ public class JU_Fel
     {
         FelEngine  v_Fel        = new FelEngineImpl();
         FelContext v_FelContext = v_Fel.getContext();
-        v_FelContext.set("单价", 2.12345);    
-        v_FelContext.set("数量", 10);    
-        v_FelContext.set("运费", 10);    
-        Object result = v_Fel.eval("单价*(数量+运费)");    
-        System.out.println(result); 
+        v_FelContext.set("单价", 2.12345);
+        v_FelContext.set("数量", 10);
+        v_FelContext.set("运费", 10);
+        Object result = v_Fel.eval("单价*(数量+运费)");
+        System.out.println(result);
     }
     
     

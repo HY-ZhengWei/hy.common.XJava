@@ -70,6 +70,11 @@
         
         
         
+        <!-- 查询数据库MariaDB表、视图、函数、过程、触发器的元数据信息（按名称） -->
+        <sql id="XSQL_DBMetadata_QueryByName_MARIADB" this="XSQL_DBMetadata_QueryByName_MYSQL" new="true" />
+        
+        
+        
         <!-- 查询数据库SQLSERVER表、视图、函数、过程、触发器、Check约束、外键约束、主键约束的元数据信息（按名称） -->
         <sql id="XSQL_DBMetadata_QueryByName_SQLSERVER" new="true">
         
@@ -246,6 +251,11 @@
             </content>
             
         </sql>
+        
+        
+        
+        <!-- 生成MariaDB数据库删除对象的SQL语句 -->
+        <sql id="XSQL_DBMetadata_DropByName_MARIADB" this="XSQL_DBMetadata_DropByName_MYSQL" new="true" />
         
         
         
