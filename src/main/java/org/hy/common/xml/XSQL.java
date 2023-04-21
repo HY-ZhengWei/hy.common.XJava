@@ -129,6 +129,7 @@ import org.hy.common.xml.plugins.XRule;
  *                                添加：isGetID()参数影响executeUpdate(...)系统方法返回值的含义
  *              v21.1 2022-06-09  添加：最大用时的统计
  *              v21.2 2023-03-07  添加：querySQLValue，常用于查询返回仅只一个字符串的场景。建议人：王雨墨
+ *              v22.0 2023-04-20  添加：单行数据的批量操作（预解释执行模式）
  */
 /*
  * 游标类型的说明
@@ -2096,6 +2097,84 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     /**
+     * 一行数据的批量执行：占位符SQL的Insert语句的执行。
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-04-20
+     * @version     v1.0
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @return                   返回语句影响的记录数及自增长ID。
+     */
+    public XSQLData executeInsertPrepared(final Map<String ,?> i_Values)
+    {
+        return XSQLOPInsert.executeInsertPrepared(this ,i_Values);
+    }
+    
+    
+    
+    /**
+     * 一行数据的批量执行：占位符SQL的Insert语句的执行。
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-04-20
+     * @version     v1.0
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @return                   返回语句影响的记录数及自增长ID。
+     */
+    public XSQLData executeInsertPrepared(final Object i_Obj)
+    {
+        return XSQLOPInsert.executeInsertPrepared(this ,i_Obj);
+    }
+    
+    
+    
+    /**
+     * 一行数据的批量执行：占位符SQL的Insert语句的执行。（内部不再关闭数据库连接）
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-04-20
+     * @version     v1.0
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @param i_Conn             数据库连接
+     * @return                   返回语句影响的记录数及自增长ID。
+     */
+    public XSQLData executeInsertPrepared(final Map<String ,?> i_Values ,final Connection i_Conn)
+    {
+        return XSQLOPInsert.executeInsertPrepared(this ,i_Values ,i_Conn);
+    }
+    
+    
+    
+    /**
+     * 一行数据的批量执行：占位符SQL的Insert语句的执行。（内部不再关闭数据库连接）
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-04-20
+     * @version     v1.0
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Conn             数据库连接
+     * @return                   返回语句影响的记录数及自增长ID。
+     */
+    public XSQLData executeInsertPrepared(final Object i_Obj ,final Connection i_Conn)
+    {
+        return XSQLOPInsert.executeInsertPrepared(this ,i_Obj ,i_Conn);
+    }
+    
+    
+    
+    /**
      * 批量执行：占位符SQL的Insert语句与Update语句的执行。
      * 
      * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
@@ -2339,6 +2418,92 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     public int executeUpdate(String i_SQL ,Connection i_Conn)
     {
         return XSQLOPUpdate.executeUpdate(this ,i_SQL ,i_Conn);
+    }
+    
+    
+    
+    /**
+     * 一行数据的批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-04-20
+     * @version     v1.0
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
+     */
+    public int executeUpdatePrepared(Map<String ,?> i_Values)
+    {
+        return XSQLOPUpdate.executeUpdatePrepared(this ,i_Values);
+    }
+    
+    
+    
+    /**
+     * 一行数据的批量执行：占位符SQL的Insert语句与Update语句的执行。
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-04-20
+     * @version     v1.0
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
+     */
+    public int executeUpdatePrepared(Object i_Obj)
+    {
+        return XSQLOPUpdate.executeUpdatePrepared(this ,i_Obj);
+    }
+    
+    
+    
+    /**
+     * 一行数据的批量执行：占位符SQL的Insert语句与Update语句的执行。（内部不再关闭数据库连接）
+     * 
+     * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-04-20
+     * @version     v1.0
+     * 
+     * @param i_Values           占位符SQL的填充集合。
+     * @param i_Conn             数据库连接
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
+     */
+    public int executeUpdatePrepared(Map<String ,?> i_Values ,Connection i_Conn)
+    {
+        return XSQLOPUpdate.executeUpdatePrepared(this ,i_Values ,i_Conn);
+    }
+    
+    
+    
+    /**
+     * 一行数据的批量执行：占位符SQL的Insert语句与Update语句的执行。（内部不再关闭数据库连接）
+     * 
+     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-04-20
+     * @version     v1.0
+     * 
+     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Conn             数据库连接
+     * @return  返回语句影响的记录数。
+     *            当 getID=false 时，返回值表示：影响的记录行数
+     *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
+     */
+    public int executeUpdatePrepared(Object i_Obj ,Connection i_Conn)
+    {
+        return XSQLOPUpdate.executeUpdatePrepared(this ,i_Obj ,i_Conn);
     }
     
     

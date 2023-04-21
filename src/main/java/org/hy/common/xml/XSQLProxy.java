@@ -46,7 +46,7 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  *              v1.6  2018-07-26  优化：及时释放资源，自动的GC太慢了。
  *              v1.7  2018-08-08  添加：@Xsql.execute()属性，支持多种类不同的SQL在同一XSQL中执行。
  *              v1.8  2020-06-24  添加：通过日志引擎规范输出日志
- *              v1.9  2023-03-07  添加：方法返回类型是String、Double、Float、BigDecimal、Date的，则按第一行第一列数据返回
+ *              v1.9  2023-03-07  添加：方法返回类型是String、Integer、Double、Float、BigDecimal、Date的，则按第一行第一列数据返回
  */
 public class XSQLProxy implements InvocationHandler ,Serializable
 {
@@ -798,7 +798,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @version     v1.0
      *              v2.0  2018-01-25 添加：方法返回值是整数，则按查询记录行数的SELECT Count(1) FROM ... 返回
      *              v3.0  2018-04-27 添加：returnOne注解属性支持Map、Set集合随机获取一个元素的功能。
-     *              v4.0  2023-03-07 添加：方法返回类型是String、Double、Float、BigDecimal、Date的，则按第一行第一列数据返回
+     *              v4.0  2023-03-07 添加：方法返回类型是String、Integer、Double、Float、BigDecimal、Date的，则按第一行第一列数据返回
      *
      * @param i_Method
      * @param i_Anno
@@ -822,7 +822,11 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         
         if ( i_Args == null || i_Args.length == 0 )
         {
-            if ( i_Method.getReturnType() == String.class )
+            if ( !i_Anno.getXsql().firstValue() )
+            {
+                v_Ret = i_XSQL.query();
+            }
+            else if ( i_Method.getReturnType() == String.class )
             {
                 v_Ret = i_XSQL.querySQLValue();
                 if ( v_Ret != null )
@@ -915,7 +919,11 @@ public class XSQLProxy implements InvocationHandler ,Serializable
         {
             try
             {
-                if ( i_Method.getReturnType() == String.class )
+                if ( !i_Anno.getXsql().firstValue() )
+                {
+                    v_Ret = i_XSQL.query(v_Params);
+                }
+                else if ( i_Method.getReturnType() == String.class )
                 {
                     v_Ret = i_XSQL.querySQLValue(v_Params);
                     if ( v_Ret != null )

@@ -182,6 +182,24 @@ public @interface Xsql
     
     
     /**
+     * 针对Select操作，查询返回第一行第一列上的数值。
+     * 
+     * 如，用于查询记录总数：  SELECT COUNT(1) FROM Dual
+     * 如，用于查询某一配置项：SELECT SYSDATE  FROM Dual
+     * 
+     * 需要被注解的方法返回类型是String、Integer、Double、Float、BigDecimal、Date的，则按第一行第一列数据返回
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-04-20
+     * @version     v1.0
+     *
+     * @return
+     */
+    public boolean firstValue() default true;
+    
+    
+    
+    /**
      * 针对Insert操作，是否返回数据库表上绑定的自增长ID的值。
      * 
      * 两类定义冲突时的解决方案：
