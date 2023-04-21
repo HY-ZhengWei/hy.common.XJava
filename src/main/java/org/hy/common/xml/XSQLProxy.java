@@ -47,6 +47,8 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  *              v1.7  2018-08-08  添加：@Xsql.execute()属性，支持多种类不同的SQL在同一XSQL中执行。
  *              v1.8  2020-06-24  添加：通过日志引擎规范输出日志
  *              v1.9  2023-03-07  添加：方法返回类型是String、Integer、Double、Float、BigDecimal、Date的，则按第一行第一列数据返回
+ *              v2.0  2023-04-21  添加：firstValue()属性，针对Select操作，查询返回第一行第一列上的数值。
+ *                                优化：batch()属性，支持一行数据的预解释执行
  */
 public class XSQLProxy implements InvocationHandler ,Serializable
 {
@@ -1199,7 +1201,15 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             }
             else
             {
-                v_RetXData = i_XSQL.executeInsert(v_Params);
+                // 一行数据的批量执行  2023-04-21
+                if ( i_Anno.getXsql().batch() )
+                {
+                    v_RetXData = i_XSQL.executeInsertPrepared(v_Params);
+                }
+                else
+                {
+                    v_RetXData = i_XSQL.executeInsert(v_Params);
+                }
             }
             
             // 及时释放资源
@@ -1263,7 +1273,15 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             }
             else
             {
-                v_Ret = i_XSQL.executeUpdate(v_Params);
+                // 一行数据的批量执行  2023-04-21
+                if ( i_Anno.getXsql().batch() )
+                {
+                    v_Ret = i_XSQL.executeUpdatePrepared(v_Params);
+                }
+                else
+                {
+                    v_Ret = i_XSQL.executeUpdate(v_Params);
+                }
             }
             
             // 及时释放资源

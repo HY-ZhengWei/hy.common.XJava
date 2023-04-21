@@ -20,6 +20,8 @@ import java.lang.annotation.Target;
  *              v3.0  2018-07-21  添加：paging()属性，支持分页查询。建议人：李浩
  *              v4.0  2018-08-08  添加：execute()属性，支持多种类不同的SQL在同一XSQL中执行。
  *              v5.0  2022-05-27  添加：getID()属性，支持自增长ID值的获取
+ *              v6.0  2023-04-21  添加：firstValue()属性，针对Select操作，查询返回第一行第一列上的数值。
+ *                                优化：batch()属性，支持一行数据的预解释执行
  */
 @Documented
 @Target({ElementType.METHOD})
@@ -138,11 +140,13 @@ public @interface Xsql
     /**
      * 针对Insert、Update、Delete操作，是否按批量的预解析方式(prepareStatement)执行SQL。
      * 
-     * 只对方法入参类型为List集合的才生效。
-     * 
      * 当方法入参类型为List集合
      *    1. batch = false 时，按普通批量方式执行，统一提交及回滚。如果XSQL设置了batchCommit属性，可再分批提交。
      *    2. batch = true  时，按预解析的方式执行，统一提交及回滚。如果XSQL设置了batchCommit属性，可再分批提交。
+     * 
+     * 当方法入参类型非List集合
+     *    1. batch = false 时，按一行数据的普通方式执行
+     *    2. batch = true  时，按一行数据的预解析方式执行
      * 
      * 上面两种方式，在写SQL模板时，略有不同。
      */
