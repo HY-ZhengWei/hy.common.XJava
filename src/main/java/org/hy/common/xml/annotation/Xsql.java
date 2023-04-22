@@ -111,6 +111,7 @@ public @interface Xsql
      * 
      * 只用于方法。
      * 只用于查询SQL，并且结果集的类型为List集合。
+     * 当用于XSQL组时，须要与 returnID() 属性配合使用，可以获取XSQL组中有 returnID 标记的首行记录
      */
     public boolean returnOne() default false;
     

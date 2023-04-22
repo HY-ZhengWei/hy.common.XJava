@@ -168,6 +168,7 @@ import org.hy.common.xml.log.Logger;
  *              v29.0 2021-03-24  1.添加：配合多线程任务组的改造，添加：准备添加的任务数量。解决：任务组误判任务组整体完成的问题。
  *              v30.0 2022-06-09  1.添加：最大用时统计
  *              v31.0 2022-06-17  1.修正：跟随XSQL的配置，设定NULL值的情况：发现人：李秉坤
+ *              v31.1 2023-04-22  1.修正：有返回集合时 XSQLNode.returnQuery = true ，不要清空查询结果集
  */
 public final class XSQLGroup implements XJavaID
 {
@@ -1513,7 +1514,13 @@ public final class XSQLGroup implements XJavaID
                         }
                     }
                     
-                    if ( v_Node.isClear() || !XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType()) )
+                    // 2023-04-22 修正：有返回集合时 XSQLNode.returnQuery = true ，不要清空查询结果集
+                    if ( v_Node.isClear()
+                      || (
+                         !XSQLNode.$Type_CollectionToQuery.equals(v_Node.getType())
+                      && !v_Node.isReturnQuery()
+                      && Help.isNull(v_Node.getQueryReturnID())
+                         ) )
                     {
                         v_QueryRet.clear();
                         v_QueryRet = null;

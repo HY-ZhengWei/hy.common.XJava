@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,8 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  *              v1.9  2023-03-07  添加：方法返回类型是String、Integer、Double、Float、BigDecimal、Date的，则按第一行第一列数据返回
  *              v2.0  2023-04-21  添加：firstValue()属性，针对Select操作，查询返回第一行第一列上的数值。
  *                                优化：batch()属性，支持一行数据的预解释执行
+ *              v2.1  2023-04-22  添加：XSQL组的返回结果也支持returnOne注解
+ *                                添加：returnOne注解属性支持Collection集合随机获取一个元素的功能。
  */
 public class XSQLProxy implements InvocationHandler ,Serializable
 {
@@ -457,6 +460,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @author      ZhengWei(HY)
      * @createDate  2017-12-15
      * @version     v1.0
+     *              v2.0  2023-04-22  添加：XSQL组的返回结果也支持returnOne注解
      *
      * @param i_Method
      * @param i_Anno
@@ -527,8 +531,77 @@ public class XSQLProxy implements InvocationHandler ,Serializable
             {
                 if ( v_Ret.isSuccess() )
                 {
-                    cacheData(i_Anno ,v_Ret.getReturns().get(i_Anno.getXsql().returnID()) ,v_Ret);
-                    return v_Ret.getReturns().get(i_Anno.getXsql().returnID());
+                    Object v_RetByRetrunID = v_Ret.getReturns().get(i_Anno.getXsql().returnID());
+                    cacheData(i_Anno ,v_RetByRetrunID ,v_Ret);
+                    
+                    if ( i_Anno.getXsql().returnOne() )
+                    {
+                        if ( MethodReflect.isExtendImplement(v_RetByRetrunID ,List.class) )
+                        {
+                            List<?> v_List = (List<?>)v_RetByRetrunID;
+                            
+                            if ( v_List.size() >= 1 )
+                            {
+                                v_RetByRetrunID = v_List.get(0);
+                                v_List.clear();
+                                v_List = null;
+                            }
+                            else
+                            {
+                                v_RetByRetrunID = null;
+                            }
+                        }
+                        // 支持Set集合随机获取一个元素的功能
+                        else if ( MethodReflect.isExtendImplement(v_RetByRetrunID ,Set.class) )
+                        {
+                            Set<?> v_Set = (Set<?>)v_RetByRetrunID;
+                            
+                            if ( v_Set.size() >= 1 )
+                            {
+                                v_RetByRetrunID = v_Set.iterator().next();
+                                v_Set.clear();
+                                v_Set = null;
+                            }
+                            else
+                            {
+                                v_RetByRetrunID = null;
+                            }
+                        }
+                        // 支持Map集合随机获取一个元素的功能
+                        else if ( MethodReflect.isExtendImplement(v_RetByRetrunID ,Map.class) )
+                        {
+                            Map<? ,?> v_Map = (Map<? ,?>)v_RetByRetrunID;
+                            
+                            if ( v_Map.size() >= 1 )
+                            {
+                                v_RetByRetrunID = v_Map.values().iterator().next();
+                                v_Map.clear();
+                                v_Map = null;
+                            }
+                            else
+                            {
+                                v_RetByRetrunID = null;
+                            }
+                        }
+                        // 支持Collection集合随机获取一个元素的功能
+                        else if ( MethodReflect.isExtendImplement(v_RetByRetrunID ,Collection.class) )
+                        {
+                            Collection<?> v_Collection = (Collection<?>)v_RetByRetrunID;
+                            
+                            if ( v_Collection.size() >= 1 )
+                            {
+                                v_RetByRetrunID = v_Collection.iterator().next();
+                                v_Collection.clear();
+                                v_Collection = null;
+                            }
+                            else
+                            {
+                                v_RetByRetrunID = null;
+                            }
+                        }
+                    }
+                    
+                    return v_RetByRetrunID;
                 }
                 else
                 {
@@ -1076,6 +1149,22 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                         v_Ret = v_Map.values().iterator().next();
                         v_Map.clear();
                         v_Map = null;
+                    }
+                    else
+                    {
+                        v_Ret = null;
+                    }
+                }
+                // 支持Collection集合随机获取一个元素的功能
+                else if ( MethodReflect.isExtendImplement(v_Ret ,Collection.class) )
+                {
+                    Collection<?> v_Collection = (Collection<?>)v_Ret;
+                    
+                    if ( v_Collection.size() >= 1 )
+                    {
+                        v_Ret = v_Collection.iterator().next();
+                        v_Collection.clear();
+                        v_Collection = null;
                     }
                     else
                     {
