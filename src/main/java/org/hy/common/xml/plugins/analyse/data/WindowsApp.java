@@ -36,7 +36,7 @@ public class WindowsApp extends SerializableDef
     /** App访问地址 */
     private String  url;
     
-    /** App访问类型 */
+    /** App访问类型（new、open、javascript） */
     private String  actionType;
     
     /** App访问确认 */
@@ -44,6 +44,15 @@ public class WindowsApp extends SerializableDef
     
     /** App图标大小的类型 */
     private String  sizeType;
+    
+    /** 桌面图标的水平对齐方式 */
+    private String nameToLMR;
+    
+    /** 桌面图标的名称字体大小 */
+    private String nameFontSize;
+    
+    /** 桌面图标的名称颜色 */
+    private String nameFontColor;
     
     /** App的X坐标 */
     private Double  x;
@@ -187,7 +196,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App标识ID
      * 
-     * @param appID 
+     * @param appID
      */
     public void setAppID(String appID)
     {
@@ -198,7 +207,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App名称
      * 
-     * @param appName 
+     * @param appName
      */
     public void setAppName(String appName)
     {
@@ -209,7 +218,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App图标路径（允许为空）
      * 
-     * @param icon 
+     * @param icon
      */
     public void setIcon(String icon)
     {
@@ -220,7 +229,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App图标的背景色
      * 
-     * @param backgroundColor 
+     * @param backgroundColor
      */
     public void setBackgroundColor(String backgroundColor)
     {
@@ -231,7 +240,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App访问地址
      * 
-     * @param url 
+     * @param url
      */
     public void setUrl(String url)
     {
@@ -242,7 +251,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App访问类型
      * 
-     * @param actionType 
+     * @param actionType
      */
     public void setActionType(String actionType)
     {
@@ -253,7 +262,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App访问确认
      * 
-     * @param confirm 
+     * @param confirm
      */
     public void setConfirm(String confirm)
     {
@@ -264,7 +273,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App图标大小的类型
      * 
-     * @param sizeType 
+     * @param sizeType
      */
     public void setSizeType(String sizeType)
     {
@@ -275,7 +284,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App的X坐标
      * 
-     * @param x 
+     * @param x
      */
     public void setX(Double x)
     {
@@ -286,7 +295,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App的Y坐标
      * 
-     * @param y 
+     * @param y
      */
     public void setY(Double y)
     {
@@ -297,7 +306,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App的层次级别
      * 
-     * @param level 
+     * @param level
      */
     public void setLevel(Integer level)
     {
@@ -308,7 +317,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App的父层次ID
      * 
-     * @param superID 
+     * @param superID
      */
     public void setSuperID(String superID)
     {
@@ -328,7 +337,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App是否显示在桌面上
      * 
-     * @param desktopShow 
+     * @param desktopShow
      */
     public void setDesktopShow(boolean desktopShow)
     {
@@ -348,7 +357,7 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：App图标ID（允许为空）
      * 
-     * @param iconID 
+     * @param iconID
      */
     public void setIconID(String iconID)
     {
@@ -368,11 +377,71 @@ public class WindowsApp extends SerializableDef
     /**
      * 设置：访问次数
      * 
-     * @param openCount 
+     * @param openCount
      */
     public void setOpenCount(Integer openCount)
     {
         this.openCount = openCount;
+    }
+
+    
+    /**
+     * 获取：桌面图标的水平对齐方式
+     */
+    public String getNameToLMR()
+    {
+        return nameToLMR;
+    }
+
+    
+    /**
+     * 设置：桌面图标的水平对齐方式
+     * 
+     * @param i_NameToLMR 桌面图标的水平对齐方式
+     */
+    public void setNameToLMR(String i_NameToLMR)
+    {
+        this.nameToLMR = i_NameToLMR;
+    }
+
+
+    /**
+     * 获取：桌面图标的名称字体大小
+     */
+    public String getNameFontSize()
+    {
+        return nameFontSize;
+    }
+
+    
+    /**
+     * 设置：桌面图标的名称字体大小
+     * 
+     * @param i_NameFontSize 桌面图标的名称字体大小
+     */
+    public void setNameFontSize(String i_NameFontSize)
+    {
+        this.nameFontSize = i_NameFontSize;
+    }
+
+    
+    /**
+     * 获取：桌面图标的名称颜色
+     */
+    public String getNameFontColor()
+    {
+        return nameFontColor;
+    }
+
+
+    /**
+     * 设置：桌面图标的名称颜色
+     * 
+     * @param i_NameFontColor 桌面图标的名称颜色
+     */
+    public void setNameFontColor(String i_NameFontColor)
+    {
+        this.nameFontColor = i_NameFontColor;
     }
     
 }

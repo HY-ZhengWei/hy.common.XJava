@@ -126,7 +126,21 @@
                 <appID>MD006</appID>
                 <superID>MD001</superID>
                 <appName>XSQL执行日志</appName>
+                <nameFontColor>#000000</nameFontColor>
+                <icon>:HttpBasePath/windows/images/xsqlLog.png</icon>
+                <backgroundColor>#FFFFFF</backgroundColor>
                 <url>:HttpBasePath/analyses/analyseObject?xid=$SQLBusway</url>
+                <x>335</x>
+                <y>610</y>
+                <desktopShow>true</desktopShow>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MD006C</appID>
+                <superID>MD001</superID>
+                <appName>清空XSQL执行日志</appName>
+                <url><![CDATA[:HttpBasePath/analyses/analyseObject?xid=$SQLBusway&call=clear]]></url>
             </app>
             
             <app>
@@ -144,17 +158,30 @@
             
             <app>
                 <level>2</level>
-                <appID>MD008</appID>
+                <appID>MD007C</appID>
                 <superID>MD001</superID>
-                <appName>页面访问与XSQL</appName>
-                <url>:HttpBasePath/analyses/analyseObject?xid=XSQLFilter</url>
+                <appName>清空XSQL异常日志</appName>
+                <url><![CDATA[:HttpBasePath/analyses/analyseObject?xid=$SQLBuswayError&call=clear]]></url>
             </app>
             
             <app>
                 <level>2</level>
                 <appID>MD008</appID>
                 <superID>MD001</superID>
-                <appName>清空页面访问L</appName>
+                <appName>页面XSQL日志</appName>
+                <icon>:HttpBasePath/windows/images/xsqlByPage.png</icon>
+                <backgroundColor>#1C65AF</backgroundColor>
+                <url>:HttpBasePath/analyses/analyseObject?xid=XSQLFilter</url>
+                <x>445</x>
+                <y>610</y>
+                <desktopShow>true</desktopShow>
+            </app>
+            
+            <app>
+                <level>2</level>
+                <appID>MD008</appID>
+                <superID>MD001</superID>
+                <appName>清空页面XSQL日志</appName>
                 <url><![CDATA[:HttpBasePath/analyses/analyseObject?xid=XSQLFilter&call=clearLogs]]></url>
             </app>
             
