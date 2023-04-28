@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1540,9 +1541,19 @@ public class AnalyseBase extends Analyse
             return v_ErrorLogs;
         }
         
-        for (Object v_Item : v_SQLBuswayError.getArray())
+        Iterator<XSQLLog> v_XSQLLogs = v_SQLBuswayError.iterator();
+        while (v_XSQLLogs.hasNext())
         {
-            XSQLLog v_XSQLLog = (XSQLLog)v_Item;
+            XSQLLog v_XSQLLog = null;
+            try
+            {
+                v_XSQLLog = v_XSQLLogs.next();
+            }
+            catch (Exception exce)
+            {
+                break;
+            }
+            
             if ( v_XSQLLog != null )
             {
                 if ( v_XSQLXID.equals(v_XSQLLog.getOid()) || v_XSQLOID.equals(v_XSQLLog.getOid()) )
@@ -1707,9 +1718,19 @@ public class AnalyseBase extends Analyse
             return v_Logs;
         }
         
-        for (Object v_Item : v_SQLBusway.getArray())
+        Iterator<XSQLLog> v_XSQLLogs = v_SQLBusway.iterator();
+        while ( v_XSQLLogs.hasNext() )
         {
-            XSQLLog v_XSQLLog = (XSQLLog)v_Item;
+            XSQLLog v_XSQLLog = null;
+            try
+            {
+                v_XSQLLog = v_XSQLLogs.next();
+            }
+            catch (Exception exce)
+            {
+                break;
+            }
+            
             if ( v_XSQLLog != null )
             {
                 if ( v_XSQLXID.equals(v_XSQLLog.getOid()) || v_XSQLOID.equals(v_XSQLLog.getOid()) )
@@ -4737,10 +4758,20 @@ public class AnalyseBase extends Analyse
             {
                 if ( StringHelp.isStartsWith(v_Item.getKey() ,i_FindKeys) )
                 {
-                    LogException [] v_LogExceptions = v_Item.getValue().toArray(new LogException[] {});
-                    for (LogException v_LogExce : v_LogExceptions)
+                    Iterator<LogException> v_LogExceptions = v_Item.getValue().iterator();
+                    while ( v_LogExceptions.hasNext() )
                     {
-                        io_ErrorLogs.add(v_LogExce);
+                        LogException v_Log = null;
+                        try
+                        {
+                            v_Log = v_LogExceptions.next();
+                        }
+                        catch (Exception exce)
+                        {
+                            break;
+                        }
+                        
+                        io_ErrorLogs.add(v_Log);
                     }
                 }
             }

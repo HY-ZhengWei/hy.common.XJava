@@ -1,6 +1,7 @@
 package org.hy.common.xml.plugins.analyse.data;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.hy.common.Help;
@@ -70,10 +71,20 @@ public class NetReport extends SessionInfo
         
         if ( i_Session.getNetExceptions() != null )
         {
-            NetException [] v_ErrorLogArr = i_Session.getNetExceptions().toArray(new NetException [] {});
-            for (NetException v_ErrorLog : v_ErrorLogArr)
+            Iterator<NetException> v_ErrorLogArr = i_Session.getNetExceptions().iterator();
+            while ( v_ErrorLogArr.hasNext() )
             {
-                this.netErrorLogs.add(v_ErrorLog);
+                NetException v_Log = null;
+                try
+                {
+                    v_Log = v_ErrorLogArr.next();
+                }
+                catch (Exception exce)
+                {
+                    break;
+                }
+                
+                this.netErrorLogs.add(v_Log);
             }
         }
     }
@@ -155,10 +166,20 @@ public class NetReport extends SessionInfo
         
         if ( i_Session.getNetExceptions() != null )
         {
-            NetException [] v_ErrorLogArr = i_Session.getNetExceptions().toArray(new NetException [] {});
-            for (NetException v_ErrorLog : v_ErrorLogArr)
+            Iterator<NetException> v_ErrorLogArr = i_Session.getNetExceptions().iterator();
+            while ( v_ErrorLogArr.hasNext() )
             {
-                this.netErrorLogs.add(v_ErrorLog);
+                NetException v_Log = null;
+                try
+                {
+                    v_Log = v_ErrorLogArr.next();
+                }
+                catch (Exception exce)
+                {
+                    break;
+                }
+                
+                this.netErrorLogs.add(v_Log);
             }
         }
     }
