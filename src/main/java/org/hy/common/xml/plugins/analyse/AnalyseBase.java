@@ -120,7 +120,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v23.0 2021-12-13  优化：使用新版本net 3.0.0。
  *              v23.1 2022-01-05  添加：通讯连接分析
  *              v24.1 2022-06-09  添加：XSQL & XSQLGroup 最大用时的统计
- * 
+ *              v25.1 2023-04-27  添加：查看XSQL对象执行日志的SQL语句（支持集群）
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -1531,6 +1531,7 @@ public class AnalyseBase extends Analyse
     {
         XSQL          v_XSQLMaster = XJava.getXSQL(i_XSQLXID ,false);
         String        v_XSQLOID    = v_XSQLMaster.getObjectID();
+        String        v_XSQLXID    = v_XSQLMaster.getXJavaID();
         List<XSQLLog> v_ErrorLogs  = new ArrayList<XSQLLog>();
         
         Busway<XSQLLog> v_SQLBuswayError = (Busway<XSQLLog>)XJava.getObject("$SQLBuswayError");
@@ -1544,7 +1545,7 @@ public class AnalyseBase extends Analyse
             XSQLLog v_XSQLLog = (XSQLLog)v_Item;
             if ( v_XSQLLog != null )
             {
-                if ( v_XSQLOID.equals(v_XSQLLog.getOid()) )
+                if ( v_XSQLXID.equals(v_XSQLLog.getOid()) || v_XSQLOID.equals(v_XSQLLog.getOid()) )
                 {
                     v_ErrorLogs.add(v_XSQLLog);
                 }
@@ -1553,7 +1554,8 @@ public class AnalyseBase extends Analyse
                     // 同时添加主XSQL相关的触发器的异常SQL信息  ZengWei(HY) Add 2017-01-06
                     for (XSQLTriggerInfo v_XSQLTrigger : v_XSQLMaster.getTrigger().getXsqls())
                     {
-                        if ( v_XSQLTrigger.getXsql().getObjectID().equals(v_XSQLLog.getOid()) )
+                        if ( v_XSQLTrigger.getXsql().getObjectID().equals(v_XSQLLog.getOid())
+                          || v_XSQLTrigger.getXsql().getObjectID().equals(v_XSQLLog.getOid()) )
                         {
                             v_ErrorLogs.add(v_XSQLLog);
                         }
@@ -1563,6 +1565,173 @@ public class AnalyseBase extends Analyse
         }
         
         return v_ErrorLogs;
+    }
+    
+    
+    
+    /**
+     * 功能1. 查看XSQL对象执行日志的SQL语句（支持集群）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-04-27
+     * @version     v1.0
+     *
+     * @param  i_BasePath        服务请求根路径。如：http://127.0.0.1:80/hy
+     * @param  i_ObjectValuePath 对象值的详情URL。如：http://127.0.0.1:80/hy/../analyseObject/analyseDB
+     * @param  i_XSQLXID         XSQL对象的XID
+     * @param  i_Cluster         是否为集群
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public String analyseDBLog(String i_BasePath ,String i_ObjectValuePath ,String i_XSQLXID ,boolean i_Cluster)
+    {
+        $Logger.debug("查看XSQL执行记录SQL：" + i_XSQLXID);
+        
+        if ( Help.isNull(i_XSQLXID) )
+        {
+            return "";
+        }
+        
+        try
+        {
+            List<XSQLLog> v_ErrorLogs = null;
+            
+            // 本机统计
+            if ( !i_Cluster )
+            {
+                v_ErrorLogs = this.analyseDBLog_Total(i_XSQLXID);
+            }
+            // 集群统计
+            else
+            {
+                List<ClientCluster> v_Servers = Cluster.getClusters();
+                v_ErrorLogs = new ArrayList<XSQLLog>();
+                
+                if ( !Help.isNull(v_Servers) )
+                {
+                    Map<ClientCluster ,CommunicationResponse> v_ResponseDatas = null;
+                    try
+                    {
+                        // 数据通讯前，先登录。但不获取登录结果，可直接交给数据通讯方法来处理。好处是：能统一返回异常、未登录和通讯成功的结果
+                        ClientSocketCluster.startServer(v_Servers);
+                        ClientSocketCluster.login(v_Servers ,getLoginRequest());
+                        v_ResponseDatas = ClientSocketCluster.sendCommands(v_Servers ,false ,-1 ,"AnalyseBase" ,"analyseDBLog_Total" ,new Object[]{i_XSQLXID} ,true ,"XSQL执行日志");
+                    }
+                    catch (Exception exce)
+                    {
+                        $Logger.error(exce);
+                    }
+                    finally
+                    {
+                        ClientSocketCluster.shutdownServer(v_Servers);
+                    }
+                    
+                    if ( v_ResponseDatas != null )
+                    {
+                        for (Map.Entry<? extends ClientCluster ,CommunicationResponse> v_Item : v_ResponseDatas.entrySet())
+                        {
+                            CommunicationResponse v_ResponseData = v_Item.getValue();
+                            ClientCluster         v_Client       = v_Item.getKey();
+                            String                v_ClientName   = "【" + v_Client.getHost() + ":" + v_Client.getPort() + "】 ";
+                            
+                            if ( v_ResponseData.getResult() == 0 )
+                            {
+                                if ( v_ResponseData.getData() instanceof List )
+                                {
+                                    List<XSQLLog> v_XSQLLogs = (List<XSQLLog>)v_ResponseData.getData();
+                                    
+                                    for (XSQLLog v_XSQLLog : v_XSQLLogs)
+                                    {
+                                        v_XSQLLog.setE(v_ClientName + Help.NVL(v_XSQLLog.getE()));
+                                    }
+                                    
+                                    v_ErrorLogs.addAll(v_XSQLLogs);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            String v_Content      = "";
+            String v_OperateURL   = "#";
+            String v_OperateTitle = "";
+            XJSON  v_XJSON        = new XJSON();
+            v_XJSON.setReturnNVL(true);
+            v_XJSON.setAccuracy(true);
+            
+            XJSONObject v_Ret = v_XJSON.parser(v_ErrorLogs);
+            if ( null != v_Ret )
+            {
+                v_Content = v_Ret.toJSONString();
+            }
+            else
+            {
+                v_Content = "{}";
+            }
+            
+            return StringHelp.replaceAll(this.getTemplateShowObject()
+                                        ,new String[]{":HttpBasePath" ,":TitleInfo"   ,":XJavaObjectID" ,":Content" ,":OperateURL1" ,":OperateTitle1" ,":OperateURL2" ,":OperateTitle2" ,":OperateURL3" ,":OperateTitle3" ,":OperateURL4" ,":OperateTitle4" ,":OperateURL5" ,":OperateTitle5"}
+                                        ,new String[]{i_BasePath      ,"执行的SQL语句" ,i_XSQLXID        ,v_Content  ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle   ,v_OperateURL   ,v_OperateTitle});
+        }
+        catch (Exception exce)
+        {
+            $Logger.error(exce);
+            return exce.toString();
+        }
+    }
+    
+    
+    
+    /**
+     * 查看XSQL对象执行日志的SQL语句
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-04-27
+     * @version     v1.0
+     *
+     * @param  i_XSQLXID         XSQL对象的XID
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public List<XSQLLog> analyseDBLog_Total(String i_XSQLXID)
+    {
+        XSQL          v_XSQLMaster = XJava.getXSQL(i_XSQLXID ,false);
+        String        v_XSQLOID    = v_XSQLMaster.getObjectID();
+        String        v_XSQLXID    = v_XSQLMaster.getXJavaID();
+        List<XSQLLog> v_Logs       = new ArrayList<XSQLLog>();
+        
+        Busway<XSQLLog> v_SQLBusway = (Busway<XSQLLog>)XJava.getObject("$SQLBusway");
+        if ( v_SQLBusway == null || v_SQLBusway.size() <= 0 )
+        {
+            return v_Logs;
+        }
+        
+        for (Object v_Item : v_SQLBusway.getArray())
+        {
+            XSQLLog v_XSQLLog = (XSQLLog)v_Item;
+            if ( v_XSQLLog != null )
+            {
+                if ( v_XSQLXID.equals(v_XSQLLog.getOid()) || v_XSQLOID.equals(v_XSQLLog.getOid()) )
+                {
+                    v_Logs.add(v_XSQLLog);
+                }
+                else if ( v_XSQLMaster.isTriggers() )
+                {
+                    // 同时添加主XSQL相关的触发器的异常SQL信息  ZengWei(HY) Add 2017-01-06
+                    for (XSQLTriggerInfo v_XSQLTrigger : v_XSQLMaster.getTrigger().getXsqls())
+                    {
+                        if ( v_XSQLTrigger.getXsql().getObjectID().equals(v_XSQLLog.getOid())
+                          || v_XSQLTrigger.getXsql().getObjectID().equals(v_XSQLLog.getOid()) )
+                        {
+                            v_Logs.add(v_XSQLLog);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return v_Logs;
     }
     
     
@@ -3273,7 +3442,7 @@ public class AnalyseBase extends Analyse
         */
         
         String v_GotoTitle = StringHelp.lpad("" ,4 ,"&nbsp;") + Date.getNowTime().getFull();
-        Jobs   v_Jobs      = (Jobs)XJava.getObject(Jobs.class);
+        Jobs   v_Jobs      = XJava.getObject(Jobs.class);
         if ( v_Jobs != null )
         {
             if ( v_Jobs.isDisasterRecovery() )
@@ -3330,7 +3499,7 @@ public class AnalyseBase extends Analyse
         StringBuilder v_Buffer  = new StringBuilder();
         int           v_Index   = 0;
         String        v_Content = this.getTemplateShowJobDisasterRecoverysContent();
-        Jobs          v_Jobs    = (Jobs)XJava.getObject(Jobs.class);
+        Jobs          v_Jobs    = XJava.getObject(Jobs.class);
         
         if ( v_Jobs != null )
         {

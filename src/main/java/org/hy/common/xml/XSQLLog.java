@@ -51,19 +51,18 @@ public class XSQLLog implements Serializable
     
     
     
-    public XSQLLog(String i_SQL ,Exception i_Exce)
-    {
-        this(i_SQL ,i_Exce ,"");
-    }
-    
-    
-    
     public XSQLLog(String i_SQL ,Exception i_Exce ,String i_XSQLObjectID)
     {
         this.time = Date.getNowTime().getFullMilli();
         this.sql  = i_SQL;
-        this.e    = i_Exce.getMessage();
         this.oid  = i_XSQLObjectID;
+        
+        if ( i_Exce != null )
+        {
+            this.e = i_Exce.getMessage();
+        }
+        
+        this.logXSQL();
     }
     
     
@@ -87,7 +86,7 @@ public class XSQLLog implements Serializable
     /**
      * 设置：执行SQL语句
      * 
-     * @param sql 
+     * @param sql
      */
     public void setSql(String sql)
     {
@@ -107,7 +106,7 @@ public class XSQLLog implements Serializable
     /**
      * 设置：执行时间
      * 
-     * @param time 
+     * @param time
      */
     public void setTime(String time)
     {
@@ -127,7 +126,7 @@ public class XSQLLog implements Serializable
     /**
      * 设置：执行异常信息
      * 
-     * @param error 
+     * @param error
      */
     public void setE(String e)
     {
@@ -147,7 +146,7 @@ public class XSQLLog implements Serializable
     /**
      * 设置：XSQL 的唯一标识ID
      * 
-     * @param oid 
+     * @param oid
      */
     public void setOid(String oid)
     {

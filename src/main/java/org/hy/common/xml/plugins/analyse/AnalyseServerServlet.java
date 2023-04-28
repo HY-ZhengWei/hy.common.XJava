@@ -17,12 +17,12 @@ import org.hy.common.Help;
  * 获取数据库访问量的概要统计数据(Servlet实现方式)
  * 
  * 功能1：获取数据库组合SQL访问量的概要统计数据          http://IP:Port/WebService/../analyseDB?type=Group
- * 功能2：获取集群数据库组合SQL访问量的概要统计数据   http://IP:Port/WebService/../analyseDB?type=Group&cluster=Y
+ * 功能2：获取集群数据库组合SQL访问量的概要统计数据      http://IP:Port/WebService/../analyseDB?type=Group&cluster=Y
  * 
- * 功能3：获取数据库访问量的概要统计数据                      http://IP:Port/WebService/../analyseDB
- * 功能4：获取集群数据库访问量的概要统计数据               http://IP:Port/WebService/../analyseDB?cluster=Y
+ * 功能3：获取数据库访问量的概要统计数据                http://IP:Port/WebService/../analyseDB
+ * 功能4：获取集群数据库访问量的概要统计数据            http://IP:Port/WebService/../analyseDB?cluster=Y
  * 
- * 功能5：查看XSQL对象执行错误的SQL语句                     http://IP:Port/WebService/../analyseDB?xsqlxid=xxxxx
+ * 功能5：查看XSQL对象执行错误的SQL语句                http://IP:Port/WebService/../analyseDB?xsqlxid=xxxxx
  *
  *  配置web.xml如下代码
     <servlet>
@@ -79,7 +79,14 @@ public class AnalyseServerServlet extends HttpServlet
         
         if ( !Help.isNull(v_XSQLXID) )
         {
-            i_Response.getWriter().println(this.analyse.analyseDBError (v_BasePath ,i_Request.getRequestURL().toString() ,v_XSQLXID ,"Y".equalsIgnoreCase(v_Cluster)));
+            if ( "LOG".equalsIgnoreCase(v_Type) )
+            {
+                i_Response.getWriter().println(this.analyse.analyseDBLog  (v_BasePath ,i_Request.getRequestURL().toString() ,v_XSQLXID ,"Y".equalsIgnoreCase(v_Cluster)));
+            }
+            else
+            {
+                i_Response.getWriter().println(this.analyse.analyseDBError(v_BasePath ,i_Request.getRequestURL().toString() ,v_XSQLXID ,"Y".equalsIgnoreCase(v_Cluster)));
+            }
         }
         else if ( "GROUP".equalsIgnoreCase(v_Type) )
         {

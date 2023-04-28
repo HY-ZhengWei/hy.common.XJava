@@ -130,6 +130,7 @@ import org.hy.common.xml.plugins.XRule;
  *              v21.1 2022-06-09  添加：最大用时的统计
  *              v21.2 2023-03-07  添加：querySQLValue，常用于查询返回仅只一个字符串的场景。建议人：王雨墨
  *              v22.0 2023-04-20  添加：单行数据的批量操作（预解释执行模式）
+ *              v22.1 2023-04-27  添加：log()方法记录XID，支持查看具体XSQL的执行日志
  */
 /*
  * 游标类型的说明
@@ -166,8 +167,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /** 大数据字段类型(如,CLob)的占位符名称，多个占位符名称间用逗号，分隔 */
     public  static final String            $LobName_Split  = ",";
     
-    /** SQL执行日志。默认只保留1000条执行过的SQL语句 */
-    public  static final Busway<XSQLLog>   $SQLBusway      = new Busway<XSQLLog>(1000);
+    /** SQL执行日志。默认只保留10000条执行过的SQL语句 */
+    public  static final Busway<XSQLLog>   $SQLBusway      = new Busway<XSQLLog>(10000);
     
     /** SQL执行异常的日志。默认只保留9000条执行异常的SQL语句 */
     public  static final Busway<XSQLLog>   $SQLBuswayError = new Busway<XSQLLog>(9000);
@@ -4215,8 +4216,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     protected static void erroring(String i_SQL ,Exception i_Exce ,XSQL i_XSQL)
     {
-        $SQLBusway     .put(new XSQLLog(i_SQL ,i_Exce));
-        $SQLBuswayError.put(new XSQLLog(i_SQL ,i_Exce ,i_XSQL == null ? "" : i_XSQL.getObjectID()));
+        XSQLLog v_XSQLLog = new XSQLLog(i_SQL ,i_Exce ,i_XSQL == null ? "" : i_XSQL.getObjectID());
+        
+        $SQLBusway     .put(v_XSQLLog);
+        $SQLBuswayError.put(v_XSQLLog);
         
         String v_XJavaID = "";
         
@@ -4272,7 +4275,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     protected void log(String i_SQL)
     {
-        $SQLBusway.put(new XSQLLog(i_SQL));
+        $SQLBusway.put(new XSQLLog(i_SQL ,null ,this.getObjectID()));
         
         StringBuilder v_Buffer = new StringBuilder();
         if ( !Help.isNull(this.xjavaID) )

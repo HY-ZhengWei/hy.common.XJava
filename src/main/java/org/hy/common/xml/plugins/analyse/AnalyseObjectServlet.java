@@ -418,7 +418,14 @@ public class AnalyseObjectServlet extends HttpServlet
             
             if ( !Help.isNull(v_XSQLXID) )
             {
-                i_Response.getWriter().println(this.analyse.analyseDBError (v_BasePath ,i_Request.getRequestURL().toString() ,v_XSQLXID ,"Y".equalsIgnoreCase(v_Cluster)));
+                if ( "LOG".equalsIgnoreCase(v_Type) )
+                {
+                    i_Response.getWriter().println(this.analyse.analyseDBLog  (v_BasePath ,i_Request.getRequestURL().toString() ,v_XSQLXID ,"Y".equalsIgnoreCase(v_Cluster)));
+                }
+                else
+                {
+                    i_Response.getWriter().println(this.analyse.analyseDBError(v_BasePath ,i_Request.getRequestURL().toString() ,v_XSQLXID ,"Y".equalsIgnoreCase(v_Cluster)));
+                }
             }
             else if ( "GROUP".equalsIgnoreCase(v_Type) )
             {

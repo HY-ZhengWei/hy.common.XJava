@@ -90,7 +90,7 @@ html,body {
 a{ color:red; text-decoration:none; outline:none;}
 a:hover{color:red;text-decoration:none;}
 
-.Flow{ color:#669900; text-decoration:none; outline:none;}
+.Flow{ color:#669900; text-decoration:none; outline:none; cursor:pointer; }
 .Flow:hover{color:#99CC00;text-decoration:none;}
 
 .rightMenuBar {
@@ -426,5 +426,18 @@ else
        </div> 
    </div>
 
+<script language="javascript" type="text/javascript">
+d3.selectAll('.cont_show').on('click' ,function(e)
+{
+    let v_XSQLID       = d3.select(this).html();
+    let v_HttpBasePath = ':HttpBasePath';
+    let v_Cluster      = ':cluster';
+    
+    if ( v_XSQLID != '合计' )
+    {
+        window.location.href = v_HttpBasePath + '/analyses/analyseObject/analyseDB?type=LOG&xsqlxid=' + v_XSQLID + '&cluster=' + v_Cluster;
+    }
+});
+</script>
 </body>
 </html>
