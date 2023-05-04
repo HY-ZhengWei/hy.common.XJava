@@ -19,6 +19,7 @@ import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.PartitionMap;
 import org.hy.common.StringHelp;
+import org.hy.common.TablePartitionBusway;
 import org.hy.common.XJavaID;
 import org.hy.common.app.Param;
 import org.hy.common.db.DBConditions;
@@ -144,42 +145,47 @@ import org.hy.common.xml.plugins.XRule;
 public final class XSQL implements Comparable<XSQL> ,XJavaID
 {
     
-    private static final Logger $Logger = new Logger(XSQL.class);
+    private static final Logger                                $Logger = new Logger(XSQL.class);
     
     // private static final Marker $Marker = MarkerManager.getMarker("XSQL");
     
     
     /** SQL类型。N: 增、删、改、查的普通SQL语句  (默认值) */
-    public  static final String            $Type_NormalSQL = "N";
+    public  static final String                                $Type_NormalSQL = "N";
     
     /** SQL类型。P: 存储过程 */
-    public  static final String            $Type_Procedure = "P";
+    public  static final String                                $Type_Procedure = "P";
     
     /** SQL类型。F: 函数 */
-    public  static final String            $Type_Function  = "F";
+    public  static final String                                $Type_Function  = "F";
     
     /** SQL类型。C：DDL、DCL、TCL创建表，创建对象等 */
-    public  static final String            $Type_Create    = "C";
+    public  static final String                                $Type_Create    = "C";
     
     /** execute()方法中执行多条SQL语句的分割符 */
-    public  static final String            $Executes_Split = ";/";
+    public  static final String                                $Executes_Split = ";/";
     
     /** 大数据字段类型(如,CLob)的占位符名称，多个占位符名称间用逗号，分隔 */
-    public  static final String            $LobName_Split  = ",";
+    public  static final String                                $LobName_Split  = ",";
     
-    /** SQL执行日志。默认只保留10000条执行过的SQL语句 */
-    public  static final Busway<XSQLLog>   $SQLBusway      = new Busway<XSQLLog>(10000);
+    /** 每个XSQL对象的执行日志。默认每个XSQL对象只保留100条日志。按 getObjectID() 分区 */
+    public  static final TablePartitionBusway<String ,XSQLLog> $SQLBuswayTP    = new TablePartitionBusway<String ,XSQLLog>();
+    
+    /** 所有SQL执行日志，有一定的执行顺序。默认只保留5000条执行过的SQL语句 */
+    public  static final Busway<XSQLLog>                       $SQLBusway      = new Busway<XSQLLog>(5000);
     
     /** SQL执行异常的日志。默认只保留9000条执行异常的SQL语句 */
-    public  static final Busway<XSQLLog>   $SQLBuswayError = new Busway<XSQLLog>(9000);
+    public  static final Busway<XSQLLog>                       $SQLBuswayError = new Busway<XSQLLog>(9000);
     
     /** XSQL */
-    public  static final String            $XSQLErrors     = "XSQL-Errors";
+    public  static final String                                $XSQLErrors     = "XSQL-Errors";
     
     
     
     static
     {
+        $SQLBuswayTP.setDefaultWayLength(100);
+        XJava.putObject("$SQLBuswayTP"    ,$SQLBuswayTP);
         XJava.putObject("$SQLBusway"      ,$SQLBusway);
         XJava.putObject("$SQLBuswayError" ,$SQLBuswayError);
     }
@@ -4217,7 +4223,8 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     protected static void erroring(String i_SQL ,Exception i_Exce ,XSQL i_XSQL)
     {
         XSQLLog v_XSQLLog = new XSQLLog(i_SQL ,i_Exce ,i_XSQL == null ? "" : i_XSQL.getObjectID());
-        
+
+        $SQLBuswayTP   .putRow(i_XSQL.getObjectID() ,v_XSQLLog);
         $SQLBusway     .put(v_XSQLLog);
         $SQLBuswayError.put(v_XSQLLog);
         
@@ -4275,7 +4282,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      */
     protected void log(String i_SQL)
     {
-        $SQLBusway.put(new XSQLLog(i_SQL ,null ,this.getObjectID()));
+        XSQLLog v_XSQLLog = new XSQLLog(i_SQL ,null ,this.getObjectID());
+        
+        $SQLBuswayTP.putRow(this.getObjectID() ,v_XSQLLog);
+        $SQLBusway  .put(v_XSQLLog);
         
         StringBuilder v_Buffer = new StringBuilder();
         if ( !Help.isNull(this.xjavaID) )

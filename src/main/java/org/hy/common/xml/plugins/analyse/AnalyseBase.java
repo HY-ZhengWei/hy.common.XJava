@@ -1397,6 +1397,7 @@ public class AnalyseBase extends Analyse
         v_Objs.clear();
         v_Objs = null;
         
+        XSQL.$SQLBuswayTP   .clear();
         XSQL.$SQLBusway     .clear();
         XSQL.$SQLBuswayError.clear();
     }
@@ -1527,7 +1528,6 @@ public class AnalyseBase extends Analyse
      * @param  i_XSQLXID         XSQL对象的XID
      * @return
      */
-    @SuppressWarnings("unchecked")
     public List<XSQLLog> analyseDBError_Total(String i_XSQLXID)
     {
         XSQL          v_XSQLMaster = XJava.getXSQL(i_XSQLXID ,false);
@@ -1535,7 +1535,7 @@ public class AnalyseBase extends Analyse
         String        v_XSQLXID    = v_XSQLMaster.getXJavaID();
         List<XSQLLog> v_ErrorLogs  = new ArrayList<XSQLLog>();
         
-        Busway<XSQLLog> v_SQLBuswayError = (Busway<XSQLLog>)XJava.getObject("$SQLBuswayError");
+        Busway<XSQLLog> v_SQLBuswayError = XSQL.$SQLBuswayError;
         if ( v_SQLBuswayError == null || v_SQLBuswayError.size() <= 0 )
         {
             return v_ErrorLogs;
@@ -1704,7 +1704,6 @@ public class AnalyseBase extends Analyse
      * @param  i_XSQLXID         XSQL对象的XID
      * @return
      */
-    @SuppressWarnings("unchecked")
     public List<XSQLLog> analyseDBLog_Total(String i_XSQLXID)
     {
         XSQL          v_XSQLMaster = XJava.getXSQL(i_XSQLXID ,false);
@@ -1712,7 +1711,7 @@ public class AnalyseBase extends Analyse
         String        v_XSQLXID    = v_XSQLMaster.getXJavaID();
         List<XSQLLog> v_Logs       = new ArrayList<XSQLLog>();
         
-        Busway<XSQLLog> v_SQLBusway = (Busway<XSQLLog>)XJava.getObject("$SQLBusway");
+        Busway<XSQLLog> v_SQLBusway = XSQL.$SQLBuswayTP.get(v_XSQLOID);
         if ( v_SQLBusway == null || v_SQLBusway.size() <= 0 )
         {
             return v_Logs;
