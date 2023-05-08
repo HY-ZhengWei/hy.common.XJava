@@ -12,12 +12,13 @@ import com.sun.management.OperatingSystemMXBean;
 
 
 /**
- * TODO(请详细描述类型的作用。描述后请删除todo标签) 
+ * 测试单元：系统内存
  *
  * @author      ZhengWei(HY)
  * @createDate  2018-03-09
  * @version     v1.0
  */
+@SuppressWarnings("restriction")
 public class JU_OperatingSystemMXBean
 {
     

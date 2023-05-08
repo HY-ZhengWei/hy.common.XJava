@@ -3,8 +3,11 @@ package org.hy.common.xml.junit.template;
 import org.hy.common.xml.SerializableDef;
 
 
+
+
+
 /**
- * TODO(请详细描述类型的作用。描述后请删除todo标签) 
+ * 包信息
  *
  * @author      ZhengWei(HY)
  * @createDate  2017-05-12
@@ -36,7 +39,7 @@ public class PackageInfo extends SerializableDef
     /**
      * 设置：包名称
      * 
-     * @param packageName 
+     * @param packageName
      */
     public void setPackageName(String packageName)
     {
@@ -56,7 +59,7 @@ public class PackageInfo extends SerializableDef
     /**
      * 设置：类信息
      * 
-     * @param table 
+     * @param table
      */
     public void setTable(TableInfo table)
     {

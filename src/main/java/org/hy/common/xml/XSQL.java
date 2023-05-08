@@ -440,8 +440,11 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     protected synchronized void success(Date i_ExecuteTime ,double i_TimeLen ,int i_SumCount ,long i_IORowCount)
     {
-        this.requestCount     += i_SumCount - 1;
-        this.successCount     += i_SumCount;
+        // 外界提供DB连接时，部分XSQL的写操作，不在XSQL内提交时 i_SumCount 会为0值，
+        // 此处简单的处理方案是：先按提交 1 次统计数量。
+        // 暂时忽略（不监控）外界回滚的情况，待有好的方案时再将回滚的纳入统计 TODO
+        this.requestCount     += Help.max(i_SumCount ,1) - 1;
+        this.successCount     += Help.max(i_SumCount ,1);
         this.successTimeLen   += i_TimeLen;
         this.successTimeLenMax = Math.max(this.successTimeLenMax ,i_TimeLen);
         this.executeTime       = i_ExecuteTime;

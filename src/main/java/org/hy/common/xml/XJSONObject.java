@@ -44,7 +44,7 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
 
 
     // /**
-    // * Allow simply casting to Map<String, XXX>
+    // * Allow simply casting to Map<String, XX>
     // */
     // @SuppressWarnings("unchecked")
     // public <T> T cast() {
