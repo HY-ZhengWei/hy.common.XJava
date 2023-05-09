@@ -78,8 +78,9 @@ import org.hy.common.xml.log.Logger;
  *              v15.1 2018-08-10  1.剥离：将节点是否允许执行的条件，剥离到org.hy.common.db.DBCondition类中共用。
  *              v16.0 2019-08-13  1.添加：$Type_ExecuteCommit类型，可实现执行后立即提交本次操作的节点。主要用于多线程的同时，也保证精准的XSQL统计。
  *              v17.0 2020-06-02  1.添加：支持规则引擎，对执行入参、返回结果、XJava对象池中的数据使用规则引擎。
- *              v17.0 2021-04-14  1.添加：判定及提示，当XSQL的类型与XSQLNode的类型不一致时，给于警告。
+ *              v17.1 2021-04-14  1.添加：判定及提示，当XSQL的类型与XSQLNode的类型不一致时，给于警告。
  *                                       预防查询SQL按数据库执行节点处理的人为配置异常。
+ *              v18.0 2023-05-09  1.添加：useBatch 是否使用预解释的方式。建议人：程元丰
  */
 public class XSQLNode implements XJavaID
 {
@@ -178,6 +179,14 @@ public class XSQLNode implements XJavaID
     public static final String  $Type_CollectionToExecuteUpdate  = "CollectionToExecuteUpdate";
     
     
+    
+    /**
+     * 是否使用预解释的方式。
+     * 
+     * 默认为:true，表示使用预解释的方式来提高批处理的性能。但就放弃使用全能动态SQL的功能，如表名称动态
+     * 仅用于 $Type_CollectionToExecuteUpdate 类型，暂时不适用于 $Type_ExecuteUpdate 类型
+     */
+    private boolean                      useBatch;
     
     /** XJava池中对象的ID标识 */
     private String                       nodeXJavaID;
@@ -541,6 +550,7 @@ public class XSQLNode implements XJavaID
     
     public XSQLNode()
     {
+        this.useBatch           = true;
         this.condition          = null;
         this.noDataContinue     = false;
         this.noPassContinue     = true;
@@ -2162,6 +2172,28 @@ public class XSQLNode implements XJavaID
     public String getXJavaID()
     {
         return this.nodeXJavaID;
+    }
+
+
+    
+    /**
+     * 获取：是否使用预解释的方式。默认为:true，表示使用预解释的方式来提高批处理的性能。但就放弃使用全能动态SQL的功能，如表名称动态
+     */
+    public boolean getUseBatch()
+    {
+        return useBatch;
+    }
+
+
+    
+    /**
+     * 设置：是否使用预解释的方式。默认为:true，表示使用预解释的方式来提高批处理的性能。但就放弃使用全能动态SQL的功能，如表名称动态
+     * 
+     * @param i_UseBatch 是否使用预解释的方式。默认为:true，表示使用预解释的方式来提高批处理的性能。但就放弃使用全能动态SQL的功能，如表名称动态
+     */
+    public void setUseBatch(boolean i_UseBatch)
+    {
+        this.useBatch = i_UseBatch;
     }
     
 }

@@ -169,6 +169,7 @@ import org.hy.common.xml.log.Logger;
  *              v30.0 2022-06-09  1.添加：最大用时统计
  *              v31.0 2022-06-17  1.修正：跟随XSQL的配置，设定NULL值的情况：发现人：李秉坤
  *              v31.1 2023-04-22  1.修正：有返回集合时 XSQLNode.returnQuery = true ，不要清空查询结果集
+ *              v32.0 2023-05-09  1.添加：useBatch 是否使用预解释的方式。建议人：程元丰
  */
 public final class XSQLGroup implements XJavaID
 {
@@ -912,11 +913,25 @@ public final class XSQLGroup implements XJavaID
                         {
                             if ( v_Node.isFreeConnection() )
                             {
-                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()));
+                                if ( v_Node.getUseBatch() )
+                                {
+                                    v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()));
+                                }
+                                else
+                                {
+                                    v_RCount = v_Node.getSql().executeUpdates        (this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()));
+                                }
                             }
                             else
                             {
-                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection(v_Node ,io_DSGConns));
+                                if ( v_Node.getUseBatch() )
+                                {
+                                    v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection(v_Node ,io_DSGConns));
+                                }
+                                else
+                                {
+                                    v_RCount = v_Node.getSql().executeUpdates        (this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection(v_Node ,io_DSGConns));
+                                }
                             }
                             
                             io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
@@ -1674,11 +1689,25 @@ public final class XSQLGroup implements XJavaID
                         {
                             if ( v_Node.isFreeConnection() )
                             {
-                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()));
+                                if ( v_Node.getUseBatch() )
+                                {
+                                    v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()));
+                                }
+                                else
+                                {
+                                    v_RCount = v_Node.getSql().executeUpdates        (this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()));
+                                }
                             }
                             else
                             {
-                                v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection(v_Node ,io_DSGConns));
+                                if ( v_Node.getUseBatch() )
+                                {
+                                    v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection(v_Node ,io_DSGConns));
+                                }
+                                else
+                                {
+                                    v_RCount = v_Node.getSql().executeUpdates        (this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection(v_Node ,io_DSGConns));
+                                }
                             }
                             
                             io_Params.put(              $Param_ExecCount + v_NodeIndex ,v_RCount);
@@ -2550,7 +2579,21 @@ public final class XSQLGroup implements XJavaID
         {
             if ( XSQLNode.$Type_CollectionToExecuteUpdate.equals(i_Node.getType()) )
             {
-                return i_Node.getSql().getContent().getPreparedSQL().getSQL();
+                if ( i_Node.getUseBatch() )
+                {
+                    return i_Node.getSql().getContent().getPreparedSQL().getSQL();
+                }
+                else
+                {
+                    if ( Help.isNull(i_Params) )
+                    {
+                        return i_Node.getSql().getContent().getSQL(i_Node.getSql().getDataSourceGroup());
+                    }
+                    else
+                    {
+                        return i_Node.getSql().getContent().getSQL(i_Params ,i_Node.getSql().getDataSourceGroup());
+                    }
+                }
             }
             else
             {

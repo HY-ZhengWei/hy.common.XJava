@@ -4274,7 +4274,15 @@ public final class XJava
             
             if ( i_AttributeName.equals(v_NodeAttr.getNodeName().toLowerCase(Locale.ENGLISH)) )
             {
-                return v_NodeAttr.getNodeValue();
+                String v_NodeAttrValue = v_NodeAttr.getNodeValue();
+                if ( v_NodeAttrValue != null )
+                {
+                    return v_NodeAttrValue.trim();
+                }
+                else
+                {
+                    return v_NodeAttrValue;
+                }
             }
         }
         
