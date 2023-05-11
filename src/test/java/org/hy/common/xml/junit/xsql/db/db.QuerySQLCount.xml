@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="sqls"            class="java.util.ArrayList" />
+    <import name="sqlGroup"        class="org.hy.common.xml.plugins.XSQLGroup" />
+    <import name="sql"             class="org.hy.common.xml.XSQL" />
+
+
+
+    <sqls>
+    
+        <sql id="XSQL_Junit_QuerySQLCount_000"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  COUNT(*)
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+    
+    
+        <sql id="XSQL_Junit_QuerySQLCount_001"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  COUNT(1)
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+        
+        <sql id="XSQL_Junit_QuerySQLCount_002"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  COUNT( 1 )
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+        
+        <sql id="XSQL_Junit_QuerySQLCount_003"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  COUNT ( 1 )
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+        
+        <sql id="XSQL_Junit_QuerySQLCount_004"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  count ( 1 )
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+        
+        <sql id="XSQL_Junit_QuerySQLCount_005"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  CounT ( * )
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+        
+        <sql id="XSQL_Junit_QuerySQLCount_006"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  CounT 
+                ( * )
+                  FROM  HYTest
+                ]]>
+            </content>
+            
+        </sql>
+        
+    </sqls>
+    
+</config>

@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.hy.common.Date;
 import org.hy.common.Help;
@@ -25,9 +27,15 @@ import org.hy.common.db.DataSourceGroup;
  * @createDate  2022-05-26
  * @version     v1.0
  *              v2.0  2023-03-07  添加：querySQLValue，常用于查询返回仅只一个字符串的场景。建议人：王雨墨
+ *              v3.0  2023-05-11  优化：改成用正则判定查询QL中否有COUNT(1)或COUNT(*)的情况。发现人：王力
  */
 public class XSQLOPQuery
 {
+    
+    /** 判定查询QL中否有COUNT(1)或COUNT(*)的情况 */
+    private static final String $SQLHaveCount = "( )+[Cc][Oo][Uu][Nn][Tt][ ]*(\\()+";
+    
+    
     
     /**
      * 占位符SQL的查询。 -- 无填充值的
@@ -2808,7 +2816,12 @@ public class XSQLOPQuery
             }
             
             // XSQL getSQLCount() 自行判定是否有count(1) or count(*)
-            if ( i_SQL.toUpperCase().indexOf(" COUNT(") <= 0 )
+            Pattern v_Pattern = null;
+            Matcher v_Matcher = null;
+            
+            v_Pattern = Pattern.compile($SQLHaveCount);
+            v_Matcher = v_Pattern.matcher(i_SQL);
+            if ( !v_Matcher.find() )
             {
                 throw new RuntimeException("XSQL.querySQLCount()'s SQL is not find COUNT(1) or COUNT(*).");
             }
