@@ -30,6 +30,7 @@ import org.hy.common.db.DataSourceGroup;
  * @createDate  2022-05-23
  * @version     v1.0
  *              v2.0  2023-04-20  添加：单行数据的批量操作（预解释执行模式）
+ *              v2.1  2023-05-17  添加：预解释执行模式异常时，同样输出具体数值，而不是一大堆?问号
  */
 public class XSQLOPInsert
 {
@@ -1233,6 +1234,7 @@ public class XSQLOPInsert
         }
         catch (Exception exce)
         {
+            v_SQL = i_XSQL.getContent().getPreparedSQL().getSQL(i_Obj);
             XSQL.erroring(v_SQL ,exce ,i_XSQL);
             
             try
@@ -1247,7 +1249,7 @@ public class XSQLOPInsert
                 // Nothing.
             }
             
-            throw new RuntimeException(exce.getMessage());
+            throw new RuntimeException(exce.getMessage() + "：" + v_SQL);
         }
         finally
         {
@@ -1439,6 +1441,7 @@ public class XSQLOPInsert
         long              v_BeginTime   = i_XSQL.request().getTime();
         String            v_SQL         = null;
         List<Integer>     v_Identitys   = null;
+        Object            v_Object      = null;
         
         try
         {
@@ -1464,7 +1467,7 @@ public class XSQLOPInsert
             {
                 for (int i=0; i<i_ObjList.size(); i++)
                 {
-                    Object v_Object = i_ObjList.get(i);
+                    v_Object = i_ObjList.get(i);
                     if ( v_Object != null )
                     {
                         if ( MethodReflect.isExtendImplement(v_Object ,Map.class) )
@@ -1523,7 +1526,7 @@ public class XSQLOPInsert
                 
                 for (int i=0 ,v_EC=0; i<i_ObjList.size(); i++)
                 {
-                    Object v_Object = i_ObjList.get(i);
+                    v_Object = i_ObjList.get(i);
                     if ( v_Object != null )
                     {
                         if ( MethodReflect.isExtendImplement(v_Object ,Map.class) )
@@ -1614,6 +1617,7 @@ public class XSQLOPInsert
         }
         catch (Exception exce)
         {
+            v_SQL = i_XSQL.getContent().getPreparedSQL().getSQL(v_Object);
             XSQL.erroring(v_SQL ,exce ,i_XSQL);
             
             try
@@ -1628,7 +1632,7 @@ public class XSQLOPInsert
                 // Nothing.
             }
             
-            throw new RuntimeException(exce.getMessage());
+            throw new RuntimeException(exce.getMessage() + "：" + v_SQL);
         }
         finally
         {

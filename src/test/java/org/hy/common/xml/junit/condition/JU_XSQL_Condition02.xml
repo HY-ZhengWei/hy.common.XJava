@@ -16,8 +16,8 @@
                     SELECT
                         id
                     FROM overduePrepareMaterialRealTimeData
-                    WHERE 1 = 1
-                        <[ AND (:prepareMaterialDate) ]>
+                    WHERE 
+                        <[ (:prepareMaterialDate) ]>
                     ORDER BY planstarttime,planNo
                 ]]>
             </content>
@@ -48,7 +48,7 @@
                     from oaext_sale_bill a
                     LEFT JOIN oa_voucher_record b
                     on a.djh=b.maindjh
-                    where 1 = 1
+                    where 
                      <[AND a.djh like '%:djh%']>
                      <[AND a.jkr like '%:jkr%']>
                      <[AND a.lbmc = ':lbmc']>

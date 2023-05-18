@@ -17,7 +17,7 @@
                 <![CDATA[
                     SELECT  A.Object_Name  AS ONAME
                       FROM  User_Objects  A
-                     WHERE  1 = 1
+                     WHERE  
                   <[   AND  UPPER(A.Object_Name) = UPPER(':objectName')   ]>
                 ]]>
             </content>
@@ -82,8 +82,8 @@
                 <![CDATA[
                     SELECT  A.Name  AS ONAME
                       FROM  SysObjects  A
-                     WHERE  1 = 1
-                  <[   AND  UPPER(A.Name) = UPPER(':objectName')   ]>
+                     WHERE  
+                  <[        UPPER(A.Name) = UPPER(':objectName')   ]>
                 ]]>
             </content>
             
@@ -142,8 +142,8 @@
                 <![CDATA[
                     SELECT  A.name  AS ONAME
                       FROM  Sqlite_Master  A
-                     WHERE  1 = 1
-                  <[   AND  UPPER(A.name) = UPPER(':objectName')   ]>
+                     WHERE  
+                  <[        UPPER(A.name) = UPPER(':objectName')   ]>
                 ]]>
             </content>
             

@@ -51,6 +51,7 @@ import oracle.sql.CLOB;
  * @version     v1.0
  *              v2.0  2022-05-26  添加：isGetID()参数影响executeUpdate(...)系统方法返回值的含义
  *              v3.0  2023-04-20  添加：单行数据的批量操作（预解释执行模式）
+ *              v3.1  2023-05-17  添加：预解释执行模式异常时，同样输出具体数值，而不是一大堆?问号
  */
 public class XSQLOPUpdate
 {
@@ -1066,6 +1067,7 @@ public class XSQLOPUpdate
         }
         catch (Exception exce)
         {
+            v_SQL = i_XSQL.getContent().getPreparedSQL().getSQL(i_Obj);
             XSQL.erroring(v_SQL ,exce ,i_XSQL);
             
             try
@@ -1080,7 +1082,7 @@ public class XSQLOPUpdate
                 // Nothing.
             }
             
-            throw new RuntimeException(exce.getMessage());
+            throw new RuntimeException(exce.getMessage() + "：" + v_SQL);
         }
         finally
         {
@@ -1603,6 +1605,7 @@ public class XSQLOPUpdate
         int               v_CommitCount = 0;
         long              v_BeginTime   = i_XSQL.request().getTime();
         String            v_SQL         = null;
+        Object            v_Object      = null;
         
         try
         {
@@ -1627,7 +1630,7 @@ public class XSQLOPUpdate
             {
                 for (int i=0; i<i_ObjList.size(); i++)
                 {
-                    Object v_Object = i_ObjList.get(i);
+                    v_Object = i_ObjList.get(i);
                     if ( v_Object != null )
                     {
                         if ( MethodReflect.isExtendImplement(v_Object ,Map.class) )
@@ -1685,7 +1688,7 @@ public class XSQLOPUpdate
                 
                 for (int i=0 ,v_EC=0; i<i_ObjList.size(); i++)
                 {
-                    Object v_Object = i_ObjList.get(i);
+                    v_Object = i_ObjList.get(i);
                     if ( v_Object != null )
                     {
                         if ( MethodReflect.isExtendImplement(v_Object ,Map.class) )
@@ -1773,6 +1776,7 @@ public class XSQLOPUpdate
         }
         catch (Exception exce)
         {
+            v_SQL = i_XSQL.getContent().getPreparedSQL().getSQL(v_Object);
             XSQL.erroring(v_SQL ,exce ,i_XSQL);
             
             try
@@ -1787,7 +1791,7 @@ public class XSQLOPUpdate
                 // Nothing.
             }
             
-            throw new RuntimeException(exce.getMessage());
+            throw new RuntimeException(exce.getMessage() + "：" + v_SQL);
         }
         finally
         {
