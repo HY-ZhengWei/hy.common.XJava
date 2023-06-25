@@ -424,7 +424,7 @@ public final class XSQLResult
             
             
             // 无输出字段过滤的情况
-            if ( i_FilterType == 0 || ((i_FilterColNames == null || i_FilterColNames.size() == 0) && (i_FilterColNoArr == null || i_FilterColNoArr.length == 0)) )
+            if ( i_FilterType == 0 || (Help.isNull(i_FilterColNames) && Help.isNull(i_FilterColNoArr)) )
             {
                 if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
                 {
@@ -814,7 +814,7 @@ public final class XSQLResult
             
             
             // 无输出字段过滤的情况
-            if ( i_FilterType == 0 || ((i_FilterColNames == null || i_FilterColNames.size() == 0) && (i_FilterColNoArr == null || i_FilterColNoArr.length == 0)) )
+            if ( i_FilterType == 0 || (Help.isNull(i_FilterColNames) && Help.isNull(i_FilterColNoArr)) )
             {
                 if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
                 {
@@ -1418,7 +1418,7 @@ public final class XSQLResult
             
             
             // 无输出字段过滤的情况
-            if ( i_FilterType == 0 || ((i_FilterColNames == null || i_FilterColNames.size() == 0) && (i_FilterColNoArr == null || i_FilterColNoArr.length == 0)) )
+            if ( i_FilterType == 0 || (Help.isNull(i_FilterColNames) && Help.isNull(i_FilterColNoArr)) )
             {
                 if ( this.cfillMethodType == $CFILL_METHOD_FIXED )
                 {
@@ -2200,7 +2200,7 @@ public final class XSQLResult
         
         try
         {
-            v_TableInstance = this.table.newInstance();
+            v_TableInstance = this.table.getDeclaredConstructor().newInstance();
         }
         catch (Exception exce)
         {
@@ -2225,7 +2225,7 @@ public final class XSQLResult
         
         try
         {
-            v_TableInstance = this.row.newInstance();
+            v_TableInstance = this.row.getDeclaredConstructor().newInstance();
         }
         catch (Exception exce)
         {

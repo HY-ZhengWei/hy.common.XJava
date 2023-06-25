@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="cqls"            class="java.util.ArrayList" />
+    <import name="cql"             class="org.hy.common.xcql.XCQL" />
+
+
+
+    <cqls>
+    
+        <cql id="XCQL_Query_001_ReturnListMap"> 
+        
+            <dataSourceCQL ref="DSCQL_001" />
+        
+            <content>
+                <![CDATA[
+                MATCH (n) RETURN n
+                ]]>
+            </content>
+            
+            <result>
+                <row>java.util.HashMap</row>
+                <cfill>put(colName ,colValue)</cfill>
+            </result>
+            
+        </cql>
+        
+        
+        
+        <cql id="XCQL_Query_002_ReturnObject"> 
+        
+            <dataSourceCQL ref="DSCQL_001" />
+        
+            <content>
+                <![CDATA[
+                MATCH (n:`测试`) RETURN n
+                ]]>
+            </content>
+            
+            <result>
+                <row>org.hy.common.xml.junit.xcql.bean.DataSourceConfig</row>
+                <cfill>setter(colValue)</cfill>
+            </result>
+            
+        </cql>
+        
+        
+        
+        <cql id="XCQL_Query_003_Where"> 
+        
+            <dataSourceCQL ref="DSCQL_001" />
+        
+            <content>
+                <![CDATA[
+                MATCH (n:`测试`) 
+                WHERE <[  n.databaseName = '#databaseName'  ]> 
+                RETURN n
+                ]]>
+            </content>
+            
+            <result>
+                <row>org.hy.common.xml.junit.xcql.bean.DataSourceConfig</row>
+                <cfill>setter(colValue)</cfill>
+            </result>
+            
+        </cql>
+        
+        
+        
+        <cql id="XCQL_Query_004_Count"> 
+        
+            <dataSourceCQL ref="DSCQL_001" />
+        
+            <content>
+                <![CDATA[
+                MATCH (n:`测试`) RETURN COUNT(n)
+                ]]>
+            </content>
+            
+            <result>
+                <row>java.util.HashMap</row>
+                <cfill>put(colName ,colValue)</cfill>
+            </result>
+            
+        </cql>
+        
+        
+        
+        <cql id="XCQL_Query_005_ID"> 
+        
+            <dataSourceCQL ref="DSCQL_001" />
+        
+            <content>
+                <![CDATA[
+                MATCH (n:`测试`) WHERE n.databaseName = '#databaseName' RETURN id(n)
+                ]]>
+            </content>
+            
+            <result>
+                <row>java.util.HashMap</row>
+                <cfill>put(colName ,colValue)</cfill>
+            </result>
+            
+        </cql>
+        
+        
+        
+        <cql id="XCQL_Query_006_CreateTime"> 
+        
+            <dataSourceCQL ref="DSCQL_001" />
+        
+            <content>
+                <![CDATA[
+                MATCH (n:`测试`) WHERE n.databaseName = '#databaseName' RETURN n.createTime
+                ]]>
+            </content>
+            
+            <result>
+                <row>java.util.HashMap</row>
+                <cfill>put(colName ,colValue)</cfill>
+            </result>
+            
+        </cql>
+        
+    </cqls>
+    
+</config>

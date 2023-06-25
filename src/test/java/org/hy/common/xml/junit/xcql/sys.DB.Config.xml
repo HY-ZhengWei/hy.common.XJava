@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="cqls"          class="java.util.ArrayList" />
+    <import name="dataSourceCQL" class="org.hy.common.xcql.DataSourceCQL" />
+
+
+
+    <!-- 数据库配置信息 -->
+    <cqls>
+    
+        <dataSourceCQL id="DSCQL_001">
+            <url>neo4j://127.0.0.1:7687</url>
+            <username>neo4j</username>
+            <password>ZhengWei@qq.com</password>
+            <database>cdc</database>
+        </dataSourceCQL>
+        
+    </cqls>
+    
+</config>

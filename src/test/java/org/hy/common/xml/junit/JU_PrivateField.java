@@ -1,6 +1,7 @@
 package org.hy.common.xml.junit;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.annotation.XType;
@@ -51,9 +52,9 @@ public class JU_PrivateField
     
     
     @Test
-    public void test_Field() throws NoSuchFieldException, SecurityException, InstantiationException, IllegalAccessException
+    public void test_Field() throws NoSuchFieldException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException
     {
-        JU_PrivateField v_Instance = JU_PrivateField.class.newInstance();
+        JU_PrivateField v_Instance = JU_PrivateField.class.getDeclaredConstructor().newInstance();
         String []       v_Names    = {"longValue" ,"longObject" ,"byteValue" ,"intValue" ,"booleanValue" ,"stringValue" ,"stringValue"};
         Object []       v_Values   = {1L          ,null         ,(byte)1     ,2          ,true           ,"ZhengWei"    ,null};
         

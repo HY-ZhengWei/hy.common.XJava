@@ -494,7 +494,7 @@ public final class XJSON
             {
                 if ( MethodReflect.allowNew(i_ObjectClass) )
                 {
-                    v_NewObj = i_ObjectClass.newInstance();
+                    v_NewObj = i_ObjectClass.getDeclaredConstructor().newInstance();
                 }
                 else
                 {
@@ -1025,7 +1025,7 @@ public final class XJSON
         {
             try
             {
-                return i_Class.newInstance();
+                return i_Class.getDeclaredConstructor().newInstance();
             }
             catch (Exception exce)
             {

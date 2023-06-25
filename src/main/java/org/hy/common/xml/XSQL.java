@@ -145,7 +145,7 @@ import org.hy.common.xml.plugins.XRule;
 public final class XSQL implements Comparable<XSQL> ,XJavaID
 {
     
-    private static final Logger                                $Logger = new Logger(XSQL.class);
+    private static final Logger                                $Logger = new Logger(XSQL.class ,true);
     
     // private static final Marker $Marker = MarkerManager.getMarker("XSQL");
     
@@ -182,6 +182,18 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     
+    /**
+     * 通用分区XSQL标示记录（确保只操作一次，而不是重复执行替换操作）
+     * Map.key   为数据库类型 + "_" + XSQL.getObjectID()
+     * Map.value 为 XSQL
+     */
+    private static final Map<String ,XSQL>                     $PagingMap      = new HashMap<String ,XSQL>();
+                                                               
+    /** 缓存大小 */
+    protected static final int                                 $BufferSize     = 4 * 1024;
+    
+    
+    
     static
     {
         $SQLBuswayTP.setDefaultWayLength(100);
@@ -189,18 +201,6 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         XJava.putObject("$SQLBusway"      ,$SQLBusway);
         XJava.putObject("$SQLBuswayError" ,$SQLBuswayError);
     }
-    
-    
-    
-    /**
-     * 通用分区XSQL标示记录（确保只操作一次，而不是重复执行替换操作）
-     * Map.key   为数据库类型 + "_" + XSQL.getObjectID()
-     * Map.value 为 XSQL
-     */
-    private static final Map<String ,XSQL> $PagingMap      = new HashMap<String ,XSQL>();
-
-    /** 缓存大小 */
-    protected static final int             $BufferSize     = 4 * 1024;
     
     
     
@@ -429,6 +429,15 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     
+    /**
+     * 数据请求时的统计
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-05
+     * @version     v1.0
+     *
+     * @return
+     */
     protected synchronized Date request()
     {
         ++this.requestCount;
@@ -438,6 +447,18 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     
     
+    /**
+     * 数据处理成功时的统计
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-03-05
+     * @version     v1.0
+     *
+     * @param i_ExecuteTime  执行时间
+     * @param i_TimeLen      用时时长（单位：毫秒）
+     * @param i_SumCount     成功次数
+     * @param i_IORowCount   读写行数
+     */
     protected synchronized void success(Date i_ExecuteTime ,double i_TimeLen ,int i_SumCount ,long i_IORowCount)
     {
         // 外界提供DB连接时，部分XSQL的写操作，不在XSQL内提交时 i_SumCount 会为0值，
@@ -763,7 +784,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             return null;
         }
         
-        String v_PaginSQLText = StringHelp.replaceAll(v_PagingTemplate ,":SQLPaging" ,i_XSQL.getContent().getSqlText());
+        String v_PaginSQLText = StringHelp.replaceAll(v_PagingTemplate ,DBSQL.$Placeholder + "SQLPaging" ,i_XSQL.getContent().getSqlText());
         
         if ( i_IsClone )
         {
@@ -3825,7 +3846,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             }
         }
         
-        return dataSourceGroups.next();
+        return this.dataSourceGroups.next();
     }
 
     

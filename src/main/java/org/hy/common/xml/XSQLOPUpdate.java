@@ -29,6 +29,7 @@ import org.hy.common.Return;
 import org.hy.common.StaticReflect;
 import org.hy.common.StringHelp;
 import org.hy.common.app.Param;
+import org.hy.common.db.DBSQL;
 import org.hy.common.db.DataSourceGroup;
 import org.hy.common.xml.event.DefaultBLobEvent;
 
@@ -1006,7 +1007,14 @@ public class XSQLOPUpdate
                 throw new NullPointerException("Batch execute update Object is null.");
             }
             
-            v_Conn       = i_Conn == null ? i_XSQL.getConnection(v_DSG) : i_Conn;
+            if ( i_Conn == null )
+            {
+                v_Conn = i_XSQL.getConnection(v_DSG);
+            }
+            else
+            {
+                v_Conn = i_Conn;
+            }
             v_AutoCommit = v_Conn.getAutoCommit();
             v_Conn.setAutoCommit(false);
             v_SQL        = i_XSQL.getContent().getPreparedSQL().getSQL();
@@ -1302,7 +1310,14 @@ public class XSQLOPUpdate
                 throw new NullPointerException("Batch execute update List<Object> is null.");
             }
             
-            v_Conn       = i_Conn == null ? i_XSQL.getConnection(v_DSG) : i_Conn;
+            if ( i_Conn == null )
+            {
+                v_Conn = i_XSQL.getConnection(v_DSG);
+            }
+            else
+            {
+                v_Conn = i_Conn;
+            }
             v_AutoCommit = v_Conn.getAutoCommit();
             v_Conn.setAutoCommit(false);
             v_Statement  = v_Conn.createStatement();
@@ -1620,7 +1635,14 @@ public class XSQLOPUpdate
                 throw new NullPointerException("Batch execute update List<Object> is null.");
             }
             
-            v_Conn       = i_Conn == null ? i_XSQL.getConnection(v_DSG) : i_Conn;
+            if ( i_Conn == null )
+            {
+                v_Conn = i_XSQL.getConnection(v_DSG);
+            }
+            else
+            {
+                v_Conn = i_Conn;
+            }
             v_AutoCommit = v_Conn.getAutoCommit();
             v_Conn.setAutoCommit(false);
             v_SQL        = i_XSQL.getContent().getPreparedSQL().getSQL();
@@ -3601,7 +3623,7 @@ public class XSQLOPUpdate
         }
         
         String v_SQL = StringHelp.replaceAll(v_Template.getValue()
-                                            ,new String[]{":TableName"                        ,":LobName"   ,":IdWheres"}
+                                            ,new String[]{DBSQL.$Placeholder + "TableName" ,DBSQL.$Placeholder + "LobName" ,DBSQL.$Placeholder + "IdWheres"}
                                             ,new String[]{i_XSQL.getContent().getSqlTableName() ,i_XSQL.getLobName() ,i_XSQL.getLobWheres()});
         
         XSQL v_LobXSQL = new XSQL();

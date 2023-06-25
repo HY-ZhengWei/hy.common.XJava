@@ -192,7 +192,7 @@ public @interface Xsql
      * 如，用于查询记录总数：  SELECT COUNT(1) FROM Dual
      * 如，用于查询某一配置项：SELECT SYSDATE  FROM Dual
      * 
-     * 需要被注解的方法返回类型是String、Integer、Double、Float、BigDecimal、Date的，则按第一行第一列数据返回
+     * 需要被注解的方法返回类型是String、Integer、Long、Double、Float、BigDecimal、Date的，则按第一行第一列数据返回
      * 
      * @author      ZhengWei(HY)
      * @createDate  2023-04-20

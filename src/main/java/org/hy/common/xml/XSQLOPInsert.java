@@ -765,7 +765,14 @@ public class XSQLOPInsert
                 throw new NullPointerException("Batch execute update List<Object> is null.");
             }
             
-            v_Conn       = i_Conn == null ? i_XSQL.getConnection(v_DSG) : i_Conn;
+            if ( i_Conn == null )
+            {
+                v_Conn = i_XSQL.getConnection(v_DSG);
+            }
+            else
+            {
+                v_Conn = i_Conn;
+            }
             v_AutoCommit = v_Conn.getAutoCommit();
             v_Conn.setAutoCommit(false);
             v_Statement  = v_Conn.createStatement();
@@ -1170,7 +1177,14 @@ public class XSQLOPInsert
                 throw new NullPointerException("Batch execute update Object is null.");
             }
             
-            v_Conn       = i_Conn == null ? i_XSQL.getConnection(v_DSG) : i_Conn;
+            if ( i_Conn == null )
+            {
+                v_Conn = i_XSQL.getConnection(v_DSG);
+            }
+            else
+            {
+                v_Conn = i_Conn;
+            }
             v_AutoCommit = v_Conn.getAutoCommit();
             v_Conn.setAutoCommit(false);
             v_SQL        = i_XSQL.getContent().getPreparedSQL().getSQL();
@@ -1456,7 +1470,14 @@ public class XSQLOPInsert
                 throw new NullPointerException("Batch execute update List<Object> is null.");
             }
             
-            v_Conn       = i_Conn == null ? i_XSQL.getConnection(v_DSG) : i_Conn;
+            if ( i_Conn == null )
+            {
+                v_Conn = i_XSQL.getConnection(v_DSG);
+            }
+            else
+            {
+                v_Conn = i_Conn;
+            }
             v_AutoCommit = v_Conn.getAutoCommit();
             v_Conn.setAutoCommit(false);
             v_SQL        = i_XSQL.getContent().getPreparedSQL().getSQL();

@@ -52,12 +52,12 @@ public final class XSQLMethod
      *    1. 当 call 的入参类型为 int.class    时，此值为 ResultSet.getInt   (int i_ColNo) 方法
      *    2. 当 call 的入参类型为 String.class 时，此值为 ResultSet.getString(int i_ColNo) 方法
      *    3. ... 等等
-     *    
+     * 
      * 这样做的最终目的是：提高性能
      */
     private Method                               resultSet_Getter;
     
-    /** 
+    /**
      * 加工 ResultSet.getXXX(int i_ColNo) 返回值。
      * 
      * 如：ResultSet.getTimestamp() 返回值，要 Setter 到入参类型为 java.util.Date 的方法中，就需要加工。
@@ -89,13 +89,13 @@ public final class XSQLMethod
     /**
      * 一对多关系时的 "多对象" 的类型。它是个集合对象。
      * 当此属性有值时，this.getInstanceOfMethod 属性即为 "多对象" 的Getter方法
-     *   
+     * 
      * ZhengWei(HY) Add 2017-03-02
      */
     private Class<?>                             collection;
     
-    /** 
-     * 一对多关系时的 "多对象" 的集合元素的类型。  
+    /**
+     * 一对多关系时的 "多对象" 的集合元素的类型。
      * 当此属性有值时，this.getInstanceOfMethod 属性即为 "多对象" 的Getter方法
      * 
      * ZhengWei(HY) Add 2017-03-02
@@ -152,7 +152,7 @@ public final class XSQLMethod
             }
         }
         
-        try 
+        try
         {
             // 对象A的属性还是一个对象B，现对对象B的属性进行填充。ZhengWei(HY) Add 2015-07-04
             if ( this.getInstanceOfMethod != null )
@@ -179,7 +179,7 @@ public final class XSQLMethod
                             
                             if ( !v_ValuesIsNull )
                             {
-                                v_CollectionElementTemp = this.collectionElement.newInstance();
+                                v_CollectionElementTemp = this.collectionElement.getDeclaredConstructor().newInstance();
                                 ((List<Object>)v_FatherTemp).add(v_CollectionElementTemp);
                             }
                         }
@@ -189,13 +189,13 @@ public final class XSQLMethod
                             
                             if ( !v_ValuesIsNull )
                             {
-                                v_CollectionElementTemp = this.collectionElement.newInstance();
+                                v_CollectionElementTemp = this.collectionElement.getDeclaredConstructor().newInstance();
                                 ((Set<Object>)v_FatherTemp).add(v_CollectionElementTemp);
                             }
                         }
                         else
                         {
-                            v_FatherTemp = this.getInstanceOfMethod.getReturnType().newInstance();
+                            v_FatherTemp = this.getInstanceOfMethod.getReturnType().getDeclaredConstructor().newInstance();
                         }
                     }
                     catch (Exception exce)
@@ -219,7 +219,7 @@ public final class XSQLMethod
                         {
                             if ( !v_ValuesIsNull )
                             {
-                                v_CollectionElementTemp = this.collectionElement.newInstance();
+                                v_CollectionElementTemp = this.collectionElement.getDeclaredConstructor().newInstance();
                                 v_CollectionTemp.add(v_CollectionElementTemp);
                             }
                         }
@@ -244,7 +244,7 @@ public final class XSQLMethod
                         {
                             if ( !v_ValuesIsNull )
                             {
-                                v_CollectionElementTemp = this.collectionElement.newInstance();
+                                v_CollectionElementTemp = this.collectionElement.getDeclaredConstructor().newInstance();
                                 v_CollectionTemp.add(v_CollectionElementTemp);
                             }
                         }
@@ -268,8 +268,8 @@ public final class XSQLMethod
             {
                 this.call.invoke(i_Father ,v_Values);
             }
-        } 
-        catch (Exception exce) 
+        }
+        catch (Exception exce)
         {
             String v_VString = "";
             if ( !Help.isNull(v_Values) )
@@ -323,7 +323,7 @@ public final class XSQLMethod
             {
                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getString"     ,int.class);
             }
-            else if ( v_SetterParamClass == int.class 
+            else if ( v_SetterParamClass == int.class
                    || v_SetterParamClass == Integer.class )
             {
                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getInt"        ,int.class);
@@ -332,7 +332,7 @@ public final class XSQLMethod
             {
                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getBigDecimal" ,int.class);
             }
-            else if ( v_SetterParamClass == double.class 
+            else if ( v_SetterParamClass == double.class
                    || v_SetterParamClass == Double.class )
             {
                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getDouble"     ,int.class);
@@ -347,33 +347,33 @@ public final class XSQLMethod
                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getTimestamp"  ,int.class);
                 this.machiningValue   = new MachiningDate();
             }
-            // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15 
+            // 添加对数据库时间的转换 Add ZhengWei(HY) 2018-05-15
             else if ( v_SetterParamClass == Timestamp.class )
             {
                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getTimestamp"  ,int.class);
                 this.machiningValue   = new MachiningDate();
             }
-            else if ( v_SetterParamClass == boolean.class 
+            else if ( v_SetterParamClass == boolean.class
                    || v_SetterParamClass == Boolean.class )
             {
                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getBoolean"    ,int.class);
             }
-            else if ( v_SetterParamClass == long.class 
+            else if ( v_SetterParamClass == long.class
                    || v_SetterParamClass == Long.class )
             {
                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getLong"       ,int.class);
             }
-            else if ( v_SetterParamClass == short.class 
+            else if ( v_SetterParamClass == short.class
                    || v_SetterParamClass == Short.class )
             {
                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getShort"      ,int.class);
             }
-            else if ( v_SetterParamClass == byte.class 
+            else if ( v_SetterParamClass == byte.class
                    || v_SetterParamClass == Byte.class )
             {
                 this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getByte"       ,int.class);
             }
-            else if ( v_SetterParamClass == byte[].class 
+            else if ( v_SetterParamClass == byte[].class
                    || v_SetterParamClass == Byte[].class )
             {
                  this.resultSet_Getter = ResultSet.class.getDeclaredMethod("getBytes"      ,int.class);
@@ -397,35 +397,35 @@ public final class XSQLMethod
     
     
     
-    public Method getCall() 
+    public Method getCall()
     {
         return this.call;
     }
     
     
     
-    public void setCall(Method i_Call) 
+    public void setCall(Method i_Call)
     {
         this.call = i_Call;
     }
     
     
     
-    public Method getResultSet_Getter() 
+    public Method getResultSet_Getter()
     {
         return resultSet_Getter;
     }
     
     
     
-    public void setResultSet_Getter(Method resultSet_Getter) 
+    public void setResultSet_Getter(Method resultSet_Getter)
     {
         this.resultSet_Getter = resultSet_Getter;
     }
     
     
     
-    public MachiningValue getMachiningValue() 
+    public MachiningValue getMachiningValue()
     {
         return machiningValue;
     }
@@ -455,7 +455,7 @@ public final class XSQLMethod
      * 
      * ZhengWei(HY) Add 2015-07-04
      * 
-     * @param getInstanceOfMethod 
+     * @param getInstanceOfMethod
      */
     public void setGetInstanceOfMethod(Method i_GetInstanceOfMethod)
     {
@@ -483,7 +483,7 @@ public final class XSQLMethod
      * 
      * ZhengWei(HY) Add 2015-07-04
      * 
-     * @param setInstanceOfMethod 
+     * @param setInstanceOfMethod
      */
     public void setSetInstanceOfMethod(Method setInstanceOfMethod)
     {
@@ -495,7 +495,7 @@ public final class XSQLMethod
     /**
      * 获取：一对多关系时的 "多对象" 的类型。它是个集合对象。
      * 当此属性有值时，this.getInstanceOfMethod 属性即为 "多对象" 的Getter方法
-     *   
+     * 
      * ZhengWei(HY) Add 2017-03-02
      */
     public Class<?> getCollection()
@@ -508,10 +508,10 @@ public final class XSQLMethod
     /**
      * 设置：一对多关系时的 "多对象" 的类型。它是个集合对象。
      * 当此属性有值时，this.getInstanceOfMethod 属性即为 "多对象" 的Getter方法
-     *   
+     * 
      * ZhengWei(HY) Add 2017-03-02
      * 
-     * @param collection 
+     * @param collection
      */
     public void setCollection(Class<?> collection)
     {
@@ -521,7 +521,7 @@ public final class XSQLMethod
 
     
     /**
-     * 获取：一对多关系时的 "多对象" 的集合元素的类型。  
+     * 获取：一对多关系时的 "多对象" 的集合元素的类型。
      * 当此属性有值时，this.getInstanceOfMethod 属性即为 "多对象" 的Getter方法
      * 
      * ZhengWei(HY) Add 2017-03-02
@@ -534,12 +534,12 @@ public final class XSQLMethod
 
     
     /**
-     * 设置：一对多关系时的 "多对象" 的集合元素的类型。  
+     * 设置：一对多关系时的 "多对象" 的集合元素的类型。
      * 当此属性有值时，this.getInstanceOfMethod 属性即为 "多对象" 的Getter方法
      * 
      * ZhengWei(HY) Add 2017-03-02
      * 
-     * @param collectionElement 
+     * @param collectionElement
      */
     public void setCollectionElement(Class<?> collectionElement)
     {
@@ -567,7 +567,7 @@ public final class XSQLMethod
     它会在元素还有用，但集合对象本身没有用时，释放元素对象
     
     一些与finalize相关的方法，由于一些致命的缺陷，已经被废弃了
-    protected void finalize() throws Throwable 
+    protected void finalize() throws Throwable
     {
         this.clear();
         
@@ -599,7 +599,7 @@ public final class XSQLMethod
  * 减少填充数据时 if 语句的判断，改用预先解释好，填充数据时直接调用相关实例化的类，来提高性能
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0  
+ * @version     v1.0
  * @createDate  2012-11-08
  */
 interface MachiningValue<R ,V>
@@ -617,13 +617,14 @@ interface MachiningValue<R ,V>
  * 默认的加工类
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0  
+ * @version     v1.0
  * @createDate  2012-11-08
  */
 class MachiningDefault implements MachiningValue<Object ,Object>
 {
 
-    public Object getValue(Object i_Value) 
+    @Override
+    public Object getValue(Object i_Value)
     {
         return i_Value;
     }
@@ -638,13 +639,14 @@ class MachiningDefault implements MachiningValue<Object ,Object>
  * java.util.Date的加工类
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0  
+ * @version     v1.0
  * @createDate  2012-11-08
  */
 class MachiningDate implements MachiningValue<java.util.Date ,Timestamp>
 {
 
-    public java.util.Date getValue(Timestamp i_Value) 
+    @Override
+    public java.util.Date getValue(Timestamp i_Value)
     {
         if ( i_Value == null )
         {
@@ -666,13 +668,14 @@ class MachiningDate implements MachiningValue<java.util.Date ,Timestamp>
  * org.hy.common.Date的加工类
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0  
+ * @version     v1.0
  * @createDate  2012-11-08
  */
 class MachiningMyDate implements MachiningValue<Date ,Timestamp>
 {
 
-    public Date getValue(Timestamp i_Value) 
+    @Override
+    public Date getValue(Timestamp i_Value)
     {
         if ( i_Value == null )
         {
@@ -695,8 +698,8 @@ class MachiningMyDate implements MachiningValue<Date ,Timestamp>
  * 
  * @author      ZhengWei(HY)
  * @createDate  2014-04-16
- * @version     v1.0  
- *              v2.0  2018-05-08  添加：支持枚举名称的匹配       
+ * @version     v1.0
+ *              v2.0  2018-05-08  添加：支持枚举名称的匹配
  */
 class MachiningEnum implements MachiningValue<Enum<?> ,Object>
 {
@@ -709,7 +712,8 @@ class MachiningEnum implements MachiningValue<Enum<?> ,Object>
     }
     
     
-    public Enum<?> getValue(Object i_Value) 
+    @Override
+    public Enum<?> getValue(Object i_Value)
     {
         if ( i_Value == null )
         {
@@ -719,7 +723,7 @@ class MachiningEnum implements MachiningValue<Enum<?> ,Object>
         {
             String v_Value = i_Value.toString();
             
-            // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配 
+            // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配
             for (Enum<?> v_Enum : this.enums)
             {
                 if ( v_Value.equalsIgnoreCase(v_Enum.toString()) )
@@ -728,7 +732,7 @@ class MachiningEnum implements MachiningValue<Enum<?> ,Object>
                 }
             }
             
-            // ZhengWei(HY) Add 2018-05-08  支持枚举名称的匹配 
+            // ZhengWei(HY) Add 2018-05-08  支持枚举名称的匹配
             for (Enum<?> v_Enum : this.enums)
             {
                 if ( v_Value.equalsIgnoreCase(v_Enum.name()) )
@@ -737,7 +741,7 @@ class MachiningEnum implements MachiningValue<Enum<?> ,Object>
                 }
             }
             
-            // 尝试用枚举值匹配 
+            // 尝试用枚举值匹配
             if ( Help.isNumber(v_Value) )
             {
                 int v_IntValue = Integer.parseInt(v_Value.trim());

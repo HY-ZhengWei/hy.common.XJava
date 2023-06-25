@@ -42,6 +42,7 @@ import org.hy.common.TreeNode;
 import org.hy.common.XJavaID;
 import org.hy.common.app.Param;
 import org.hy.common.file.FileHelp;
+import org.hy.common.xcql.XCQL;
 import org.hy.common.xml.annotation.XRequest;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.XTypeAnno;
@@ -50,6 +51,7 @@ import org.hy.common.xml.log.Logger;
 import org.hy.common.xml.plugins.AppInterface;
 import org.hy.common.xml.plugins.XRule;
 import org.hy.common.xml.plugins.XSQLGroup;
+import org.hy.common.xml.xcql.XCQLProxy;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -98,6 +100,7 @@ import org.xml.sax.InputSource;
  *              v1.18 2022-09-20  添加：getObject(class)类似的方法实现递归从父类、父父类中查询。建议人：李红彦
  *              v1.19 2023-03-08  添加：支持@Xjava的集合同一类型的整体的注入。
  *                                      如将多个对象打包成List/Map/Set后注入。建议人：李红彦
+ *              v2.0  2023-06-24  添加：@Xcqj的图数据库的注解
  */
 public final class XJava
 {
@@ -455,6 +458,41 @@ public final class XJava
         XJava v_ParserAnnotationToJava = new XJava(i_PackageNames);
         
         v_ParserAnnotationToJava.parserAnnotations();
+    }
+    
+    
+    
+    /**
+     * 为了方便
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-06-24
+     * @version     v1.0
+     *
+     * @param i_ID
+     * @return
+     */
+    public static XCQL getXCQL(String i_ID)
+    {
+        return (XCQL)getObject(i_ID);
+    }
+    
+    
+    
+    /**
+     * 为了方便
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-06-24
+     * @version     v1.0
+     *
+     * @param i_ID
+     * @param i_IsNew
+     * @return
+     */
+    public static XCQL getXCQL(String i_ID ,boolean i_IsNew)
+    {
+        return (XCQL)getObject(i_ID ,i_IsNew);
     }
     
     
@@ -1654,10 +1692,34 @@ public final class XJava
                         v_TreeNode.setInfo(new XJavaObject(v_ID ,v_Obj ,v_AnnoID.isNew()));
                         $XML_OBJECTS.put(v_TreeNode);
                     }
+                    // 2023-06-24 XCQL的注解。用于 xml配置 + Java接口类(无须实现类)的组合实现持久层的功能。
+                    else if ( XType.XCQL == v_AnnoID.value() )
+                    {
+                        String v_ID = null;
+                        
+                        // 命名注解
+                        if ( !Help.isNull(v_AnnoID.id()) )
+                        {
+                            v_ID = v_AnnoID.id().trim();
+                        }
+                        // 无命名注解
+                        else
+                        {
+                            v_ID = v_ClassInfo.getClassObj().getSimpleName();
+                        }
+                        
+                        TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(v_ID ,v_ID);
+                        Object                v_Obj      = null;
+                        
+                        v_Obj = XCQLProxy.newProxy(v_ClassInfo.getClassObj());
+                        
+                        v_TreeNode.setInfo(new XJavaObject(v_ID ,v_Obj ,v_AnnoID.isNew()));
+                        $XML_OBJECTS.put(v_TreeNode);
+                    }
                 }
                 catch (Exception exce)
                 {
-                    $Logger.error("XType.XML or XType.XD or XType.XSQL [" + v_ClassInfo.getClassObj().getName() + "] is error ,maybe file or object is not find." ,exce);
+                    $Logger.error("XType.XML or XType.XD or XType.XSQL or XType.XCQL [" + v_ClassInfo.getClassObj().getName() + "] is error ,maybe file or object is not find." ,exce);
                 }
             }
         }
@@ -1675,7 +1737,8 @@ public final class XJava
                 v_ClassInfo = v_ClassInfos.get(i);
                 v_AnnoID    = v_ClassInfo.getClassObj().getAnnotation(Xjava.class);
                 
-                if ( XType.XSQL == v_AnnoID.value() )
+                if ( XType.XSQL == v_AnnoID.value()
+                  || XType.XCQL == v_AnnoID.value() )
                 {
                     continue;
                 }
@@ -1699,7 +1762,7 @@ public final class XJava
                         TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(v_ID ,v_ID);
                         Object                v_Obj      = null;
                         
-                        v_Obj = v_ClassInfo.getClassObj().newInstance();
+                        v_Obj = v_ClassInfo.getClassObj().getDeclaredConstructor().newInstance();
                         
                         v_TreeNode.setInfo(new XJavaObject(v_ID ,v_Obj ,v_AnnoID.isNew()));
                         $XML_OBJECTS.put(v_TreeNode);
@@ -1722,7 +1785,7 @@ public final class XJava
                     {
                         try
                         {
-                            v_XSQLProxy.setXsqlInstace(v_ClassInfo.getClassObj().newInstance());
+                            v_XSQLProxy.setXsqlInstace(v_ClassInfo.getClassObj().getDeclaredConstructor().newInstance());
                         }
                         catch (Exception exce)
                         {
@@ -2271,7 +2334,7 @@ public final class XJava
                             try
                             {
                                 v_Class    = Help.forName(this.imports.get(v_Node.getNodeName()));
-                                v_Instance = v_Class.newInstance();
+                                v_Instance = v_Class.getDeclaredConstructor().newInstance();
                             }
                             catch (Exception exce)
                             {
@@ -2732,7 +2795,7 @@ public final class XJava
                                 {
                                     try
                                     {
-                                        io_SuperInstance    = i_SuperClass.newInstance();
+                                        io_SuperInstance    = i_SuperClass.getDeclaredConstructor().newInstance();
                                         v_SuperInstance_New = true;
                                         
                                         String v_SuperID = getNodeAttribute(i_SuperNode ,$XML_OBJECT_ID);
@@ -2866,7 +2929,7 @@ public final class XJava
                                 
                                 // 这里也可以与下一个else if一样，不需要此句。
                                 // 但必须实现 setter 节点支持定义入参的类型及入参个数
-                                v_AttrInstance = v_AttrClass.newInstance();
+                                v_AttrInstance = v_AttrClass.getDeclaredConstructor().newInstance();
                             }
                             catch (Exception exce)
                             {
@@ -3173,7 +3236,7 @@ public final class XJava
                 {
                     try
                     {
-                        io_SuperInstance = i_SuperClass.newInstance();
+                        io_SuperInstance = i_SuperClass.getDeclaredConstructor().newInstance();
                     }
                     catch (Exception exce)
                     {
@@ -3507,7 +3570,7 @@ public final class XJava
         Constructor<?> v_Constructor = null;
         if ( v_ParamClassList.size() == 0 )
         {
-            return i_ConstructorClass.newInstance();
+            return i_ConstructorClass.getDeclaredConstructor().newInstance();
         }
         else
         {
@@ -4364,7 +4427,7 @@ public final class XJava
         {
             try
             {
-                Object v_NewObj = i_Instance.getClass().newInstance();
+                Object v_NewObj = i_Instance.getClass().getDeclaredConstructor().newInstance();
                 ((SerializableDef)i_Instance).clone(v_NewObj);
                 
                 return v_NewObj;
@@ -4380,7 +4443,7 @@ public final class XJava
         // 3. 浅克隆：如果没有clone()方法，则通过无参数的构造器new一个实例，再依次newObject.setter(oldObject.getter())
         try
         {
-            Object    v_NewObj  = i_Instance.getClass().newInstance();
+            Object    v_NewObj  = i_Instance.getClass().getDeclaredConstructor().newInstance();
             Method [] v_Methods = i_Instance.getClass().getMethods();
             
             v_ErrorInfo = "Methods.length=" + v_Methods.length;
