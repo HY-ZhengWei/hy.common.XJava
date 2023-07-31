@@ -10,10 +10,10 @@ import org.apache.struts2.interceptor.RequestAware;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.apache.struts2.interceptor.SessionAware;
-import org.hy.common.xml.XJava;
-
 import org.hy.common.Help;
 import org.hy.common.app.Param;
+import org.hy.common.xml.XJava;
+
 import com.opensymphony.xwork2.ActionSupport;
 
 
@@ -26,16 +26,16 @@ import com.opensymphony.xwork2.ActionSupport;
  * SER : 表业务层的对象
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0  
+ * @version     v1.0
  * @createDate  2013-08-08
  */
 public class BaseAction<SER> extends ActionSupport implements RequestAware ,SessionAware ,ApplicationAware ,ServletRequestAware ,ServletResponseAware
 {
-	
-	private static final long serialVersionUID = -4935119095600870095L;
-	
-	
-	protected Map<String ,Object>  request;
+    
+    private static final long serialVersionUID = -4935119095600870095L;
+    
+    
+    protected Map<String ,Object>  request;
     
     protected Map<String ,Object>  application;
     
@@ -46,51 +46,52 @@ public class BaseAction<SER> extends ActionSupport implements RequestAware ,Sess
     protected HttpServletResponse  servletResponse;
     
     protected SER                  service;
-	
-	
-	
-	/**
-	 * 获取应用全局配置的参数信息
-	 * 
-	 * @param i_ParamName   参数名称(区分大小写)
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	public Param getCommonParam(String i_ParamName)
-	{
-		if ( Help.isNull(i_ParamName) )
-		{
-			return null;
-		}
-		
-		Map<String ,Param> v_ParamMap = (Map<String ,Param>)XJava.getObject("XParam");
-		
-		if ( v_ParamMap.containsKey(i_ParamName) )
-		{
-			return v_ParamMap.get(i_ParamName);
-		}
-		else
-		{
-			return null;
-		}
-	}
-	
-	
-	
+    
+    
+    
+    /**
+     * 获取应用全局配置的参数信息
+     * 
+     * @param i_ParamName   参数名称(区分大小写)
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public Param getCommonParam(String i_ParamName)
+    {
+        if ( Help.isNull(i_ParamName) )
+        {
+            return null;
+        }
+        
+        Map<String ,Param> v_ParamMap = (Map<String ,Param>)XJava.getObject("XParam");
+        
+        if ( v_ParamMap.containsKey(i_ParamName) )
+        {
+            return v_ParamMap.get(i_ParamName);
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    
+    
     /**
      * 实现了 RequestAware 接口后，Struts 会自动为我们获取 Request 对象
      */
-	public void setRequest(Map<String, Object> i_Request) 
-	{
-		this.request = i_Request;	
-	}
-	
-	
-	
-	public Map<String, Object> getRequest()
-	{
-		return this.request;
-	}
+    @Override
+    public void setRequest(Map<String, Object> i_Request)
+    {
+        this.request = i_Request;
+    }
+    
+    
+    
+    public Map<String, Object> getRequest()
+    {
+        return this.request;
+    }
     
     
     
@@ -145,7 +146,8 @@ public class BaseAction<SER> extends ActionSupport implements RequestAware ,Sess
     /**
      * 实现了 SessionAware 接口后，Struts 会自动为我们获取 Session 对象
      */
-    public void setSession(Map<String, Object> i_Session) 
+    @Override
+    public void setSession(Map<String, Object> i_Session)
     {
         this.session = i_Session;
     }
@@ -210,7 +212,8 @@ public class BaseAction<SER> extends ActionSupport implements RequestAware ,Sess
     /**
      * 实现了 ApplicationAware 接口后，Struts 会自动为我们获取 Application 对象
      */
-    public void setApplication(Map<String, Object> i_Application) 
+    @Override
+    public void setApplication(Map<String, Object> i_Application)
     {
         this.application = i_Application;
     }
@@ -275,6 +278,7 @@ public class BaseAction<SER> extends ActionSupport implements RequestAware ,Sess
     /**
      * 实现了 ServletResponseAware 接口后，Struts 会自动为我们获取 Response 对象
      */
+    @Override
     public void setServletResponse(HttpServletResponse i_Response)
     {
         this.servletResponse = i_Response;
@@ -289,6 +293,7 @@ public class BaseAction<SER> extends ActionSupport implements RequestAware ,Sess
     
     
     
+    @Override
     public void setServletRequest(HttpServletRequest i_Request)
     {
         this.servletRequest = i_Request;
@@ -303,16 +308,16 @@ public class BaseAction<SER> extends ActionSupport implements RequestAware ,Sess
     
     
     
-    public SER getService() 
+    public SER getService()
     {
         return service;
     }
 
     
     
-    public void setService(SER i_Service) 
+    public void setService(SER i_Service)
     {
         this.service = i_Service;
     }
-	
+    
 }

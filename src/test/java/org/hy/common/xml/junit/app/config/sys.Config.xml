@@ -2,63 +2,63 @@
 
 <config>
 
-	<import name="xconfig"         class="java.util.ArrayList" />
-	<import name="xparam"          class="java.util.Hashtable" />
-	<import name="item"            class="org.hy.common.app.Param" />
-	
-	
-	
-	<!-- 系统配置参数信息 -->
-	<xconfig>
-		
-	    <xparam id="SYSParam" key="name">
+    <import name="xconfig"         class="java.util.ArrayList" />
+    <import name="xparam"          class="java.util.Hashtable" />
+    <import name="item"            class="org.hy.common.app.Param" />
+    
+    
+    
+    <!-- 系统配置参数信息 -->
+    <xconfig>
+        
+        <xparam id="SYSParam" key="name">
 
-	        <item id="ServerIP">
-	            <name>ServerIP</name>
-				<value>192.168.1.107</value>
-				<!--<value>192.168.1.185</value>-->
-				<comment>服务接口的IP地址</comment>
-	        </item>
-	        
-	        <item id="ServerPort">
-	            <name>ServerPort</name>
-				<value>8891</value>
-				<!--<value>80</value>-->
-				<comment>服务接口的IP地址</comment>
-	        </item>
+            <item id="ServerIP">
+                <name>ServerIP</name>
+                <value>192.168.1.107</value>
+                <!--<value>192.168.1.185</value>-->
+                <comment>服务接口的IP地址</comment>
+            </item>
+            
+            <item id="ServerPort">
+                <name>ServerPort</name>
+                <value>8891</value>
+                <!--<value>80</value>-->
+                <comment>服务接口的IP地址</comment>
+            </item>
 
-			<item id="BarcodeGunServerIP">
-				<name>BarcodeGunServerIP</name>
-				<value>192.168.1.107</value>
-				<comment>扫码枪服务接口的IP地址</comment>
-			</item>
+            <item id="BarcodeGunServerIP">
+                <name>BarcodeGunServerIP</name>
+                <value>192.168.1.107</value>
+                <comment>扫码枪服务接口的IP地址</comment>
+            </item>
 
-			<item id="BarcodeGunServerPort">
-				<name>BarcodeGunServerPort</name>
-				<value>8891</value>
-				<comment>扫码枪服务接口的IP地址</comment>
-			</item>
-	        
-	        <item id="SYSID">
-	            <name>SYSID</name>
-				<value>XXApp</value>
-				<comment>与服务端间发消息时，服务端对我们系统的编号</comment>
-	        </item>
+            <item id="BarcodeGunServerPort">
+                <name>BarcodeGunServerPort</name>
+                <value>8891</value>
+                <comment>扫码枪服务接口的IP地址</comment>
+            </item>
+            
+            <item id="SYSID">
+                <name>SYSID</name>
+                <value>XXApp</value>
+                <comment>与服务端间发消息时，服务端对我们系统的编号</comment>
+            </item>
 
-			<item id="MsgPWD">
-				<name>MsgPWD</name>
-				<value></value>
-				<comment>与服务端间发消息的加密密码</comment>
-			</item>
-			
-			<item id="RootPackageName">
-	            <name>RootPackageName</name>
-				<value>org.hy.common.xml.junit.app</value>
-				<comment>顶级包的路径。用于初始化。一般不修改</comment>
-	        </item>
+            <item id="MsgPWD">
+                <name>MsgPWD</name>
+                <value></value>
+                <comment>与服务端间发消息的加密密码</comment>
+            </item>
+            
+            <item id="RootPackageName">
+                <name>RootPackageName</name>
+                <value>org.hy.common.xml.junit.app</value>
+                <comment>顶级包的路径。用于初始化。一般不修改</comment>
+            </item>
 
-		</xparam>
-		
-	</xconfig>
-	
+        </xparam>
+        
+    </xconfig>
+    
 </config>

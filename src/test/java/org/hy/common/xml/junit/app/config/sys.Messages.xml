@@ -2,56 +2,56 @@
 
 <config>
 
-	<import name="xobjects"        class="java.util.ArrayList" />
-	<import name="http"            class="org.hy.common.xml.XHttp" />
-	
-	
-	
-	<xobjects>
-	    
-		<http id="XHTTP_APP" new="true">
-			<ip   ref="ServerIP.getValue"   />
-			<port ref="ServerPort.getValue" />
-			<url>/xx/app</url>
-			<contentType>application/json</contentType>
-			<charset>UTF-8</charset>
-			<requestType ref="this.$Request_Type_Post" />
-			
-			<addParam>
-			    <paramName>i</paramName>
-			</addParam>
-		</http>
+    <import name="xobjects"        class="java.util.ArrayList" />
+    <import name="http"            class="org.hy.common.xml.XHttp" />
+    
+    
+    
+    <xobjects>
+        
+        <http id="XHTTP_APP" new="true">
+            <ip   ref="ServerIP.getValue"   />
+            <port ref="ServerPort.getValue" />
+            <url>/xx/app</url>
+            <contentType>application/json</contentType>
+            <charset>UTF-8</charset>
+            <requestType ref="this.$Request_Type_Post" />
+            
+            <addParam>
+                <paramName>i</paramName>
+            </addParam>
+        </http>
 
 
 
-		<http id="XHTTP_BarcodeGun" new="true">
-			<ip   ref="BarcodeGunServerIP.getValue"   />
-			<port ref="BarcodeGunServerPort.getValue" />
-			<url>/brp/app</url>
-			<contentType>application/json</contentType>
-			<charset>UTF-8</charset>
-			<requestType ref="this.$Request_Type_Post" />
+        <http id="XHTTP_BarcodeGun" new="true">
+            <ip   ref="BarcodeGunServerIP.getValue"   />
+            <port ref="BarcodeGunServerPort.getValue" />
+            <url>/brp/app</url>
+            <contentType>application/json</contentType>
+            <charset>UTF-8</charset>
+            <requestType ref="this.$Request_Type_Post" />
 
-			<addParam>
-				<paramName>i</paramName>
-			</addParam>
-		</http>
-		
-		
-		
-		<http id="XHTTP_Avplan" new="true">
-			<ip   ref="BarcodeGunServerIP.getValue"   />
-			<port ref="BarcodeGunServerPort.getValue" />
-			<url>/avplan/app</url>
-			<contentType>application/json</contentType>
-			<charset>UTF-8</charset>
-			<requestType ref="this.$Request_Type_Post" />
+            <addParam>
+                <paramName>i</paramName>
+            </addParam>
+        </http>
+        
+        
+        
+        <http id="XHTTP_Avplan" new="true">
+            <ip   ref="BarcodeGunServerIP.getValue"   />
+            <port ref="BarcodeGunServerPort.getValue" />
+            <url>/avplan/app</url>
+            <contentType>application/json</contentType>
+            <charset>UTF-8</charset>
+            <requestType ref="this.$Request_Type_Post" />
 
-			<addParam>
-				<paramName>i</paramName>
-			</addParam>
-		</http>
+            <addParam>
+                <paramName>i</paramName>
+            </addParam>
+        </http>
 
-	</xobjects>
+    </xobjects>
 
 </config>

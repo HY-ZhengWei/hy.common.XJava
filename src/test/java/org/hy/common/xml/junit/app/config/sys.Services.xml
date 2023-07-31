@@ -2,26 +2,26 @@
 
 <config>
 
-	<import name="xobjects"        class="java.util.ArrayList" />
-	
-	
-	
-	<xobjects>
-	    
-		<msg id="BarcodeGunMSG" class="org.hy.common.xml.junit.app.msg.BarcodeGunMSG" />
+    <import name="xobjects"        class="java.util.ArrayList" />
+    
+    
+    
+    <xobjects>
+        
+        <msg id="BarcodeGunMSG" class="org.hy.common.xml.junit.app.msg.BarcodeGunMSG" />
 
-		<service id="BarcodeGunService" class="org.hy.common.xml.junit.app.services.BarcodeGunService">
-			<barcodeGunMSG ref="BarcodeGunMSG" />
-		</service>
-		
-		
-		
-		<msg id="AppUserMSG" class="org.hy.common.xml.junit.app.msg.AppUserMSG" />
+        <service id="BarcodeGunService" class="org.hy.common.xml.junit.app.services.BarcodeGunService">
+            <barcodeGunMSG ref="BarcodeGunMSG" />
+        </service>
+        
+        
+        
+        <msg id="AppUserMSG" class="org.hy.common.xml.junit.app.msg.AppUserMSG" />
 
-		<service id="AppUserService" class="org.hy.common.xml.junit.app.services.AppUserService">
-			<appUserMSG ref="AppUserMSG" />
-		</service>
+        <service id="AppUserService" class="org.hy.common.xml.junit.app.services.AppUserService">
+            <appUserMSG ref="AppUserMSG" />
+        </service>
 
-	</xobjects>
+    </xobjects>
 
 </config>
