@@ -3,9 +3,14 @@ package org.hy.common.xml.plugins;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.hy.common.Help;
+import org.hy.common.Return;
 import org.hy.common.xml.XJSON;
 import org.hy.common.xml.XJava;
+import org.hy.common.xml.event.XRequestListener;
 import org.hy.common.xml.log.Logger;
 
 
@@ -22,6 +27,7 @@ import org.hy.common.xml.log.Logger;
  *                                   1：对象.方法 的模式。对象为XJava对象，可以配置文件中自定义。
  *                                   2：方法 的模式。这是之前的模式，为具体的实例类this.方法的调用。
  *                                以模式1为优先级别。
+ *              v3.0  2023-08-16  添加：事件监听器的功能
  */
 public final class AppInterfaces
 {
@@ -33,23 +39,47 @@ public final class AppInterfaces
     
     private static Map<String ,AppInterface> $Interfaces;
     
+    /** 事件监听器 */
+    private static XRequestListener          $XRequestListener;
+    
     
     
     /**
+     * 获取：事件监听器
+     * @return
+     */
+    public static XRequestListener getListener() 
+    {
+		return $XRequestListener;
+	}
+
+
+    
+    /**
+     * 设置：事件监听器
+     * 
+     * @param i_Listener
+     */
+	public static void setListener(XRequestListener i_Listener) 
+	{
+		$XRequestListener = i_Listener;
+	}
+	
+	
+	
+	/**
      * 将消息分发给接收者去执行(只用于服务端：如Web服务)
      * 
      * @param i_Obj       消息的执行者(消息的接收者)
      * @param i_Message   消息本身
      * @return
+     * 
+     * 2023-08-16 废弃。建议使用其他的两个方法，方便配合事件监听器的功能
      */
+    @Deprecated
     public static AppMessage<?> executeMessage(Object i_Obj ,String i_Message)
     {
-        if ( Help.isNull(i_Message) )
-        {
-            return null;
-        }
-        
-        return executeMessage(i_Obj ,getInstace().getAppMsg(i_Message));
+    	return executeMessage(null ,null ,i_Obj ,i_Message);
     }
     
     
@@ -60,8 +90,55 @@ public final class AppInterfaces
      * @param i_Obj         消息的执行者(消息的接收者)
      * @param i_AppMessage  消息本身
      * @return
+     * 
+     * 2023-08-16 废弃。建议使用其他的两个方法，方便配合事件监听器的功能
      */
+    @Deprecated
     public static AppMessage<?> executeMessage(Object i_Obj ,AppMessage<?> i_AppMessage)
+    {
+    	return executeMessage(null ,null ,i_Obj ,i_AppMessage ,"");
+    }
+
+
+
+	/**
+     * 将消息分发给接收者去执行(只用于服务端：如Web服务)
+     * 
+     * @param i_Request   请求对象
+     * @param i_Response  响应对象
+     * @param i_Obj       消息的执行者(消息的接收者)
+     * @param i_Message   消息本身
+     * @return
+     */
+    public static AppMessage<?> executeMessage(HttpServletRequest  i_Request
+    		                                  ,HttpServletResponse i_Response 
+    		                                  ,Object              i_Obj 
+    		                                  ,String              i_Message)
+    {
+        if ( Help.isNull(i_Message) )
+        {
+            return null;
+        }
+        
+        return executeMessage(i_Request ,i_Response ,i_Obj ,getInstace().getAppMsg(i_Message) ,i_Message);
+    }
+    
+    
+    
+    /**
+     * 将消息分发给接收者去执行(只用于服务端：如Web服务)
+     * 
+     * @param i_Request     请求对象
+     * @param i_Response    响应对象
+     * @param i_Obj         消息的执行者(消息的接收者)
+     * @param i_AppMessage  消息本身
+     * @return
+     */
+    public static AppMessage<?> executeMessage(HttpServletRequest  i_Request
+                                              ,HttpServletResponse i_Response 
+                                              ,Object              i_Obj 
+                                              ,AppMessage<?>       i_AppMessage 
+                                              ,String              i_Message)
     {
         AppMessage<?> v_Ret = null;
         
@@ -74,6 +151,7 @@ public final class AppInterfaces
             return i_AppMessage;
         }
         
+        Return<Object> v_BeforeRet = null;
         try
         {
             String [] v_EMN     = getInstace().getEMN(i_AppMessage).replace("." ,"@").split("@");
@@ -90,11 +168,35 @@ public final class AppInterfaces
                 v_Instace = i_Obj;
                 v_Method  = v_Instace.getClass().getDeclaredMethod(v_EMN[0].trim() ,AppMessage.class);
             }
-            v_Ret = (AppMessage<?>)v_Method.invoke(v_Instace ,i_AppMessage);
+            
+            if ( $XRequestListener != null )
+            {
+            	v_BeforeRet = $XRequestListener.before(i_Request ,i_Response ,i_AppMessage ,i_Message);
+            	if ( v_BeforeRet != null && v_BeforeRet.booleanValue() )
+            	{
+            		v_Ret = (AppMessage<?>)v_Method.invoke(v_Instace ,i_AppMessage);
+            		$XRequestListener.succeed(i_AppMessage, v_Ret ,v_BeforeRet.getParamObj());
+            	}
+            	else
+            	{
+            		v_Ret = i_AppMessage.clone();
+                    v_Ret.setRc("-998");
+                    v_Ret.setResult(false);
+                    v_Ret.setRi(Help.NVL(v_BeforeRet.getParamStr() ,"监听器中断执行"));
+            	}
+            }
+            else
+            {
+            	v_Ret = (AppMessage<?>)v_Method.invoke(v_Instace ,i_AppMessage);
+            }
         }
         catch (Exception exce)
         {
             $Logger.error(exce);
+            if ( v_BeforeRet != null )
+            {
+            	$XRequestListener.fail(i_AppMessage, exce ,v_BeforeRet.getParamObj());
+            }
             
             v_Ret = i_AppMessage.clone();
             v_Ret.setRc("-1");
