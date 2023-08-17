@@ -6,7 +6,7 @@
 
     <groupId>cn.openapis</groupId>
     <artifactId>hy.common.xjava</artifactId>
-    <version>4.3.7</version>
+    <version>4.3.8</version>
     <packaging>jar</packaging>
 
     <name>cn.openapis.hy.common.xjava</name>

@@ -9,7 +9,6 @@ import org.hy.common.TablePartition;
 import org.hy.common.app.Param;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.log.Logger;
-import org.hy.common.xml.plugins.AppInterface;
 
 
 

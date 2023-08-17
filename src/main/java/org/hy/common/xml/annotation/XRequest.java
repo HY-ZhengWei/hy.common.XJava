@@ -54,6 +54,7 @@ import java.lang.annotation.Target;
  * @createDate  2017-12-04
  * @version     v1.0
  *              v2.0  2018-01-20  添加：用注解定义各个系统的接口级消息密钥。
+ *              v3.0  2023-08-17  添加：接口的中文名称
  */
 @Documented
 @Target({ElementType.METHOD})
@@ -95,5 +96,12 @@ public @interface XRequest
      * 当此属性无值时，表示所有系统均能无密钥访问（前提是：系统级消息密钥也没有定义）。
      */
     public String [] secrets() default {};
+    
+    
+    
+    /**
+     * 接口的中文名称
+     */
+    public String name() default "";
     
 }

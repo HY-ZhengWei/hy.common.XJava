@@ -32,6 +32,7 @@ import org.hy.common.TablePartitionRID;
  *                                   2：方法 的模式。这是之前的模式，为具体的实例类this.方法的调用。
  *                                以模式1为优先级别。
  *          v3.0  2018-01-20  添加：当系统级密钥有效时，当接口级密钥为空字符串时，支持接口无密钥的访问。
+ *          v4.0  2023-08-17  添加：注解说明
  */
 public class AppInterface
 {
@@ -43,6 +44,9 @@ public class AppInterface
     
     /** 接口名称或编码 */
     private String          name;
+    
+    /** 注解说明 */
+    private String          comment;
     
     /** 接口消息解释出的对象的元类型 */
     private String          className;
@@ -215,13 +219,23 @@ public class AppInterface
 
 
     
-    public void setClassName(String className)
+    /**
+	 * 设置：接口消息解释出的对象的元类型
+	 * 
+	 * @param i_ClassName  接口消息解释出的对象的元类型
+	 */
+    public void setClassName(String i_ClassName)
     {
-        this.className = className;
+        this.className = i_ClassName;
     }
 
 
     
+    /**
+     * 获取：接口消息解释出的对象的元类型
+     * 
+     * @return
+     */
     public String getClassName()
     {
         return className;
@@ -229,6 +243,11 @@ public class AppInterface
     
     
     
+    /**
+     * 获取：接口名称或编码
+     * 
+     * @return
+     */
     public String getName()
     {
         return name;
@@ -236,9 +255,14 @@ public class AppInterface
 
 
     
-    public void setName(String name)
+    /**
+	 * 设置：接口名称或编码
+	 * 
+	 * @param i_Name  接口名称或编码
+	 */
+    public void setName(String i_Name)
     {
-        this.name = name;
+        this.name = i_Name;
     }
 
 
@@ -318,6 +342,11 @@ public class AppInterface
     
 
     
+    /**
+     * 获取：请求次数
+     * 
+     * @return
+     */
     public Counter<String> getRequestCount()
     {
         return requestCount;
@@ -325,9 +354,14 @@ public class AppInterface
 
 
     
-    public void setRequestCount(Counter<String> requestCount)
+    /**
+	 * 设置：请求次数
+	 * 
+	 * @param i_RequestCount  请求次数
+	 */
+    public void setRequestCount(Counter<String> i_RequestCount)
     {
-        this.requestCount = requestCount;
+        this.requestCount = i_RequestCount;
     }
     
     
@@ -345,15 +379,26 @@ public class AppInterface
 
     
     
+    /**
+     * 获取：请求成功，并成功返回次数
+     * 
+     * @return
+     */
     public Counter<String> getSuccessCount()
     {
         return successCount;
     }
 
     
-    public void setSuccessCount(Counter<String> successCount)
+    
+    /**
+	 * 设置：请求成功，并成功返回次数
+	 * 
+	 * @param i_SuccessCount  请求成功，并成功返回次数
+	 */
+    public void setSuccessCount(Counter<String> i_SuccessCount)
     {
-        this.successCount = successCount;
+        this.successCount = i_SuccessCount;
     }
     
     
@@ -388,6 +433,11 @@ public class AppInterface
 
     
     
+    /**
+     * 获取：请求成功，并成功返回的累计用时时长
+     * 
+     * @return
+     */
     public Counter<String> getSuccessTimeLen()
     {
         return successTimeLen;
@@ -395,9 +445,38 @@ public class AppInterface
 
     
     
-    public void setSuccessTimeLen(Counter<String> successTimeLen)
+    /**
+     * 设置：请求成功，并成功返回的累计用时时长
+     * 
+     * @param i_SuccessTimeLen 请求成功，并成功返回的累计用时时长
+     */
+    public void setSuccessTimeLen(Counter<String> i_SuccessTimeLen)
     {
-        this.successTimeLen = successTimeLen;
+        this.successTimeLen = i_SuccessTimeLen;
     }
+
+
+    
+    /**
+     * 获取：注解说明
+     * 
+     * @return
+     */
+	public String getComment() 
+	{
+		return comment;
+	}
+
+	
+
+	/**
+	 * 设置：注解说明
+	 * 
+	 * @param i_Comment  注解说明
+	 */
+	public void setComment(String i_Comment) 
+	{
+		this.comment = i_Comment;
+	}
     
 }

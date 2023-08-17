@@ -2222,6 +2222,7 @@ public final class XJava
                         v_AppInterface.setName(v_SID);
                     }
                     
+                    v_AppInterface.setComment(v_XRequest.name());
                     v_AppInterface.setEmName(v_XID + "." + v_Method.getName());
                     v_AppInterface.setClassName(MethodReflect.getGenerics(v_Method).getName());
                     v_AppInterfaces.put(v_AppInterface.getName() ,v_AppInterface);
