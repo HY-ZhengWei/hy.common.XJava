@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
-
+import org.hy.common.xml.log.Logger;
 import org.hy.common.StringHelp;
 import org.hy.common.file.FileHelp;
 
@@ -31,6 +31,9 @@ import org.hy.common.file.FileHelp;
  */
 public abstract class BaseInterface
 {
+	
+	private static final Logger $Logger = new Logger(BaseInterface.class ,true);
+	
     /**
      * XD文件中的资源是否被加载过
      * 
@@ -107,6 +110,7 @@ public abstract class BaseInterface
         } 
         catch (Exception e) 
         {
+        	$Logger.error(e ,this.getXClass().getSimpleName() + ".xml is not error.");
             throw new RuntimeException(e);
         }
         finally
