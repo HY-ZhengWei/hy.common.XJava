@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.hy.common.Execute;
 import org.hy.common.Help;
+import org.hy.common.XJavaID;
 import org.hy.common.db.DataSourceGroup;
 
 
@@ -36,7 +37,7 @@ import org.hy.common.db.DataSourceGroup;
  *              v3.1  2021-02-27  修改：syncMode默认值改为true。原因是：防止触发源是多线程执行的情况，并且触发源数据量大，
  *                                      当触发器再是异步时，容易引发内存溢出的问题。
  */
-public class XSQLTrigger
+public class XSQLTrigger implements Comparable<XSQLTrigger> ,XJavaID
 {
     /** 执行方式之一：XSQL.execute(...) */
     public static final           int $Execute       = 0;
@@ -46,7 +47,7 @@ public class XSQLTrigger
     
     
     
-    /** 
+    /**
      * 触发器执行操作的集合
      * 
      * 1. 在同步模式(单线程)下，执行按List顺序有序执行。零下标的元素第一个执行。
@@ -57,7 +58,7 @@ public class XSQLTrigger
     /** 同步模式。默认为：true，即同步模式 */
     private boolean               syncMode;
     
-    /** 
+    /**
      * 异常模式。
      * 默认为：true，主XSQL异常时，触发器也被触发执行。
      * 当为： false时，主XSQL执行成功后，触发器才被触发执行。
@@ -69,6 +70,12 @@ public class XSQLTrigger
     
     /** 是否初始化 createBackup() 添加的XSQL。只针对 createBackup() 功能的初始化 */
     private boolean               isInit;
+    
+    /** XJava池中对象的ID标识 */
+    private String                xjavaID;
+    
+    /** 注释。可用于日志的输出等帮助性的信息 */
+    private String                comment;
     
     
     
@@ -100,7 +107,7 @@ public class XSQLTrigger
                 {
                     v_XSQLTrigger.getXsql().executeUpdate();
                 }
-                else 
+                else
                 {
                     v_XSQLTrigger.getXsql().execute();
                 }
@@ -114,7 +121,7 @@ public class XSQLTrigger
                 {
                     (new Execute(v_XSQLTrigger.getXsql() ,"executeUpdate")).start();
                 }
-                else 
+                else
                 {
                     (new Execute(v_XSQLTrigger.getXsql() ,"execute")).start();
                 }
@@ -143,7 +150,7 @@ public class XSQLTrigger
                 {
                     v_XSQLTrigger.getXsql().executeUpdate(i_Values);
                 }
-                else 
+                else
                 {
                     v_XSQLTrigger.getXsql().execute(i_Values);
                 }
@@ -157,7 +164,7 @@ public class XSQLTrigger
                 {
                     (new Execute(v_XSQLTrigger.getXsql() ,"executeUpdate" ,i_Values)).start();
                 }
-                else 
+                else
                 {
                     (new Execute(v_XSQLTrigger.getXsql() ,"execute" ,i_Values)).start();
                 }
@@ -186,7 +193,7 @@ public class XSQLTrigger
                 {
                     v_XSQLTrigger.getXsql().executeUpdate(i_Obj);
                 }
-                else 
+                else
                 {
                     v_XSQLTrigger.getXsql().execute(i_Obj);
                 }
@@ -200,7 +207,7 @@ public class XSQLTrigger
                 {
                     (new Execute(v_XSQLTrigger.getXsql() ,"executeUpdate" ,i_Obj)).start();
                 }
-                else 
+                else
                 {
                     (new Execute(v_XSQLTrigger.getXsql() ,"execute" ,i_Obj)).start();
                 }
@@ -390,7 +397,7 @@ public class XSQLTrigger
     
     /**
      * 请求成功，并成功返回的累计用时时长。
-     * 用的是Double，而不是long，因为在批量执行时。为了精度，会出现小数 
+     * 用的是Double，而不是long，因为在批量执行时。为了精度，会出现小数
      * 
      * @author      ZhengWei(HY)
      * @createDate  2017-01-06
@@ -436,7 +443,7 @@ public class XSQLTrigger
      * 1. 在同步模式(单线程)下，执行按List顺序有序执行。零下标的元素第一个执行。
      * 2. 在异步模式(多线程)下，线程的发起按List有顺序发起。但不一定是有顺序的执行。
      * 
-     * @param xsqls 
+     * @param xsqls
      */
     public void setXsqls(List<XSQLTriggerInfo> xsqls)
     {
@@ -458,7 +465,7 @@ public class XSQLTrigger
     /**
      * 设置：同步模式。默认为：true，即同步模式
      * 
-     * @param syncMode 
+     * @param syncMode
      */
     public void setSyncMode(boolean syncMode)
     {
@@ -484,7 +491,7 @@ public class XSQLTrigger
      * 默认为：false，主XSQL执行成功后，触发器才被触发执行
      * 当为：true时， 主XSQL异常时，触发器也被触发执行
      * 
-     * @param errorMode 
+     * @param errorMode
      */
     public void setErrorMode(boolean errorMode)
     {
@@ -506,7 +513,7 @@ public class XSQLTrigger
     /**
      * 设置：可自行定制的XSQL异常处理机制。当触发的XSQL未设置异常处理机制（XSQL.getError()==null）时，才生效
      * 
-     * @param error 
+     * @param error
      */
     public void setError(XSQLError error)
     {
@@ -528,11 +535,122 @@ public class XSQLTrigger
     /**
      * 设置：是否初始化过所有的XSQL。只针对 createBackup() 功能的初始化
      * 
-     * @param isInit 
+     * @param isInit
      */
     public void setInit(boolean isInit)
     {
         this.isInit = isInit;
+    }
+
+
+    
+    /**
+     * 获取：XJava池中对象的ID标识
+     */
+    @Override
+    public String getXJavaID()
+    {
+        return xjavaID;
+    }
+
+
+    
+    /**
+     * 设置：XJava池中对象的ID标识
+     * 
+     * @param i_XjavaID XJava池中对象的ID标识
+     */
+    @Override
+    public void setXJavaID(String i_XjavaID)
+    {
+        this.xjavaID = i_XjavaID;
+    }
+
+
+    
+    /**
+     * 获取：注释。可用于日志的输出等帮助性的信息
+     */
+    @Override
+    public String getComment()
+    {
+        return comment;
+    }
+
+
+    
+    /**
+     * 设置：注释。可用于日志的输出等帮助性的信息
+     * 
+     * @param i_Comment 注释。可用于日志的输出等帮助性的信息
+     */
+    @Override
+    public void setComment(String i_Comment)
+    {
+        this.comment = i_Comment;
+    }
+
+
+
+    @Override
+    public int compareTo(XSQLTrigger i_XSQLTrigger)
+    {
+        if ( i_XSQLTrigger == null )
+        {
+            return 1;
+        }
+        else if ( this == i_XSQLTrigger )
+        {
+            return 0;
+        }
+        else if ( Help.isNull(this.getXJavaID()) )
+        {
+            return -1;
+        }
+        else if ( Help.isNull(i_XSQLTrigger.getXJavaID()) )
+        {
+            return 1;
+        }
+        else
+        {
+            return this.getXJavaID().compareTo(i_XSQLTrigger.getXJavaID());
+        }
+    }
+
+
+
+    @Override
+    public boolean equals(Object i_Other)
+    {
+        if ( i_Other == null )
+        {
+            return false;
+        }
+        else if ( this == i_Other )
+        {
+            return true;
+        }
+        else if ( i_Other instanceof XSQLTrigger )
+        {
+            XSQLTrigger v_Other = (XSQLTrigger) i_Other;
+            
+            if ( Help.isNull(this.getXJavaID()) )
+            {
+                return false;
+            }
+            else if ( Help.isNull(v_Other.getXJavaID()) )
+            {
+                return false;
+            }
+            else
+            {
+                return this.getXJavaID().equals(v_Other.getXJavaID());
+            }
+        }
+        else
+        {
+            return false;
+        }
     }
     
 }

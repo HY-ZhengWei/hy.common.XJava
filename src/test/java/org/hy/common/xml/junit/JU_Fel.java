@@ -391,6 +391,27 @@ public class JU_Fel
     
     
     /**
+     * 测试Fel对中文的支持
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-09-12
+     * @version     v1.0
+     *
+     */
+    @Test
+    public void test005_中文()
+    {
+        FelEngine           v_Fel            = new FelEngineImpl();
+        FelContext          v_FelContext     = v_Fel.getContext();
+        
+        v_FelContext.set("中文变量" ,"中国");
+        
+        System.out.println(v_Fel.eval("中文变量 == '中国'"));
+    }
+    
+    
+    
+    /**
      * 单位转换测试
      * 
      * @author      ZhengWei(HY)

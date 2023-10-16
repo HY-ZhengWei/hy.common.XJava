@@ -3,10 +3,10 @@ package org.hy.common.xml.plugins;
 import java.io.Serializable;
 import java.util.List;
 
-import org.hy.common.xml.XJSON;
-import org.hy.common.xml.log.Logger;
 import org.hy.common.Date;
 import org.hy.common.Help;
+import org.hy.common.xml.XJSON;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -49,6 +49,9 @@ public class AppMessage<O> implements Cloneable ,Serializable
     /** 令牌，MD5(SYSID@PWD)。Sec是安全的意思 */
     private String     tokenSec;
     
+    /** 令牌类型 */
+    private String     tokenType;
+    
     /** 参数的加密类型。如MD5、DES等 */
     private String     encry;
     
@@ -58,12 +61,12 @@ public class AppMessage<O> implements Cloneable ,Serializable
     /** 分配给用户的SessionKey，通过登陆授权获取。区分大小写 */
     private String     session;
     
-    /** 
+    /**
      * 返回代码。成功/失败标识。
      * 
      * 此属性是后期添加上的(2014-09-26)，所以程序内部并没有对其有业务逻辑，只当做普通属性。
      * 
-     * 但与其鲜明对比的是 rc 属性是有内部业务逻辑判断的。 
+     * 但与其鲜明对比的是 rc 属性是有内部业务逻辑判断的。
      */
     private Boolean    result;
     
@@ -327,6 +330,7 @@ public class AppMessage<O> implements Cloneable ,Serializable
     /**
      * 不克隆 Body 属性
      */
+    @Override
     public final AppMessage<Object> clone()
     {
         try
@@ -369,6 +373,7 @@ public class AppMessage<O> implements Cloneable ,Serializable
     }
     
 
+    @Override
     public String toString()
     {
         return this.toString(new XJSON());
