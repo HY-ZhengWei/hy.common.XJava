@@ -421,6 +421,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         this.content            = new DBSQL();
         this.result             = new XSQLResult();
         this.trigger            = null;
+        this.triggerParams      = false;
         this.blobSafe           = false;
         this.type               = $Type_NormalSQL;
         this.create             = null;
