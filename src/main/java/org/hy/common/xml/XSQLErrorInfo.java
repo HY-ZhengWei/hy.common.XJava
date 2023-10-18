@@ -18,32 +18,32 @@ public class XSQLErrorInfo
 {
     
     /** 异常时执行的SQL语句 */
-    private String sql; 
+    private String         sql;
     
     /** 异常信息 */
-    private Exception exce;
+    private Exception      exce;
     
     /** 异常时执行的XSQL对象 */
-    private XSQL xsql;
+    private XSQL           xsql;
     
-    /** 
+    /**
      * 异常时执行的XSQL入参数据（Map类型的）。
      * 
-     * valuesMap、valuesObject、valuesList三者同时只能有一个有值，或者均为NULL。 
+     * valuesMap、valuesObject、valuesList三者同时只能有一个有值，或者均为NULL。
      */
     private Map<String ,?> valuesMap;
     
-    /** 
+    /**
      * 异常时执行的XSQL入参数据（Object类型的）。
      * 
-     * valuesMap、valuesObject、valuesList三者同时只能有一个有值，或者均为NULL。 
+     * valuesMap、valuesObject、valuesList三者同时只能有一个有值，或者均为NULL。
      */
     private Object         valuesObject;
     
-    /** 
+    /**
      * 异常时执行的XSQL入参数据（List类型的）。
      * 
-     * valuesMap、valuesObject、valuesList三者同时只能有一个有值，或者均为NULL。 
+     * valuesMap、valuesObject、valuesList三者同时只能有一个有值，或者均为NULL。
      */
     private List<?>        valuesList;
     
@@ -122,7 +122,7 @@ public class XSQLErrorInfo
      * 
      * valuesMap、valuesObject、valuesList三者同时只能有一个有值，或者均为NULL。
      * 
-     * @param valuesMap 
+     * @param valuesMap
      */
     public XSQLErrorInfo setValuesMap(Map<String ,?> valuesMap)
     {
@@ -136,7 +136,7 @@ public class XSQLErrorInfo
      * 
      * valuesMap、valuesObject、valuesList三者同时只能有一个有值，或者均为NULL。
      * 
-     * @param valuesObject 
+     * @param valuesObject
      */
     public XSQLErrorInfo setValuesObject(Object valuesObject)
     {
@@ -150,7 +150,7 @@ public class XSQLErrorInfo
      * 
      * valuesMap、valuesObject、valuesList三者同时只能有一个有值，或者均为NULL。
      * 
-     * @param valuesList 
+     * @param valuesList
      */
     public XSQLErrorInfo setValuesList(List<?> valuesList)
     {

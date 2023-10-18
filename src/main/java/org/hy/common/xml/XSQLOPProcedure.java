@@ -26,6 +26,7 @@ import org.hy.common.db.DataSourceGroup;
  * @author      ZhengWei(HY)
  * @createDate  2022-05-25
  * @version     v1.0
+ *              v2.0  2023-10-17  添加：是否附加触发额外参数的功能
  */
 public class XSQLOPProcedure
 {
@@ -42,11 +43,13 @@ public class XSQLOPProcedure
      */
     public static Object call(final XSQL i_XSQL ,final String i_SQLCallName)
     {
-        DataSourceGroup   v_DSG       = null;
-        Connection        v_Conn      = null;
-        CallableStatement v_Statement = null;
-        long              v_BeginTime = i_XSQL.request().getTime();
-        boolean           v_IsError   = false;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("call" ,(Object) null);
+        DataSourceGroup     v_DSG           = null;
+        Connection          v_Conn          = null;
+        CallableStatement   v_Statement     = null;
+        long                v_BeginTime     = i_XSQL.request().getTime();
         
         try
         {
@@ -116,7 +119,8 @@ public class XSQLOPProcedure
         }
         catch (Exception exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             XSQL.erroring("{call " + i_SQLCallName + "()}" ,exce ,i_XSQL);
             throw new RuntimeException(exce.getMessage());
         }
@@ -126,7 +130,14 @@ public class XSQLOPProcedure
             
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -162,7 +173,7 @@ public class XSQLOPProcedure
      * 2. 支持多个输出参数
      * 
      * @param i_SQLCallName      存储过程或函数的名称
-     * @param i_ParamObj         入参参数对象
+     * @param i_Values           入参参数对象
      * 
      * @return  1. 当调用对象为存储过程时，当无输出参数时，返回是否执行成功(true、false)
      *          2. 当调用对象为存储过程时，当有一个输出类型时，返回输出值。
@@ -174,16 +185,18 @@ public class XSQLOPProcedure
      *                        List集合的首个元素为函数自身的返回值。
      */
     @SuppressWarnings("resource")
-    public static Object call(final XSQL i_XSQL ,final Object i_ParamObj)
+    public static Object call(final XSQL i_XSQL ,final Object i_Values)
     {
-        DataSourceGroup   v_DSG            = null;
-        Connection        v_Conn           = null;
-        CallableStatement v_Statement      = null;
-        ResultSet         v_Resultset      = null;
-        List<Integer>     v_OutParamIndexs = new ArrayList<Integer>();
-        long              v_BeginTime      = i_XSQL.request().getTime();
-        boolean           v_IsError        = false;
-        StringBuilder     v_Buffer         = new StringBuilder();
+        boolean             v_IsError        = false;
+        String              v_ErrorInfo      = null;
+        Map<String ,Object> v_TriggerParams  = i_XSQL.executeBeforeForTrigger("call" ,i_Values);
+        DataSourceGroup     v_DSG            = null;
+        Connection          v_Conn           = null;
+        CallableStatement   v_Statement      = null;
+        ResultSet           v_Resultset      = null;
+        List<Integer>       v_OutParamIndexs = new ArrayList<Integer>();
+        long                v_BeginTime      = i_XSQL.request().getTime();
+        StringBuilder       v_Buffer         = new StringBuilder();
         
         try
         {
@@ -219,7 +232,7 @@ public class XSQLOPProcedure
             }
             
             // 存储过程或函数有入参时，i_ParamObj不能为空。否则，可则为空
-            if ( i_XSQL.getCallParamInCount() >= 1 && i_ParamObj == null )
+            if ( i_XSQL.getCallParamInCount() >= 1 && i_Values == null )
             {
                 throw new NullPointerException("Call [" + i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) + "] parameters values is null.");
             }
@@ -276,7 +289,7 @@ public class XSQLOPProcedure
                 // 输入类型的参数
                 if ( v_CallParam.isInType() )
                 {
-                    Object v_ParamValue = MethodReflect.getGetMethod(i_ParamObj.getClass() ,v_CallParam.getName() ,true).invoke(i_ParamObj);
+                    Object v_ParamValue = MethodReflect.getGetMethod(i_Values.getClass() ,v_CallParam.getName() ,true).invoke(i_Values);
                     
                     if ( v_ParamValue == null )
                     {
@@ -358,11 +371,12 @@ public class XSQLOPProcedure
         }
         catch (Exception exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             XSQL.erroring(v_Buffer.toString() ,exce ,i_XSQL);
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_Buffer.toString() ,exce ,i_XSQL).setValuesObject(i_ParamObj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_Buffer.toString() ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw new RuntimeException(exce.getMessage());
         }
@@ -374,7 +388,14 @@ public class XSQLOPProcedure
             
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_ParamObj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -403,16 +424,18 @@ public class XSQLOPProcedure
      *                        List集合的首个元素为函数自身的返回值。
      */
     @SuppressWarnings("resource")
-    public static Object call(final XSQL i_XSQL ,final Map<String ,?> i_ParamValues)
+    public static Object call(final XSQL i_XSQL ,final Map<String ,?> i_Values)
     {
-        DataSourceGroup   v_DSG            = null;
-        Connection        v_Conn           = null;
-        CallableStatement v_Statement      = null;
-        ResultSet         v_Resultset      = null;
-        List<Integer>     v_OutParamIndexs = new ArrayList<Integer>();
-        long              v_BeginTime      = i_XSQL.request().getTime();
-        boolean           v_IsError        = false;
-        StringBuilder     v_Buffer         = new StringBuilder();
+        boolean             v_IsError        = false;
+        String              v_ErrorInfo      = null;
+        Map<String ,Object> v_TriggerParams  = i_XSQL.executeBeforeForTrigger("call" ,i_Values);
+        DataSourceGroup     v_DSG            = null;
+        Connection          v_Conn           = null;
+        CallableStatement   v_Statement      = null;
+        ResultSet           v_Resultset      = null;
+        List<Integer>       v_OutParamIndexs = new ArrayList<Integer>();
+        long                v_BeginTime      = i_XSQL.request().getTime();
+        StringBuilder       v_Buffer         = new StringBuilder();
         
         try
         {
@@ -443,7 +466,7 @@ public class XSQLOPProcedure
             }
             
             // 存储过程或函数有入参时，i_ParamObj不能为空。否则，可则为空
-            if ( i_XSQL.getCallParamInCount() >= 1 && Help.isNull(i_ParamValues) )
+            if ( i_XSQL.getCallParamInCount() >= 1 && Help.isNull(i_Values) )
             {
                 throw new NullPointerException("Call [" + i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) + "] parameters values is null.");
             }
@@ -500,12 +523,12 @@ public class XSQLOPProcedure
                 // 输入类型的参数
                 if ( v_CallParam.isInType() )
                 {
-                    if ( !i_ParamValues.containsKey(v_CallParam.getName().trim()) )
+                    if ( !i_Values.containsKey(v_CallParam.getName().trim()) )
                     {
                         throw new NullPointerException("Call " + i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) + "(" + v_CallParam.getName() + ") parameter is not exist.");
                     }
                     
-                    Object v_ParamValue = i_ParamValues.get(v_CallParam.getName().trim());
+                    Object v_ParamValue = i_Values.get(v_CallParam.getName().trim());
                     
                     if ( v_ParamValue == null )
                     {
@@ -587,11 +610,12 @@ public class XSQLOPProcedure
         }
         catch (Exception exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             XSQL.erroring(v_Buffer.toString() ,exce ,i_XSQL);
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_Buffer.toString() ,exce ,i_XSQL).setValuesMap(i_ParamValues));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_Buffer.toString() ,exce ,i_XSQL).setValuesMap(i_Values));
             }
             throw new RuntimeException(exce.getMessage());
         }
@@ -603,7 +627,14 @@ public class XSQLOPProcedure
             
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_ParamValues);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }

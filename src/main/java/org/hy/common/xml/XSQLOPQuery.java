@@ -28,6 +28,7 @@ import org.hy.common.db.DataSourceGroup;
  * @version     v1.0
  *              v2.0  2023-03-07  添加：querySQLValue，常用于查询返回仅只一个字符串的场景。建议人：王雨墨
  *              v3.0  2023-05-11  优化：改成用正则判定查询QL中否有COUNT(1)或COUNT(*)的情况。发现人：王力
+ *              v4.0  2023-10-17  添加：是否附加触发额外参数的功能
  */
 public class XSQLOPQuery
 {
@@ -51,19 +52,25 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,(Object) null);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -72,7 +79,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -83,7 +91,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -104,19 +119,25 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,(Object) null);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,i_Conn);
+            XSQLData v_Ret =XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,i_Conn);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -125,7 +146,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -136,7 +158,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -160,20 +189,26 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
         
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -182,7 +217,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -193,7 +229,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -218,20 +261,26 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
         
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,i_Conn);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,i_Conn);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -240,7 +289,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -251,7 +301,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -276,20 +333,26 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNames);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNames);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -298,7 +361,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -309,7 +373,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -334,20 +405,26 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNoArr);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNoArr);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -356,7 +433,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -367,7 +445,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -377,46 +462,53 @@ public class XSQLOPQuery
     /**
      * 占位符SQL的查询。
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
      * @author      ZhengWei(HY)
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Values              占位符SQL的填充对象。
      * @return
      */
-    public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Obj)
+    public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Values)
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -424,7 +516,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -434,47 +533,54 @@ public class XSQLOPQuery
     /**
      * 占位符SQL的查询。（内部不再关闭数据库连接）
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
      * @author      ZhengWei(HY)
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Values              占位符SQL的填充对象。
      * @param i_Conn
      * @return
      */
-    public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Obj ,final Connection i_Conn)
+    public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Values ,final Connection i_Conn)
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,i_Conn);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,i_Conn);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -482,7 +588,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -492,47 +605,54 @@ public class XSQLOPQuery
     /**
      * 占位符SQL的查询。(按输出字段名称过滤)
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
      * @author      ZhengWei(HY)
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Values           占位符SQL的填充对象。
      * @param i_FilterColNames   按输出字段名称过滤。
      * @return
      */
-    public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Obj ,final List<String> i_FilterColNames)
+    public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Values ,final List<String> i_FilterColNames)
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNames);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNames);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -540,7 +660,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -550,47 +677,54 @@ public class XSQLOPQuery
     /**
      * 占位符SQL的查询。(按输出字段位置过滤)
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
      * @author      ZhengWei(HY)
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Values           占位符SQL的填充对象。
      * @param i_FilterColNoArr   按输出字段位置过滤。
      * @return
      */
-    public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Obj ,final int [] i_FilterColNoArr)
+    public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Values ,final int [] i_FilterColNoArr)
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNoArr);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNoArr);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -598,7 +732,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -621,15 +762,21 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean v_IsError = false;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,(Object) null);
+        long                v_IORowCount    = 0L;
 
         try
         {
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,i_SQL ,i_Conn);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,i_SQL ,i_Conn);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -638,7 +785,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -649,7 +797,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -672,15 +827,21 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean v_IsError = false;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,(Object) null);
+        long                v_IORowCount    = 0L;
 
         try
         {
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,i_SQL ,i_XSQL.getDataSourceGroup());
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,i_SQL ,i_XSQL.getDataSourceGroup());
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -689,7 +850,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -700,7 +862,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -844,19 +1013,25 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,(Object) null);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_StartRow ,i_PagePerSize);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_StartRow ,i_PagePerSize);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -865,7 +1040,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -876,7 +1052,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -902,20 +1085,26 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_StartRow ,i_PagePerSize);
+            XSQLData v_Ret =XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_StartRow ,i_PagePerSize);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -924,7 +1113,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -935,7 +1125,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -945,48 +1142,55 @@ public class XSQLOPQuery
     /**
      * 占位符SQL的查询。游标的分页查询（可通用于所有数据库）。
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
      * @author      ZhengWei(HY)
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Values           占位符SQL的填充对象。
      * @param i_StartRow         开始读取的行号。下标从0开始。
      * @param i_PagePerSize      每页显示多少条数据。只有大于0时，游标分页功能才生效。
      * @return
      */
-    public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Obj ,final int i_StartRow ,final int i_PagePerSize)
+    public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Values ,final int i_StartRow ,final int i_PagePerSize)
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_StartRow ,i_PagePerSize);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_StartRow ,i_PagePerSize);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -994,7 +1198,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1019,17 +1230,23 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,(Object) null);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
         
         try
         {
             v_DSG = i_XSQL.getDataSourceGroup();
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,i_SQL ,v_DSG ,i_StartRow ,i_PagePerSize);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,i_SQL ,v_DSG ,i_StartRow ,i_PagePerSize);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -1038,7 +1255,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -1049,7 +1267,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1073,17 +1298,23 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,(Object) null);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
         
         try
         {
             v_DSG = i_XSQL.getDataSourceGroup();
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,i_SQL ,v_DSG ,i_FilterColNames);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,i_SQL ,v_DSG ,i_FilterColNames);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -1092,7 +1323,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -1103,7 +1335,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1127,17 +1366,23 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryXSQLData" ,(Object) null);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
         
         try
         {
             v_DSG = i_XSQL.getDataSourceGroup();
-            return XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,i_SQL ,v_DSG ,i_FilterColNoArr);
+            XSQLData v_Ret = XSQLOPQuery.queryXSQLData_Inner(i_XSQL ,i_SQL ,v_DSG ,i_FilterColNoArr);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -1146,7 +1391,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -1157,7 +1403,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1372,20 +1625,26 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
         
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            return XSQLOPQuery.queryBigData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_XSQLBigData);
+            XSQLData v_Ret = XSQLOPQuery.queryBigData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_XSQLBigData);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret;
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -1394,7 +1653,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -1405,7 +1665,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1431,20 +1698,26 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
         
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            return XSQLOPQuery.queryBigData_Inner(i_XSQL ,v_SQL ,i_Conn ,i_XSQLBigData);
+            XSQLData v_Ret = XSQLOPQuery.queryBigData_Inner(i_XSQL ,v_SQL ,i_Conn ,i_XSQLBigData);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret.getDatas();
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -1453,7 +1726,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_Values ,i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -1464,7 +1738,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1474,47 +1755,54 @@ public class XSQLOPQuery
     /**
      * 占位符SQL的查询。
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
      * @author      ZhengWei(HY)
      * @createDate  2018-01-17
      * @version     v1.0
      * 
-     * @param i_Obj          占位符SQL的填充对象。
+     * @param i_Values       占位符SQL的填充对象。
      * @param i_XSQLBigData  大数据处理接口
      * @return
      */
-    public static Object queryBigData(final XSQL i_XSQL ,final Object i_Obj ,final XSQLBigData i_XSQLBigData)
+    public static Object queryBigData(final XSQL i_XSQL ,final Object i_Values ,final XSQLBigData i_XSQLBigData)
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            return XSQLOPQuery.queryBigData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_XSQLBigData);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            XSQLData v_Ret = XSQLOPQuery.queryBigData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_XSQLBigData);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret.getDatas();
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -1522,7 +1810,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1539,41 +1834,48 @@ public class XSQLOPQuery
      * @createDate  2018-01-17
      * @version     v1.0
      * 
-     * @param i_Obj          占位符SQL的填充对象。
+     * @param i_Values       占位符SQL的填充对象。
      * @param i_Conn         数据库连接池
      * @param i_XSQLBigData  大数据处理接口
      * @return
      */
-    public static Object queryBigData(final XSQL i_XSQL ,final Object i_Obj ,final Connection i_Conn ,final XSQLBigData i_XSQLBigData)
+    public static Object queryBigData(final XSQL i_XSQL ,final Object i_Values ,final Connection i_Conn ,final XSQLBigData i_XSQLBigData)
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigData" ,i_Values);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            return XSQLOPQuery.queryBigData_Inner(i_XSQL ,v_SQL ,i_Conn ,i_XSQLBigData);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            XSQLData v_Ret = XSQLOPQuery.queryBigData_Inner(i_XSQL ,v_SQL ,i_Conn ,i_XSQLBigData);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret.getDatas();
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -1581,7 +1883,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1603,19 +1912,25 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigData" ,(Object) null);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
-            return XSQLOPQuery.queryBigData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_XSQLBigData);
+            XSQLData v_Ret = XSQLOPQuery.queryBigData_Inner(i_XSQL ,v_SQL ,v_DSG ,i_XSQLBigData);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret.getDatas();
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -1624,7 +1939,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -1635,7 +1951,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1657,19 +1980,25 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigData" ,(Object) null);
+        long                v_IORowCount    = 0L;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
-            return XSQLOPQuery.queryBigData_Inner(i_XSQL ,v_SQL ,i_Conn ,i_XSQLBigData);
+            XSQLData v_Ret = XSQLOPQuery.queryBigData_Inner(i_XSQL ,v_SQL ,i_Conn ,i_XSQLBigData);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret.getDatas();
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -1678,7 +2007,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -1689,7 +2019,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1714,15 +2051,21 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean v_IsError = false;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigData" ,(Object) null);
+        long                v_IORowCount    = 0L;
 
         try
         {
-            return XSQLOPQuery.queryBigData_Inner(i_XSQL ,i_SQL ,i_Conn ,i_XSQLBigData);
+            XSQLData v_Ret = XSQLOPQuery.queryBigData_Inner(i_XSQL ,i_SQL ,i_Conn ,i_XSQLBigData);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret.getDatas();
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -1731,7 +2074,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -1742,7 +2086,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1766,15 +2117,21 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean v_IsError = false;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigData" ,(Object) null);
+        long                v_IORowCount    = 0L;
 
         try
         {
-            return XSQLOPQuery.queryBigData_Inner(i_XSQL ,i_SQL ,i_XSQL.getDataSourceGroup() ,i_XSQLBigData);
+            XSQLData v_Ret = XSQLOPQuery.queryBigData_Inner(i_XSQL ,i_SQL ,i_XSQL.getDataSourceGroup() ,i_XSQLBigData);
+            v_IORowCount = v_Ret.getRowCount();
+            return v_Ret.getDatas();
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -1783,7 +2140,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -1794,7 +2152,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1815,7 +2180,7 @@ public class XSQLOPQuery
      * @param i_XSQLBigData  大数据处理接口
      * @return
      */
-    private static Object queryBigData_Inner(final XSQL i_XSQL ,final String i_SQL ,final Connection i_Conn ,final XSQLBigData i_XSQLBigData)
+    private static XSQLData queryBigData_Inner(final XSQL i_XSQL ,final String i_SQL ,final Connection i_Conn ,final XSQLBigData i_XSQLBigData)
     {
         Statement  v_Statement = null;
         ResultSet  v_Resultset = null;
@@ -1846,7 +2211,7 @@ public class XSQLOPQuery
             Date v_EndTime = Date.getNowTime();
             i_XSQL.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
             
-            return v_Ret.getDatas();
+            return v_Ret;
         }
         catch (Exception exce)
         {
@@ -1874,7 +2239,7 @@ public class XSQLOPQuery
      * @param i_XSQLBigData  大数据处理接口
      * @return
      */
-    private static Object queryBigData_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG ,final XSQLBigData i_XSQLBigData)
+    private static XSQLData queryBigData_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG ,final XSQLBigData i_XSQLBigData)
     {
         Connection v_Conn      = null;
         Statement  v_Statement = null;
@@ -1907,7 +2272,7 @@ public class XSQLOPQuery
             Date v_EndTime = Date.getNowTime();
             i_XSQL.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Ret.getRowCount());
             
-            return v_Ret.getDatas();
+            return v_Ret;
         }
         catch (Exception exce)
         {
@@ -1934,9 +2299,11 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigger" ,i_Values);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
@@ -1947,7 +2314,8 @@ public class XSQLOPQuery
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -1956,7 +2324,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -1967,7 +2336,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1987,9 +2363,11 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigger" ,i_Values);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
@@ -2000,7 +2378,8 @@ public class XSQLOPQuery
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -2009,7 +2388,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -2020,7 +2400,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2040,9 +2427,11 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigger" ,i_Values);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
@@ -2053,7 +2442,8 @@ public class XSQLOPQuery
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -2062,7 +2452,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -2073,7 +2464,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2083,41 +2481,45 @@ public class XSQLOPQuery
     /**
      * 占位符SQL的查询。 -- 超级大结果集的SQL查询
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
-     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Values              占位符SQL的填充对象。
      */
-    public static XSQLBigger queryBigger(final XSQL i_XSQL ,final Object i_Obj)
+    public static XSQLBigger queryBigger(final XSQL i_XSQL ,final Object i_Values)
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigger" ,i_Values);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.queryBigger_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -2125,7 +2527,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2135,42 +2544,46 @@ public class XSQLOPQuery
     /**
      * 占位符SQL的查询。(按输出字段名称过滤) -- 超级大结果集的SQL查询
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
-     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Values              占位符SQL的填充对象。
      * @param i_FilterColNames   按输出字段名称过滤。
      */
-    public static XSQLBigger queryBigger(final XSQL i_XSQL ,final Object i_Obj ,final List<String> i_FilterColNames)
+    public static XSQLBigger queryBigger(final XSQL i_XSQL ,final Object i_Values ,final List<String> i_FilterColNames)
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigger" ,i_Values);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.queryBigger_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNames);
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -2178,7 +2591,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2188,42 +2608,46 @@ public class XSQLOPQuery
     /**
      * 占位符SQL的查询。(按输出字段位置过滤) -- 超级大结果集的SQL查询
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
-     * @param i_Obj              占位符SQL的填充对象。
+     * @param i_Values           占位符SQL的填充对象。
      * @param i_FilterColNoArr   按输出字段位置过滤。
      */
-    public static XSQLBigger queryBigger(final XSQL i_XSQL ,final Object i_Obj ,final int [] i_FilterColNoArr)
+    public static XSQLBigger queryBigger(final XSQL i_XSQL ,final Object i_Values ,final int [] i_FilterColNoArr)
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigger" ,i_Values);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.queryBigger_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNoArr);
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -2231,7 +2655,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2251,7 +2682,9 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean v_IsError = false;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigger" ,(Object) null);
 
         try
         {
@@ -2259,7 +2692,8 @@ public class XSQLOPQuery
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -2268,7 +2702,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -2279,7 +2714,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2300,7 +2742,9 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean v_IsError = false;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigger" ,(Object) null);
 
         try
         {
@@ -2308,7 +2752,8 @@ public class XSQLOPQuery
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -2317,7 +2762,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -2328,7 +2774,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2349,7 +2802,9 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean v_IsError = false;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("queryBigger" ,(Object) null);
 
         try
         {
@@ -2357,7 +2812,8 @@ public class XSQLOPQuery
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -2366,7 +2822,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -2377,7 +2834,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2585,9 +3049,11 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("querySQLCount" ,i_Values);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
@@ -2598,7 +3064,8 @@ public class XSQLOPQuery
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -2607,7 +3074,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -2618,7 +3086,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2630,43 +3105,47 @@ public class XSQLOPQuery
      * 
      * 模块SQL的形式如：SELECT COUNT(1) FROM ...
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
-     * @param i_XSQL  查询对象
-     * @param i_Obj   占位符SQL的填充对象。
+     * @param i_XSQL     查询对象
+     * @param i_Values   占位符SQL的填充对象。
      * @return
      */
-    public static long querySQLCount(final XSQL i_XSQL ,final Object i_Obj)
+    public static long querySQLCount(final XSQL i_XSQL ,final Object i_Values)
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("querySQLCount" ,i_Values);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.querySQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -2674,7 +3153,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2693,9 +3179,11 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("querySQLCount" ,(Object) null);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
@@ -2705,7 +3193,8 @@ public class XSQLOPQuery
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -2714,7 +3203,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -2725,7 +3215,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2745,9 +3242,11 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("querySQLCount" ,(Object) null);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
@@ -2757,7 +3256,8 @@ public class XSQLOPQuery
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -2766,7 +3266,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -2777,7 +3278,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2874,9 +3382,11 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("querySQLValue" ,i_Values);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
@@ -2887,7 +3397,8 @@ public class XSQLOPQuery
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -2896,7 +3407,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -2907,7 +3419,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2917,48 +3436,52 @@ public class XSQLOPQuery
     /**
      * 查询返回第一行第一列上的数值。常用于查询返回一个字符串
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
      * @author      ZhengWei(HY)
      * @createDate  2023-03-07
      * @version     v1.0
      * 
-     * @param i_XSQL  查询对象
-     * @param i_Obj   占位符SQL的填充对象。
+     * @param i_XSQL     查询对象
+     * @param i_Values   占位符SQL的填充对象。
      * @return
      * @throws Exception
      */
-    public static Object querySQLValue(final XSQL i_XSQL ,final Object i_Obj)
+    public static Object querySQLValue(final XSQL i_XSQL ,final Object i_Values)
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("querySQLValue" ,i_Values);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.querySQLValue_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -2966,7 +3489,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -2987,9 +3517,11 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("querySQLValue" ,(Object) null);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
@@ -2999,7 +3531,8 @@ public class XSQLOPQuery
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -3008,7 +3541,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -3019,7 +3553,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -3041,9 +3582,11 @@ public class XSQLOPQuery
     {
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("querySQLValue" ,(Object) null);
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
@@ -3053,7 +3596,8 @@ public class XSQLOPQuery
         }
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -3062,7 +3606,8 @@ public class XSQLOPQuery
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -3073,7 +3618,14 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IsError?0L:1L ,v_ErrorInfo));
+                }
             }
         }
     }

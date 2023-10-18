@@ -53,6 +53,7 @@ import oracle.sql.CLOB;
  *              v2.0  2022-05-26  添加：isGetID()参数影响executeUpdate(...)系统方法返回值的含义
  *              v3.0  2023-04-20  添加：单行数据的批量操作（预解释执行模式）
  *              v3.1  2023-05-17  添加：预解释执行模式异常时，同样输出具体数值，而不是一大堆?问号
+ *              v4.0  2023-10-17  添加：是否附加触发额外参数的功能
  */
 public class XSQLOPUpdate
 {
@@ -82,15 +83,19 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
-
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdate" ,(Object) null);
+        int                 v_IORowCount    = 0;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
+        
         try
         {
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
-            return XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,v_SQL ,v_DSG);
+            v_IORowCount = XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,v_SQL ,v_DSG);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
@@ -104,7 +109,8 @@ public class XSQLOPUpdate
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -115,7 +121,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -152,23 +165,27 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdate" ,i_Values);
+        int                 v_IORowCount    = 0;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            int v_Ret = XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,v_SQL ,v_DSG);
+            v_IORowCount = XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,v_SQL ,v_DSG);
             
-            return XSQLOPUpdate.executeUpdate_AfterWriteLob(i_XSQL ,i_Values ,v_Ret);
+            return XSQLOPUpdate.executeUpdate_AfterWriteLob(i_XSQL ,i_Values ,v_IORowCount);
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -177,7 +194,8 @@ public class XSQLOPUpdate
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -188,7 +206,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -198,20 +223,20 @@ public class XSQLOPUpdate
     /**
      * 占位符SQL的Insert语句与Update语句的执行。
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 
      * V2.0  2018-07-18  1.添加：支持CLob字段类型的简单Insert、Update语法的写入操作。
      * 
-     * @param i_Obj  占位符SQL的填充对象。
+     * @param i_Values  占位符SQL的填充对象。
      * @return  返回语句影响的记录数。
      *            当 getID=false 时，返回值表示：影响的记录行数
      *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
-    public static int executeUpdate(final XSQL i_XSQL ,final Object i_Obj)
+    public static int executeUpdate(final XSQL i_XSQL ,final Object i_Values)
     {
         if ( i_XSQL.isGetID() )
         {
-            XSQLData v_XData = XSQLOPInsert.executeInsert(i_XSQL ,i_Obj);
+            XSQLData v_XData = XSQLOPInsert.executeInsert(i_XSQL ,i_Values);
             if ( v_XData.getIdentitys().size() >= 1 )
             {
                 return v_XData.getIdentitys().get(0);
@@ -225,34 +250,39 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdate" ,i_Values);
+        int                 v_IORowCount    = 0;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            int v_Ret = XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,v_SQL ,v_DSG);
-            return XSQLOPUpdate.executeUpdate_AfterWriteLob(i_XSQL ,i_Obj ,v_Ret);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            v_IORowCount = XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,v_SQL ,v_DSG);
+            return XSQLOPUpdate.executeUpdate_AfterWriteLob(i_XSQL ,i_Values ,v_IORowCount);
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -260,7 +290,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -291,16 +328,21 @@ public class XSQLOPUpdate
         }
         
         
-        boolean v_IsError = false;
-
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdate" ,(Object) null);
+        int                 v_IORowCount    = 0;
+        
         try
         {
-            return XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,i_SQL ,i_XSQL.getDataSourceGroup());
+            v_IORowCount = XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,i_SQL ,i_XSQL.getDataSourceGroup());
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -309,7 +351,8 @@ public class XSQLOPUpdate
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -320,7 +363,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -400,20 +450,25 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdate" ,(Object) null);
+        int                 v_IORowCount    = 0;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
-            return XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,v_SQL ,i_Conn);
+            v_IORowCount = XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,v_SQL ,i_Conn);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -422,7 +477,8 @@ public class XSQLOPUpdate
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
@@ -433,7 +489,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -469,21 +532,26 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdate" ,i_Values);
+        int                 v_IORowCount    = 0;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            return XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,v_SQL ,i_Conn);
+            v_IORowCount = XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,v_SQL ,i_Conn);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -492,7 +560,8 @@ public class XSQLOPUpdate
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -503,7 +572,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -513,19 +589,19 @@ public class XSQLOPUpdate
     /**
      * 占位符SQL的Insert语句与Update语句的执行。（内部不再关闭数据库连接）
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 
-     * @param i_Obj   占位符SQL的填充对象。
-     * @param i_Conn  数据库连接
+     * @param i_Values  占位符SQL的填充对象。
+     * @param i_Conn    数据库连接
      * @return  返回语句影响的记录数。
      *            当 getID=false 时，返回值表示：影响的记录行数
      *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
-    public static int executeUpdate(final XSQL i_XSQL ,final Object i_Obj ,Connection i_Conn)
+    public static int executeUpdate(final XSQL i_XSQL ,final Object i_Values ,Connection i_Conn)
     {
         if ( i_XSQL.isGetID() )
         {
-            XSQLData v_XData = XSQLOPInsert.executeInsert(i_XSQL ,i_Obj ,i_Conn);
+            XSQLData v_XData = XSQLOPInsert.executeInsert(i_XSQL ,i_Values ,i_Conn);
             if ( v_XData.getIdentitys().size() >= 1 )
             {
                 return v_XData.getIdentitys().get(0);
@@ -539,33 +615,39 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdate" ,i_Values);
+        int                 v_IORowCount    = 0;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            return XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,v_SQL ,i_Conn);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            v_IORowCount = XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,v_SQL ,i_Conn);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -573,7 +655,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -605,16 +694,21 @@ public class XSQLOPUpdate
         }
         
         
-        boolean v_IsError = false;
-
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdate" ,(Object) null);
+        int                 v_IORowCount    = 0;
+        
         try
         {
-            return XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,i_SQL ,i_Conn);
+            v_IORowCount = XSQLOPUpdate.executeUpdate_Inner(i_XSQL ,i_SQL ,i_Conn);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -623,7 +717,8 @@ public class XSQLOPUpdate
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
@@ -634,7 +729,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes();
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes();
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -690,18 +792,18 @@ public class XSQLOPUpdate
     /**
      * 一行数据的批量执行：占位符SQL的Insert语句与Update语句的执行。（内部不再关闭数据库连接）
      * 
-     * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
+     * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 
-     * @param i_Obj   占位符SQL的填充对象。
+     * @param i_Values   占位符SQL的填充对象。
      * @return  返回语句影响的记录数。
      *            当 getID=false 时，返回值表示：影响的记录行数
      *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
-    public static int executeUpdatePrepared(final XSQL i_XSQL ,final Object i_Obj)
+    public static int executeUpdatePrepared(final XSQL i_XSQL ,final Object i_Values)
     {
         if ( i_XSQL.isGetID() )
         {
-            XSQLData v_XData = XSQLOPInsert.executeInsertPrepared(i_XSQL ,i_Obj ,null);
+            XSQLData v_XData = XSQLOPInsert.executeInsertPrepared(i_XSQL ,i_Values ,null);
             if ( v_XData.getIdentitys().size() >= 1 )
             {
                 return v_XData.getIdentitys().get(0);
@@ -715,33 +817,39 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdatePrepared" ,i_Values);
+        int                 v_IORowCount    = 0;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            return XSQLOPUpdate.executeUpdatePrepared_Inner(i_XSQL ,i_Obj ,null);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            v_IORowCount = XSQLOPUpdate.executeUpdatePrepared_Inner(i_XSQL ,i_Values ,null);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -749,7 +857,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -759,7 +874,7 @@ public class XSQLOPUpdate
     /**
      * 一行数据的批量执行：常规Insert语句与Update语句的执行。（内部不再关闭数据库连接）
      * 
-     * @param i_Obj   占位符SQL的填充对象。
+     * @param i_Values   占位符SQL的填充对象。
      * @return  返回语句影响的记录数。
      *            当 getID=false 时，返回值表示：影响的记录行数
      *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
@@ -782,21 +897,26 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdatePrepared" ,i_Values);
+        int                 v_IORowCount    = 0;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            return XSQLOPUpdate.executeUpdatePrepared_Inner(i_XSQL ,i_Values ,null);
+            v_IORowCount = XSQLOPUpdate.executeUpdatePrepared_Inner(i_XSQL ,i_Values ,null);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -805,7 +925,8 @@ public class XSQLOPUpdate
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -816,7 +937,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -828,17 +956,17 @@ public class XSQLOPUpdate
      * 
      * 1. 按对象 i_Obj 填充占位符SQL，生成可执行的SQL语句；
      * 
-     * @param i_Obj   占位符SQL的填充对象。
+     * @param i_Values   占位符SQL的填充对象。
      * @param i_Conn  数据库连接
      * @return  返回语句影响的记录数。
      *            当 getID=false 时，返回值表示：影响的记录行数
      *            当 getID=true  时，返回值表示：写入首条记录的自增长ID的值。影响0行时，返回0
      */
-    public static int executeUpdatePrepared(final XSQL i_XSQL ,final Object i_Obj ,Connection i_Conn)
+    public static int executeUpdatePrepared(final XSQL i_XSQL ,final Object i_Values ,Connection i_Conn)
     {
         if ( i_XSQL.isGetID() )
         {
-            XSQLData v_XData = XSQLOPInsert.executeInsertPrepared(i_XSQL ,i_Obj ,i_Conn);
+            XSQLData v_XData = XSQLOPInsert.executeInsertPrepared(i_XSQL ,i_Values ,i_Conn);
             if ( v_XData.getIdentitys().size() >= 1 )
             {
                 return v_XData.getIdentitys().get(0);
@@ -852,33 +980,39 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdatePrepared" ,i_Values);
+        int                 v_IORowCount    = 0;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
-            i_XSQL.fireBeforeRule(i_Obj);
+            i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
-            v_SQL = i_XSQL.getContent().getSQL(i_Obj ,v_DSG);
-            return XSQLOPUpdate.executeUpdatePrepared_Inner(i_XSQL ,i_Obj ,i_Conn);
+            v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
+            v_IORowCount = XSQLOPUpdate.executeUpdatePrepared_Inner(i_XSQL ,i_Values ,i_Conn);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Obj));
+                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
             }
             throw exce;
         }
@@ -886,7 +1020,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Obj);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -920,21 +1061,26 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean         v_IsError = false;
-        DataSourceGroup v_DSG     = null;
-        String          v_SQL     = null;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdatePrepared" ,i_Values);
+        int                 v_IORowCount    = 0;
+        DataSourceGroup     v_DSG           = null;
+        String              v_SQL           = null;
 
         try
         {
             i_XSQL.fireBeforeRule(i_Values);
             v_DSG = i_XSQL.getDataSourceGroup();
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
-            return XSQLOPUpdate.executeUpdatePrepared_Inner(i_XSQL ,i_Values ,i_Conn);
+            v_IORowCount = XSQLOPUpdate.executeUpdatePrepared_Inner(i_XSQL ,i_Values ,i_Conn);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -943,7 +1089,8 @@ public class XSQLOPUpdate
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
@@ -954,7 +1101,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executes(i_Values);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executes(i_Values);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1152,17 +1306,22 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean v_IsError = false;
-
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdates" ,(Object) null);
+        int                 v_IORowCount    = 0;
+        
         try
         {
             i_XSQL.fireBeforeRule(i_ObjList);
-            return XSQLOPUpdate.executeUpdates_Inner(i_XSQL ,i_ObjList ,null);
+            v_IORowCount = XSQLOPUpdate.executeUpdates_Inner(i_XSQL ,i_ObjList ,null);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesList(i_ObjList));
@@ -1171,7 +1330,8 @@ public class XSQLOPUpdate
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesList(i_ObjList));
@@ -1182,7 +1342,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executeUpdates(i_ObjList);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executeUpdates(i_ObjList);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1229,17 +1396,22 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean v_IsError = false;
-
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdates" ,(Object) null);
+        int                 v_IORowCount    = 0;
+        
         try
         {
             i_XSQL.fireBeforeRule(i_ObjList);
-            return XSQLOPUpdate.executeUpdates_Inner(i_XSQL ,i_ObjList ,i_Conn);
+            v_IORowCount = XSQLOPUpdate.executeUpdates_Inner(i_XSQL ,i_ObjList ,i_Conn);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesList(i_ObjList));
@@ -1248,7 +1420,8 @@ public class XSQLOPUpdate
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesList(i_ObjList));
@@ -1259,7 +1432,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executeUpdates(i_ObjList);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executeUpdates(i_ObjList);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1466,17 +1646,22 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean v_IsError = false;
-
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdatesPrepared" ,(Object) null);
+        int                 v_IORowCount    = 0;
+        
         try
         {
             i_XSQL.fireBeforeRule(i_ObjList);
-            return XSQLOPUpdate.executeUpdatesPrepared_Inner(i_XSQL ,i_ObjList ,null);
+            v_IORowCount = XSQLOPUpdate.executeUpdatesPrepared_Inner(i_XSQL ,i_ObjList ,null);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesList(i_ObjList));
@@ -1485,7 +1670,8 @@ public class XSQLOPUpdate
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesList(i_ObjList));
@@ -1496,7 +1682,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executeUpdatesPrepared(i_ObjList);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executeUpdatesPrepared(i_ObjList);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }
@@ -1547,17 +1740,22 @@ public class XSQLOPUpdate
         
         i_XSQL.checkContent();
         
-        boolean v_IsError = false;
+        boolean             v_IsError       = false;
+        String              v_ErrorInfo     = null;
+        Map<String ,Object> v_TriggerParams = i_XSQL.executeBeforeForTrigger("executeUpdatesPrepared" ,(Object) null);
+        int                 v_IORowCount    = 0;
         
         try
         {
             i_XSQL.fireBeforeRule(i_ObjList);
-            return XSQLOPUpdate.executeUpdatesPrepared_Inner(i_XSQL ,i_ObjList ,i_Conn);
+            v_IORowCount = XSQLOPUpdate.executeUpdatesPrepared_Inner(i_XSQL ,i_ObjList ,i_Conn);
+            return v_IORowCount;
         }
         /* try{}已有中捕获所有异常，并仅出外抛出Null和Runtime两种异常。为保持异常类型不变，写了两遍一样的 */
         catch (NullPointerException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesList(i_ObjList));
@@ -1566,7 +1764,8 @@ public class XSQLOPUpdate
         }
         catch (RuntimeException exce)
         {
-            v_IsError = true;
+            v_IsError   = true;
+            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
             if ( i_XSQL.getError() != null )
             {
                 i_XSQL.getError().errorLog(new XSQLErrorInfo(i_XSQL.getContent().getSQL(i_XSQL.getDataSourceGroup()) ,exce ,i_XSQL).setValuesList(i_ObjList));
@@ -1577,7 +1776,14 @@ public class XSQLOPUpdate
         {
             if ( i_XSQL.isTriggers(v_IsError) )
             {
-                i_XSQL.getTrigger().executeUpdatesPrepared(i_ObjList);
+                if ( v_TriggerParams == null )
+                {
+                    i_XSQL.getTrigger().executeUpdatesPrepared(i_ObjList);
+                }
+                else
+                {
+                    i_XSQL.getTrigger().executes(i_XSQL.executeAfterForTrigger(v_TriggerParams ,v_IORowCount ,v_ErrorInfo));
+                }
             }
         }
     }

@@ -132,6 +132,7 @@ import org.hy.common.xml.plugins.XRule;
  *              v21.2 2023-03-07  添加：querySQLValue，常用于查询返回仅只一个字符串的场景。建议人：王雨墨
  *              v22.0 2023-04-20  添加：单行数据的批量操作（预解释执行模式）
  *              v22.1 2023-04-27  添加：log()方法记录XID，支持查看具体XSQL的执行日志
+ *              v23.0 2023-10-17  添加：是否附加触发额外参数 triggerParams
  */
 /*
  * 游标类型的说明
@@ -145,40 +146,66 @@ import org.hy.common.xml.plugins.XRule;
 public final class XSQL implements Comparable<XSQL> ,XJavaID
 {
     
-    private static final Logger                                $Logger = new Logger(XSQL.class ,true);
+    private static final Logger                                $Logger              = new Logger(XSQL.class ,true);
     
     // private static final Marker $Marker = MarkerManager.getMarker("XSQL");
     
     
     /** SQL类型。N: 增、删、改、查的普通SQL语句  (默认值) */
-    public  static final String                                $Type_NormalSQL = "N";
+    public  static final String                                $Type_NormalSQL      = "N";
     
     /** SQL类型。P: 存储过程 */
-    public  static final String                                $Type_Procedure = "P";
+    public  static final String                                $Type_Procedure      = "P";
     
     /** SQL类型。F: 函数 */
-    public  static final String                                $Type_Function  = "F";
+    public  static final String                                $Type_Function       = "F";
     
     /** SQL类型。C：DDL、DCL、TCL创建表，创建对象等 */
-    public  static final String                                $Type_Create    = "C";
+    public  static final String                                $Type_Create         = "C";
     
     /** execute()方法中执行多条SQL语句的分割符 */
-    public  static final String                                $Executes_Split = ";/";
+    public  static final String                                $Executes_Split      = ";/";
     
     /** 大数据字段类型(如,CLob)的占位符名称，多个占位符名称间用逗号，分隔 */
-    public  static final String                                $LobName_Split  = ",";
+    public  static final String                                $LobName_Split       = ",";
     
     /** 每个XSQL对象的执行日志。默认每个XSQL对象只保留100条日志。按 getObjectID() 分区 */
-    public  static final TablePartitionBusway<String ,XSQLLog> $SQLBuswayTP    = new TablePartitionBusway<String ,XSQLLog>();
+    public  static final TablePartitionBusway<String ,XSQLLog> $SQLBuswayTP         = new TablePartitionBusway<String ,XSQLLog>();
     
     /** 所有SQL执行日志，有一定的执行顺序。默认只保留5000条执行过的SQL语句 */
-    public  static final Busway<XSQLLog>                       $SQLBusway      = new Busway<XSQLLog>(5000);
+    public  static final Busway<XSQLLog>                       $SQLBusway           = new Busway<XSQLLog>(5000);
     
     /** SQL执行异常的日志。默认只保留9000条执行异常的SQL语句 */
-    public  static final Busway<XSQLLog>                       $SQLBuswayError = new Busway<XSQLLog>(9000);
+    public  static final Busway<XSQLLog>                       $SQLBuswayError      = new Busway<XSQLLog>(9000);
     
     /** XSQL */
-    public  static final String                                $XSQLErrors     = "XSQL-Errors";
+    public  static final String                                $XSQLErrors          = "XSQL-Errors";
+    
+    
+    
+    /** 触发器的额外附加参数名称：触发源的ID，即XSQL.getObjectID() */
+    public  static final String                                $Trigger_SourceID    = "XT_SourceID";
+    
+    /** 触发器的额外附加参数名称：触发源的XJavaID */
+    public  static final String                                $Trigger_SourceXID   = "XT_SourceXID";
+    
+    /** 触发器的额外附加参数名称：触发源的执行开始时间 */
+    public  static final String                                $Trigger_StartTime   = "XT_StartTime";
+    
+    /** 触发器的额外附加参数名称：触发源的执行结束时间 */
+    public  static final String                                $Trigger_EndTime     = "XT_EndTime";
+    
+    /** 触发器的额外附加参数名称：触发源的执行是否异常 */
+    public  static final String                                $Trigger_IsError     = "XT_IsError";
+    
+    /** 触发器的额外附加参数名称：触发源的异常信息 */
+    public  static final String                                $Trigger_ErrorInfo   = "XT_ErrorInfo";
+    
+    /** 触发器的额外附加参数名称：触发源的执行方式 */
+    public  static final String                                $Trigger_ExecuteType = "XT_ExecuteType";
+    
+    /** 触发器的额外附加参数名称：触发源的读写行数 */
+    public  static final String                                $Trigger_IORowCount  = "XT_IORowCount";
     
     
     
@@ -187,10 +214,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
      * Map.key   为数据库类型 + "_" + XSQL.getObjectID()
      * Map.value 为 XSQL
      */
-    private static final Map<String ,XSQL>                     $PagingMap      = new HashMap<String ,XSQL>();
+    private static final Map<String ,XSQL>                     $PagingMap           = new HashMap<String ,XSQL>();
                                                                
     /** 缓存大小 */
-    protected static final int                                 $BufferSize     = 4 * 1024;
+    protected static final int                                 $BufferSize          = 4 * 1024;
     
     
     
@@ -233,6 +260,25 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     
     /** XSQL的触发器 */
     private XSQLTrigger                    trigger;
+    
+    /**
+     * XSQL的触发器，在触发执行时，是否携带公共参数。
+     * 当携带公共参数时，触发器的执行参数将被统一包装为Map类型，除了触发源原本的入参外，还将添加如下额外的参数
+     *     1. XT_SourceID:    String类型，触发源的ID，即XSQL.getObjectID()
+     *     2. XT_SourceXID:   String类型，触发源的XJavaID
+     *     3. XT_StartTime:   Date类型，  触发源的执行开始时间
+     *     4. XT_EndTime：    Date类型，  触发源的执行完成时间
+     *     5. XT_IsError：    Integer类型，触发源的是否异常，0成功，1异常
+     *     6. XT_ErrorInfo:   String类型，触发源的异常信息
+     *     7. XT_ExecuteType: String类型，触发源的执行方式
+     *     8. XT_IORowCount:  Integer类型，触发源的读写行数
+     * 
+     * 默认为：false
+     * 
+     * 注：triggerParams=true时，并且触发源的入参是List等复杂结构时，不再向触发器传递，仅传递上面和额外公共参数。
+     *    同时，触发器的执行方法也有所改变，如executeUpdatesPrepared改成executes。，
+     */
+    private boolean                        triggerParams;
     
     /** 数据安全性。如果为真，将对上传的文件进行数据加密 */
     private boolean                        blobSafe;
@@ -4114,22 +4160,183 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         this.trigger = trigger;
     }
 
+    
+    
+    /**
+     * 获取：XSQL的触发器，在触发执行时，是否携带公共参数。
+     * 当携带公共参数时，触发器的执行参数将被统一包装为Map类型，除了触发源原本的入参外，还将添加如下额外的参数
+     *     1. XT_SourceID:    String类型，触发源的ID，即XSQL.getObjectID()
+     *     2. XT_SourceXID:   String类型，触发源的XJavaID
+     *     3. XT_StartTime:   Date类型，  触发源的执行开始时间
+     *     4. XT_EndTime：    Date类型，  触发源的执行完成时间
+     *     5. XT_IsError：    Integer类型，触发源的是否异常，0成功，1异常
+     *     6. XT_ErrorInfo:   String类型，触发源的异常信息
+     *     7. XT_ExecuteType: String类型，触发源的执行方式
+     *     8. XT_IORowCount:  Integer类型，触发源的读写行数
+     * 
+     * 默认为：false，
+     */
+    public boolean isTriggerParams()
+    {
+        return triggerParams;
+    }
 
 
+    
+    /**
+     * 设置：XSQL的触发器，在触发执行时，是否携带公共参数。
+     * 当携带公共参数时，触发器的执行参数将被统一包装为Map类型，除了触发源原本的入参外，还将添加如下额外的参数
+     *     1. XT_SourceID:    String类型，触发源的ID，即XSQL.getObjectID()
+     *     2. XT_SourceXID:   String类型，触发源的XJavaID
+     *     3. XT_StartTime:   Date类型，  触发源的执行开始时间
+     *     4. XT_EndTime：    Date类型，  触发源的执行完成时间
+     *     5. XT_IsError：    Integer类型，触发源的是否异常，0成功，1异常
+     *     6. XT_ErrorInfo:   String类型，触发源的异常信息
+     *     7. XT_ExecuteType: String类型，触发源的执行方式
+     *     8. XT_IORowCount:  Integer类型，触发源的读写行数
+     * 
+     * 默认为：false
+     * 
+     * @param i_TriggerParams
+     */
+    public void setTriggerParams(boolean i_TriggerParams)
+    {
+        this.triggerParams = i_TriggerParams;
+    }
+    
+    
+    
+    /**
+     * 触发源执行前，生成触发器额外附加参数
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-10-17
+     * @version     v1.0
+     *
+     * @param i_ExecuteType  触发源的执行方式
+     * @return
+     */
+    protected Map<String ,Object> executeBeforeForTrigger(String i_ExecuteType ,Object i_XSQLParam)
+    {
+        Map<String ,Object> v_Params = null;
+        
+        if ( this.triggerParams )
+        {
+            if ( i_XSQLParam != null )
+            {
+                try
+                {
+                    v_Params = Help.toMap(i_XSQLParam ,null ,true ,false ,true);
+                }
+                catch (Exception e)
+                {
+                    // 异常时，也继续
+                    $Logger.error(e);
+                    v_Params = new HashMap<String ,Object>();
+                }
+            }
+            else
+            {
+                v_Params = new HashMap<String ,Object>();
+            }
+            
+            v_Params.put($Trigger_SourceID    ,this.getObjectID());
+            v_Params.put($Trigger_SourceXID   ,this.getObjectID());
+            v_Params.put($Trigger_StartTime   ,new Date());
+            v_Params.put($Trigger_ExecuteType ,i_ExecuteType);
+        }
+        
+        return v_Params;
+    }
+    
+    
+    
+    /**
+     * 触发源执行前，生成触发器额外附加参数
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-10-17
+     * @version     v1.0
+     *
+     * @param i_ExecuteType  触发源的执行方式
+     * @param i_XSQLParam    触发源的执行参数（禁止修改、添加、删除任务元素）
+     * @return
+     */
+    protected Map<String ,Object> executeBeforeForTrigger(String i_ExecuteType ,final Map<String ,?> i_XSQLParam)
+    {
+        Map<String ,Object> v_Params = null;
+        
+        if ( this.triggerParams )
+        {
+            v_Params = new HashMap<String ,Object>();
+            
+            if ( !Help.isNull(i_XSQLParam) )
+            {
+                for (Map.Entry<String, ?> v_Item : i_XSQLParam.entrySet())
+                {
+                    v_Params.put(v_Item.getKey() ,v_Item.getValue());
+                }
+            }
+            
+            v_Params.put($Trigger_SourceID    ,this.getObjectID());
+            v_Params.put($Trigger_SourceXID   ,this.getObjectID());
+            v_Params.put($Trigger_StartTime   ,new Date());
+            v_Params.put($Trigger_ExecuteType ,i_ExecuteType);
+        }
+        
+        return v_Params;
+    }
+    
+    
+    
+    /**
+     * 触发源执行后，生成触发器额外附加参数
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-10-17
+     * @version     v1.0
+     *
+     * @param io_TriggerParams  触发器额外附加参数
+     * @param i_IORowCount      读写行数
+     * @param i_ErrorInfo       异常信息。为空和空字符串均表示无异常
+     * @return
+     */
+    protected Map<String ,Object> executeAfterForTrigger(Map<String ,Object> io_TriggerParams ,long i_IORowCount ,String i_ErrorInfo)
+    {
+        Map<String ,Object> v_Params = io_TriggerParams;
+        
+        v_Params.put($Trigger_EndTime    ,new Date());
+        v_Params.put($Trigger_IORowCount ,i_IORowCount);
+        v_Params.put($Trigger_IsError    ,Help.isNull(i_ErrorInfo) ? 0 : 1);
+        v_Params.put($Trigger_ErrorInfo  ,Help.NVL(i_ErrorInfo));
+        
+        return v_Params;
+    }
+
+
+    
+    /**
+     * 获取：数据安全性。如果为真，将对上传的文件进行数据加密
+     */
     public boolean isBlobSafe()
     {
         return blobSafe;
     }
+
+
     
-    
-    
-    public void setBlobSafe(boolean blobSafe)
+    /**
+     * 设置：数据安全性。如果为真，将对上传的文件进行数据加密
+     * 
+     * @param i_BlobSafe 数据安全性。如果为真，将对上传的文件进行数据加密
+     */
+    public void setBlobSafe(boolean i_BlobSafe)
     {
-        this.blobSafe = blobSafe;
+        this.blobSafe = i_BlobSafe;
     }
-    
-    
-    
+
+
+
     /**
      * SQL类型。
      * 
@@ -4230,6 +4437,22 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     public String getObjectID()
     {
         return this.uuid;
+    }
+    
+    
+    
+    /**
+     * 允许外界重新定义对象ID
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2023-10-17
+     * @version     v1.0
+     *
+     * @param i_ID
+     */
+    public void setObjectID(String i_ID)
+    {
+        this.uuid = i_ID;
     }
     
     
