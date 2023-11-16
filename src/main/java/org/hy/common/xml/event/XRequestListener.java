@@ -22,10 +22,10 @@ import org.hy.common.xml.plugins.AppMessage;
  * @createDate  2023-08-16
  * @version     v1.0
  */
-public interface XRequestListener extends EventListener 
+public interface XRequestListener extends EventListener
 {
-	
-	/**
+    
+    /**
      * 在执行前一刻被触发。
      * 
      * @author      ZhengWei(HY)
@@ -36,17 +36,17 @@ public interface XRequestListener extends EventListener
      * @param i_Response     响应对象
      * @param io_RequestData 请求数据
      * @param i_Message      请求数据的原始报文
-	 * @return               当返回 false 时，中断 "执行"。
-	 *                       当返回 true  时，执行接口调用
-	 */
-	public Return<Object> before(HttpServletRequest  i_Request
-			                    ,HttpServletResponse i_Response 
-			                    ,AppMessage<?>       io_RequestData 
-			                    ,String              i_Message);
-	
-	
-	
-	/**
+     * @return               当返回 false 时，中断 "执行"。
+     *                       当返回 true  时，执行接口调用
+     */
+    public Return<Object> before(HttpServletRequest  i_Request
+                                ,HttpServletResponse i_Response
+                                ,AppMessage<?>       io_RequestData
+                                ,String              i_Message);
+    
+    
+    
+    /**
      * 执行成功后被触发。
      * 
      * @author      ZhengWei(HY)
@@ -56,12 +56,12 @@ public interface XRequestListener extends EventListener
      * @param i_RequestData   请求数据
      * @param i_ResponseData  响应数据
      * @param i_Other         用户自定义的数据
-	 */
-	public void succeed(AppMessage<?> i_RequestData ,AppMessage<?> i_ResponseData ,Object i_Other);
-	
-	
-	
-	/**
+     */
+    public void succeed(AppMessage<?> i_RequestData ,AppMessage<?> i_ResponseData ,Object i_Other);
+    
+    
+    
+    /**
      * 执行异常后被触发。
      * 
      * @author      ZhengWei(HY)
@@ -71,6 +71,6 @@ public interface XRequestListener extends EventListener
      * @param i_RequestData   请求数据
      * @param i_Exception     异常数据
      * @param i_Other         用户自定义的数据
-	 */
-	public void fail(AppMessage<?> i_RequestData ,Exception i_Exception ,Object i_Other);
+     */
+    public void fail(AppMessage<?> i_RequestData ,Exception i_Exception ,Object i_Other);
 }

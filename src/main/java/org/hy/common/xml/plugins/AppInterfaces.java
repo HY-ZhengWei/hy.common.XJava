@@ -48,7 +48,7 @@ public final class AppInterfaces
      * 获取：事件监听器
      * @return
      */
-    public static XRequestListener getListener() 
+    public static XRequestListener getListener()
     {
 		return $XRequestListener;
 	}
@@ -60,7 +60,7 @@ public final class AppInterfaces
      * 
      * @param i_Listener
      */
-	public static void setListener(XRequestListener i_Listener) 
+	public static void setListener(XRequestListener i_Listener)
 	{
 		$XRequestListener = i_Listener;
 	}
@@ -111,8 +111,8 @@ public final class AppInterfaces
      * @return
      */
     public static AppMessage<?> executeMessage(HttpServletRequest  i_Request
-    		                                  ,HttpServletResponse i_Response 
-    		                                  ,Object              i_Obj 
+    		                                  ,HttpServletResponse i_Response
+    		                                  ,Object              i_Obj
     		                                  ,String              i_Message)
     {
         if ( Help.isNull(i_Message) )
@@ -135,9 +135,9 @@ public final class AppInterfaces
      * @return
      */
     public static AppMessage<?> executeMessage(HttpServletRequest  i_Request
-                                              ,HttpServletResponse i_Response 
-                                              ,Object              i_Obj 
-                                              ,AppMessage<?>       i_AppMessage 
+                                              ,HttpServletResponse i_Response
+                                              ,Object              i_Obj
+                                              ,AppMessage<?>       i_AppMessage
                                               ,String              i_Message)
     {
         AppMessage<?> v_Ret = null;
@@ -171,23 +171,23 @@ public final class AppInterfaces
             
             if ( $XRequestListener != null )
             {
-            	v_BeforeRet = $XRequestListener.before(i_Request ,i_Response ,i_AppMessage ,i_Message);
-            	if ( v_BeforeRet != null && v_BeforeRet.booleanValue() )
-            	{
-            		v_Ret = (AppMessage<?>)v_Method.invoke(v_Instace ,i_AppMessage);
-            		$XRequestListener.succeed(i_AppMessage, v_Ret ,v_BeforeRet.getParamObj());
-            	}
-            	else
-            	{
-            		v_Ret = i_AppMessage.clone();
+                v_BeforeRet = $XRequestListener.before(i_Request ,i_Response ,i_AppMessage ,i_Message);
+                if ( v_BeforeRet != null && v_BeforeRet.booleanValue() )
+                {
+                    v_Ret = (AppMessage<?>)v_Method.invoke(v_Instace ,i_AppMessage);
+                    $XRequestListener.succeed(i_AppMessage, v_Ret ,v_BeforeRet.getParamObj());
+                }
+                else
+                {
+                    v_Ret = i_AppMessage.clone();
                     v_Ret.setRc("-998");
                     v_Ret.setResult(false);
                     v_Ret.setRi(Help.NVL(v_BeforeRet.getParamStr() ,"监听器中断执行"));
-            	}
+                }
             }
             else
             {
-            	v_Ret = (AppMessage<?>)v_Method.invoke(v_Instace ,i_AppMessage);
+                v_Ret = (AppMessage<?>)v_Method.invoke(v_Instace ,i_AppMessage);
             }
         }
         catch (Exception exce)
@@ -195,7 +195,7 @@ public final class AppInterfaces
             $Logger.error(exce);
             if ( v_BeforeRet != null )
             {
-            	$XRequestListener.fail(i_AppMessage, exce ,v_BeforeRet.getParamObj());
+                $XRequestListener.fail(i_AppMessage, exce ,v_BeforeRet.getParamObj());
             }
             
             v_Ret = i_AppMessage.clone();
