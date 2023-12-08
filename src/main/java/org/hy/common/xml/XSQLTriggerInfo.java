@@ -35,8 +35,19 @@ public class XSQLTriggerInfo
     {
         return xsql;
     }
-
     
+    
+    /**
+     * 设置：XSQL对象
+     * 
+     * @param i_Xsql XSQL对象
+     */
+    public void setXsql(XSQL i_Xsql)
+    {
+        this.xsql = i_Xsql;
+    }
+
+
     /**
      * 获取：执行类型（0按execute方法执行，1按executeUpdate方法执行）
      */
@@ -49,7 +60,7 @@ public class XSQLTriggerInfo
     /**
      * 设置：执行类型（0按execute方法执行，1按executeUpdate方法执行）
      * 
-     * @param executeType 
+     * @param executeType
      */
     public void setExecuteType(int executeType)
     {

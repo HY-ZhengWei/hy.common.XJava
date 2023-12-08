@@ -215,6 +215,8 @@ smGsKOFi5Mul4dRJvfOPBnAVaDuHebQo6KOBEFr9h039Sp1LQCul</jdbcUrl>
             <minIdle>5</minIdle>
             <maxActive>20</maxActive>
             <maxWait>60000</maxWait>
+            <connectTimeout>30000</connectTimeout>
+            <socketTimeout>900000</socketTimeout>
             <timeBetweenEvictionRunsMillis>60000</timeBetweenEvictionRunsMillis>
             <minEvictableIdleTimeMillis>300000</minEvictableIdleTimeMillis>
             <validationQuery>SELECT 1</validationQuery>

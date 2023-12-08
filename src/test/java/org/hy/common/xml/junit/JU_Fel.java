@@ -36,6 +36,20 @@ public class JU_Fel
 {
     
     @Test
+    public void test_Calc()
+    {
+        FelEngine           v_Fel            = new FelEngineImpl();
+        FelContext          v_FelContext     = v_Fel.getContext();
+        
+        v_FelContext.set("C" ,1);
+        v_FelContext.set("N" ,2);
+        System.out.println(v_Fel.eval("4 * (C + N)"));
+        
+    }
+    
+    
+    
+    @Test
     public void test_Like()
     {
         FelEngine           v_Fel            = new FelEngineImpl();
