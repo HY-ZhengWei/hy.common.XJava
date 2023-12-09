@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="sqls"            class="java.util.ArrayList" />
+    <import name="sqlGroup"        class="org.hy.common.xml.plugins.XSQLGroup" />
+    <import name="sql"             class="org.hy.common.xml.XSQL" />
+
+
+
+    <sqls>
+    
+        <sql id="XSQL_Junit_InsertSQLValue_01"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                INSERT  INTO HYTest
+                       (
+                        id
+                       ,name
+                <[     ,:valueName     ]>
+                       )
+                 VALUE (
+                        ':id'
+                       ,':name'
+                <[     ,':value'       ]>
+                       )
+                ]]>
+            </content>
+            
+        </sql>
+        
+    </sqls>
+    
+</config>
