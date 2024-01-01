@@ -27,4 +27,22 @@ public class JU_Split
         System.out.println((byte)3);
     }
     
+    
+    
+    @Test
+    public void test_Split_02()
+    {
+    	System.out.println("g+rw".indexOf("+"));
+    	System.out.println("g+rw".split("\\+")[1]);
+    	
+    	System.out.println("g-rw".indexOf("-"));
+    	System.out.println("g-rw".split("\\-")[1]);
+    	
+    	System.out.println("g=rw".indexOf("="));
+    	System.out.println("g=rw".split("\\=")[1]);
+    	
+    	System.out.println("g-r,o+r".indexOf("="));
+    	System.out.println("g-r,o+r".split(",")[1]);
+    }
+    
 }
