@@ -192,7 +192,7 @@ public class ClusterReport extends SerializableDef
     {
         try
         {
-            List<String> v_CRet = Help.executeCommand(false , true,"free -k");
+            List<String> v_CRet = Help.executeCommand("UTF-8", false, true, 5 ,"free -k");
             if ( Help.isNull(v_CRet) || v_CRet.size() < 2 )
             {
                 return -1;
@@ -320,7 +320,7 @@ public class ClusterReport extends SerializableDef
                 
                 v_Disks.put(v_DiskName ,Help.multiply(Help.division(v_UsedSpace ,v_TotalSpace) ,100));
             }
-            else if ( i == 0 ) 
+            else if ( i == 0 )
             {
                 break;
             }
@@ -357,7 +357,7 @@ public class ClusterReport extends SerializableDef
                 if ( !Help.isNull(v_LineInfo) )
                 {
                     v_LineInfo = StringHelp.trimToDistinct(v_LineInfo.trim() ," ");
-                    String [] v_Infos = v_LineInfo.split(" "); 
+                    String [] v_Infos = v_LineInfo.split(" ");
                     
                     if ( v_Infos.length < 4 || Help.isNull(v_Infos[0]) || Help.isNull(v_Infos[2]) || Help.isNull(v_Infos[3]) )
                     {
@@ -468,7 +468,7 @@ public class ClusterReport extends SerializableDef
         
         try
         {
-            List<String> v_CRet = Help.executeCommand(false ,true ,"fdisk -l");
+            List<String> v_CRet = Help.executeCommand("UTF-8" ,false ,true ,10 ,"fdisk -l");
             if ( Help.isNull(v_CRet) )
             {
                 return v_Disks;
@@ -482,7 +482,7 @@ public class ClusterReport extends SerializableDef
                     {
                         v_LineInfo = StringHelp.replaceAll(v_LineInfo.trim() ,"*" ," ");
                         v_LineInfo = StringHelp.trimToDistinct(v_LineInfo ," ");
-                        String [] v_Infos = v_LineInfo.split(" "); 
+                        String [] v_Infos = v_LineInfo.split(" ");
                         
                         if ( v_Infos.length < 5 || Help.isNull(v_Infos[0]) || Help.isNull(v_Infos[4]) )
                         {
@@ -540,7 +540,7 @@ public class ClusterReport extends SerializableDef
         
         try
         {
-            List<String> v_CRet = Help.executeCommand(false ,true ,"df");
+            List<String> v_CRet = Help.executeCommand("UTF-8" ,false ,true ,10 ,"df");
             if ( Help.isNull(v_CRet) )
             {
                 return v_Disks;
@@ -553,7 +553,7 @@ public class ClusterReport extends SerializableDef
                     if ( v_LineInfo.trim().startsWith("/") )
                     {
                         v_LineInfo = StringHelp.trimToDistinct(v_LineInfo.trim() ," ");
-                        String [] v_Infos = v_LineInfo.split(" "); 
+                        String [] v_Infos = v_LineInfo.split(" ");
                         
                         if ( v_Infos.length < 5 || Help.isNull(v_Infos[0]) || Help.isNull(v_Infos[4]) )
                         {
@@ -610,7 +610,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：操作系统CPU使用率
      * 
-     * @param osCPURate 
+     * @param osCPURate
      */
     public void setOsCPURate(double osCPURate)
     {
@@ -622,7 +622,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：操作系统内存使用率
      * 
-     * @param osMemoryRate 
+     * @param osMemoryRate
      */
     public void setOsMemoryRate(double osMemoryRate)
     {
@@ -674,7 +674,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：启动时间
      * 
-     * @param startTime 
+     * @param startTime
      */
     public void setStartTime(String startTime)
     {
@@ -686,7 +686,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：JVM最大内存：Java虚拟机（这个进程）能构从操作系统那里挖到的最大的内存。JVM参数为：-Xmx
      * 
-     * @param maxMemory 
+     * @param maxMemory
      */
     public void setMaxMemory(long maxMemory)
     {
@@ -698,7 +698,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：JVM内存总量：Java虚拟机现在已经从操作系统那里挖过来的内存大小。JVM参数为：-Xms
      * 
-     * @param totalMemory 
+     * @param totalMemory
      */
     public void setTotalMemory(long totalMemory)
     {
@@ -710,7 +710,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：JVM空闲内存
      * 
-     * @param freeMemory 
+     * @param freeMemory
      */
     public void setFreeMemory(long freeMemory)
     {
@@ -732,7 +732,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：线程总数
      * 
-     * @param threadCount 
+     * @param threadCount
      */
     public void setThreadCount(long threadCount)
     {
@@ -754,7 +754,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：队列等待的任务数
      * 
-     * @param queueCount 
+     * @param queueCount
      */
     public void setQueueCount(long queueCount)
     {
@@ -776,7 +776,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：主机名称
      * 
-     * @param hostName 
+     * @param hostName
      */
     public void setHostName(String hostName)
     {
@@ -798,7 +798,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：服务器情况（正常、异常）
      * 
-     * @param serverStatus 
+     * @param serverStatus
      */
     public void setServerStatus(String serverStatus)
     {
@@ -820,7 +820,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：操作系统的当前时间
      * 
-     * @param systemTime 
+     * @param systemTime
      */
     public void setSystemTime(String systemTime)
     {
@@ -842,7 +842,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：Linux系统内存使用率(通过Free命令计算的)
      * 
-     * @param linuxMemoryRate 
+     * @param linuxMemoryRate
      */
     public void setLinuxMemoryRate(double linuxMemoryRate)
     {
@@ -864,7 +864,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：Linux系统上最大的磁盘使用率
      * 
-     * @param linuxDiskMaxRate 
+     * @param linuxDiskMaxRate
      */
     public void setLinuxDiskMaxRate(double linuxDiskMaxRate)
     {
@@ -886,7 +886,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：操作类型（1:Linux，1:Unix，2:Windows）
      * 
-     * @param osType 
+     * @param osType
      */
     public void setOsType(int osType)
     {
@@ -908,7 +908,7 @@ public class ClusterReport extends SerializableDef
     /**
      * 设置：运行时的JDK版本
      * 
-     * @param javaVersion 
+     * @param javaVersion
      */
     public void setJavaVersion(String javaVersion)
     {
