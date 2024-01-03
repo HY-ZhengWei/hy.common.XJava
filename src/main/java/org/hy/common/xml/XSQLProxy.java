@@ -5,12 +5,16 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hy.common.Busway;
 import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.MethodInfo;
@@ -52,6 +56,7 @@ import org.hy.common.xml.plugins.XSQLGroupResult;
  *                                优化：batch()属性，支持一行数据的预解释执行
  *              v2.1  2023-04-22  添加：XSQL组的返回结果也支持returnOne注解
  *                                添加：returnOne注解属性支持Collection集合随机获取一个元素的功能。
+ *              v3.0  2024-01-03  修复：returnOne注解预防类似 TablePartitionBusway、TablePartitionRID、TablePartitionSet、TablePartition、TablePartitionLink 结构的数据的 clear() 方法有逐级删除的能力
  */
 public class XSQLProxy implements InvocationHandler ,Serializable
 {
@@ -575,6 +580,31 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                             if ( v_Map.size() >= 1 )
                             {
                                 v_RetByRetrunID = v_Map.values().iterator().next();
+                                
+                                if ( v_RetByRetrunID != null )
+                                {
+                                    // 2024-01-03 Add 预防类似 TablePartitionBusway 结构的数据的 clear() 方法有逐级删除的能力
+                                    if ( v_RetByRetrunID instanceof Busway )
+                                    {
+                                        v_RetByRetrunID = new Busway<Object>((Busway<Object>)v_RetByRetrunID);
+                                    }
+                                    // 2024-01-03 Add 预防类似 TablePartitionRID 结构的数据的 clear() 方法有逐级删除的能力
+                                    if ( MethodReflect.isExtendImplement(v_Ret ,Map.class) )
+                                    {
+                                        v_RetByRetrunID = new LinkedHashMap<Object ,Object>((Map<? ,?>)v_RetByRetrunID);
+                                    }
+                                    // 2024-01-03 Add 预防类似 TablePartitionSet 结构的数据的 clear() 方法有逐级删除的能力
+                                    else if ( MethodReflect.isExtendImplement(v_Ret ,Set.class) )
+                                    {
+                                        v_RetByRetrunID = new HashSet<Object>((Set<?>)v_RetByRetrunID);
+                                    }
+                                    // 2024-01-03 Add 预防类似 TablePartition \ TablePartitionLink 结构的数据的 clear() 方法有逐级删除的能力
+                                    else if ( MethodReflect.isExtendImplement(v_RetByRetrunID ,List.class) )
+                                    {
+                                        v_RetByRetrunID = new ArrayList<Object>((List<?>)v_RetByRetrunID);
+                                    }
+                                }
+                                
                                 v_Map.clear();
                                 v_Map = null;
                             }
@@ -888,6 +918,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @param i_Args
      * @return
      */
+    @SuppressWarnings("unchecked")
     private Object executeXSQL_Query_Normal(Method i_Method ,XSQLAnnotation i_Anno ,XSQL i_XSQL ,Object [] i_Args)
     {
         Object v_Params = null;
@@ -1154,6 +1185,31 @@ public class XSQLProxy implements InvocationHandler ,Serializable
                     if ( v_Map.size() >= 1 )
                     {
                         v_Ret = v_Map.values().iterator().next();
+                        
+                        if ( v_Ret != null )
+                        {
+                            // 2024-01-03 Add 预防类似 TablePartitionBusway 结构的数据的 clear() 方法有逐级删除的能力
+                            if ( v_Ret instanceof Busway )
+                            {
+                                v_Ret = new Busway<Object>((Busway<Object>)v_Ret);
+                            }
+                            // 2024-01-03 Add 预防类似 TablePartitionRID 结构的数据的 clear() 方法有逐级删除的能力
+                            if ( MethodReflect.isExtendImplement(v_Ret ,Map.class) )
+                            {
+                                v_Ret = new LinkedHashMap<Object ,Object>((Map<? ,?>)v_Ret);
+                            }
+                            // 2024-01-03 Add 预防类似 TablePartitionSet 结构的数据的 clear() 方法有逐级删除的能力
+                            else if ( MethodReflect.isExtendImplement(v_Ret ,Set.class) )
+                            {
+                                v_Ret = new HashSet<Object>((Set<?>)v_Ret);
+                            }
+                            // 2024-01-03 Add 预防类似 TablePartition \ TablePartitionLink 结构的数据的 clear() 方法有逐级删除的能力
+                            else if ( MethodReflect.isExtendImplement(v_Ret ,List.class) )
+                            {
+                                v_Ret = new ArrayList<Object>((List<?>)v_Ret);
+                            }
+                        }
+                        
                         v_Map.clear();
                         v_Map = null;
                     }
