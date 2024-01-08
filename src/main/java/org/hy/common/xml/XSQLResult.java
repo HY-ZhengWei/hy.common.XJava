@@ -41,6 +41,7 @@ import org.hy.common.xml.event.DefaultXSQLResultFillEvent;
  *              v8.0  2019-03-19  优化：删除整体统计信息（如总行数、列数、用时）三个成员属性，
  *                                      改成通过方法返回值返回。优化后，整个getDatas()方法不用加同步锁，性能大幅提升。
  *              v9.0  2020-05-26  添加：判定表级对象、行级对象的Java类型是否为接口，接口是不能实例化，应预先抛出异常给出提醒。
+ *              v10.0 2024-01-08  添加：ROW标记支持Map结构，并读取Map.get("固定的关键字")的数值
  */
 public final class XSQLResult
 {
@@ -1815,8 +1816,21 @@ public final class XSQLResult
             else if ( "ROW.".equalsIgnoreCase(v_ParamArr[i].trim().substring(0 ,4)) )
             {
                 // 识别对象属性的方法名
-                String       v_AttrMethodName = "get" + v_ParamArr[i].trim().substring(4);
-                List<Method> v_AttrMethodList = MethodReflect.getMethodsIgnoreCase(this.row ,v_AttrMethodName ,0);
+                List<Method> v_AttrMethodList = null;
+                String       v_AttrMethodName = null;
+                String       v_MapKey         = null;
+                
+                if ( MethodReflect.isExtendImplement(this.row ,Map.class) )
+                {
+                    v_MapKey         = v_ParamArr[i].trim().substring(4);
+                    v_AttrMethodName = "get";
+                    v_AttrMethodList = MethodReflect.getMethodsIgnoreCase(this.row ,v_AttrMethodName ,1);
+                }
+                else
+                {
+                    v_AttrMethodName = "get" + v_ParamArr[i].trim().substring(4);
+                    v_AttrMethodList = MethodReflect.getMethodsIgnoreCase(this.row ,v_AttrMethodName ,0);
+                }
                 
                 if ( v_AttrMethodList.size() == 0 )
                 {
@@ -1831,7 +1845,14 @@ public final class XSQLResult
                 v_ParamClassArr_int[i]     = v_AttrMethodList.get(0).getReturnType();
                 v_ParamClassArr_Integer[i] = v_AttrMethodList.get(0).getReturnType();
                 
-                v_MethodParam = XSQLMethodParam_Fill.getInstance(XSQLMethodParam_Fill.$FILL_ROW_GETTER ,v_AttrMethodList.get(0));
+                if ( v_MapKey != null )
+                {
+                    v_MethodParam = XSQLMethodParam_Fill.getInstance(XSQLMethodParam_Fill.$FILL_ROW_MapGet ,v_AttrMethodList.get(0) ,v_MapKey);
+                }
+                else
+                {
+                    v_MethodParam = XSQLMethodParam_Fill.getInstance(XSQLMethodParam_Fill.$FILL_ROW_GETTER ,v_AttrMethodList.get(0) ,v_MapKey);
+                }
             }
             else
             {

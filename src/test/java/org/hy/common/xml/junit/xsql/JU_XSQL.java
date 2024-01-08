@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hy.common.Help;
+import org.hy.common.TablePartition;
 import org.hy.common.app.Param;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
@@ -44,6 +45,28 @@ public class JU_XSQL extends AppInitConfig
             this.loadXML("startup.Config.xml"                          ,v_XmlRoot);
             this.loadXML((List<Param>)XJava.getObject("StartupConfig") ,v_XmlRoot);
         }
+    }
+    
+    
+    
+    /**
+     * 测试查询
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2024-01-08
+     * @version     v1.0
+     * @throws InterruptedException
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void queryTablePartition() throws InterruptedException
+    {
+        XSQL v_XSQL = XJava.getXSQL("XSQL_Junit_Query_TablePartition");
+        
+        TablePartition<String ,Object> v_Datas = (TablePartition<String ,Object>) v_XSQL.query();
+        Help.print(v_Datas);
+        
+        Thread.sleep(60 * 1000);
     }
     
     

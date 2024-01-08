@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="sqls"            class="java.util.ArrayList" />
+    <import name="sqlGroup"        class="org.hy.common.xml.plugins.XSQLGroup" />
+    <import name="sql"             class="org.hy.common.xml.XSQL" />
+
+
+
+    <sqls>
+    
+        <sql id="XSQL_Junit_Query_TablePartition"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  orderId 
+                       ,revision 
+                       ,lotNo 
+                       ,projectNo 
+                       ,tagId 
+                       ,orderNo 
+                       ,supplierName 
+                       ,supplierNo
+                       ,contractSignTime 
+                       ,partId 
+                       ,partName 
+                       ,arrivalTime 
+                       ,inspectionFinishTime
+                       ,checkinStartTime 
+                       ,checkinFinishTime 
+                  FROM  pmp.v_pscm_schedule
+                 WHERE  orderId = 'PO00012100005'
+                 ORDER  BY orderId 
+                          ,partId 
+                ]]>
+            </content>
+            
+            <result>
+                <table>org.hy.common.TablePartition</table>
+                <fill>putRow(row.orderId ,row)</fill>
+                <row>java.util.HashMap</row>
+                <cfill>put(colName ,colValue)</cfill>
+                <cstyle>NORMAL</cstyle>
+            </result>
+            
+        </sql>
+        
+    </sqls>
+    
+</config>
