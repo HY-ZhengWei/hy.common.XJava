@@ -1,11 +1,8 @@
 package org.hy.common.xml.event;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
-import org.hy.common.Help;
-import org.hy.common.MethodReflect;
 import org.hy.common.xml.XSQLResultFillEvent;
 
 
@@ -13,29 +10,25 @@ import org.hy.common.xml.XSQLResultFillEvent;
 
 
 /**
- * 行级对象填充到表级对象时，在填充之前触发的事件接口
+ * 行级对象（Map结构）填充到表级对象时，在填充之前触发的事件接口
  * 
  *   1. 一对多关系时，识别出属于同一对象的多个关系信息，并保存在一起。
- *
+ * 
  * @author      ZhengWei(HY)
- * @createDate  2017-03-02
+ * @createDate  2024-01-09
  * @version     v1.0
  */
-public class DefaultXSQLResultFillEvent implements XSQLResultFillEvent
+public class DefaultXSQLResultMapFillEvent implements XSQLResultFillEvent
 {
     
     /** 识别一对多关系的Getter方法。如组合主键时，获取每个主键的Getter方法 */
     private List<RelationKeyMethod> relationKeyMethods;
     
-    /** 一对多关系时，从 "一对象" 中获取 "多对象" 的Getter方法。这个Getter方法返回值是一个集合，如: List、Set */
-    private List<Method>            relationValueMethods;
     
     
-    
-    public DefaultXSQLResultFillEvent(List<RelationKeyMethod> i_RelationKeyMethods ,List<Method> i_RelationValueMethods)
+    public DefaultXSQLResultMapFillEvent(List<RelationKeyMethod> i_RelationKeyMethods)
     {
-        this.relationKeyMethods   = i_RelationKeyMethods;
-        this.relationValueMethods = i_RelationValueMethods;
+        this.relationKeyMethods = i_RelationKeyMethods;
     }
     
     
@@ -91,8 +84,8 @@ public class DefaultXSQLResultFillEvent implements XSQLResultFillEvent
             // 判定是否为一对多关系
             for (RelationKeyMethod v_Method : this.relationKeyMethods)
             {
-                Object v_PreviousKey = v_Method.getMethod().invoke(i_PreviousRow);
-                Object v_Key         = v_Method.getMethod().invoke(i_Row);
+                Object v_PreviousKey = v_Method.getMethod().invoke(i_PreviousRow ,v_Method.getMapKey());
+                Object v_Key         = v_Method.getMethod().invoke(i_Row         ,v_Method.getMapKey());
                 
                 if ( v_Key == v_PreviousKey )
                 {
@@ -118,27 +111,10 @@ public class DefaultXSQLResultFillEvent implements XSQLResultFillEvent
             }
             
             
-            for (Method v_Method : this.relationValueMethods)
-            {
-                Collection<Object> v_PreviousValue = ((Collection<Object>)v_Method.invoke(i_PreviousRow));
-                Collection<Object> v_Value         = ((Collection<Object>)v_Method.invoke(i_Row));
-                
-                if ( !Help.isNull(v_PreviousValue) && !Help.isNull(v_Value) )
-                {
-                    // 向前一行记录的一对多关系的 "多对象" 中添加信息
-                    v_PreviousValue.addAll(v_Value);
-                }
-                else if ( Help.isNull(v_PreviousValue) && !Help.isNull(v_Value) )
-                {
-                    // 当前一行记录的一对多关系的 "多对象" 为空时，通过Getter方法反射出Setter方法，并用当前行的 "多对象" 填充
-                    Method v_SetMethod = MethodReflect.getSetMethod(i_PreviousRow.getClass() ,v_Method.getName() ,false);
-                    
-                    if ( v_SetMethod != null )
-                    {
-                        v_SetMethod.invoke(i_PreviousRow ,v_Value);
-                    }
-                }
-            }
+            Map<Object ,Object> v_PreviousRowMap = (Map<Object ,Object>) i_PreviousRow;
+            Map<Object ,Object> v_RowMap         = (Map<Object ,Object>) i_Row;
+            v_PreviousRowMap.putAll(v_RowMap);
+            v_RowMap.clear();
             return false;
         }
         catch (Exception exce)

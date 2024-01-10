@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hy.common.Help;
+import org.hy.common.MapJson;
 import org.hy.common.TablePartition;
 import org.hy.common.app.Param;
 import org.hy.common.xml.XJava;
@@ -45,6 +46,28 @@ public class JU_XSQL extends AppInitConfig
             this.loadXML("startup.Config.xml"                          ,v_XmlRoot);
             this.loadXML((List<Param>)XJava.getObject("StartupConfig") ,v_XmlRoot);
         }
+    }
+    
+    
+    
+    /**
+     * 测试MapJaon结构的查询
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2024-01-09
+     * @version     v1.0
+     * @throws InterruptedException
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void queryMapJson() throws InterruptedException
+    {
+        XSQL v_XSQL = XJava.getXSQL("XSQL_Junit_Query_MapJson");
+        
+        List<MapJson> v_Datas = (List<MapJson>) v_XSQL.query();
+        Help.print(v_Datas);
+        
+        Thread.sleep(60 * 1000);
     }
     
     

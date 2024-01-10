@@ -20,6 +20,8 @@ import org.hy.common.StringHelp;
 import org.hy.common.db.DBNameStyle;
 import org.hy.common.db.DBTableMetaData;
 import org.hy.common.xml.event.DefaultXSQLResultFillEvent;
+import org.hy.common.xml.event.DefaultXSQLResultMapFillEvent;
+import org.hy.common.xml.event.RelationKeyMethod;
 
 
 
@@ -1824,7 +1826,7 @@ public final class XSQLResult
                 {
                     v_MapKey         = v_ParamArr[i].trim().substring(4);
                     v_AttrMethodName = "get";
-                    v_AttrMethodList = MethodReflect.getMethodsIgnoreCase(this.row ,v_AttrMethodName ,1);
+                    v_AttrMethodList = MethodReflect.getMethods(this.row ,v_AttrMethodName ,1);
                 }
                 else
                 {
@@ -1853,6 +1855,8 @@ public final class XSQLResult
                 {
                     v_MethodParam = XSQLMethodParam_Fill.getInstance(XSQLMethodParam_Fill.$FILL_ROW_GETTER ,v_AttrMethodList.get(0) ,v_MapKey);
                 }
+                
+                v_AttrMethodList.clear();
             }
             else
             {
@@ -2117,17 +2121,31 @@ public final class XSQLResult
             return;
         }
         
-        List<Method>        v_RelationKeyMethods   = new ArrayList<Method>();
-        Map<Method ,Object> v_RelationValueMethods = new HashMap<Method ,Object>();
+        List<RelationKeyMethod> v_RelationKeyMethods   = new ArrayList<RelationKeyMethod>();
+        Map<Method ,Object>     v_RelationValueMethods = new HashMap<Method ,Object>();
         
-        String [] v_Keys = StringHelp.replaceAll(this.relationKeys ,new String[]{" " ,"\t" ,"\r" ,"\n"} ,new String[]{""}).split(",");
+        String [] v_Keys     = StringHelp.replaceAll(this.relationKeys ,new String[]{" " ,"\t" ,"\r" ,"\n"} ,new String[]{""}).split(",");
+        boolean   v_RowIsMap = false;
         for (int v_Index=0; v_Index<v_Keys.length; v_Index++)
         {
-            Method v_Method = MethodReflect.getGetMethod(this.row ,v_Keys[0] ,true);
+            Method v_Method = null;
+            String v_MapKey = null;
+            
+            if ( MethodReflect.isExtendImplement(this.row ,Map.class) )
+            {
+                List<Method> v_Methods = MethodReflect.getMethods(this.row ,"get" ,1);
+                v_Method   = v_Methods.get(0);
+                v_MapKey   = v_Keys[v_Index];
+                v_RowIsMap = true;
+            }
+            else
+            {
+                v_Method = MethodReflect.getGetMethod(this.row ,v_Keys[v_Index] ,true);
+            }
             
             if ( v_Method != null )
             {
-                v_RelationKeyMethods.add(v_Method);
+                v_RelationKeyMethods.add(new RelationKeyMethod(v_Method ,v_MapKey));
             }
         }
         
@@ -2142,9 +2160,20 @@ public final class XSQLResult
             }
         }
         
-        if ( !Help.isNull(v_RelationKeyMethods) && !Help.isNull(v_RelationValueMethods) )
+        if ( !Help.isNull(v_RelationKeyMethods) )
         {
-            this.fillEvent = new DefaultXSQLResultFillEvent(v_RelationKeyMethods ,Help.toListKeys(v_RelationValueMethods));
+            if ( v_RowIsMap )
+            {
+                this.fillEvent = new DefaultXSQLResultMapFillEvent(v_RelationKeyMethods);
+            }
+            else if ( !Help.isNull(v_RelationValueMethods) )
+            {
+                this.fillEvent = new DefaultXSQLResultFillEvent(v_RelationKeyMethods ,Help.toListKeys(v_RelationValueMethods));
+            }
+            else
+            {
+                this.fillEvent = null;
+            }
         }
         else
         {

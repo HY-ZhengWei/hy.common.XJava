@@ -6,7 +6,7 @@
 
     <groupId>org</groupId>
     <artifactId>hy.common.xjava</artifactId>
-    <version>4.4.6</version>
+    <version>4.4.7</version>
     <packaging>jar</packaging>
 
     <name>cn.openapis.hy.common.xjava</name>
@@ -54,7 +54,7 @@
         <dependency>
             <groupId>cn.openapis</groupId>
             <artifactId>hy.common.base</artifactId>
-            <version>1.0.176</version>
+            <version>1.0.178</version>
             <scope>provided</scope>
         </dependency>
 

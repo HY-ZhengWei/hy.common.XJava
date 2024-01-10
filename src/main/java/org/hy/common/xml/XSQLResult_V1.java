@@ -1003,7 +1003,7 @@ public final class XSQLResult_V1
                 {
                     v_MapKey         = v_ParamArr[i].trim().substring(4);
                     v_AttrMethodName = "get";
-                    v_AttrMethodList = MethodReflect.getMethodsIgnoreCase(this.row ,v_AttrMethodName ,1);
+                    v_AttrMethodList = MethodReflect.getMethods(this.row ,v_AttrMethodName ,1);
                 }
                 else
                 {
@@ -1032,6 +1032,8 @@ public final class XSQLResult_V1
                 {
                     v_MethodParam = XSQLMethodParam_Fill.getInstance(XSQLMethodParam_Fill.$FILL_ROW_GETTER ,v_AttrMethodList.get(0) ,v_MapKey);
                 }
+                
+                v_AttrMethodList.clear();
             }
             else
             {

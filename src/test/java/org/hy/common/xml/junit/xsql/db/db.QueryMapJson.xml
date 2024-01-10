@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="sqls"            class="java.util.ArrayList" />
+    <import name="sqlGroup"        class="org.hy.common.xml.plugins.XSQLGroup" />
+    <import name="sql"             class="org.hy.common.xml.XSQL" />
+
+
+
+    <sqls>
+    
+        <sql id="XSQL_Junit_Query_MapJson"> 
+        
+            <dataSourceGroup ref="DSG" />
+            
+            <content>
+                <![CDATA[
+                SELECT  orderId 
+                       ,revision 
+                       ,lotNo 
+                       ,projectNo 
+                       ,tagId 
+                       ,orderNo 
+                       ,supplierName 
+                       ,supplierNo
+                       ,contractSignTime 
+                       ,partId                 AS "partList.partId"
+                       ,partName               AS "partList.partName"
+                       ,arrivalTime            AS "partList.arrivalTime"
+                       ,inspectionFinishTime   AS "partList.inspectionFinishTime"
+                       ,checkinStartTime       AS "partList.checkinStartTime"
+                       ,checkinFinishTime      AS "partList.checkinFinishTime"
+                  FROM  pmp.v_pscm_schedule
+                 ORDER  BY orderId 
+                          ,partId 
+                ]]>
+            </content>
+            
+            <result>
+                <table>java.util.ArrayList</table>
+                <fill>add(row)</fill>
+                <row>org.hy.common.MapJson</row>
+                <cfill>put(colName ,colValue)</cfill>
+                <cstyle>NORMAL</cstyle>
+                <relationKeys>orderId</relationKeys>
+            </result>
+            
+        </sql>
+        
+    </sqls>
+    
+</config>
