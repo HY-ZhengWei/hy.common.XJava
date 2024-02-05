@@ -1,5 +1,8 @@
 package org.hy.common.xml.junit;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hy.common.StringHelp;
 import org.hy.common.xml.XHttp;
 import org.junit.Test;
@@ -10,6 +13,29 @@ import org.junit.Test;
 
 public class JU_XHttp_Get
 {
+    
+    @Test
+    public void test_requestGet02()
+    {
+        XHttp v_XHttp = new XHttp();
+        
+        v_XHttp.setProtocol("http");
+        v_XHttp.setIp("10.1.50.93");
+        v_XHttp.setPort(8080);
+        v_XHttp.setUrl("/mes/outHelpLeaveAndReturnConfirm/returnListMsg.do");
+        v_XHttp.setCharset("UTF-8");
+        v_XHttp.setRequestType(1);
+        v_XHttp.setContentType("application/json");
+        
+        Map<String ,Object> v_UrlParams = new HashMap<String ,Object>();
+        
+        System.out.println(v_XHttp.request(v_UrlParams ,"{\"token\": \":token\", \"timestamp\": \":timestamp\", \"sign\": \":sign\"}"));
+        
+        
+        System.out.println(XHttp.requestGet("http://10.1.50.93:8080/mes/outHelpLeaveAndReturnConfirm/returnListMsg.do?"));
+    }
+    
+    
     
     @Test
     public void test_requestGet()

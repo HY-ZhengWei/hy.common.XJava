@@ -39,6 +39,7 @@ import net.minidev.json.JSONArray;
  * @author   ZhengWei(HY)
  * @version  V1.0  2021-12-09
  *           V2.0  2022-06-22 添加：支持特殊类型ExpireMap的转Json
+ *           V3.0  2024-02-05 修正：Integer、Long、Float、Double、Boolean、Enum 按数字类型返回，生成的Json不带双引号
  */
 public class XJSONToJson
 {
@@ -226,9 +227,9 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,boolean i_JavaData)
+    public static Boolean toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,boolean i_JavaData)
     {
-        return String.valueOf(i_JavaData);
+        return i_JavaData;
     }
     
     
@@ -245,9 +246,9 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Boolean i_JavaData)
+    public static Boolean toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Boolean i_JavaData)
     {
-        return i_JavaData.toString();
+        return i_JavaData;
     }
     
     
@@ -264,9 +265,9 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Enum<?> i_JavaData)
+    public static Integer toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Enum<?> i_JavaData)
     {
-        return i_JavaData.toString();
+        return i_JavaData.ordinal();
     }
     
     
@@ -359,9 +360,9 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,short i_JavaData)
+    public static Short toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,short i_JavaData)
     {
-        return String.valueOf(i_JavaData);
+        return i_JavaData;
     }
     
     
@@ -378,9 +379,9 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Short i_JavaData)
+    public static Short toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Short i_JavaData)
     {
-        return i_JavaData.toString();
+        return i_JavaData;
     }
     
     
@@ -397,9 +398,9 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,int i_JavaData)
+    public static Integer toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,int i_JavaData)
     {
-        return String.valueOf(i_JavaData);
+        return i_JavaData;
     }
     
     
@@ -416,9 +417,9 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Integer i_JavaData)
+    public static Integer toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Integer i_JavaData)
     {
-        return i_JavaData.toString();
+        return i_JavaData;
     }
     
     
@@ -435,9 +436,9 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,long i_JavaData)
+    public static Long toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,long i_JavaData)
     {
-        return String.valueOf(i_JavaData);
+        return i_JavaData;
     }
     
     
@@ -454,9 +455,9 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Long i_JavaData)
+    public static Long toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Long i_JavaData)
     {
-        return i_JavaData.toString();
+        return i_JavaData;
     }
     
     
@@ -473,15 +474,15 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,double i_JavaData)
+    public static Double toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,double i_JavaData)
     {
         if ( i_XJson.getDigit() != null )
         {
-            return String.valueOf(Help.round(i_JavaData ,i_XJson.getDigit()));
+            return Help.round(i_JavaData ,i_XJson.getDigit());
         }
         else
         {
-            return ((Double)i_JavaData).toString();
+            return i_JavaData;
         }
     }
     
@@ -499,15 +500,15 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Double i_JavaData)
+    public static Double toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Double i_JavaData)
     {
         if ( i_XJson.getDigit() != null )
         {
-            return String.valueOf(Help.round(i_JavaData ,i_XJson.getDigit()));
+            return Help.round(i_JavaData ,i_XJson.getDigit());
         }
         else
         {
-            return i_JavaData.toString();
+            return i_JavaData;
         }
     }
     
@@ -525,15 +526,15 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,float i_JavaData)
+    public static Double toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,float i_JavaData)
     {
         if ( i_XJson.getDigit() != null )
         {
-            return String.valueOf(Help.round(i_JavaData ,i_XJson.getDigit()));
+            return Help.round(i_JavaData ,i_XJson.getDigit());
         }
         else
         {
-            return ((Float)i_JavaData).toString();
+            return Double.valueOf(i_JavaData);
         }
     }
     
@@ -551,15 +552,15 @@ public class XJSONToJson
      * @param i_JavaData       待转的对象
      * @return
      */
-    public static String toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Float i_JavaData)
+    public static Double toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,Float i_JavaData)
     {
         if ( i_XJson.getDigit() != null )
         {
-            return String.valueOf(Help.round(i_JavaData ,i_XJson.getDigit()));
+            return Help.round(i_JavaData ,i_XJson.getDigit());
         }
         else
         {
-            return i_JavaData.toString();
+            return Double.valueOf(i_JavaData);
         }
     }
     
