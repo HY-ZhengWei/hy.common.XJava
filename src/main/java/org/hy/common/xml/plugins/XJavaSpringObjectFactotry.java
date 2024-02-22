@@ -5,12 +5,16 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.hy.common.Help;
+import org.hy.common.MethodReflect;
 import org.hy.common.xml.XJava;
+import org.hy.common.xml.log.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.TypeConverter;
 import org.springframework.beans.factory.BeanFactory;
@@ -21,7 +25,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.boot.ApplicationContextFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.lang.Nullable;
 
@@ -43,7 +46,7 @@ import org.springframework.lang.Nullable;
     @SpringBootApplication
     public class ProjectStart extends SpringBootServletInitializer
     {
-        public static void main(String[] i_Args) 
+        public static void main(String[] i_Args)
         {
             SpringApplication v_SpringApp = new SpringApplication(ProjectStart.class);
             v_SpringApp.setApplicationContextClass(XJavaSpringAnnotationConfigServletWebServerApplicationContext.class);
@@ -56,7 +59,7 @@ import org.springframework.lang.Nullable;
         // 2. 重写 run(...) 方法
         // 3. 配置 web.xml 等。此步为常规方法，网上有很多资料，具体配置内容不在赘述
         @Overrid
-        protected WebApplicationContext run(SpringApplication i_Application) 
+        protected WebApplicationContext run(SpringApplication i_Application)
         {
             i_Application.setApplicationContextClass(XJavaSpringAnnotationConfigServletWebServerApplicationContext.class);
             
@@ -69,53 +72,53 @@ import org.springframework.lang.Nullable;
  * XJava可通过两类4种方式来实现Spring的注入(支持属性及方法的自动化注入)。
  *     @Autowired有三种方式，其优先级为：方式1 > 方式2 > 方式3。
  *     方式1有排他性，即使用方式1构造未成功时，方式2、方式3也不再尝试构造。
- *     
+ * 
  *     @Resource有一种方式：方式4
  * 
  * 
  *     方式1：@Autowired + @Qualifier("XJava对象池中对象的XID")，如下
- *           
+ * 
  *           @Autowired
  *           @Qualifier("XSQL_Query")
  *           private XSQL xsql;                  // 通过XJava.getObject("XSQL_Query")注入
- *           
+ * 
  *           @Autowired
  *           public void setXSQL(@Qualifier("XSQL_Query")XSQL i_XSQL)
  *           {
  *                                               // 通过XJava.getObject("XSQL_Query")注入
  *           }
- *           
+ * 
  *     方式2：@Autowired + 属性名称（或方法参数名称）： 属性名称（或方法参数名称）及为XJava对象池中对象的XID，如下
- *           
+ * 
  *           @Autowired
  *           private UserDAO userDAO;            // 通过XJava.getObject("userDAO")注入。
- *           
+ * 
  *           @Autowired
  *           public void setDAO(UserDAO userDAO)
  *           {
  *                                               // 通过XJava.getObject("userDAO")注入。
  *           }
- *           
+ * 
  *     方式3：@Autowired + 属性类型（或方法参数类型）： 用属性类型（或方法参数类型）在XJava对象池中匹配，如下
- *     
+ * 
  *           @Autowired
  *           private UserDAO dao;                // 通过XJava.getObject(UserDAO.class)注入。
- *           
+ * 
  *           @Autowired
  *           public void setDAO(UserDAO dao)
  *           {
  *              // 通过XJava.getObject(UserDAO.class)注入。
  *           }
- *           
+ * 
  *     方式4：@Resource(name="XJava对象池中对象的XID") ，如下
- *     
+ * 
  *           @Resource(name="XSQL_Query")
  *           private DataSourceGroup xsql;       // 通过XJava.getObject("XSQL_Query")注入
- *           
+ * 
  *           @Resource(name="XSQL_Query")        // 通过XJava.getObject("XSQL_Query")注入
  *           public void setXSQL(XSQL i_XSQL);
- *           
- *           
+ * 
+ * 
  * 注意两点：
  *    1. XJava的对象池在在Spring的对象池初始前构造。即XJava优先于Spring。
  *    2. （已失效，同时支持两种版本）Spring 5.x 的版本与 Spring 3.x 的版本中 doResolveDependency() 方法的入参个数不同，
@@ -124,13 +127,18 @@ import org.springframework.lang.Nullable;
  * 
  * @author      ZhengWei(HY)
  * @createDate  2018-11-08
- * @version     v1.0  
+ * @version     v1.0
  *              v2.0  2019-06-26  添加：不再专门编译支持Spring3.x和Spring5.x等两个版本的jar包了。
  *                                      可以只编译一次，就能全动态反射的支持两个版本。
  *                                      使用者引用哪个版本的Spring，XJava就支持那个版本。
+ *              v3.0  2024-02-22  添加：适配JDK 17
  */
 public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
 {
+    
+    private static final Logger $Logger = new Logger(XJavaSpringObjectFactotry.class);
+    
+    
     
     /** 用于性能的提高 */
     private Map<String ,BeanDefinition> beanDefinitionCache = new Hashtable<String ,BeanDefinition>();
@@ -151,7 +159,7 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
     
     
     
-    public XJavaSpringObjectFactotry(@Nullable BeanFactory parentBeanFactory) 
+    public XJavaSpringObjectFactotry(@Nullable BeanFactory parentBeanFactory)
     {
         super(parentBeanFactory);
         this.findDoResolveDependency();
@@ -165,9 +173,61 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
      * @author      ZhengWei(HY)
      * @createDate  2018-12-10
      * @version     v1.0
-     *
+     *              v2.0  2024-02-22  添加：JDK 17、11、8等各个版本均适配的方法
      */
     private void findDoResolveDependency()
+    {
+        try
+        {
+            List<Method> v_Methods = MethodReflect.getMethods(DefaultListableBeanFactory.class ,"doResolveDependency");
+            if ( Help.isNull(v_Methods) )
+            {
+                $Logger.error("DefaultListableBeanFactory is not find doResolveDependency.");
+                throw new RuntimeException("DefaultListableBeanFactory is not find doResolveDependency.");
+            }
+            
+            Method v_DoResolveDependencyMethod = v_Methods.get(0);
+            v_DoResolveDependencyMethod.setAccessible(true);
+            
+            v_Methods.clear();
+            v_Methods = null;
+            
+            MethodHandles.Lookup v_Lookup = MethodHandles.lookup();
+            this.doResolveDependency = v_Lookup.unreflect(v_DoResolveDependencyMethod);
+            
+            if ( v_DoResolveDependencyMethod.getParameterCount() == 4 )
+            {
+                this.version = "5.x";
+            }
+            else if ( v_DoResolveDependencyMethod.getParameterCount() == 5 )
+            {
+                this.version = "3.x";
+            }
+            else
+            {
+                throw new RuntimeException("DefaultListableBeanFactory.doResolveDependency is unknown Spring version.");
+            }
+        }
+        catch (Exception exce)
+        {
+            $Logger.error(exce);
+            throw new RuntimeException("DefaultListableBeanFactory.doResolveDependency is unknown Spring version.");
+        }
+    }
+    
+    
+    
+    /**
+     * 查找具体运行时环境下的Spring版本对应的doResolveDependency()方法。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-12-10
+     * @version     v1.0
+     *              v2.0  2024-02-22  丢用：JDK 17 不再允许 allowedModes 属性的访问，因而丢用本方法
+     */
+    @Deprecated
+    @SuppressWarnings("unused")
+    private void findDoResolveDependency_JDK11_JDK8()
     {
         try
         {
@@ -206,7 +266,7 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
     
     
     @Override
-    public BeanDefinition getBeanDefinition(String i_BeanName) throws NoSuchBeanDefinitionException 
+    public BeanDefinition getBeanDefinition(String i_BeanName) throws NoSuchBeanDefinitionException
     {
         BeanDefinition v_Ret = null;
         
@@ -239,7 +299,7 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
      * 
      * @author      ZhengWei(HY)
      * @createDate  2018-11-08
-     * @version     v1.0  
+     * @version     v1.0
      * 
      * @param i_XID
      * @param i_XObject
@@ -283,9 +343,10 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
      *
      * @see org.springframework.beans.factory.support.DefaultListableBeanFactory#doResolveDependency(org.springframework.beans.factory.config.DependencyDescriptor, java.lang.String, java.util.Set, org.springframework.beans.TypeConverter)
      */
-    public Object doResolveDependency(DependencyDescriptor i_Descriptor 
-                                     ,String               i_BeanName 
-                                     ,Set<String>          i_AutowiredBeanNames 
+    @Override
+    public Object doResolveDependency(DependencyDescriptor i_Descriptor
+                                     ,String               i_BeanName
+                                     ,Set<String>          i_AutowiredBeanNames
                                      ,TypeConverter        i_TypeConverter) throws BeansException
     {
         Object v_Ret = null;
@@ -310,7 +371,7 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
             exce.printStackTrace();
         }
         
-        return v_Ret; 
+        return v_Ret;
     }
     
     
@@ -332,11 +393,11 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
      *
      * @see org.springframework.beans.factory.support.DefaultListableBeanFactory#doResolveDependency(org.springframework.beans.factory.config.DependencyDescriptor, java.lang.String, java.util.Set, org.springframework.beans.TypeConverter)
      */
-    protected Object doResolveDependency(DependencyDescriptor i_Descriptor 
-                                        ,Class<?>             i_Type 
-                                        ,String               i_BeanName 
+    protected Object doResolveDependency(DependencyDescriptor i_Descriptor
+                                        ,Class<?>             i_Type
+                                        ,String               i_BeanName
                                         ,Set<String>          i_AutowiredBeanNames
-                                        ,TypeConverter        i_TypeConverter) throws BeansException  
+                                        ,TypeConverter        i_TypeConverter) throws BeansException
     {
         Object v_Ret = null;
         try
@@ -360,7 +421,7 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
             exce.printStackTrace();
         }
         
-        return v_Ret; 
+        return v_Ret;
     }
     
     
@@ -372,7 +433,7 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
      * 
      * @author      ZhengWei(HY)
      * @createDate  2018-11-08
-     * @version     v1.0  
+     * @version     v1.0
      * 
      * @param i_Descriptor
      * @return
