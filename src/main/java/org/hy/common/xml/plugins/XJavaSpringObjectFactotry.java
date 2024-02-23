@@ -193,15 +193,22 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
             v_Methods = null;
             
             MethodHandles.Lookup v_Lookup = MethodHandles.lookup();
-            this.doResolveDependency = v_Lookup.unreflect(v_DoResolveDependencyMethod);
             
             if ( v_DoResolveDependencyMethod.getParameterCount() == 4 )
             {
-                this.version = "5.x";
+                this.version             = "5.x";
+                this.doResolveDependency = v_Lookup.findSpecial(DefaultListableBeanFactory.class
+                                                               ,"doResolveDependency"
+                                                               ,MethodType.methodType(Object.class ,new Class[]{DependencyDescriptor.class ,String.class ,Set.class ,TypeConverter.class})
+                                                               ,XJavaSpringObjectFactotry.class);
             }
             else if ( v_DoResolveDependencyMethod.getParameterCount() == 5 )
             {
-                this.version = "3.x";
+                this.version             = "3.x";
+                this.doResolveDependency = v_Lookup.findSpecial(DefaultListableBeanFactory.class
+                                                               ,"doResolveDependency"
+                                                               ,MethodType.methodType(Object.class ,new Class[]{DependencyDescriptor.class ,Class.class ,String.class ,Set.class ,TypeConverter.class})
+                                                               ,XJavaSpringObjectFactotry.class);
             }
             else
             {
@@ -352,7 +359,7 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
         Object v_Ret = null;
         try
         {
-            // System.err.println("请重新引Spring对应版本的Bean包，并重新编译XJava，好支持高于Spring 3.x版本的Spring版本。");
+            // System.err.println("请重新引Spring 5.x对应版本的Bean包，并重新编译XJava，好支持Spring 5.x版本");
             // v_Ret = super.doResolveDependency(i_Descriptor ,i_BeanName ,i_AutowiredBeanNames ,i_TypeConverter);
             v_Ret = this.doResolveDependency.invoke(this ,i_Descriptor ,i_BeanName ,i_AutowiredBeanNames ,i_TypeConverter);
         }
@@ -402,8 +409,7 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
         Object v_Ret = null;
         try
         {
-            // System.err.println("请重新引Spring对应版本的Bean包，并重新编译XJava，好支持低于Spring 5.x版本的Spring版本。");
-            // v_Ret = super.doResolveDependency(i_Descriptor ,i_Type ,i_BeanName ,i_AutowiredBeanNames ,i_TypeConverter);
+            // System.err.println("请重新引Spring 3.x对应版本的Bean包，并重新编译XJava，好支持Spring 3.x版本");
             v_Ret = this.doResolveDependency.invoke(this ,i_Descriptor ,i_Type ,i_BeanName ,i_AutowiredBeanNames ,i_TypeConverter);
         }
         catch (BeansException exce)
