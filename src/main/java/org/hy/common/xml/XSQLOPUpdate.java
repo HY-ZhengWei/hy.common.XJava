@@ -32,6 +32,7 @@ import org.hy.common.app.Param;
 import org.hy.common.db.DBSQL;
 import org.hy.common.db.DataSourceGroup;
 import org.hy.common.xml.event.DefaultBLobEvent;
+import org.hy.common.xml.log.Logger;
 
 import oracle.sql.BLOB;
 import oracle.sql.CLOB;
@@ -57,6 +58,10 @@ import oracle.sql.CLOB;
  */
 public class XSQLOPUpdate
 {
+    
+    private static final Logger $Logger = new Logger(XSQLOPUpdate.class);
+    
+    
     
     /**
      * 占位符SQL的Insert语句与Update语句的执行。 -- 无填充值的
@@ -401,7 +406,7 @@ public class XSQLOPUpdate
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPUpdate.executeUpdate_Inner" ,i_DSG);
             v_Statement = v_Conn.createStatement();
             int v_Count = v_Statement.executeUpdate(i_SQL);
             i_XSQL.log(i_SQL);
@@ -1163,7 +1168,7 @@ public class XSQLOPUpdate
             
             if ( i_Conn == null )
             {
-                v_Conn = i_XSQL.getConnection(v_DSG);
+                v_Conn = i_XSQL.getConnection("XSQLOPUpdate.executeUpdatePrepared_Inner" ,v_DSG);
             }
             else
             {
@@ -1241,7 +1246,7 @@ public class XSQLOPUpdate
             }
             catch (Exception e)
             {
-                // Nothing.
+                $Logger.error(e);
             }
             
             throw new RuntimeException(exce.getMessage() + "：" + v_SQL);
@@ -1259,7 +1264,7 @@ public class XSQLOPUpdate
                 }
                 catch (Exception exce)
                 {
-                    // Nothing.
+                    $Logger.error(exce);
                 }
                 
                 i_XSQL.closeDB(null ,v_PStatement ,v_Conn);
@@ -1492,7 +1497,7 @@ public class XSQLOPUpdate
             
             if ( i_Conn == null )
             {
-                v_Conn = i_XSQL.getConnection(v_DSG);
+                v_Conn = i_XSQL.getConnection("XSQLOPUpdate.executeUpdates_Inner" ,v_DSG);
             }
             else
             {
@@ -1575,7 +1580,7 @@ public class XSQLOPUpdate
             }
             catch (Exception e)
             {
-                // Nothing.
+                $Logger.error(e);
             }
             
             throw new RuntimeException(exce.getMessage());
@@ -1593,7 +1598,7 @@ public class XSQLOPUpdate
                 }
                 catch (Exception exce)
                 {
-                    // Nothing.
+                    $Logger.error(exce);
                 }
                 
                 i_XSQL.closeDB(null ,v_Statement ,v_Conn);
@@ -1843,7 +1848,7 @@ public class XSQLOPUpdate
             
             if ( i_Conn == null )
             {
-                v_Conn = i_XSQL.getConnection(v_DSG);
+                v_Conn = i_XSQL.getConnection("XSQLOPUpdate.executeUpdatesPrepared_Inner" ,v_DSG);
             }
             else
             {
@@ -2016,7 +2021,7 @@ public class XSQLOPUpdate
             }
             catch (Exception e)
             {
-                // Nothing.
+                $Logger.error(e);
             }
             
             throw new RuntimeException(exce.getMessage() + "：" + v_SQL);
@@ -2034,7 +2039,7 @@ public class XSQLOPUpdate
                 }
                 catch (Exception exce)
                 {
-                    // Nothing.
+                    $Logger.error(exce);
                 }
                 
                 i_XSQL.closeDB(null ,v_PStatement ,v_Conn);
@@ -2179,7 +2184,7 @@ public class XSQLOPUpdate
             {
                 for (XSQL v_XSQLTemp : i_XSQLs.keySet())
                 {
-                    Connection v_Conn = v_XSQL.getConnection(v_DSG);
+                    Connection v_Conn = v_XSQL.getConnection("XSQLOPUpdate.executeUpdates.1" ,v_DSG);
                     v_Conn.setAutoCommit(false);
                     v_Conns.add(v_Conn);
                     
@@ -2212,7 +2217,7 @@ public class XSQLOPUpdate
                 
                 for (XSQL v_XSQLTemp : i_XSQLs.keySet())
                 {
-                    Connection v_Conn = v_XSQL.getConnection(v_DSG);
+                    Connection v_Conn = v_XSQL.getConnection("XSQLOPUpdate.executeUpdates.2" ,v_DSG);
                     v_Conn.setAutoCommit(false);
                     v_Conns.add(v_Conn);
                     
@@ -2299,6 +2304,12 @@ public class XSQLOPUpdate
         {
             XSQL.setAutoCommits(v_Conns ,true);
             XSQL.closeDB(v_Conns);
+            
+            if ( v_Conns != null )
+            {
+                v_Conns.clear();
+                v_Conns = null;
+            }
         }
     }
     
@@ -2864,7 +2875,7 @@ public class XSQLOPUpdate
             }
             
             
-            v_Conn           = i_XSQL.getConnection(i_DSG);
+            v_Conn           = i_XSQL.getConnection("XSQLOPUpdate.executeUpdateCLobSQL_Inner" ,i_DSG);
             v_Old_AutoCommit = v_Conn.getAutoCommit();
             v_Conn.setAutoCommit(false);
             v_Statement      = v_Conn.createStatement();
@@ -3230,7 +3241,7 @@ public class XSQLOPUpdate
             v_Event = new DefaultBLobEvent(i_XSQL ,i_File.length());
             v_Event.setActionType(1);
             
-            v_Conn           = i_XSQL.getConnection(i_DSG);
+            v_Conn           = i_XSQL.getConnection("XSQLOPUpdate.executeUpdateBLob_Inner" ,i_DSG);
             v_Old_AutoCommit = v_Conn.getAutoCommit();
             v_Conn.setAutoCommit(false);
             v_Statement      = v_Conn.createStatement();
@@ -3567,7 +3578,7 @@ public class XSQLOPUpdate
                 throw new NullPointerException("SaveFile is null of XSQL.");
             }
             
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPUpdate.executeGetBLob_Inner" ,i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_ResultSet = v_Statement.executeQuery(i_SQL);
             i_XSQL.log(i_SQL);
@@ -3763,7 +3774,7 @@ public class XSQLOPUpdate
                 catch (Exception exce)
                 {
                     // 有些:xx占位符可能找不到对应Java的Getter方法，所以忽略
-                    // Nothing.
+                    $Logger.warn(exce);
                     return i_DataCount;
                 }
             }

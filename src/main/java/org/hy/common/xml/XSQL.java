@@ -224,9 +224,10 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     static
     {
         $SQLBuswayTP.setDefaultWayLength(100);
-        XJava.putObject("$SQLBuswayTP"    ,$SQLBuswayTP);
-        XJava.putObject("$SQLBusway"      ,$SQLBusway);
-        XJava.putObject("$SQLBuswayError" ,$SQLBuswayError);
+        XJava.putObject("$SQLBuswayTP"       ,$SQLBuswayTP);
+        XJava.putObject("$SQLBusway"         ,$SQLBusway);
+        XJava.putObject("$SQLBuswayError"    ,$SQLBuswayError);
+        XJava.putObject("$ConnectionCounter" ,org.hy.common.db.Connection.$ConnectionCounter);
     }
     
     
@@ -3774,7 +3775,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 }
                 catch (Exception exce)
                 {
-                    // 异常用不抛出
+                    $Logger.error(exce);
                     v_IsOK = false;
                 }
             }
@@ -3810,7 +3811,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 }
                 catch (Exception exce)
                 {
-                    // 异常用不抛出
+                    $Logger.error(exce);
                     v_IsOK = false;
                 }
             }
@@ -3845,7 +3846,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
                 }
                 catch (Exception exce)
                 {
-                    // 异常用不抛出
+                    $Logger.error(exce);
                     v_IsOK = false;
                 }
             }
@@ -3859,11 +3860,13 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /**
      * 获取数据库连接。
      * 
+     * @param i_Caller           使用连接者的信息
+     * @param i_DataSourceGroup  数据库连接池组
      * @return
      */
-    public Connection getConnection(DataSourceGroup i_DataSourceGroup)
+    public Connection getConnection(String i_Caller ,DataSourceGroup i_DataSourceGroup)
     {
-        return i_DataSourceGroup.getConnection();
+        return i_DataSourceGroup.getConnection(i_Caller);
     }
 
     

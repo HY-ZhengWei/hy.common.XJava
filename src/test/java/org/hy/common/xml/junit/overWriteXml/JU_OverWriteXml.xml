@@ -223,7 +223,7 @@ smGsKOFi5Mul4dRJvfOPBnAVaDuHebQo6KOBEFr9h039Sp1LQCul</jdbcUrl>
             <testWhileIdle>true</testWhileIdle>
             <testOnBorrow>false</testOnBorrow>
             <testOnReturn>false</testOnReturn>
-            <poolPreparedStatements>true</poolPreparedStatements>
+            <poolPreparedStatements>false</poolPreparedStatements>
             <maxPoolPreparedStatementPerConnectionSize>20</maxPoolPreparedStatementPerConnectionSize>
         </dataSource>
 

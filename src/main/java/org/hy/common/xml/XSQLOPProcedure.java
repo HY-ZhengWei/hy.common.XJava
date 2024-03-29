@@ -11,6 +11,7 @@ import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.db.DataSourceGroup;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -30,6 +31,10 @@ import org.hy.common.db.DataSourceGroup;
  */
 public class XSQLOPProcedure
 {
+    
+    private static final Logger $Logger = new Logger(XSQLOPProcedure.class);
+    
+    
     
     /**
      * 调用存储过程或函数 -- 简单型
@@ -69,7 +74,7 @@ public class XSQLOPProcedure
                 throw new NullPointerException("SQLCallName is null of XSQL.");
             }
             
-            v_Conn = i_XSQL.getConnection(v_DSG);
+            v_Conn = i_XSQL.getConnection("XSQLOPProcedure.call(String)" ,v_DSG);
             if ( XSQL.$Type_Procedure.equals(i_XSQL.getType()) )
             {
                 v_Statement = v_Conn.prepareCall("{call " + i_SQLCallName + "()}");
@@ -94,6 +99,7 @@ public class XSQLOPProcedure
                 }
                 catch (Exception exce)
                 {
+                    $Logger.error(exce);
                     v_Statement.registerOutParameter(1 ,java.sql.Types.VARCHAR);
                     v_Statement.execute();
                     v_RetType = 2;
@@ -278,7 +284,7 @@ public class XSQLOPProcedure
             v_Buffer.append(")}");
             
             
-            v_Conn      = i_XSQL.getConnection(v_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPProcedure.call(Object)" ,v_DSG);
             v_Statement = v_Conn.prepareCall(v_Buffer.toString());
             
             
@@ -512,7 +518,7 @@ public class XSQLOPProcedure
             v_Buffer.append(")}");
             
             
-            v_Conn      = i_XSQL.getConnection(v_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPProcedure.call(Map)" ,v_DSG);
             v_Statement = v_Conn.prepareCall(v_Buffer.toString());
             
             

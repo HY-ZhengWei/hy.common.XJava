@@ -170,6 +170,8 @@ import org.hy.common.xml.log.Logger;
  *              v31.0 2022-06-17  1.修正：跟随XSQL的配置，设定NULL值的情况：发现人：李秉坤
  *              v31.1 2023-04-22  1.修正：有返回集合时 XSQLNode.returnQuery = true ，不要清空查询结果集
  *              v32.0 2023-05-09  1.添加：useBatch 是否使用预解释的方式。建议人：程元丰
+ *              v32.0 2024-03-29  1.添加：数据库连接的使用者信息
+ *                                2.修正：XSQL组嵌套，A为父，B为子，当Java调用XSQL组时跳过A，直接调用B时，会造成数据库连接未释放的问题
  */
 public final class XSQLGroup implements XJavaID
 {
@@ -553,11 +555,42 @@ public final class XSQLGroup implements XJavaID
      */
     private XSQLGroupResult executeGroup(Map<String ,Object> io_Params)
     {
-        XSQLGroupResult v_Ret = new XSQLGroupResult();
+        XSQLGroupResult                   v_Ret       = new XSQLGroupResult();
+        Map<DataSourceGroup ,XConnection> v_DSGConns  = new Hashtable<DataSourceGroup ,XConnection>();
+        long                              v_BeginTime = this.request().getTime();
         
         try
         {
-            v_Ret = this.executeGroup(io_Params ,new Hashtable<DataSourceGroup ,XConnection>() ,v_Ret);
+            v_Ret = this.executeGroup(io_Params ,v_DSGConns ,v_Ret);
+            
+            // Add 2024-03-29
+            // 上行代码的内部已执行一次下面代码相同的动作：提交、回滚、关闭连接
+            // 但，还有在检查并做一次的原因是：预防XSQL组嵌套组合配置，但Java调用时，仅调用了子节点的XSQL组，造成事务未提交、连接未关闭的情况
+            if ( this.isAutoCommit )
+            {
+                // 统一提交、统一回滚的事务功能
+                if ( v_Ret.isSuccess() )
+                {
+                    this.commits(v_DSGConns ,v_Ret.getExecSumCount());
+                    this.success(Date.getNowTime().getTime() - v_BeginTime);
+                }
+                else
+                {
+                    this.rollbacks(v_DSGConns);
+                }
+                
+                // 统一关闭数据库连接
+                this.closeConnections(v_DSGConns);
+                v_Ret.setDsgConns(null);
+                v_DSGConns.clear();
+                v_DSGConns = null;
+            }
+            else
+            {
+                // 这里不能记录成功时间及次数信息，因为外界可能手工回滚。 ZhengWei(HY) Add 2017-11-03
+                v_Ret.setXsqlGroup(this);
+                v_Ret.setDsgConns(v_DSGConns);
+            }
         }
         catch (Exception exce)
         {
@@ -881,7 +914,7 @@ public final class XSQLGroup implements XJavaID
                         {
                             if ( v_Node.isOneConnection() )
                             {
-                                v_XSQLData = v_Node.getSql().queryXSQLData(this.getConnection(v_Node ,io_DSGConns));
+                                v_XSQLData = v_Node.getSql().queryXSQLData(this.getConnection("GXSQL.executeGroup_LastOnce.1" ,v_Node ,io_DSGConns));
                             }
                             else
                             {
@@ -892,7 +925,7 @@ public final class XSQLGroup implements XJavaID
                         {
                             if ( v_Node.isOneConnection() )
                             {
-                                v_XSQLData = v_Node.getSql().queryXSQLData(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                                v_XSQLData = v_Node.getSql().queryXSQLData(io_Params ,this.getConnection("GXSQL.executeGroup_LastOnce.2" ,v_Node ,io_DSGConns));
                             }
                             else
                             {
@@ -926,11 +959,11 @@ public final class XSQLGroup implements XJavaID
                             {
                                 if ( v_Node.getUseBatch() )
                                 {
-                                    v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection(v_Node ,io_DSGConns));
+                                    v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection("GXSQL.executeGroup_LastOnce.3" ,v_Node ,io_DSGConns));
                                 }
                                 else
                                 {
-                                    v_RCount = v_Node.getSql().executeUpdates        (this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection(v_Node ,io_DSGConns));
+                                    v_RCount = v_Node.getSql().executeUpdates        (this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection("GXSQL.executeGroup_LastOnce.4" ,v_Node ,io_DSGConns));
                                 }
                             }
                             
@@ -970,11 +1003,11 @@ public final class XSQLGroup implements XJavaID
                         {
                             if ( Help.isNull(io_Params) )
                             {
-                                v_RCount = v_Node.getSql().executeUpdate(this.getConnection(v_Node ,io_DSGConns));
+                                v_RCount = v_Node.getSql().executeUpdate(this.getConnection("GXSQL.executeGroup_LastOnce.5" ,v_Node ,io_DSGConns));
                             }
                             else
                             {
-                                v_RCount = v_Node.getSql().executeUpdate(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                                v_RCount = v_Node.getSql().executeUpdate(io_Params ,this.getConnection("GXSQL.executeGroup_LastOnce.6" ,v_Node ,io_DSGConns));
                             }
                         }
                         
@@ -1187,7 +1220,7 @@ public final class XSQLGroup implements XJavaID
                             {
                                 if ( v_Node.isOneConnection() )
                                 {
-                                    v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(this.getConnection(v_Node ,io_DSGConns) ,v_XSQLBigData);
+                                    v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(this.getConnection("GXSQL.executeGroup.1" ,v_Node ,io_DSGConns) ,v_XSQLBigData);
                                 }
                                 else
                                 {
@@ -1198,7 +1231,7 @@ public final class XSQLGroup implements XJavaID
                             {
                                 if ( v_Node.isOneConnection() )
                                 {
-                                    v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(io_Params ,this.getConnection(v_Node ,io_DSGConns) ,v_XSQLBigData);
+                                    v_QueryRet = (List<Object>)v_Node.getSql().queryBigData(io_Params ,this.getConnection("GXSQL.executeGroup.2" ,v_Node ,io_DSGConns) ,v_XSQLBigData);
                                 }
                                 else
                                 {
@@ -1218,7 +1251,7 @@ public final class XSQLGroup implements XJavaID
                             {
                                 if ( v_Node.isOneConnection() )
                                 {
-                                    v_XSQLData = v_Node.getSql().queryXSQLData(this.getConnection(v_Node ,io_DSGConns));
+                                    v_XSQLData = v_Node.getSql().queryXSQLData(this.getConnection("GXSQL.executeGroup.3" ,v_Node ,io_DSGConns));
                                 }
                                 else
                                 {
@@ -1229,7 +1262,7 @@ public final class XSQLGroup implements XJavaID
                             {
                                 if ( v_Node.isOneConnection() )
                                 {
-                                    v_XSQLData = v_Node.getSql().queryXSQLData(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                                    v_XSQLData = v_Node.getSql().queryXSQLData(io_Params ,this.getConnection("GXSQL.executeGroup.4" ,v_Node ,io_DSGConns));
                                 }
                                 else
                                 {
@@ -1702,11 +1735,11 @@ public final class XSQLGroup implements XJavaID
                             {
                                 if ( v_Node.getUseBatch() )
                                 {
-                                    v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection(v_Node ,io_DSGConns));
+                                    v_RCount = v_Node.getSql().executeUpdatesPrepared(this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection("GXSQL.executeGroup.5" ,v_Node ,io_DSGConns));
                                 }
                                 else
                                 {
-                                    v_RCount = v_Node.getSql().executeUpdates        (this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection(v_Node ,io_DSGConns));
+                                    v_RCount = v_Node.getSql().executeUpdates        (this.getCollectionToDB(v_CollectionParam ,io_Params ,v_Node.getSql()) ,this.getConnection("GXSQL.executeGroup.6" ,v_Node ,io_DSGConns));
                                 }
                             }
                             
@@ -1746,11 +1779,11 @@ public final class XSQLGroup implements XJavaID
                         {
                             if ( Help.isNull(io_Params) )
                             {
-                                v_RCount = v_Node.getSql().executeUpdate(this.getConnection(v_Node ,io_DSGConns));
+                                v_RCount = v_Node.getSql().executeUpdate(this.getConnection("GXSQL.executeGroup.7" ,v_Node ,io_DSGConns));
                             }
                             else
                             {
-                                v_RCount = v_Node.getSql().executeUpdate(io_Params ,this.getConnection(v_Node ,io_DSGConns));
+                                v_RCount = v_Node.getSql().executeUpdate(io_Params ,this.getConnection("GXSQL.executeGroup.8" ,v_Node ,io_DSGConns));
                             }
                         }
                         
@@ -2398,19 +2431,20 @@ public final class XSQLGroup implements XJavaID
      * @createDate  2016-01-22
      * @version     v1.0
      *
+     * @param i_Caller  使用连接者的信息
      * @param i_Node
      * @param io_DSGConns
      * @return
      * @throws SQLException
      */
-    private synchronized Connection getConnection(XSQLNode i_Node ,Map<DataSourceGroup ,XConnection> io_DSGConns) throws SQLException
+    private synchronized Connection getConnection(String i_Caller ,XSQLNode i_Node ,Map<DataSourceGroup ,XConnection> io_DSGConns) throws SQLException
     {
-        XConnection v_XConn = io_DSGConns.get(i_Node.getSql().getDataSourceGroup());
+        DataSourceGroup v_DSG   = i_Node.getSql().getDataSourceGroup();
+        XConnection     v_XConn = io_DSGConns.get(v_DSG);
         
         if ( null == v_XConn )
         {
-            DataSourceGroup v_DSG = i_Node.getSql().getDataSourceGroup();
-            v_XConn = new XConnection(i_Node.getSql().getConnection(v_DSG));
+            v_XConn = new XConnection(i_Node.getSql().getConnection(i_Caller ,v_DSG));
             v_XConn.getConn().setAutoCommit(false);                 // 不自动提交，而是之后统一提交（或回滚）
             
             io_DSGConns.put(v_DSG ,v_XConn);
@@ -2556,6 +2590,7 @@ public final class XSQLGroup implements XJavaID
                 }
             }
             
+            io_DSGConns.clear();
             io_DSGConns = new Hashtable<DataSourceGroup ,XConnection>();
         }
     }

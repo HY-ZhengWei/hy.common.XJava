@@ -13,6 +13,7 @@ import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.db.DataSourceGroup;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -35,6 +36,10 @@ import org.hy.common.db.DataSourceGroup;
  */
 public class XSQLOPInsert
 {
+    
+    private final static Logger $Logger = new Logger(XSQLOPInsert.class);
+    
+    
     
     /**
      * 占位符SQL的Insert语句的执行。 -- 无填充值的
@@ -342,7 +347,7 @@ public class XSQLOPInsert
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPInsert.executeInsert_Inner" ,i_DSG);
             v_Statement = v_Conn.createStatement();
             
             int           v_Count     = v_Statement.executeUpdate(i_SQL ,Statement.RETURN_GENERATED_KEYS);
@@ -906,7 +911,7 @@ public class XSQLOPInsert
             
             if ( i_Conn == null )
             {
-                v_Conn = i_XSQL.getConnection(v_DSG);
+                v_Conn = i_XSQL.getConnection("XSQLOPInsert.executeInserts_Inner" ,v_DSG);
             }
             else
             {
@@ -993,7 +998,7 @@ public class XSQLOPInsert
             }
             catch (Exception e)
             {
-                // Nothing.
+                $Logger.error(e);
             }
             
             throw new RuntimeException(exce.getMessage());
@@ -1011,7 +1016,7 @@ public class XSQLOPInsert
                 }
                 catch (Exception exce)
                 {
-                    // Nothing.
+                    $Logger.error(exce);
                 }
                 
                 i_XSQL.closeDB(null ,v_Statement ,v_Conn);
@@ -1370,7 +1375,7 @@ public class XSQLOPInsert
             
             if ( i_Conn == null )
             {
-                v_Conn = i_XSQL.getConnection(v_DSG);
+                v_Conn = i_XSQL.getConnection("XSQLOPInsert.executeInsertPrepared_Inner" ,v_DSG);
             }
             else
             {
@@ -1451,7 +1456,7 @@ public class XSQLOPInsert
             }
             catch (Exception e)
             {
-                // Nothing.
+                $Logger.error(e);
             }
             
             throw new RuntimeException(exce.getMessage() + "：" + v_SQL);
@@ -1469,7 +1474,7 @@ public class XSQLOPInsert
                 }
                 catch (Exception exce)
                 {
-                    // Nothing.
+                    $Logger.error(exce);
                 }
                 
                 i_XSQL.closeDB(null ,v_PStatement ,v_Conn);
@@ -1691,7 +1696,7 @@ public class XSQLOPInsert
             
             if ( i_Conn == null )
             {
-                v_Conn = i_XSQL.getConnection(v_DSG);
+                v_Conn = i_XSQL.getConnection("XSQLOPInsert.executeInsertsPrepared_Inner" ,v_DSG);
             }
             else
             {
@@ -1869,7 +1874,7 @@ public class XSQLOPInsert
             }
             catch (Exception e)
             {
-                // Nothing.
+                $Logger.error(e);
             }
             
             throw new RuntimeException(exce.getMessage() + "：" + v_SQL);
@@ -1887,7 +1892,7 @@ public class XSQLOPInsert
                 }
                 catch (Exception exce)
                 {
-                    // Nothing.
+                    $Logger.error(exce);
                 }
                 
                 i_XSQL.closeDB(null ,v_PStatement ,v_Conn);

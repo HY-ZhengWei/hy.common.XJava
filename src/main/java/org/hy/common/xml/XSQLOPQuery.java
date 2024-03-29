@@ -912,7 +912,7 @@ public class XSQLOPQuery
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryXSQLData_Inner.1" ,i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             i_XSQL.log(i_SQL);
@@ -1455,7 +1455,7 @@ public class XSQLOPQuery
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryXSQLData_Inner.2" ,i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             i_XSQL.log(i_SQL);
@@ -1518,7 +1518,7 @@ public class XSQLOPQuery
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryXSQLData_Inner.3" ,i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             i_XSQL.log(i_SQL);
@@ -1581,7 +1581,7 @@ public class XSQLOPQuery
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryXSQLData_Inner.4" ,i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             i_XSQL.log(i_SQL);
@@ -2263,7 +2263,7 @@ public class XSQLOPQuery
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryBigData_Inner" ,i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             i_XSQL.log(i_SQL);
@@ -2883,7 +2883,7 @@ public class XSQLOPQuery
             }
             
             v_RowSize   = XSQLOPQuery.querySQLCount(i_XSQL ,"SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryBigger_Inner.1" ,i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             i_XSQL.log(i_SQL);
@@ -2945,7 +2945,7 @@ public class XSQLOPQuery
             }
             
             v_RowSize   = XSQLOPQuery.querySQLCount_Inner(i_XSQL ,"SELECT COUNT(1) FROM ( " + i_SQL + " ) HY" ,i_DSG);
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryBigger_Inner.2" ,i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             i_XSQL.log(i_SQL);
@@ -3007,7 +3007,7 @@ public class XSQLOPQuery
             }
             
             v_RowSize   = XSQLOPQuery.querySQLCount(i_XSQL ,"SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryBigger_Inner.3" ,i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             i_XSQL.log(i_SQL);
@@ -3334,7 +3334,7 @@ public class XSQLOPQuery
                 throw new RuntimeException("XSQL.querySQLCount()'s SQL is not find COUNT(1) or COUNT(*).");
             }
             
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPQuery.querySQLCount_Inner" ,i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             i_XSQL.log(i_SQL);
@@ -3665,7 +3665,7 @@ public class XSQLOPQuery
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPQuery.querySQLValue_Inner" ,i_DSG);
             v_Statement = v_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
             v_Resultset = v_Statement.executeQuery(i_SQL);
             i_XSQL.log(i_SQL);

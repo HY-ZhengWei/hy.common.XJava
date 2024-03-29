@@ -301,7 +301,7 @@ public class XSQLOPDDL
                 throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
             }
             
-            v_Conn      = i_XSQL.getConnection(i_DSG);
+            v_Conn      = i_XSQL.getConnection("XSQLOPDDL.execute_Inner" ,i_DSG);
             v_Statement = v_Conn.createStatement();
             
             if ( i_XSQL.isAllowExecutesSplit() )
