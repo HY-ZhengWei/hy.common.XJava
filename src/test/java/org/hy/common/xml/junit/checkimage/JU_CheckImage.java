@@ -64,7 +64,7 @@ public class JU_CheckImage
             v_CheckImageUtil.putImage(v_CImage);
         }
         
-        CheckImageReturn v_CImageRet = v_CheckImageUtil.makeCheckImage("wzyb_people");
+        CheckImageReturn v_CImageRet = v_CheckImageUtil.makeCheckImage("wwwww_people");
         
         $Logger.info(                    v_CImageRet.getCheckImageBase64());
         $Logger.info(StringHelp.toString(v_CImageRet.getCheckImageName()));

@@ -1,15 +1,14 @@
 package org.hy.common.xml.junit;
 
-import org.hy.common.xml.XHttp;
-import org.hy.common.xml.XHttpParam;
-import org.hy.common.xml.XJava;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
 import org.hy.common.Date;
 import org.hy.common.Return;
 import org.hy.common.StringHelp;
 import org.hy.common.app.Param;
+import org.hy.common.xml.XHttp;
+import org.hy.common.xml.XJava;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 
 
@@ -21,7 +20,7 @@ import org.hy.common.app.Param;
  * @author   ZhengWei(HY)
  * @version  V1.0  2013-11-19
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING) 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JU_XHttp_Post
 {
     private String i;
@@ -79,7 +78,7 @@ public class JU_XHttp_Post
         XHttp  v_XHttp = new XHttp();
 
         v_XHttp.setProtocol("https");
-        v_XHttp.setIp("industry.wzyb.com.cn");
+        v_XHttp.setIp("127.0.0.1");
         v_XHttp.setUrl("/calc/login/qrCodeLogin.page?token=1&utp=2&r=" + Date.getNowTime().getTime());
         v_XHttp.setContentType("application/json");
         v_XHttp.setCharset("UTF-8");
