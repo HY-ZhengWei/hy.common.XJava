@@ -32,7 +32,7 @@ import com.greenpineyu.fel.context.FelContext;
  *              v3.0  2018-01-06  添加：1.单位别名转换功能。
  *                                添加：2.基准单位，使同一类的单位间均能无限制的相互转换。
  */
-@Xjava(XType.XML) 
+@Xjava(XType.XML)
 public class UnitConvert
 {
     private static boolean                           $IsInit = false;
@@ -256,10 +256,11 @@ public class UnitConvert
      * @param i_Others      次要参数组（可为空）
      * @return
      */
+    @SuppressWarnings("unchecked")
     public static <N extends Number> Number convert(String i_SourceUnit ,String i_TargetUnit ,Integer i_Digit ,N i_Value ,N ... i_Others)
     {
-        if ( Help.isNull(i_SourceUnit) 
-          || Help.isNull(i_TargetUnit) 
+        if ( Help.isNull(i_SourceUnit)
+          || Help.isNull(i_TargetUnit)
           || i_SourceUnit.equals(i_TargetUnit)
           || null == i_Value )
         {
@@ -273,7 +274,7 @@ public class UnitConvert
         Number v_Value      = i_Value;
         
         // 两个非基准单位间的转换，将基准单位这个中介机构间接转换  ZhengWei(HY) Add 2018-01-06
-        if ( !isStandardUnit(v_SourceUnit) 
+        if ( !isStandardUnit(v_SourceUnit)
           && !isStandardUnit(v_TargetUnit) )
         {
             String v_StandardUnit = toStandardUnit(v_SourceUnit);

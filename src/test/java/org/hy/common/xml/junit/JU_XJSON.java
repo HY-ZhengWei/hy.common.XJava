@@ -253,7 +253,7 @@ public class JU_XJSON
     @Test
     public void test_executeToJava() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException
     {
-        Object   v_Value      = new Long(1);
+        Object   v_Value      = Long.valueOf(1);
         Object   v_JavaValue  = null;
         Class<?> v_ParamClass = Long.class;
         

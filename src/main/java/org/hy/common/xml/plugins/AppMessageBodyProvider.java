@@ -16,6 +16,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
 
 import org.glassfish.jersey.message.internal.AbstractMessageReaderWriterProvider;
+import org.glassfish.jersey.message.internal.ReaderWriter;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.hy.common.Date;
 import org.hy.common.Help;
@@ -83,7 +84,7 @@ public class AppMessageBodyProvider extends AbstractMessageReaderWriterProvider<
                     v_AppInterface = v_AppInterfaces.get(v_Path);
                     if ( v_AppInterface != null )
                     {
-                        String v_MsgInfo = readFromAsString(entityStream ,mediaType);
+                        String v_MsgInfo = ReaderWriter.readFromAsString(entityStream ,mediaType);
                         $Logger.debug(v_MsgInfo);
                         v_Ret = AppInterfaces.getAppMessage(v_Path ,v_MsgInfo);
                         
@@ -147,7 +148,7 @@ public class AppMessageBodyProvider extends AbstractMessageReaderWriterProvider<
         {
             if ( t == null )
             {
-                writeToAsString("" ,entityStream ,MediaType.TEXT_PLAIN_TYPE);
+                ReaderWriter.writeToAsString("" ,entityStream ,MediaType.TEXT_PLAIN_TYPE);
             }
             else
             {
@@ -175,12 +176,12 @@ public class AppMessageBodyProvider extends AbstractMessageReaderWriterProvider<
                 
                 if ( Help.isNull(t.getFormat()) || "json".equalsIgnoreCase(t.getFormat()) )
                 {
-                    writeToAsString(t.toString(v_WriteXJson) ,entityStream ,mediaType);
+                    ReaderWriter.writeToAsString(t.toString(v_WriteXJson) ,entityStream ,mediaType);
                 }
                 else
                 {
                     // 其它格式先用XJson替代一下，待后期开发
-                    writeToAsString(t.toString(v_WriteXJson) ,entityStream ,mediaType);
+                    ReaderWriter.writeToAsString(t.toString(v_WriteXJson) ,entityStream ,mediaType);
                 }
             }
         }

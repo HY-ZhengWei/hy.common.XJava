@@ -2069,7 +2069,8 @@ public final class XJava
                                     // ZhengWei(HY) Add 2017-11-23 支持无Setter方法时，对属性赋值
                                     try
                                     {
-                                        if ( !v_Field.isAccessible() )
+                                        
+                                        if ( !v_Field.canAccess(v_Object) )
                                         {
                                             v_Field.setAccessible(true);
                                             v_Field.set(v_Object ,v_ObjectRef);

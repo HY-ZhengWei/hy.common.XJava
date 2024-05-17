@@ -18,7 +18,6 @@ import com.sun.management.OperatingSystemMXBean;
  * @createDate  2018-03-09
  * @version     v1.0
  */
-@SuppressWarnings("restriction")
 public class JU_OperatingSystemMXBean
 {
     
@@ -27,9 +26,9 @@ public class JU_OperatingSystemMXBean
     {
         OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
         
-        System.out.println(osBean.getFreePhysicalMemorySize());
-        System.out.println(osBean.getTotalPhysicalMemorySize());
-        System.out.println(osBean.getSystemCpuLoad());
+        System.out.println(osBean.getFreeMemorySize());
+        System.out.println(osBean.getTotalMemorySize());
+        System.out.println(osBean.getCpuLoad());
     }
     
 }

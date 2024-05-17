@@ -473,6 +473,7 @@ public class XSQLProxy implements InvocationHandler ,Serializable
      * @param i_Args
      * @return
      */
+    @SuppressWarnings("unchecked")
     private Object execute_XSQLGroup_Normal(Method i_Method ,XSQLAnnotation i_Anno ,XSQLGroup i_XSQLGroup ,Object [] i_Args)
     {
         Object          v_Params = null;

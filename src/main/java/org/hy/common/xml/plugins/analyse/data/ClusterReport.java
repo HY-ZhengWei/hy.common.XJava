@@ -121,8 +121,8 @@ public class ClusterReport extends SerializableDef
         this.freeMemory       = v_RunTime.freeMemory();
         this.threadCount      = v_PT.activeCount();
         this.queueCount       = TaskPool.size();
-        this.osCPURate        = Help.round(Help.multiply(v_OS.getSystemCpuLoad() ,100) ,2);
-        this.osMemoryRate     = Help.round(Help.multiply(1 - Help.division(v_OS.getFreePhysicalMemorySize() ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
+        this.osCPURate        = Help.round(Help.multiply(v_OS.getCpuLoad() ,100) ,2);
+        this.osMemoryRate     = Help.round(Help.multiply(1 - Help.division(v_OS.getFreeMemorySize() ,v_OS.getTotalMemorySize()) ,100) ,2);
         this.linuxDiskMaxRate = Help.round(this.calcDiskMaxRate() ,2);
         this.hostName         = "";
         this.serverStatus     = "";
@@ -139,7 +139,7 @@ public class ClusterReport extends SerializableDef
         
         if ( this.linuxMemoryRate >= 0 )
         {
-            this.linuxMemoryRate = Help.round(Help.multiply(Help.division(this.linuxMemoryRate ,v_OS.getTotalPhysicalMemorySize()) ,100) ,2);
+            this.linuxMemoryRate = Help.round(Help.multiply(Help.division(this.linuxMemoryRate ,v_OS.getTotalMemorySize()) ,100) ,2);
         }
     }
     
