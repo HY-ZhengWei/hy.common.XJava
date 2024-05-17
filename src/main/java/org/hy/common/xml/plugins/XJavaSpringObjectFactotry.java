@@ -7,12 +7,10 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.hy.common.Help;
-import org.hy.common.MethodReflect;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.log.Logger;
 import org.springframework.beans.BeansException;
@@ -179,18 +177,23 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
     {
         try
         {
-            List<Method> v_Methods = MethodReflect.getMethods(DefaultListableBeanFactory.class ,"doResolveDependency");
-            if ( Help.isNull(v_Methods) )
+            Method    v_DoResolveDependencyMethod = null;
+            Method [] v_Methods                   = DefaultListableBeanFactory.class.getDeclaredMethods();
+            for (Method v_Method : v_Methods)
+            {
+                if ( v_Method.getName().equals("doResolveDependency") )
+                {
+                    v_DoResolveDependencyMethod = v_Method;
+                    break;
+                }
+            }
+            if ( v_DoResolveDependencyMethod == null )
             {
                 $Logger.error("DefaultListableBeanFactory is not find doResolveDependency.");
                 throw new RuntimeException("DefaultListableBeanFactory is not find doResolveDependency.");
             }
             
-            Method v_DoResolveDependencyMethod = v_Methods.get(0);
             v_DoResolveDependencyMethod.setAccessible(true);
-            
-            v_Methods.clear();
-            v_Methods = null;
             
             MethodHandles.Lookup v_Lookup = MethodHandles.lookup();
             
