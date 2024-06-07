@@ -298,14 +298,29 @@ public class XJSONToJava
             boolean    v_EnumOK     = false;
             Enum<?>    v_Ret        = null;
             
-            // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配
-            for (Enum<?> v_Enum : v_EnumValues)
+            // 尝试用枚举值匹配
+            // ZhengWei(HY) Add 2024-06-07 枚举值优先
+            if ( Help.isNumber(i_JsonData) )
             {
-                if ( i_JsonData.equalsIgnoreCase(v_Enum.toString()) )
+                int v_ParamValueInt = Integer.parseInt(i_JsonData);
+                if ( 0 <= v_ParamValueInt && v_ParamValueInt < v_EnumValues.length )
                 {
-                    v_Ret    = v_Enum;
+                    v_Ret = v_EnumValues[v_ParamValueInt];
                     v_EnumOK = true;
-                    break;
+                }
+            }
+            
+            if ( !v_EnumOK )
+            {
+                // ZhengWei(HY) Add 2018-05-08  支持枚举toString()的匹配
+                for (Enum<?> v_Enum : v_EnumValues)
+                {
+                    if ( i_JsonData.equalsIgnoreCase(v_Enum.toString()) )
+                    {
+                        v_Ret    = v_Enum;
+                        v_EnumOK = true;
+                        break;
+                    }
                 }
             }
             
@@ -320,16 +335,6 @@ public class XJSONToJava
                         v_EnumOK = true;
                         break;
                     }
-                }
-            }
-            
-            // 尝试用枚举值匹配
-            if ( !v_EnumOK && Help.isNumber(i_JsonData) )
-            {
-                int v_ParamValueInt = Integer.parseInt(i_JsonData);
-                if ( 0 <= v_ParamValueInt && v_ParamValueInt < v_EnumValues.length )
-                {
-                    v_Ret = v_EnumValues[v_ParamValueInt];
                 }
             }
             

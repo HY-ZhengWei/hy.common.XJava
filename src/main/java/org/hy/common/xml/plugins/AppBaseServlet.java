@@ -63,6 +63,7 @@ public class AppBaseServlet extends HttpServlet
     
     
     
+    @Override
     protected void doGet(HttpServletRequest i_Request ,HttpServletResponse i_Response) throws ServletException ,IOException
     {
         doPost(i_Request ,i_Response);
@@ -70,7 +71,8 @@ public class AppBaseServlet extends HttpServlet
     
     
     
-    public void doPost(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException 
+    @Override
+    public void doPost(HttpServletRequest i_Request, HttpServletResponse i_Response) throws ServletException, IOException
     {
         String v_RequestInfo  = this.getI(i_Request);
         String v_ResponseInfo = "";
@@ -108,10 +110,17 @@ public class AppBaseServlet extends HttpServlet
         
         if ( v_Info != null )
         {
-            v_Info = StringHelp.unescape_toUnicode(v_Info);
+            try
+            {
+                v_Info = StringHelp.unescape_toUnicode(v_Info);
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(exce);
+            }
             String [] v_Infos = v_Info.split("=");
             
-            // 2017-11-10 修正 v_Infos.length == 2 
+            // 2017-11-10 修正 v_Infos.length == 2
             if ( v_Infos.length >= 2 && "i".equals(v_Infos[0]) )
             {
                 return v_Info.substring(v_Infos[0].length() + 1);
