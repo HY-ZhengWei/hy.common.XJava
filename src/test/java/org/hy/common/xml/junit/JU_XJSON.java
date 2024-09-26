@@ -348,6 +348,52 @@ public class JU_XJSON
     
     
     @Test
+    public void test_JsonToMap2() throws Exception
+    {
+        String v_Json  = """
+                        {
+                            "code": "200",
+                            "message": "成功",
+                            "data": {
+                                "datas": [
+                                    {
+                                        "id": "XAppD3C7DC6FC44E49E1B9F84F41729D6980",
+                                        "appName": "数据物联",
+                                        "xid": "App_IOT",
+                                        "comment": "数据物联",
+                                        "createTime": "2024-07-03 17:37:29",
+                                        "updateTime": "2024-07-03 17:37:29",
+                                        "isDel": 0,
+                                        "updateUserID": "ZhengWei",
+                                        "createUserID": "ZhengWei"
+                                    },
+                                    {
+                                        "id": "XApp6225396736E347B08EC1994D9CFBFF8C",
+                                        "appName": "数据中台",
+                                        "xid": "App_Data_Center",
+                                        "comment": "数据中台",
+                                        "createTime": "2024-07-19 15:25:17",
+                                        "updateTime": "2024-07-19 15:25:17",
+                                        "isDel": 0,
+                                        "updateUserID": "ZhengWei",
+                                        "createUserID": "ZhengWei"
+                                    }
+                                ]
+                            },
+                            "totalCount": 2,
+                            "dataCount": 2
+                        }
+                        """;
+        XJSON  v_XJson = new XJSON();
+        
+        Map<? ,?> v_Mes = (Map<? ,?>)v_XJson.toJava(v_Json);
+        
+        $Logger.info(v_Mes);
+    }
+    
+    
+    
+    @Test
     @SuppressWarnings("unchecked")
     public void test_JsonToList()
     {
