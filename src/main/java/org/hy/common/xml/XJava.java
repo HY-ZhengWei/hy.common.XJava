@@ -3106,6 +3106,16 @@ public final class XJava
                             // 本节点 v_Node 在父节点有 setter 方法时，从setter方法的入参中获取本节点的Java的Class类型
                             if ( !Help.isNull(v_SetMethods) )
                             {
+                                // 尝试优先从父类的getter方法中获取成员属性的实例 Add 2025-02-28
+                                if ( io_SuperInstance != null && v_AttrInstance == null )
+                                {
+                                    Method v_GetMethod = MethodReflect.getGetMethod(i_SuperClass, v_Node.getNodeName() ,true);
+                                    if ( v_GetMethod != null )
+                                    {
+                                        v_AttrInstance = v_GetMethod.invoke(io_SuperInstance);
+                                    }
+                                }
+                                
                                 try
                                 {
                                     v_AttrClass  = v_SetMethods.get(0).getParameterTypes()[0];

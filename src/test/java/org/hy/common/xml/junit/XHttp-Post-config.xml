@@ -2,36 +2,36 @@
 
 <config>
 
-	<import name="xobjects"        class="java.util.ArrayList" />
-	<import name="http"            class="org.hy.common.xml.XHttp" />
-	<import name="xparam"          class="org.hy.common.app.Param" />
-	
-	
-	
-	<xobjects>
-	
-		<http id="XHTTP_User_Logon" new="true">
-			<ip>127.0.0.1</ip>
-			<port>80</port>
-			<url>/xx/hoto</url>
-			<contentType>text/html</contentType> <!-- application/json -->
-			<charset>UTF-8</charset>
-			<requestType ref="this.$Request_Type_Post" />
-			
-			<addParam>
-			    <paramName>i</paramName>
-			</addParam>
-		</http>
-		
+    <import name="xobjects"        class="java.util.ArrayList" />
+    <import name="http"            class="org.hy.common.xml.XHttp" />
+    <import name="xparam"          class="org.hy.common.app.Param" />
+    
+    
+    
+    <xobjects>
+    
+        <http id="XHTTP_User_Logon" new="true">
+            <ip>127.0.0.1</ip>
+            <port>80</port>
+            <url>/xx/hoto</url>
+            <contentType>text/html</contentType> <!-- application/json -->
+            <charset>UTF-8</charset>
+            <requestType ref="this.$Request_Type_Post" />
+            
+            <addParam>
+                <paramName>i</paramName>
+            </addParam>
+        </http>
+        
 
         <xparam id="SendInfo">
             <name>SendInfo</name>
-			<value>
-			<![CDATA[ABC测试中文乱码DEF]]>
-			</value>
-			<comment>发送信息</comment>
+            <value>
+            <![CDATA[ABC测试中文乱码DEF]]>
+            </value>
+            <comment>发送信息</comment>
         </xparam>
-		
-	</xobjects>
+        
+    </xobjects>
 
 </config>

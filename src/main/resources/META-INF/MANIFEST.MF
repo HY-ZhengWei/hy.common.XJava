@@ -1,6 +1,6 @@
-Manifest-Version: 4.5.7
+Manifest-Version: 4.5.8
 Created-By: HY.ZhengWei@qq.com  2011
-Specification-Version: 4.5.7  2024-09-26
+Specification-Version: 4.5.8  2025-02-28
 SourceCode: https://github.com/HY-ZhengWei/XJava
 SourceCodeChina: https://gitee.com/HY-ZhengWei/XJava
 Build-JDK: 17
