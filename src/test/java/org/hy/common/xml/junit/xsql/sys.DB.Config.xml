@@ -24,8 +24,8 @@
         <dataSource id="DS_01" if="ORACLE == DataSourceType.getValue">
             <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
             <jdbcUrl>jdbc:oracle:thin:@127.0.0.1:1521:orcl</jdbcUrl>
-            <user>XFlow</user>
-            <password encrypt="true"></password>                <!-- 明文自动加密成密文 -->
+            <user>xjava</user>
+            <password encrypt="true"></password>         <!-- 明文自动加密成密文 -->
             <maxPoolSize>100</maxPoolSize>
             <initialPoolSize>2</initialPoolSize>
             <checkoutTimeout>30000</checkoutTimeout>
@@ -35,9 +35,9 @@
         <!-- MySQL数据库 -->
         <dataSource id="DS_01" if="MYSQL == DataSourceType.getValue">
             <driverClass>com.mysql.cj.jdbc.Driver</driverClass>
-            <jdbcUrl><![CDATA[jdbc:mysql://192.168.19.4:3306/pmp?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8]]></jdbcUrl>
+            <jdbcUrl><![CDATA[jdbc:mysql://127.0.0.1:3306/xjava?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8]]></jdbcUrl>
             <user>root</user>
-            <password encrypt="true">apollo123Mysql</password>        <!-- 明文自动加密成密文 -->
+            <password encrypt="true"></password>        <!-- 明文自动加密成密文 -->
             <maxPoolSize>100</maxPoolSize>
             <initialPoolSize>2</initialPoolSize>
             <checkoutTimeout>30000</checkoutTimeout>
@@ -47,7 +47,7 @@
         <!-- SQL Server数据库 -->
         <dataSource id="DS_01" if="SQLSERVER == DataSourceType.getValue">
             <driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
-            <jdbcUrl>jdbc:jtds:sqlserver://10.1.50.90:1433;DatabaseName=brp</jdbcUrl>
+            <jdbcUrl>jdbc:jtds:sqlserver://127.0.0.1:1433;DatabaseName=xjava</jdbcUrl>
             <user>sa</user>
             <password encrypt="true"></password>          <!-- 明文自动加密成密文 -->
             <maxPoolSize>100</maxPoolSize>

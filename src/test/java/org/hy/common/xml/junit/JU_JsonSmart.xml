@@ -2,33 +2,33 @@
 
 <config>
 
-	<import name="xconfig"         class="java.util.ArrayList" />
-	<import name="item"            class="org.hy.common.app.Param" />
-	
-	
-	
-	<xconfig>
-		
-	    <item id="JsonSmart01">
-    		<value>
-    			<![CDATA[
-				{
-					"body": {
-						"charEncoding": "",
-						"code": "http:\\sy.kjb2c.com\fwm.do?id=4ed41d4e-085a-49ce-b9a5-5c794e4ce3f3",
-						"deviceNo": "867246023785125",
-						"deviceType": "android"
-					},
-					"sid": "I008M002",
-					"tokenSec": "4wY\/Ddgd9hjNcUPQjtk3YA__",
-					"sign": "4j2jemdVRntSlQKuz!JB6Q__",
-					"sidv": "1",
-					"sysid": "App"
-				}
-				]]>
-    		</value>
-    	</item>
-		
-	</xconfig>
-	
+    <import name="xconfig"         class="java.util.ArrayList" />
+    <import name="item"            class="org.hy.common.app.Param" />
+    
+    
+    
+    <xconfig>
+        
+        <item id="JsonSmart01">
+            <value>
+                <![CDATA[
+                {
+                    "body": {
+                        "charEncoding": "",
+                        "code": "http:\\sy.kjb2c.com\fwm.do?id=4ed41d4e-085a-49ce-b9a5-5c794e4ce3f3",
+                        "deviceNo": "867246023785125",
+                        "deviceType": "android"
+                    },
+                    "sid": "I008M002",
+                    "tokenSec": "4wY\/Ddgd9hjNcUPQjtk3YA__",
+                    "sign": "4j2jemdVRntSlQKuz!JB6Q__",
+                    "sidv": "1",
+                    "sysid": "App"
+                }
+                ]]>
+            </value>
+        </item>
+        
+    </xconfig>
+    
 </config>

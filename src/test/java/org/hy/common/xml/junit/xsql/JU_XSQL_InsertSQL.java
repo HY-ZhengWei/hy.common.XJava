@@ -1,17 +1,12 @@
 package org.hy.common.xml.junit.xsql;
 
-import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
 import org.hy.common.app.Param;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.XSQL;
-import org.hy.common.xml.XSQLData;
 import org.hy.common.xml.junit.xsql.bean.DataChild;
-import org.hy.common.xml.junit.xsql.dao.IInsertSQLDAO;
-import org.hy.common.xml.junit.xsql.dao.IQuerySQLValueDAO;
-import org.hy.common.xml.junit.xsql.dao.XSQLDao;
 import org.hy.common.xml.log.Logger;
 import org.hy.common.xml.plugins.AppInitConfig;
 import org.junit.Test;
