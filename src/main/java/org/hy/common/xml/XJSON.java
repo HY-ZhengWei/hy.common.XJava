@@ -85,6 +85,7 @@ import net.minidev.json.parser.JSONParser;
  *                                     控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
  *              2021-12-09  V4.1  添加：Json字符串转Java对象时，当Setter方法的入传为数组时支持
  *              2022-06-22  V4.2  添加：支持特殊类型ExpireMap的转Json，或转Java
+ *              2025-07-23  V4.3  修正：1.格式化Json字符串时，对占位符的处理上有在冒号与变量中间添加空格。发现人：王雨墨、景浩东
  */
 public final class XJSON
 {
@@ -1876,7 +1877,15 @@ public final class XJSON
             
             if ( !isInYinHao && (v_Token.equals(":") || v_Token.equals("{") || v_Token.equals("}") || v_Token.equals("[") || v_Token.equals("]") || v_Token.equals(",")) )
             {
-                if ( v_Bufffer.toString().trim().length() == 0 )
+                if ( v_Token.equals(":") && !i_Json.trim().startsWith("\"") )
+                {
+                    // 排除 "datas": :dataValues 的情况下，将 :dataValues 的冒号与dataValues分开，
+                    // 因为分开它们后，之后format方法会在它们之间添加一个空格
+                    // Add 2025-07-23
+                    v_Bufffer.append(v_Token);
+                    continue;
+                }
+                else if ( v_Bufffer.toString().trim().length() == 0 )
                 {
                     v_Bufffer.append(v_Token);
                 }

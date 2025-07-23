@@ -9,6 +9,67 @@
 
     <sqls>
 
+        <sql id="XSQL_OPCDD_Model_Query">
+
+            <content>
+                <![CDATA[
+                SELECT  A.id
+                       ,A.domainID
+                       ,A.modelName
+                       ,A.modelLevel
+                       ,A.projectID
+                       ,A.comment
+                       ,A.isDel
+                       ,A.createUserID
+                       ,A.updateUserID
+                       ,A.createTime
+                       ,A.updateTime
+                       , (
+                         SELECT  COUNT(1)
+                           FROM  TFavoriteData  SA
+                          WHERE  SA.updateUserID = ':userID'
+                            AND  SA.serviceType  = 'ApiConfig'
+                            AND  SA.dataID       = A.id
+                            AND  SA.isDel        = 0
+                        )    AS  isFavorite
+                  FROM  TModel  A
+                 WHERE  A.isDel         = 0
+              <[   AND  A.id            = ':id'               ]>
+              <[   AND  A.domainID      :domainID             ]>
+              <[   AND  A.modelName    LIKE '%:modelName%'    ]>
+              <[   AND  A.modelLevel    = ':modelLevel'       ]>
+              <[   AND  A.projectID     = ':projectID'        ]>
+               <[   AND  (
+                         SELECT  COUNT(1)
+                           FROM  TFavoriteData  SA
+                          WHERE  SA.updateUserID = ':userID'
+                            AND  SA.serviceType  = 'DomainSpace'
+                            AND  SA.dataID       = A.id
+                            AND  SA.isDel        = 0
+                        ) >= :isFavorite                        ]>
+                 ORDER  BY A.updateTime DESC
+                ]]>
+            </content>
+
+            <condition>
+                <name>domainID</name>
+                <if><![CDATA[:isBind == 0 ]]></if>
+                <true>is NULL</true>
+                <if><![CDATA[:isBind == 1 ]]></if>
+                <true>is not NUll</true>
+                <false>=':domainID'</false>
+            </condition>
+
+            <result>
+                <!--节点定义查询结果集，其值为Java类的全路径。默认值为java.util.ArrayList-->
+                <table>java.util.LinkedHashMap</table>
+                <!--定义行级对象填充到表级对象的填充方法名-->
+                <fill>put(row.id ,row)</fill>
+            </result>
+
+        </sql>
+
+
         <sql id="XSQL_User_Condition"> 
         
             <content>

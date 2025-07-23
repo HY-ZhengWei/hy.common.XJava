@@ -722,14 +722,14 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
 
 <sql> 
 
-	<dataSourceGroup ref="DSG" />
-			
-	<contentDB>
-		<keyReplace>true</keyReplace>  <!-- 替换数据库关键字。如，单引号替换成两个单引号。默认为：false，即不替换 -->
-	</contentDB>
-	
-	<content>
-	<![CDATA[
+    <dataSourceGroup ref="DSG" />
+            
+    <contentDB>
+        <keyReplace>true</keyReplace>  <!-- 替换数据库关键字。如，单引号替换成两个单引号。默认为：false，即不替换 -->
+    </contentDB>
+    
+    <content>
+    <![CDATA[
         INSERT  INTO TLog_:sysID       <!-- 动态表写数据 -->
                (
                 id
@@ -757,9 +757,9 @@ XSQL支持普通SQL、高级SQL、动态SQL、存储过程、应用层SQL触发�
                ,':operationTime'
                ,':waitTime'
                )
-	]]>
-	</content>
-			
+    ]]>
+    </content>
+            
 </sql>
 ```
 

@@ -16,35 +16,35 @@ import org.hy.common.BaseEvent;
  */
 public class BLobEvent extends BaseEvent
 {
-	private static final long serialVersionUID = -3733330887205002038L;
-	
-	/**
-	 * BLob的动作类型
-	 * 
-	 * 1. 上传动作
-	 * 2. 下载动作
-	 */
-	protected int actionType;
-	
-	
-	
-	public BLobEvent(Object i_Source) 
-	{
-		super(i_Source);
-	}
-	
-	
-	
-	public BLobEvent(Object i_Source, long i_Size) 
-	{
-		super(i_Source, i_Size);
-	}
-	
-	
-	
-	public int getActionType()
-	{
-		return this.actionType;
-	}
-	
+    private static final long serialVersionUID = -3733330887205002038L;
+    
+    /**
+     * BLob的动作类型
+     * 
+     * 1. 上传动作
+     * 2. 下载动作
+     */
+    protected int actionType;
+    
+    
+    
+    public BLobEvent(Object i_Source) 
+    {
+        super(i_Source);
+    }
+    
+    
+    
+    public BLobEvent(Object i_Source, long i_Size) 
+    {
+        super(i_Source, i_Size);
+    }
+    
+    
+    
+    public int getActionType()
+    {
+        return this.actionType;
+    }
+    
 }

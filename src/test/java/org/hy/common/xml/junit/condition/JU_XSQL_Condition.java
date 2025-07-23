@@ -69,6 +69,11 @@ public class JU_XSQL_Condition
         v_Params.put("createTime" ,(Date)null);
         
         v_Params.put("pAsSwOrD" ,"123");
+        v_Params.put("isBind" ,"1");
+        v_SQL = XJava.getXSQL("XSQL_OPCDD_Model_Query").getContent().getSQL(v_Params);
+        System.out.println("密码为1234时的运行SQL：" + v_SQL);
+        
+        v_Params.put("pAsSwOrD" ,"123");
         v_SQL = XJava.getXSQL("XSQL_User_Condition").getContent().getSQL(v_Params);
         System.out.println("密码为1234时的运行SQL：" + v_SQL);
         

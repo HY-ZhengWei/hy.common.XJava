@@ -54,6 +54,8 @@ public class JU_XJSON
     
     private String  [] valueStringArr;
     
+    private Boolean    upper;
+    
     
     
     @Test
@@ -393,6 +395,22 @@ public class JU_XJSON
     
     
     
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_JsonToMap3() throws Exception
+    {
+        String v_JonsText = """
+                            {"code":"200","message":"成功","data":{"data":{"StationStatus":4,"Automatic":2,"TaskNo":0,"Task":0,"Year":0,"Month":0,"Day":0,"Hour":0,"Min":0,"Second":0,"RFID":""}}}
+                            """;
+        
+        XJSON v_Json = new XJSON();
+        Map<String ,Object> v_Value = (Map<String ,Object>) v_Json.toJava(v_JonsText ,Map.class);
+        
+        $Logger.info(v_Value);
+    }
+    
+    
+    
     @Test
     @SuppressWarnings("unchecked")
     public void test_JsonToList()
@@ -473,9 +491,56 @@ public class JU_XJSON
         $Logger.info("-- 新集合能否得到值：" + v_ExpireMapNew.get(v_Key));
         $Logger.info("-- 序列化能否得到值：" + v_JsonToJava  .get(v_Key));
     }
+    
+    
+    
+    @Test
+    public void test_Upper() throws Exception
+    {
+        String v_Text = """
+                        {
+                            "Upper": true
+                        }
+                        """;
+        
+        XJSON v_XJson = new XJSON();
+        JU_XJSON v_Object = (JU_XJSON) v_XJson.toJava(v_Text ,JU_XJSON.class);
+        System.out.println(v_Object.getUpper());
+    }
+    
+    
+    
+    @Test
+    public void test_format()
+    {
+        String v_Value = """
+                         {
+                            "deviceXID": ":Rets.myself.valueString",
+                            "cflowXID": ":Rets.valueString",
+                            "userID": "ZhengWei",
+                            "datas": :dataValues
+                         }
+                         """;
+        
+        System.out.println(XJSON.format(v_Value ,"    " ," " ,"\n"));
+    }
 
     
     
+    public Boolean getUpper()
+    {
+        return upper;
+    }
+
+
+
+    public void setUpper(Boolean i_Upper)
+    {
+        this.upper = i_Upper;
+    }
+
+
+
     public String getValueString()
     {
         return valueString;
