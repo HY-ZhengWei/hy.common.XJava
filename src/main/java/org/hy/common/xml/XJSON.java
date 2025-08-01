@@ -86,6 +86,7 @@ import net.minidev.json.parser.JSONParser;
  *              2021-12-09  V4.1  添加：Json字符串转Java对象时，当Setter方法的入传为数组时支持
  *              2022-06-22  V4.2  添加：支持特殊类型ExpireMap的转Json，或转Java
  *              2025-07-23  V4.3  修正：1.格式化Json字符串时，对占位符的处理上有在冒号与变量中间添加空格。发现人：王雨墨、景浩东
+ *              2025-07-31  V4.4  修正：1.格式化Json字符串时，识别非占位符的情况，如：{"v":201}。发现人：李浩 
  */
 public final class XJSON
 {
@@ -1772,6 +1773,15 @@ public final class XJSON
             if ( length > v_FixedLenth && i < v_TokenList.size() - 1 && v_TokenList.get(i + 1).equals(":") )
             {
                 v_FixedLenth = length;
+            }
+            
+            if ( i > 0 && token.startsWith(":") )
+            {
+                if ( v_TokenList.get(i - 1).endsWith("\"") )
+                {
+                    v_TokenList.set(i - 1 ,v_TokenList.get(i - 1) + ":" + i_FillSpace);
+                    v_TokenList.set(i     ,token.substring(1));
+                }
             }
         }
         

@@ -6,7 +6,7 @@
 
     <groupId>cn.openapis</groupId>
     <artifactId>hy.common.xjava</artifactId>
-    <version>4.5.9</version>
+    <version>4.6.0</version>
     <packaging>jar</packaging>
 
     <name>cn.openapis.hy.common.xjava</name>
@@ -78,7 +78,7 @@
         <dependency>
             <groupId>cn.openapis</groupId>
             <artifactId>hy.common.db</artifactId>
-            <version>2.7.3</version>
+            <version>2.7.5</version>
             <scope>provided</scope>
         </dependency>
 
@@ -191,7 +191,7 @@
         <dependency>
             <groupId>net.minidev</groupId>
             <artifactId>json-smart</artifactId>
-            <version>2.5.0</version>
+            <version>2.5.2</version>
         </dependency>
         
         <!-- Restful -->

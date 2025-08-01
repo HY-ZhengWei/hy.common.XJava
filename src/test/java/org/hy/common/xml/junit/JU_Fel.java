@@ -44,7 +44,18 @@ public class JU_Fel
         v_FelContext.set("C" ,1);
         v_FelContext.set("N" ,2);
         System.out.println(v_Fel.eval("4 * (C + N)"));
+    }
+    
+    
+    
+    @Test
+    public void test_Three()
+    {
+        FelEngine  v_Fel        = new FelEngineImpl();
+        FelContext v_FelContext = v_Fel.getContext();
         
+        v_FelContext.set("N" ,1);
+        System.out.println(v_Fel.eval("N >= 1 ? 10 : 20"));
     }
     
     

@@ -511,14 +511,27 @@ public class JU_XJSON
     
     
     @Test
+    public void test_Map() throws Exception
+    {
+        Map<String ,Object> v_Datas = new HashMap<String ,Object>();
+        v_Datas.put("value" ,201);
+        
+        XJSON v_Json = new XJSON();
+        System.out.println(v_Json.toJson(v_Datas).toJSONString(JSONStyle.NO_COMPRESS));
+    }
+    
+    
+    
+    @Test
     public void test_format()
     {
         String v_Value = """
                          {
-                            "deviceXID": ":Rets.myself.valueString",
-                            "cflowXID": ":Rets.valueString",
-                            "userID": "ZhengWei",
-                            "datas": :dataValues
+                            "value":201,
+                            "deviceXID":":Rets.myself.valueString",
+                            "cflowXID":":Rets.valueString",
+                            "userID":"ZhengWei",
+                            "datas"::dataValues
                          }
                          """;
         
