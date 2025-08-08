@@ -87,6 +87,7 @@ import net.minidev.json.parser.JSONParser;
  *              2022-06-22  V4.2  添加：支持特殊类型ExpireMap的转Json，或转Java
  *              2025-07-23  V4.3  修正：1.格式化Json字符串时，对占位符的处理上有在冒号与变量中间添加空格。发现人：王雨墨、景浩东
  *              2025-07-31  V4.4  修正：1.格式化Json字符串时，识别非占位符的情况，如：{"v":201}。发现人：李浩 
+ *              2025-08-08  V4.5  修改：将所有方法throws抛异常的类型均改为RuntimeException，方便外界使用者不用显性try catch。建议人：李浩
  */
 public final class XJSON
 {
@@ -177,7 +178,7 @@ public final class XJSON
     
     
     
-    public XJSON(Object i_Obj) throws Exception
+    public XJSON(Object i_Obj)
     {
         this();
         
@@ -196,10 +197,9 @@ public final class XJSON
      * @param i_JsonArray    Json字符串数组。即左右两端是[]方括号。
      * @param i_ObjectClass  Json字符串数组的元素对应的Java类型
      * @return
-     * @throws Exception
      */
     @SuppressWarnings("unchecked")
-    public <T> List<T> toJavaList(String i_JsonArray ,Class<? extends T> i_ObjectClass) throws Exception
+    public <T> List<T> toJavaList(String i_JsonArray ,Class<? extends T> i_ObjectClass)
     {
         return (List<T>)toJava("{\"XJSONDatas\":" + i_JsonArray + "}" ,"XJSONDatas" ,i_ObjectClass);
     }
@@ -302,9 +302,8 @@ public final class XJSON
      * 
      * @param i_JSONString   完整的Json字符串
      * @return
-     * @throws Exception
      */
-    public Object toJava(String i_JSONString) throws Exception
+    public Object toJava(String i_JSONString)
     {
         return parser(i_JSONString ,this.getObjectClass());
     }
@@ -317,9 +316,8 @@ public final class XJSON
      * @param i_JSONString   完整的Json字符串
      * @param i_ObjectClass  JSONObject对应的Java类型
      * @return
-     * @throws Exception
      */
-    public Object toJava(String i_JSONString ,Class<?> i_ObjectClass) throws Exception
+    public Object toJava(String i_JSONString ,Class<?> i_ObjectClass)
     {
         return parser(i_JSONString ,i_ObjectClass);
     }
@@ -334,9 +332,8 @@ public final class XJSON
      * @param i_JSONString  完整的Json字符串
      * @param i_JSONKey     只解析大Json字符串的某个子字符串
      * @return
-     * @throws Exception
      */
-    public Object toJava(String i_JSONString ,String i_JSONKey) throws Exception
+    public Object toJava(String i_JSONString ,String i_JSONKey)
     {
         return parser(i_JSONString ,i_JSONKey ,this.getObjectClass());
     }
@@ -350,9 +347,8 @@ public final class XJSON
      * @param i_JSONKey      只解析大Json字符串的某个子字符串
      * @param i_ObjectClass  JSONObject对应的Java类型
      * @return
-     * @throws Exception
      */
-    public Object toJava(String i_JSONString ,String i_JSONKey ,Class<?> i_ObjectClass) throws Exception
+    public Object toJava(String i_JSONString ,String i_JSONKey ,Class<?> i_ObjectClass)
     {
         return parser(i_JSONString ,i_JSONKey ,i_ObjectClass);
     }
@@ -427,9 +423,8 @@ public final class XJSON
      * 
      * @param i_JSONString
      * @return
-     * @throws Exception
      */
-    public Object parser(String i_JSONString) throws Exception
+    public Object parser(String i_JSONString)
     {
         return parser(i_JSONString ,this.getObjectClass());
     }
@@ -444,9 +439,8 @@ public final class XJSON
      * @param i_JSONString
      * @param i_JSONKey
      * @return
-     * @throws Exception
      */
-    public Object parser(String i_JSONString ,String i_JSONKey) throws Exception
+    public Object parser(String i_JSONString ,String i_JSONKey)
     {
         return parser(i_JSONString ,i_JSONKey ,this.getObjectClass());
     }
@@ -950,9 +944,8 @@ public final class XJSON
      * @param i_JSONString
      * @param i_Class
      * @return
-     * @throws Exception
      */
-    public Object parser(String i_JSONString ,Class<?> i_Class) throws Exception
+    public Object parser(String i_JSONString ,Class<?> i_Class)
     {
         if ( Help.isNull(i_JSONString) )
         {
@@ -974,7 +967,7 @@ public final class XJSON
         }
         catch (Exception exce)
         {
-            throw new Exception(exce.getMessage());
+            throw new RuntimeException(exce.getMessage());
         }
         
         return parser(v_JSONRoot ,i_Class);
@@ -989,9 +982,8 @@ public final class XJSON
      * @param i_JSONKey
      * @param i_Class
      * @return
-     * @throws Exception
      */
-    public Object parser(String i_JSONString ,String i_JSONKey ,Class<?> i_Class) throws Exception
+    public Object parser(String i_JSONString ,String i_JSONKey ,Class<?> i_Class)
     {
         if ( Help.isNull(i_JSONString) )
         {
@@ -1019,7 +1011,7 @@ public final class XJSON
         }
         catch (Exception exce)
         {
-            throw new Exception(exce.getMessage());
+            throw new RuntimeException(exce.getMessage());
         }
         
         
@@ -1060,9 +1052,8 @@ public final class XJSON
      * @param i_JavaData      Java对象。
      *                             1. 参数可以是Java Bean
      *                             2. 参数可以是Map
-     * @throws Exception
      */
-    public XJSONObject toJson(Object i_JavaData) throws Exception
+    public XJSONObject toJson(Object i_JavaData)
     {
         return parser(i_JavaData);
     }
@@ -1078,9 +1069,8 @@ public final class XJSON
      *                             1. 参数可以是Java Bean
      *                             2. 参数可以是Map
      * @param i_JSONRootName  设置生成Json字符串的顶级节点名称
-     * @throws Exception
      */
-    public <T> XJSONObject toJson(T i_JavaData ,String i_JSONRootName) throws Exception
+    public <T> XJSONObject toJson(T i_JavaData ,String i_JSONRootName)
     {
         return parser(i_JavaData ,i_JSONRootName);
     }
@@ -1093,9 +1083,8 @@ public final class XJSON
      * @param i_JavaData      Java对象。
      *                             1. 参数可以是Java Bean
      *                             2. 参数可以是Map
-     * @throws Exception
      */
-    public XJSONObject parser(Object i_JavaData) throws Exception
+    public XJSONObject parser(Object i_JavaData)
     {
         if ( i_JavaData == null )
         {
@@ -1121,9 +1110,8 @@ public final class XJSON
      *                             1. 参数可以是Java Bean
      *                             2. 参数可以是Map
      * @param i_JSONRootName  设置生成Json字符串的顶级节点名称
-     * @throws Exception
      */
-    public <T> XJSONObject parser(T i_JavaData ,String i_JSONRootName) throws Exception
+    public <T> XJSONObject parser(T i_JavaData ,String i_JSONRootName)
     {
         if ( i_JavaData == null )
         {
@@ -1155,16 +1143,24 @@ public final class XJSON
      * @param i_ParserObjects         解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
      * @param i_MethodReturnIsObject  判定方法的返回类型是否为java.lang.Object
      * @return
-     * @throws Exception
      */
-    protected Return<XJSONObject> parser(String i_JSONName ,final Object i_JavaData ,XJSONObject i_JsonSuperObj ,Map<Object ,Integer> i_ParserObjects ,boolean i_MethodReturnIsObject) throws Exception
+    protected Return<XJSONObject> parser(String i_JSONName ,final Object i_JavaData ,XJSONObject i_JsonSuperObj ,Map<Object ,Integer> i_ParserObjects ,boolean i_MethodReturnIsObject)
     {
         Return<XJSONObject> v_Ret              = new Return<XJSONObject>(true);
         Class<?>            v_JavaClass        = i_JavaData.getClass();
         String              v_JSONName         = i_JSONName;
-        Object              v_JsonValue        = XJSONToJson.executeToJson(this ,i_ParserObjects ,i_JavaData);
+        Object              v_JsonValue        = null;
         boolean             v_JsonValueIsValid = true;
         XJSONObject         v_JsonSuper        = i_JsonSuperObj;
+        
+        try
+        {
+            v_JsonValue = XJSONToJson.executeToJson(this ,i_ParserObjects ,i_JavaData);
+        }
+        catch (Exception exce)
+        {
+            throw new RuntimeException(exce);
+        }
         
         // 确保Json的最外层是一个对象，即最外层是一对{}号
         if ( v_JsonValue == null )
