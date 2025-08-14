@@ -101,6 +101,8 @@ import org.xml.sax.InputSource;
  *              v1.19 2023-03-08  添加：支持@Xjava的集合同一类型的整体的注入。
  *                                      如将多个对象打包成List/Map/Set后注入。建议人：李红彦
  *              v2.0  2023-06-24  添加：@Xcqj的图数据库的注解
+ *              v2.1  2025-08-14  添加：获取对象池中的元数据
+ *                                修改：会话级对象池，改为XJavaObject类型的元数据
  */
 public final class XJava
 {
@@ -166,34 +168,34 @@ public final class XJava
      * 
      * 还有赋值功能。即 Bean v_Bean = v_Other 这样的功能
      */
-    private final static String                    $XML_OBJECT_THIS              = "this";
+    private final static String                         $XML_OBJECT_THIS              = "this";
     
     /** 对象惟一属性的节点标记 */
-    private final static String                    $XML_OBJECT_ID                = "id";
+    private final static String                         $XML_OBJECT_ID                = "id";
     
     /** 引用对象的节点标记 */
-    private final static String                    $XML_OBJECT_REF               = "ref";
+    private final static String                         $XML_OBJECT_REF               = "ref";
     
     /** 节点为调用方法Call节点标记 */
-    private final static String                    $XML_OBJECT_CALL              = "call";
+    private final static String                         $XML_OBJECT_CALL              = "call";
     
     /** Call节点调用的方法名称 */
-    private final static String                    $XML_OBJECT_CALL_NAME         = "name";
+    private final static String                         $XML_OBJECT_CALL_NAME         = "name";
     
     /** Call节点调用的方法后的返回结果的ID标记，此结果也将存在 $XML_OBJECTS 中 */
-    private final static String                    $XML_OBJECT_CALL_RETURNID     = "returnid";
+    private final static String                         $XML_OBJECT_CALL_RETURNID     = "returnid";
     
     /**
      * submit表示 TreeMap.TreeNode.nodeID 的值。
      * 将对于树目录的子树目录的全部TreeNode.nodeID及TreeNode.info存在Map中，
      * 再将Map传递(setter)给对象
      */
-    private final static String                    $XML_OBJECT_SUBMIT            = "submit";
+    private final static String                         $XML_OBJECT_SUBMIT            = "submit";
     
     /**
      * 表示是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
      */
-    private final static String                    $XML_OBJECT_NEWOBJECT         = "new";
+    private final static String                         $XML_OBJECT_NEWOBJECT         = "new";
     
     /**
      * 加密关键字。对涉密属性进行加密。
@@ -201,7 +203,7 @@ public final class XJava
      * 当配置文件为明文时，自动变成密文。
      * 当配置文件为官方时，解密后再赋值给对象的属性。
      */
-    private final static String                    $XML_OBJECT_ENCRYPT           = "encrypt";
+    private final static String                         $XML_OBJECT_ENCRYPT           = "encrypt";
     
     /**
      * 真值才解释XJava。
@@ -209,7 +211,7 @@ public final class XJava
      * 与Ref关键字类似，但比其多一个功能，就是 if="xx" 时，xx不是引用对象时，当字符串处理，
      * 即可以写成 if="true"
      */
-    private final static String                    $XML_OBJECT_IF                = "if";
+    private final static String                         $XML_OBJECT_IF                = "if";
     
     /**
      * 假值才解释XJava
@@ -217,33 +219,33 @@ public final class XJava
      * 与Ref关键字类似，但比其多一个功能，就是 if="xx" 时，xx不是引用对象时，当字符串处理，
      * 即可以写成 if="true"
      */
-    private final static String                    $XML_OBJECT_IFNOT             = "ifnot";
+    private final static String                         $XML_OBJECT_IFNOT             = "ifnot";
     
     /** if 关键字的对比关系"或"分割符 */
-    private final static String                    $XML_OBJECT_IF_OR             = "||";
+    private final static String                         $XML_OBJECT_IF_OR             = "||";
     
     /** if 关键字的对比关系"与"分割符 */
-    private final static String                    $XML_OBJECT_IF_AND            = "&&";
+    private final static String                         $XML_OBJECT_IF_AND            = "&&";
     
     /** if 关键字的对比分割符 */
-    private final static String                    $XML_OBJECT_IF_EQUALS         = "==";
+    private final static String                         $XML_OBJECT_IF_EQUALS         = "==";
     
     /**
      * 此为节点文本内容的关键字标记。表示解译xml文件的URL的路径（父目录路径）。
      * 如果节点文本内容中出现 classpath: 将为自动替换为解译xml文件的URL的路径（父目录路径）。
      * 如：org.hy.common.xml
      */
-    private final static String                    $XML_CLASSPATH                = "classpath:";
+    private final static String                         $XML_CLASSPATH                = "classpath:";
     
     /**
      * 此为节点文本内容的关键字标记的集合。此集合中的key将自动替换为value
      *   1. classhome: 将为自动替换为classes的根目录。                   如：C:/xx/bin
      *   2. webhome: 将为自动替换为Web服务的根目录。                      如：C:/Tomcat/Webapps/Web项目名称/
      */
-    private final static Map<String ,String>       $XML_Replace_Keys             = new LinkedHashMap<String ,String>();
+    private final static Map<String ,String>            $XML_Replace_Keys             = new LinkedHashMap<String ,String>();
     
     /** 标记有 id 的节点都将存入 $XML_OBJECTS 集合中的 TreeNode.info 中 */
-    private final static TreeMap<XJavaObject>      $XML_OBJECTS                  = new TreeMap<XJavaObject>();
+    private final static TreeMap<XJavaObject>           $XML_OBJECTS                  = new TreeMap<XJavaObject>();
     
     /**
      * 专用于保存有限生命的对象实例。
@@ -252,7 +254,7 @@ public final class XJava
      * 
      * $SessionMap 只负责运行过程中动态添加的对象，不对XML配置文件中的对象生效。
      */
-    private final static ExpireMap<String ,Object> $SessionMap                   = new ExpireMap<String ,Object>();
+    private final static ExpireMap<String ,XJavaObject> $SessionMap                   = new ExpireMap<String ,XJavaObject>();
     
     /**
      * TreeMap.TreeNode.orderByID的最大长度。
@@ -260,7 +262,7 @@ public final class XJava
      * 
      * 6 表示最大支持 999999 个对象实例
      */
-    private final static int                       $TREE_NODE_ORDERBYID_MAXLEN   = 6;
+    private final static int                            $TREE_NODE_ORDERBYID_MAXLEN   = 6;
     
     
     
@@ -469,12 +471,12 @@ public final class XJava
      * @createDate  2023-06-24
      * @version     v1.0
      *
-     * @param i_ID
+     * @param i_XID
      * @return
      */
-    public static XCQL getXCQL(String i_ID)
+    public static XCQL getXCQL(String i_XID)
     {
-        return (XCQL)getObject(i_ID);
+        return (XCQL)getObject(i_XID);
     }
     
     
@@ -486,13 +488,13 @@ public final class XJava
      * @createDate  2023-06-24
      * @version     v1.0
      *
-     * @param i_ID
+     * @param i_XID
      * @param i_IsNew
      * @return
      */
-    public static XCQL getXCQL(String i_ID ,boolean i_IsNew)
+    public static XCQL getXCQL(String i_XID ,boolean i_IsNew)
     {
-        return (XCQL)getObject(i_ID ,i_IsNew);
+        return (XCQL)getObject(i_XID ,i_IsNew);
     }
     
     
@@ -504,12 +506,12 @@ public final class XJava
      * @createDate  2020-05-25
      * @version     v1.0
      *
-     * @param i_ID
+     * @param i_XID
      * @return
      */
-    public static XRule getXRule(String i_ID)
+    public static XRule getXRule(String i_XID)
     {
-        return (XRule)getObject(i_ID);
+        return (XRule)getObject(i_XID);
     }
     
     
@@ -521,12 +523,12 @@ public final class XJava
      * @createDate  2016-07-14
      * @version     v1.0
      *
-     * @param i_ID
+     * @param i_XID
      * @return
      */
-    public static XSQL getXSQL(String i_ID)
+    public static XSQL getXSQL(String i_XID)
     {
-        return (XSQL)getObject(i_ID);
+        return (XSQL)getObject(i_XID);
     }
     
     
@@ -538,13 +540,13 @@ public final class XJava
      * @createDate  2016-07-14
      * @version     v1.0
      *
-     * @param i_ID
+     * @param i_XID
      * @param i_IsNew
      * @return
      */
-    public static XSQL getXSQL(String i_ID ,boolean i_IsNew)
+    public static XSQL getXSQL(String i_XID ,boolean i_IsNew)
     {
-        return (XSQL)getObject(i_ID ,i_IsNew);
+        return (XSQL)getObject(i_XID ,i_IsNew);
     }
     
     
@@ -556,12 +558,12 @@ public final class XJava
      * @createDate  2016-07-14
      * @version     v1.0
      *
-     * @param i_ID
+     * @param i_XID
      * @return
      */
-    public static XSQLGroup getXSQLGroup(String i_ID)
+    public static XSQLGroup getXSQLGroup(String i_XID)
     {
-        return (XSQLGroup)getObject(i_ID);
+        return (XSQLGroup)getObject(i_XID);
     }
     
     
@@ -573,13 +575,13 @@ public final class XJava
      * @createDate  2016-07-14
      * @version     v1.0
      *
-     * @param i_ID
+     * @param i_XID
      * @param i_IsNew
      * @return
      */
-    public static XSQLGroup getXSQLGroup(String i_ID ,boolean i_IsNew)
+    public static XSQLGroup getXSQLGroup(String i_XID ,boolean i_IsNew)
     {
-        return (XSQLGroup)getObject(i_ID ,i_IsNew);
+        return (XSQLGroup)getObject(i_XID ,i_IsNew);
     }
     
     
@@ -592,16 +594,16 @@ public final class XJava
      * @version     v1.0
      *              v2.0  2021-01-20  添加：当参加对象不存时，给于日志警告，同时不再返回空指针
      *
-     * @param i_ID
+     * @param i_XID
      * @return
      */
-    public static Param getParam(String i_ID)
+    public static Param getParam(String i_XID)
     {
-        Param v_Param = (Param)getObject(i_ID);
+        Param v_Param = (Param)getObject(i_XID);
         
         if ( v_Param == null )
         {
-            $Logger.warn("Param id(" + i_ID + ") is not exists.");
+            $Logger.warn("Param id(" + i_XID + ") is not exists.");
             return new Param();
         }
         else
@@ -620,17 +622,17 @@ public final class XJava
      * @version     v1.0
      *              v2.0  2021-01-20  添加：当参加对象不存时，给于日志警告，同时不再返回空指针
      *
-     * @param i_ID
+     * @param i_XID
      * @param i_IsNew
      * @return
      */
-    public static Param getParam(String i_ID ,boolean i_IsNew)
+    public static Param getParam(String i_XID ,boolean i_IsNew)
     {
-        Param v_Param = (Param)getObject(i_ID ,i_IsNew);
+        Param v_Param = (Param)getObject(i_XID ,i_IsNew);
         
         if ( v_Param == null )
         {
-            $Logger.warn("Param id(" + i_ID + ") is not exists.");
+            $Logger.warn("Param id(" + i_XID + ") is not exists.");
             return new Param();
         }
         else
@@ -650,7 +652,7 @@ public final class XJava
      *
      * @return
      */
-    public static ExpireMap<String ,Object> getSessionMap()
+    public static ExpireMap<String ,XJavaObject> getSessionMap()
     {
         return $SessionMap;
     }
@@ -658,34 +660,28 @@ public final class XJava
     
     
     /**
-     * 按 id 值获取对象实例
+     * 获取元素数据
      * 
-     * 2017-01-16 Add $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
-     * 
-     * @param i_ID
+     * @author      ZhengWei(HY)
+     * @createDate  2025-08-14
+     * @version     v1.0
+     *
+     * @param i_XID
      * @return
      */
-    public static Object getObject(String i_ID)
+    public static XJavaObject getMetadata(String i_XID)
     {
-        if ( i_ID == null )
+        if ( i_XID == null )
         {
             return null;
         }
-        else if ( $XML_OBJECTS.containsNodeID(i_ID) )
+        else if ( $XML_OBJECTS.containsNodeID(i_XID) )
         {
-            try
-            {
-                return $XML_OBJECTS.getByNodeID(i_ID).getInfo().getObject();
-            }
-            catch (NoSuchMethodException e)
-            {
-                // 多数为Clone方法异常
-                throw new NullPointerException("[" + i_ID + "] is " + e.getMessage());
-            }
+            return $XML_OBJECTS.getByNodeID(i_XID).getInfo();
         }
-        else if ( $SessionMap.containsKey(i_ID) )
+        else if ( $SessionMap.containsKey(i_XID) )
         {
-            return $SessionMap.get(i_ID);
+            return $SessionMap.get(i_XID);
         }
         else
         {
@@ -700,32 +696,65 @@ public final class XJava
      * 
      * 2017-01-16 Add $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
      * 
-     * @param i_ID
+     * @param i_XID
+     * @return
+     */
+    public static Object getObject(String i_XID)
+    {
+        if ( i_XID == null )
+        {
+            return null;
+        }
+        else if ( $XML_OBJECTS.containsNodeID(i_XID) )
+        {
+            try
+            {
+                return $XML_OBJECTS.getByNodeID(i_XID).getInfo().getObject();
+            }
+            catch (NoSuchMethodException e)
+            {
+                // 多数为Clone方法异常
+                throw new NullPointerException("[" + i_XID + "] is " + e.getMessage());
+            }
+        }
+        else if ( $SessionMap.containsKey(i_XID) )
+        {
+            XJavaObject v_XObject = $SessionMap.get(i_XID);
+            return v_XObject != null ? v_XObject.getObjectNoClone() : null;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    
+    
+    /**
+     * 按 id 值获取对象实例
+     * 
+     * 2017-01-16 Add $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
+     * 
+     * @param i_XID
      * @param i_IsNew   是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
      * @return
      */
-    public static Object getObject(String i_ID ,boolean i_IsNew)
+    public static Object getObject(String i_XID ,boolean i_IsNew)
     {
         try
         {
-            if ( i_ID == null )
+            if ( i_XID == null )
             {
                 return null;
             }
-            else if ( $XML_OBJECTS.containsNodeID(i_ID) )
+            else if ( $XML_OBJECTS.containsNodeID(i_XID) )
             {
-                return $XML_OBJECTS.getByNodeID(i_ID).getInfo().getObject(i_IsNew);
+                return $XML_OBJECTS.getByNodeID(i_XID).getInfo().getObject(i_IsNew);
             }
-            else if ( $SessionMap.containsKey(i_ID) )
+            else if ( $SessionMap.containsKey(i_XID) )
             {
-                if ( i_IsNew )
-                {
-                    return XJava.clone($SessionMap.get(i_ID));
-                }
-                else
-                {
-                    return $SessionMap.get(i_ID);
-                }
+                XJavaObject v_XObject = $SessionMap.get(i_XID);
+                return v_XObject.getObject(i_IsNew);
             }
             else
             {
@@ -735,8 +764,82 @@ public final class XJava
         catch (NoSuchMethodException e)
         {
             // 多数为Clone方法异常
-            throw new NullPointerException("[" + i_ID + "] is " + e.getMessage());
+            throw new NullPointerException("[" + i_XID + "] is " + e.getMessage());
         }
+    }
+    
+    
+    
+    /**
+     * 按 Class 元类型获取元素数据
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2025-08-14
+     * @version     v1.0
+     *
+     * @param i_Class
+     * @return
+     */
+    public static XJavaObject getMetadata(Class<?> i_Class)
+    {
+        if ( i_Class == null )
+        {
+            return null;
+        }
+        else
+        {
+            Iterator<TreeNode<XJavaObject>>    v_Iterator = $XML_OBJECTS.valuesNodeID();
+            TreeNode<XJavaObject>              v_TreeNode = null;
+            Map<TreeNode<XJavaObject> ,Object> v_Maybe    = new HashMap<TreeNode<XJavaObject> ,Object>(1); // 有可能是的对象 ZhengWei(HY) Add 2017-11-24
+            
+            try
+            {
+                while ( v_Iterator.hasNext() )
+                {
+                    v_TreeNode = v_Iterator.next();
+                    
+                    if ( null != v_TreeNode.getInfo()
+                      && null != v_TreeNode.getInfo().getObjectNoClone() )
+                    {
+                        if ( i_Class == v_TreeNode.getInfo().getObjectNoClone().getClass() )
+                        {
+                            return v_TreeNode.getInfo();
+                        }
+                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObjectNoClone()) )
+                        {
+                            // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2017-11-24
+                            v_Maybe.put(v_TreeNode ,null);
+                        }
+                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObjectNoClone() ,i_Class) )
+                        {
+                            // 尝试递归查找 ZhengWei(HY) Add 2022-09-20
+                            v_Maybe.put(v_TreeNode ,null);
+                        }
+                    }
+                }
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + "." ,exce);
+                throw new NullPointerException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + ".");
+            }
+            
+            
+            for (Map.Entry<String ,XJavaObject> v_Item : $SessionMap.entrySet())
+            {
+                if ( null != v_Item && i_Class == v_Item.getValue().getObjectNoClone().getClass() )
+                {
+                    return v_Item.getValue();
+                }
+            }
+            
+            if ( v_Maybe.size() == 1 )
+            {
+                return v_Maybe.keySet().iterator().next().getInfo();
+            }
+        }
+        
+        return null;
     }
     
     
@@ -770,18 +873,18 @@ public final class XJava
                     v_TreeNode = v_Iterator.next();
                     
                     if ( null != v_TreeNode.getInfo()
-                      && null != v_TreeNode.getInfo().getObject(false) )
+                      && null != v_TreeNode.getInfo().getObjectNoClone() )
                     {
-                        if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
+                        if ( i_Class == v_TreeNode.getInfo().getObjectNoClone().getClass() )
                         {
                             return v_TreeNode.getNodeID();
                         }
-                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
+                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObjectNoClone()) )
                         {
                             // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2017-11-24
                             v_Maybe.put(v_TreeNode ,null);
                         }
-                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObject(false) ,i_Class) )
+                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObjectNoClone() ,i_Class) )
                         {
                             // 尝试递归查找 ZhengWei(HY) Add 2022-09-20
                             v_Maybe.put(v_TreeNode ,null);
@@ -796,9 +899,9 @@ public final class XJava
             }
             
             
-            for (Map.Entry<String ,Object> v_Item : $SessionMap.entrySet())
+            for (Map.Entry<String ,XJavaObject> v_Item : $SessionMap.entrySet())
             {
-                if ( null != v_Item && i_Class == v_Item.getValue().getClass() )
+                if ( null != v_Item && i_Class == v_Item.getValue().getObjectNoClone().getClass() )
                 {
                     return v_Item.getKey();
                 }
@@ -822,7 +925,7 @@ public final class XJava
      * 2017-11-24 Edit  优化：在if语句判定时，不创建全新对象实例进行判定。
      * 2017-11-24 Add   尝试在实现类、子类中查找匹配的对象
      * 
-     * @param i_ID
+     * @param i_XID
      * @return
      */
     @SuppressWarnings("unchecked")
@@ -845,18 +948,18 @@ public final class XJava
                     v_TreeNode = v_Iterator.next();
                     
                     if ( null != v_TreeNode.getInfo()
-                      && null != v_TreeNode.getInfo().getObject(false) )
+                      && null != v_TreeNode.getInfo().getObjectNoClone() )
                     {
-                        if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
+                        if ( i_Class == v_TreeNode.getInfo().getObjectNoClone().getClass() )
                         {
                             return (E) v_TreeNode.getInfo().getObject();
                         }
-                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
+                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObjectNoClone()) )
                         {
                             // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2017-11-24
                             v_Maybe.put(v_TreeNode.getInfo() ,null);
                         }
-                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObject(false) ,i_Class) )
+                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObjectNoClone() ,i_Class) )
                         {
                             // 尝试递归查找 ZhengWei(HY) Add 2022-09-20
                             v_Maybe.put(v_TreeNode.getInfo() ,null);
@@ -871,13 +974,13 @@ public final class XJava
             }
             
             
-            Iterator<Object> v_SessionIterator = $SessionMap.values().iterator();
-            Object           v_Ret             = null;
+            Iterator<XJavaObject> v_SessionIterator = $SessionMap.values().iterator();
+            XJavaObject           v_Ret             = null;
             while ( v_SessionIterator.hasNext() )
             {
                 v_Ret = v_SessionIterator.next();
                 
-                if ( null != v_Ret && i_Class == v_Ret.getClass() )
+                if ( null != v_Ret && i_Class == v_Ret.getObjectNoClone().getClass() )
                 {
                     return (E) v_Ret;
                 }
@@ -892,7 +995,7 @@ public final class XJava
                 catch (Exception exce)
                 {
                     $Logger.error(exce);
-                    throw new NullPointerException(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().object.getClass().getName() + "] is " + exce.getMessage() + ".\n" + exce.getMessage());
+                    throw new NullPointerException(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().getObjectNoClone().getClass().getName() + "] is " + exce.getMessage() + ".\n" + exce.getMessage());
                 }
             }
         }
@@ -909,7 +1012,7 @@ public final class XJava
      * 2017-11-24 Edit  优化：在if语句判定时，不创建全新对象实例进行判定。
      * 2017-11-24 Add   尝试在实现类、子类中查找匹配的对象
      * 
-     * @param i_ID
+     * @param i_XID
      * @param i_IsNew   是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
      * @return
      */
@@ -933,18 +1036,18 @@ public final class XJava
                     v_TreeNode = v_Iterator.next();
                     
                     if ( null != v_TreeNode.getInfo()
-                      && null != v_TreeNode.getInfo().getObject(false) )
+                      && null != v_TreeNode.getInfo().getObjectNoClone() )
                     {
-                        if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
+                        if ( i_Class == v_TreeNode.getInfo().getObjectNoClone().getClass() )
                         {
                             return (E) v_TreeNode.getInfo().getObject(i_IsNew);
                         }
-                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
+                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObjectNoClone()) )
                         {
                             // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2017-11-24
                             v_Maybe.put(v_TreeNode.getInfo() ,null);
                         }
-                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObject(false) ,i_Class) )
+                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObjectNoClone() ,i_Class) )
                         {
                             // 尝试递归查找 ZhengWei(HY) Add 2022-09-20
                             v_Maybe.put(v_TreeNode.getInfo() ,null);
@@ -961,22 +1064,15 @@ public final class XJava
             
             try
             {
-                Iterator<Object> v_SessionIterator = $SessionMap.values().iterator();
-                Object           v_Ret             = null;
+                Iterator<XJavaObject> v_SessionIterator = $SessionMap.values().iterator();
+                XJavaObject           v_Ret             = null;
                 while ( v_SessionIterator.hasNext() )
                 {
                     v_Ret = v_SessionIterator.next();
                     
-                    if ( null != v_Ret && i_Class == v_Ret.getClass() )
+                    if ( null != v_Ret && i_Class == v_Ret.getObjectNoClone().getClass() )
                     {
-                        if ( i_IsNew )
-                        {
-                            return (E) XJava.clone(v_Ret);
-                        }
-                        else
-                        {
-                            return (E) v_Ret;
-                        }
+                        return (E) v_Ret.getObject(i_IsNew);
                     }
                 }
             }
@@ -994,8 +1090,8 @@ public final class XJava
                 }
                 catch (Exception exce)
                 {
-                    $Logger.error(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().object.getClass().getName() + "] is " + exce.getMessage() ,exce);
-                    throw new NullPointerException(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().object.getClass().getName() + "] is " + exce.getMessage() + ".");
+                    $Logger.error(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().getObjectNoClone().getClass().getName() + "] is " + exce.getMessage() ,exce);
+                    throw new NullPointerException(i_Class.getName() + "[" + v_Maybe.keySet().iterator().next().getObjectNoClone().getClass().getName() + "] is " + exce.getMessage() + ".");
                 }
             }
         }
@@ -1006,7 +1102,54 @@ public final class XJava
     
     
     /**
-     * 按 ID 标识符的前缀 值获取类似的多个对象实例
+     * 按 XID 标识符的前缀 值获取类似的多个对象实例的元素数据
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2025-08-14
+     * @version     v1.0
+     *
+     * @param i_XIDPrefix  XID 标识符的前缀(区分大小写)
+     * @return
+     */
+    public static Map<String ,XJavaObject> getMetadatas(String i_XIDPrefix)
+    {
+        if ( i_XIDPrefix == null )
+        {
+            return null;
+        }
+        
+        Map<String ,XJavaObject> v_Objs     = new HashMap<String ,XJavaObject>();
+        Iterator<String>         v_Iterator = $XML_OBJECTS.keySetNodeID();
+        
+        while ( v_Iterator.hasNext() )
+        {
+            String v_XID = v_Iterator.next();
+            
+            if ( v_XID.startsWith(i_XIDPrefix) )
+            {
+                v_Objs.put(v_XID ,$XML_OBJECTS.getByNodeID(v_XID).getInfo());
+            }
+        }
+        
+        
+        v_Iterator = $SessionMap.keySet().iterator();
+        while ( v_Iterator.hasNext() )
+        {
+            String v_XID = v_Iterator.next();
+            
+            if ( v_XID.startsWith(i_XIDPrefix) )
+            {
+                v_Objs.put(v_XID ,$SessionMap.get(v_XID));
+            }
+        }
+        
+        return v_Objs;
+    }
+    
+    
+    
+    /**
+     * 按 XID 标识符的前缀 值获取类似的多个对象实例
      * 
      * 注意：本方法不能简单的调用 getObjects(String ,false) 来实现。
      *      这两种实现的区别在于 getObjects(String) 是按每种不同的自有属性来获取实例的。
@@ -1014,12 +1157,12 @@ public final class XJava
      * 
      * 2017-01-16 Add $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
      * 
-     * @param i_IDPrefix  ID 标识符的前缀(区分大小写)
+     * @param i_XIDPrefix  XID 标识符的前缀(区分大小写)
      * @return
      */
-    public static Map<String ,Object> getObjects(String i_IDPrefix)
+    public static Map<String ,Object> getObjects(String i_XIDPrefix)
     {
-        if ( i_IDPrefix == null )
+        if ( i_XIDPrefix == null )
         {
             return null;
         }
@@ -1029,18 +1172,18 @@ public final class XJava
         
         while ( v_Iterator.hasNext() )
         {
-            String v_ID = v_Iterator.next();
+            String v_XID = v_Iterator.next();
             
-            if ( v_ID.startsWith(i_IDPrefix) )
+            if ( v_XID.startsWith(i_XIDPrefix) )
             {
                 try
                 {
-                    v_Objs.put(v_ID ,$XML_OBJECTS.getByNodeID(v_ID).getInfo().getObject());
+                    v_Objs.put(v_XID ,$XML_OBJECTS.getByNodeID(v_XID).getInfo().getObject());
                 }
                 catch (NoSuchMethodException e)
                 {
                     // 多数为Clone方法异常
-                    throw new NullPointerException("[" + v_ID + "] is " + e.getMessage());
+                    throw new NullPointerException("[" + v_XID + "] is " + e.getMessage());
                 }
             }
         }
@@ -1049,11 +1192,11 @@ public final class XJava
         v_Iterator = $SessionMap.keySet().iterator();
         while ( v_Iterator.hasNext() )
         {
-            String v_ID = v_Iterator.next();
+            String v_XID = v_Iterator.next();
             
-            if ( v_ID.startsWith(i_IDPrefix) )
+            if ( v_XID.startsWith(i_XIDPrefix) )
             {
-                v_Objs.put(v_ID ,$SessionMap.get(v_ID));
+                v_Objs.put(v_XID ,$SessionMap.get(v_XID).getObjectNoClone());
             }
         }
         
@@ -1067,13 +1210,13 @@ public final class XJava
      * 
      * 2017-01-16 Add $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
      * 
-     * @param i_IDPrefix  ID 标识符的前缀(区分大小写)
+     * @param i_XIDPrefix  ID 标识符的前缀(区分大小写)
      * @param i_IsNew     是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
      * @return
      */
-    public static Map<String ,Object> getObjects(String i_IDPrefix ,boolean i_IsNew)
+    public static Map<String ,Object> getObjects(String i_XIDPrefix ,boolean i_IsNew)
     {
-        if ( i_IDPrefix == null )
+        if ( i_XIDPrefix == null )
         {
             return null;
         }
@@ -1084,7 +1227,7 @@ public final class XJava
         {
             String v_ID = v_Iterator.next();
             
-            if ( v_ID.startsWith(i_IDPrefix) )
+            if ( v_ID.startsWith(i_XIDPrefix) )
             {
                 try
                 {
@@ -1102,25 +1245,110 @@ public final class XJava
         v_Iterator = $SessionMap.keySet().iterator();
         while ( v_Iterator.hasNext() )
         {
-            String v_ID = v_Iterator.next();
+            String v_XID = v_Iterator.next();
             
-            if ( v_ID.startsWith(i_IDPrefix) )
+            if ( v_XID.startsWith(i_XIDPrefix) )
             {
                 try
                 {
-                    if ( i_IsNew )
-                    {
-                        v_Objs.put(v_ID ,XJava.clone($SessionMap.get(v_ID)));
-                    }
-                    else
-                    {
-                        v_Objs.put(v_ID ,$SessionMap.get(v_ID));
-                    }
+                    XJavaObject v_XObject = $SessionMap.get(v_XID);
+                    v_Objs.put(v_XID ,v_XObject.getObject(i_IsNew));
                 }
                 catch (NoSuchMethodException e)
                 {
                     // 多数为Clone方法异常
-                    throw new NullPointerException("[" + v_ID + "] is " + e.getMessage());
+                    throw new NullPointerException("[" + v_XID + "] is " + e.getMessage());
+                }
+            }
+        }
+        
+        return v_Objs;
+    }
+    
+    
+    
+    /**
+     * 按 Class 元类型获取多个对象实例的元素数据
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2025-08-14
+     * @version     v1.0
+     *
+     * @param i_Class  Class元类型
+     * @return
+     */
+    public static Map<String ,XJavaObject> getMetadatas(Class<?> i_Class)
+    {
+        Map<String ,XJavaObject> v_Objs = new HashMap<String ,XJavaObject>();
+        
+        if ( i_Class == null )
+        {
+            return v_Objs;
+        }
+        else
+        {
+            Iterator<String>         v_Iterator = $XML_OBJECTS.keySetNodeID();
+            String                   v_ID       = null;
+            TreeNode<XJavaObject>    v_TreeNode = null;
+            Map<String ,XJavaObject> v_Maybe    = new HashMap<String ,XJavaObject>(); // 有可能是的对象 ZhengWei(HY) Add 2022-01-05
+            
+            try
+            {
+                while ( v_Iterator.hasNext() )
+                {
+                    v_ID       = v_Iterator.next();
+                    v_TreeNode = $XML_OBJECTS.getByNodeID(v_ID);
+                    
+                    if ( null != v_TreeNode.getInfo()
+                      && null != v_TreeNode.getInfo().getObjectNoClone() )
+                    {
+                        if ( i_Class == v_TreeNode.getInfo().getObjectNoClone().getClass() )
+                        {
+                            v_Objs.put(v_ID ,v_TreeNode.getInfo());
+                        }
+                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObjectNoClone()) )
+                        {
+                            // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2022-01-05
+                            v_Maybe.put(v_ID ,v_TreeNode.getInfo());
+                        }
+                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObjectNoClone() ,i_Class) )
+                        {
+                            // 尝试递归查找 ZhengWei(HY) Add 2022-09-20
+                            v_Maybe.put(v_ID ,v_TreeNode.getInfo());
+                        }
+                    }
+                }
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + "." ,exce);
+                throw new RuntimeException(i_Class.getName() + "[" + v_TreeNode.getNodeID() + "] is " + exce.getMessage() + ".");
+            }
+            
+            
+            Iterator<XJavaObject> v_SessionIterator = $SessionMap.values().iterator();
+            while ( v_SessionIterator.hasNext() )
+            {
+                XJavaObject v_XObject = v_SessionIterator.next();
+                
+                if ( null != v_XObject && i_Class == v_XObject.getObjectNoClone().getClass() )
+                {
+                    v_Objs.put(v_ID ,v_XObject);
+                }
+            }
+            
+            if ( v_Objs.size() <= 0 && v_Maybe.size() >= 1 )
+            {
+                try
+                {
+                    for (Map.Entry<String ,XJavaObject> v_XItem : v_Maybe.entrySet())
+                    {
+                        v_Objs.put(v_XItem.getKey() ,v_XItem.getValue());
+                    }
+                }
+                catch (Exception exce)
+                {
+                    $Logger.error(exce);
                 }
             }
         }
@@ -1162,18 +1390,18 @@ public final class XJava
                     v_TreeNode = $XML_OBJECTS.getByNodeID(v_ID);
                     
                     if ( null != v_TreeNode.getInfo()
-                      && null != v_TreeNode.getInfo().getObject() )
+                      && null != v_TreeNode.getInfo().getObjectNoClone() )
                     {
-                        if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
+                        if ( i_Class == v_TreeNode.getInfo().getObjectNoClone().getClass() )
                         {
                             v_Objs.put(v_ID ,(E) v_TreeNode.getInfo().getObject());
                         }
-                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
+                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObjectNoClone()) )
                         {
                             // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2022-01-05
                             v_Maybe.put(v_ID ,v_TreeNode.getInfo());
                         }
-                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObject(false) ,i_Class) )
+                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObjectNoClone() ,i_Class) )
                         {
                             // 尝试递归查找 ZhengWei(HY) Add 2022-09-20
                             v_Maybe.put(v_ID ,v_TreeNode.getInfo());
@@ -1188,14 +1416,14 @@ public final class XJava
             }
             
             
-            Iterator<Object> v_SessionIterator = $SessionMap.values().iterator();
+            Iterator<XJavaObject> v_SessionIterator = $SessionMap.values().iterator();
             while ( v_SessionIterator.hasNext() )
             {
-                Object v_Object = v_SessionIterator.next();
+                XJavaObject v_XObject = v_SessionIterator.next();
                 
-                if ( null != v_Object && i_Class == v_Object.getClass() )
+                if ( null != v_XObject && i_Class == v_XObject.getObjectNoClone().getClass() )
                 {
-                    v_Objs.put(v_ID ,(E) v_Object);
+                    v_Objs.put(v_ID ,(E) v_XObject);
                 }
             }
             
@@ -1225,7 +1453,7 @@ public final class XJava
      * 
      * 2017-01-16 Add $SessionMap专用于保存有限生命的对象实例。与 $XML_OBJECTS 互补，共同结成整个大对象池。
      * 
-     * @param i_ID
+     * @param i_XID
      * @param i_IsNew   是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
      * @return
      */
@@ -1253,25 +1481,25 @@ public final class XJava
                     v_TreeNode = $XML_OBJECTS.getByNodeID(v_ID);
                     
                     if ( null    != v_TreeNode.getInfo()
-                      && null    != v_TreeNode.getInfo().getObject()
-                      && i_Class == v_TreeNode.getInfo().getObject().getClass() )
+                      && null    != v_TreeNode.getInfo().getObjectNoClone()
+                      && i_Class == v_TreeNode.getInfo().getObjectNoClone().getClass() )
                     {
                         v_Objs.put(v_ID ,(E) v_TreeNode.getInfo().getObject(i_IsNew));
                     }
                     
                     if ( null != v_TreeNode.getInfo()
-                      && null != v_TreeNode.getInfo().getObject() )
+                      && null != v_TreeNode.getInfo().getObjectNoClone() )
                     {
-                        if ( i_Class == v_TreeNode.getInfo().getObject(false).getClass() )
+                        if ( i_Class == v_TreeNode.getInfo().getObjectNoClone().getClass() )
                         {
                             v_Objs.put(v_ID ,(E) v_TreeNode.getInfo().getObject(i_IsNew));
                         }
-                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObject(false)) )
+                        else if ( i_Class != Object.class && i_Class.isInstance(v_TreeNode.getInfo().getObjectNoClone()) )
                         {
                             // 尝试在实现类、子类中查找 ZhengWei(HY) Add 2022-01-05
                             v_Maybe.put(v_ID ,v_TreeNode.getInfo());
                         }
-                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObject(false) ,i_Class) )
+                        else if ( MethodReflect.isExtendImplement(v_TreeNode.getInfo().getObjectNoClone() ,i_Class) )
                         {
                             // 尝试递归查找 ZhengWei(HY) Add 2022-09-20
                             v_Maybe.put(v_ID ,v_TreeNode.getInfo());
@@ -1286,23 +1514,16 @@ public final class XJava
             }
             
             
-            Iterator<Object> v_SessionIterator = $SessionMap.values().iterator();
+            Iterator<XJavaObject> v_SessionIterator = $SessionMap.values().iterator();
             while ( v_SessionIterator.hasNext() )
             {
-                Object v_Object = v_SessionIterator.next();
+                XJavaObject v_XObject = v_SessionIterator.next();
                 
-                if ( null != v_Object && i_Class == v_Object.getClass() )
+                if ( null != v_XObject && i_Class == v_XObject.getObjectNoClone().getClass() )
                 {
                     try
                     {
-                        if ( i_IsNew )
-                        {
-                            v_Objs.put(v_ID ,(E) XJava.clone(v_Object));
-                        }
-                        else
-                        {
-                            v_Objs.put(v_ID ,(E) v_Object);
-                        }
+                        v_Objs.put(v_ID ,(E) v_XObject.getObject(i_IsNew));
                     }
                     catch (Exception exce)
                     {
@@ -1336,12 +1557,12 @@ public final class XJava
     /**
      * 由外界主动设置ID的值，并添加到XJava中
      * 
-     * @param i_ID
+     * @param i_XID
      * @param i_Object
      */
-    public static void putObject(String i_ID ,Object i_Object)
+    public static void putObject(String i_XID ,Object i_Object)
     {
-        putObject(i_ID ,i_Object ,false);
+        putObject(i_XID ,i_Object ,false);
     }
     
     
@@ -1349,13 +1570,13 @@ public final class XJava
     /**
      * 由外界主动设置ID的值，并添加到XJava中
      * 
-     * @param i_ID
+     * @param i_XID
      * @param i_Object
      * @param i_IsNew
      */
-    public static void putObject(String i_ID ,Object i_Object ,boolean i_IsNew)
+    public static void putObject(String i_XID ,Object i_Object ,boolean i_IsNew)
     {
-        new XJava(i_ID ,i_Object ,i_IsNew);
+        new XJava(i_XID ,i_Object ,i_IsNew);
     }
     
     
@@ -1367,13 +1588,13 @@ public final class XJava
      * @createDate  2017-01-16
      * @version     v1.0
      *
-     * @param i_ID       对象的ID
+     * @param i_XID       对象的ID
      * @param i_Object   对象
      * @param i_Second   过期时长(单位：秒)。指当前时刻过i_Second秒后过期失效。
      */
-    public static void putObject(String i_ID ,Object i_Object ,long i_Second)
+    public static void putObject(String i_XID ,Object i_Object ,long i_Second)
     {
-        $SessionMap.put(i_ID ,i_Object ,i_Second);
+        $SessionMap.put(i_XID ,new XJavaObject(i_XID ,i_Object) ,i_Second);
     }
     
     
@@ -1385,12 +1606,12 @@ public final class XJava
      * @createDate  2017-01-16
      * @version     v1.0
      *
-     * @param i_ID  对象的ID
+     * @param i_XID  对象的ID
      */
-    public static void remove(String i_ID)
+    public static void remove(String i_XID)
     {
-        $XML_OBJECTS.removeNodeID(i_ID);
-        $SessionMap .remove      (i_ID);
+        $XML_OBJECTS.removeNodeID(i_XID);
+        $SessionMap .remove      (i_XID);
     }
     
     
@@ -1469,13 +1690,13 @@ public final class XJava
     /**
      * 由外界主动设置ID的值，并添加到XJava中
      * 
-     * @param i_ID
+     * @param i_XID
      * @param i_Object
      * @param i_IsNew
      */
-    private XJava(String i_ID ,Object i_Object ,boolean i_IsNew)
+    private XJava(String i_XID ,Object i_Object ,boolean i_IsNew)
     {
-        if ( Help.isNull(i_ID) )
+        if ( Help.isNull(i_XID) )
         {
             throw new NullPointerException("ID is null.");
         }
@@ -1485,9 +1706,9 @@ public final class XJava
             throw new NullPointerException("Object is null.");
         }
         
-        TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(i_ID.trim() ,i_ID.trim());
+        TreeNode<XJavaObject> v_TreeNode = new TreeNode<XJavaObject>(i_XID.trim() ,i_XID.trim());
         
-        v_TreeNode.setInfo(new XJavaObject(i_ID.trim() ,i_Object ,i_IsNew));
+        v_TreeNode.setInfo(new XJavaObject(i_XID.trim() ,i_Object ,i_IsNew));
         
         $XML_OBJECTS.put(v_TreeNode);
     }
@@ -4503,110 +4724,6 @@ public final class XJava
             $Logger.error("XJava object setter(getter()) exception." ,exce);
             throw new NoSuchMethodException("XJava object setter(getter()) exception." + v_ErrorInfo + "\n" + exce.getMessage());
         }
-    }
-    
-    
-    
-    
-    
-    /**
-     * XJava.$XML_OBJECTS集合中的元素对象
-     * 
-     * 有了此类后，就可以更加丰富XJava构造对象的多样化。
-     * 
-     * 1. 可从原先所有构造出的对象都是单例，变成：可单例、可多实例
-     * 2. 深克隆：当构造一个新的实例时，如果有clone()方法，则调用克隆对象
-     * 3. 浅克隆：当构造一个新的实例时，如果没有clone()方法，则通过无参数的构造器new一个实例，再依次newObject.setter(oldObject.getter())
-     * 
-     * @author      ZhengWei(HY)
-     * @version     v1.0
-     * @createDate  2013-08-10
-     */
-    class XJavaObject
-    {
-        /** XJava构造出的对象实例 */
-        private Object object;
-        
-        /**
-         * 是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
-         * 
-         * XJava默认构造出的对象为"单例"
-         */
-        private boolean isNew;
-        
-        
-        
-        public XJavaObject()
-        {
-            this(null ,null ,false);
-        }
-        
-        
-        
-        public XJavaObject(String i_XJavaID ,Object i_Object)
-        {
-            this(i_XJavaID ,i_Object ,false);
-        }
-        
-        
-        
-        public XJavaObject(String i_XJavaID ,Object i_Object ,boolean i_IsNew)
-        {
-            this.object = i_Object;
-            this.isNew  = i_IsNew;
-            
-            // 将配置在XML配置文件中的ID值，自动赋值给Java实例对象。  ZhengWei(HY) Add 2018-03-09
-            if ( this.object != null )
-            {
-                if ( this.object instanceof XJavaID )
-                {
-                    XJavaID v_XJavaID = (XJavaID)this.object;
-                    if ( Help.isNull(v_XJavaID.getXJavaID()) )
-                    {
-                        // 不重复赋值
-                        v_XJavaID.setXJavaID(i_XJavaID);
-                    }
-                }
-            }
-        }
-
-        
-        public boolean isNew()
-        {
-            return isNew;
-        }
-
-        
-        public void setNew(boolean isNew)
-        {
-            this.isNew = isNew;
-        }
-        
-        
-        public Object getObject() throws NoSuchMethodException
-        {
-            return this.getObject(this.isNew);
-        }
-        
-        
-        public Object getObject(boolean i_IsNew) throws NoSuchMethodException
-        {
-            if ( i_IsNew )
-            {
-                return XJava.clone(this.object);
-            }
-            else
-            {
-                return this.object;
-            }
-        }
-
-        
-        public void setObject(Object object)
-        {
-            this.object = object;
-        }
-        
     }
     
 }
