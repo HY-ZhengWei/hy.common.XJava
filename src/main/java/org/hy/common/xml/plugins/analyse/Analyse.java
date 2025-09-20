@@ -156,6 +156,7 @@ public class Analyse
         
         try
         {
+            v_FileHelp.setHaveNewLine(true);
             return v_FileHelp.getContent(v_InputStream ,"UTF-8");
         }
         finally
@@ -198,6 +199,7 @@ public class Analyse
         
         try
         {
+            v_FileHelp.setHaveNewLine(true);
             return v_FileHelp.getContentByte(v_InputStream);
         }
         finally

@@ -103,65 +103,66 @@ import org.xml.sax.InputSource;
  *              v2.0  2023-06-24  添加：@Xcqj的图数据库的注解
  *              v2.1  2025-08-14  添加：获取对象池中的元数据
  *                                修改：会话级对象池，改为XJavaObject类型的元数据
+ *              v2.2  2025-09-20  添加：XML节点<...>和</...>间的内容类型
  */
 public final class XJava
 {
-    private final static Logger                    $Logger                       = Logger.getLogger(XJava.class ,true);
+    private final static Logger                         $Logger                       = Logger.getLogger(XJava.class ,true);
     
-    private final static String                    $XML_JAVA_DATATYPE_CHAR       = "char";
+    private final static String                         $XML_JAVA_DATATYPE_CHAR       = "char";
     
-    private final static String                    $XML_JAVA_DATATYPE_BYTE       = "byte";
+    private final static String                         $XML_JAVA_DATATYPE_BYTE       = "byte";
     
-    private final static String                    $XML_JAVA_DATATYPE_SHORT      = "short";
+    private final static String                         $XML_JAVA_DATATYPE_SHORT      = "short";
     
-    private final static String                    $XML_JAVA_DATATYPE_INT        = "int";
+    private final static String                         $XML_JAVA_DATATYPE_INT        = "int";
     
-    private final static String                    $XML_JAVA_DATATYPE_LONG       = "long";
+    private final static String                         $XML_JAVA_DATATYPE_LONG       = "long";
     
-    private final static String                    $XML_JAVA_DATATYPE_BIGDECIMAL = "bigdecimal";
+    private final static String                         $XML_JAVA_DATATYPE_BIGDECIMAL = "bigdecimal";
     
-    private final static String                    $XML_JAVA_DATATYPE_DOUBLE     = "doulbe";
+    private final static String                         $XML_JAVA_DATATYPE_DOUBLE     = "doulbe";
     
-    private final static String                    $XML_JAVA_DATATYPE_FLOAT      = "float";
+    private final static String                         $XML_JAVA_DATATYPE_FLOAT      = "float";
     
-    private final static String                    $XML_JAVA_DATATYPE_BOOLEAN    = "boolean";
+    private final static String                         $XML_JAVA_DATATYPE_BOOLEAN    = "boolean";
     
-    private final static String                    $XML_JAVA_DATATYPE_STRING     = "string";
+    private final static String                         $XML_JAVA_DATATYPE_STRING     = "string";
     
-    private final static String                    $XML_JAVA_DATATYPE_DATE       = "date";
+    private final static String                         $XML_JAVA_DATATYPE_DATE       = "date";
     
-    private final static String                    $XML_JAVA_DATATYPE_OBJECT     = "object";
+    private final static String                         $XML_JAVA_DATATYPE_OBJECT     = "object";
     
-    private final static String                    $XML_JAVA_DATATYPE_CLASS      = "class";
+    private final static String                         $XML_JAVA_DATATYPE_CLASS      = "class";
     
     
     
     /** 导入功能的节点的标记 */
-    private final static String                    $XML_IMPORT                   = "import";
+    private final static String                         $XML_IMPORT                   = "import";
     
     /** 导入功能的 xml 节点名称标记 */
-    private final static String                    $XML_IMPORT_NAME              = "name";
+    private final static String                         $XML_IMPORT_NAME              = "name";
     
     /** 导入功能的 name 对应的 Java 类 */
-    private final static String                    $XML_IMPORT_CLASS             = "class";
+    private final static String                         $XML_IMPORT_CLASS             = "class";
     
     /** 节点为 Map 类型的集合时，统一标记获取元素哪个方法为Map.key值 */
-    private final static String                    $XML_MAP_KEY                  = "key";
+    private final static String                         $XML_MAP_KEY                  = "key";
     
     /** 节点为 Map 类型的集合时，对于元素的添加方法名称 */
-    private final static String                    $XML_MAP_DEF_SETTER           = "put";
+    private final static String                         $XML_MAP_DEF_SETTER           = "put";
     
     /** 节点为 List 类型的集合时，对于元素的添加方法名称 */
-    private final static String                    $XML_LIST_DEF_SETTER          = "add";
+    private final static String                         $XML_LIST_DEF_SETTER          = "add";
     
     /** 构造器节点关键字。此关键字必须为构造节点的第一个子节点 */
-    private final static String                    $XML_OBJECT_CONSTRUCTOR       = "constructor";
+    private final static String                         $XML_OBJECT_CONSTRUCTOR       = "constructor";
     
     /** 节点对应的 Java 类 */
-    private final static String                    $XML_OBJECT_CLASS             = "class";
+    private final static String                         $XML_OBJECT_CLASS             = "class";
     
     /** 指定setter方法的节点标记 */
-    private final static String                    $XML_OBJECT_SETTER            = "setter";
+    private final static String                         $XML_OBJECT_SETTER            = "setter";
     
     /**
      * this关键字
@@ -196,6 +197,12 @@ public final class XJava
      * 表示是否每次通过 XJava.getObject(id) 获取一个全新的对象实例
      */
     private final static String                         $XML_OBJECT_NEWOBJECT         = "new";
+    
+    /** 表示<...>和</...>间的内容类型 */
+    private final static String                         $XML_OBJECT_TYPE              = "type";
+    
+    /** 内容类型：多行文本、原始文本 */
+    private final static String                         $XML_OBJECT_TYPE_TEXTAREA     = "textarea";
     
     /**
      * 加密关键字。对涉密属性进行加密。
@@ -2832,6 +2839,7 @@ public final class XJava
                 String                v_ClassName         = getNodeAttribute(v_Node ,$XML_OBJECT_CLASS);
                 String                v_ID                = getNodeAttribute(v_Node ,$XML_OBJECT_ID);
                 String                v_This              = getNodeAttribute(v_Node ,$XML_OBJECT_THIS);
+                String                v_ContentType       = getNodeAttribute(v_Node ,$XML_OBJECT_TYPE);
                 String                v_If                = getNodeAttribute(v_Node ,$XML_OBJECT_IF);
                 String                v_IfNot             = getNodeAttribute(v_Node ,$XML_OBJECT_IFNOT);
                 String                v_TreeNodeOrderByID = StringHelp.lpad(v_NodeIndex ,$TREE_NODE_ORDERBYID_MAXLEN ,"0");
@@ -3229,7 +3237,7 @@ public final class XJava
                             // 字符串类型特殊的对待
                             if ( String.class == v_AttrClass )
                             {
-                                String v_NodeValue = getNodeTextContent(v_Node);
+                                String v_NodeValue = getNodeTextContent(v_Node ,v_ContentType);
                                 v_NodeValue = (String)this.encrypt(i_SuperNode ,v_Node ,v_NodeValue);
                                 v_AttrInstance = v_AttrClass.getConstructor(String.class).newInstance(StringHelp.replaceAll(v_NodeValue ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath));
                             }
@@ -3356,7 +3364,7 @@ public final class XJava
                         }
                         else
                         {
-                            v_ParamValue = getNodeTextContent(v_Node);
+                            v_ParamValue = getNodeTextContent(v_Node ,v_ContentType);
                             
                             // 当节点值不存在时
                             if ( v_ParamValue == null || "".equals(v_ParamValue) )
@@ -3557,16 +3565,32 @@ public final class XJava
      * 
      * 异常的原因尚不明确，只是问题暂时得到了解决。
      * 
-     * ZhengWei(HY) Add 2013-07-14
+     * @author      ZhengWei(HY)
+     * @createDate  2013-07-14
+     * @version     v1.0
+     *              v2.0  2025-09-20  添加：表示<...>和</...>间的内容类型
      * 
      * @param i_Node
+     * @param i_ContentType  表示<...>和</...>间的内容类型
      * @return
      */
-    private static String getNodeTextContent(Node i_Node)
+    private static String getNodeTextContent(Node i_Node ,String i_ContentType)
     {
         try
         {
-            return i_Node.getTextContent().trim();
+            String v_Content = i_Node.getTextContent();
+            if ( Help.isNull(i_ContentType) )
+            {
+                return StringHelp.replaceAll(v_Content.trim() ,"\r\n" ,"") ;
+            }
+            else if ( $XML_OBJECT_TYPE_TEXTAREA.equalsIgnoreCase(i_ContentType) )
+            {
+                return v_Content;
+            }
+            else
+            {
+                return StringHelp.replaceAll(v_Content.trim() ,"\r\n" ,"") ;
+            }
         }
         catch (Exception exce)
         {
@@ -3574,7 +3598,19 @@ public final class XJava
             
             if ( v_NodeList.getLength() >= 1 )
             {
-                return v_NodeList.item(0).getNodeValue().trim();
+                String v_Content = v_NodeList.item(0).getNodeValue();
+                if ( Help.isNull(i_ContentType) )
+                {
+                    return StringHelp.replaceAll(v_Content.trim() ,"\r\n" ,"") ;
+                }
+                else if ( $XML_OBJECT_TYPE_TEXTAREA.equalsIgnoreCase(i_ContentType) )
+                {
+                    return v_Content;
+                }
+                else
+                {
+                    return StringHelp.replaceAll(v_Content.trim() ,"\r\n" ,"") ;
+                }
             }
             else
             {
@@ -3616,6 +3652,7 @@ public final class XJava
                 Class<?> v_ParamClass     = null;
                 Object   v_ParamValue     = null;
                 String   v_RefID          = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_REF);
+                String   v_v_ContentType  = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_TYPE);
                 
                 
                 // 标记有Class节点属性的情况
@@ -3664,49 +3701,49 @@ public final class XJava
                 else if ( $XML_JAVA_DATATYPE_CHAR.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = char.class;
-                    v_ParamValue = getNodeTextContent(v_ParamNode).charAt(0);
+                    v_ParamValue = getNodeTextContent(v_ParamNode ,v_v_ContentType).charAt(0);
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_INT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = int.class;
-                    v_ParamValue = Integer.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode)));
+                    v_ParamValue = Integer.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_LONG.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = long.class;
-                    v_ParamValue = Long.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode)));
+                    v_ParamValue = Long.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_BIGDECIMAL.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = BigDecimal.class;
-                    v_ParamValue = new BigDecimal((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode)));
+                    v_ParamValue = new BigDecimal((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_DOUBLE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = double.class;
-                    v_ParamValue = Double.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode)));
+                    v_ParamValue = Double.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_FLOAT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = float.class;
-                    v_ParamValue = Double.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode)));
+                    v_ParamValue = Double.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_BOOLEAN.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = boolean.class;
-                    v_ParamValue = Boolean.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamValue = Boolean.valueOf(getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_STRING.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = String.class;
-                    v_ParamValue = encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode));
+                    v_ParamValue = encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     if ( v_ParamValue != null )
                     {
                         v_ParamValue = StringHelp.replaceAll(v_ParamValue.toString() ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath);
@@ -3716,31 +3753,31 @@ public final class XJava
                 else if ( $XML_JAVA_DATATYPE_DATE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = Date.class;
-                    v_ParamValue = new Date().setDate((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode)));
+                    v_ParamValue = new Date().setDate((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.TRUE);
                 }
                 else if ( $XML_JAVA_DATATYPE_OBJECT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = Object.class;
-                    v_ParamValue = getNodeTextContent(v_ParamNode);
+                    v_ParamValue = getNodeTextContent(v_ParamNode ,v_v_ContentType);
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_CLASS.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = Class.class;
-                    v_ParamValue = encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode));
+                    v_ParamValue = encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_BYTE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = byte.class;
-                    v_ParamValue = Byte.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamValue = Byte.valueOf(getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_SHORT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = short.class;
-                    v_ParamValue = Short.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode)));
+                    v_ParamValue = Short.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else
@@ -3959,6 +3996,7 @@ public final class XJava
                 Class<?> v_ParamClass     = null;
                 Object   v_ParamValue     = null;
                 String   v_RefID          = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_REF);
+                String   v_v_ContentType  = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_TYPE);
                 
                 
                 // 标记有Class节点属性的情况
@@ -4007,49 +4045,49 @@ public final class XJava
                 else if ( $XML_JAVA_DATATYPE_CHAR.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = char.class;
-                    v_ParamValue = getNodeTextContent(v_ParamNode).charAt(0);
+                    v_ParamValue = getNodeTextContent(v_ParamNode ,v_v_ContentType).charAt(0);
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_INT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = int.class;
-                    v_ParamValue = Integer.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamValue = Integer.valueOf(getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_LONG.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = long.class;
-                    v_ParamValue = Long.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamValue = Long.valueOf(getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_BIGDECIMAL.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = BigDecimal.class;
-                    v_ParamValue = new BigDecimal(getNodeTextContent(v_ParamNode));
+                    v_ParamValue = new BigDecimal(getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_DOUBLE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = double.class;
-                    v_ParamValue = Double.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamValue = Double.valueOf(getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_FLOAT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = float.class;
-                    v_ParamValue = Float.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamValue = Float.valueOf(getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_BOOLEAN.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = boolean.class;
-                    v_ParamValue = Boolean.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamValue = Boolean.valueOf(getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_STRING.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = String.class;
-                    v_ParamValue = getNodeTextContent(v_ParamNode);
+                    v_ParamValue = getNodeTextContent(v_ParamNode ,v_v_ContentType);
                     if ( v_ParamValue != null )
                     {
                         v_ParamValue = StringHelp.replaceAll(v_ParamValue.toString() ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath);
@@ -4059,31 +4097,31 @@ public final class XJava
                 else if ( $XML_JAVA_DATATYPE_DATE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = Date.class;
-                    v_ParamValue = new Date().setDate(getNodeTextContent(v_ParamNode));
+                    v_ParamValue = new Date().setDate(getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.TRUE);
                 }
                 else if ( $XML_JAVA_DATATYPE_OBJECT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = Object.class;
-                    v_ParamValue = getNodeTextContent(v_ParamNode);
+                    v_ParamValue = getNodeTextContent(v_ParamNode ,v_v_ContentType);
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_CLASS.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = Class.class;
-                    v_ParamValue = Help.forName(getNodeTextContent(v_ParamNode));
+                    v_ParamValue = Help.forName(getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_BYTE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = byte.class;
-                    v_ParamValue = Byte.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamValue = Byte.valueOf(getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_SHORT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = short.class;
-                    v_ParamValue = Short.valueOf(getNodeTextContent(v_ParamNode));
+                    v_ParamValue = Short.valueOf(getNodeTextContent(v_ParamNode ,v_v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else

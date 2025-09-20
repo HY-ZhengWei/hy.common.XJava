@@ -43,6 +43,7 @@ import org.hy.common.xml.XJava;
  *              v5.0  2019-08-21  添加：load(...)系列方法，显示区分功能划分，方便用户选择。
  *              v6.0  2020-06-24  添加：通过日志引擎规范输出日志
  *              v6.1  2021-12-19  删除：日志引擎的构建
+ *              v7.0  2025-09-20  添加：获取原始文本内容不再去除回车换行
  */
 public class AppInitConfig
 {
@@ -304,6 +305,8 @@ public class AppInitConfig
         try
         {
             FileHelp v_FileHelp = new FileHelp();
+            v_FileHelp.setHaveNewLine(true);
+            
             String   v_Content  = v_FileHelp.getContent(i_XML ,"UTF-8");
             String   v_XML      = Help.getClassHomePath() + Date.getNowTime().getFullMilli_ID() + ".xml";
             
@@ -461,6 +464,7 @@ public class AppInitConfig
         try
         {
             FileHelp v_FileHelp = new FileHelp();
+            v_FileHelp.setHaveNewLine(true);
             
             if ( !Help.isNull(i_Params) )
             {
@@ -590,12 +594,12 @@ public class AppInitConfig
                             if ( !Help.isNull(i_XmlRootPath) )
                             {
                                 // ZhengWei(HY) Edit 2017-10-27 i_XmlRootPath处原先的传值为：""
-                                XJava.parserXml(v_FileHelp.getXD(i_XmlRootPath + i_XDName ,v_Param.getValue() ,this.enCode)                                                    ,i_XmlRootPath          ,v_Param.getValue());
+                                XJava.parserXml(v_FileHelp.getXD(i_XmlRootPath + i_XDName ,v_Param.getValue() ,this.enCode) ,i_XmlRootPath          ,v_Param.getValue());
                             }
                             else
                             {
                                 v_XmlInput = this.getClass().getResourceAsStream(Help.NVL(this.xmlClassPath) + i_XDName);
-                                XJava.parserXml(v_FileHelp.getXD(v_XmlInput ,v_Param.getValue() ,this.enCode) ,this.xjavaXmlClassPath ,v_Param.getValue());
+                                XJava.parserXml(v_FileHelp.getXD(v_XmlInput               ,v_Param.getValue() ,this.enCode) ,this.xjavaXmlClassPath ,v_Param.getValue());
                             }
                             v_OK++;
                             v_XFileNames.put(v_Param.getValue() ,this);

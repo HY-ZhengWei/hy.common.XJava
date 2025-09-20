@@ -543,6 +543,10 @@ public final class XJSON
                     {
                         v_Value = parser((XJSONObject)v_Value ,v_MapValueClass);
                     }
+                    else if ( !(v_Value instanceof String) && Help.isBasicDataType(v_Value.getClass()) )
+                    {
+                        // Nothing.
+                    }
                     else
                     {
                         v_Value = Help.toObject(v_MapValueClass ,v_Value.toString());

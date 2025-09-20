@@ -26,14 +26,15 @@ import org.hy.common.file.FileHelp;
  * 4. 如果XML配置文件与Java类文件不同(名称或路径)，可以重写小部分方法后实现加载
  * 
  * @author      ZhengWei(HY)
- * @version     v1.0  
  * @createDate  2013-08-16
+ * @version     v1.0  
+ *              v2.0  2025-09-20  添加：获取原始文本内容不再去除回车换行
  */
 public abstract class BaseInterface
 {
-	
-	private static final Logger $Logger = new Logger(BaseInterface.class ,true);
-	
+    
+    private static final Logger $Logger = new Logger(BaseInterface.class ,true);
+    
     /**
      * XD文件中的资源是否被加载过
      * 
@@ -96,6 +97,7 @@ public abstract class BaseInterface
         {
             this.isInit = true;
             $IsInit.put(this.getXClass() ,Boolean.TRUE);
+            v_FileHelp.setHaveNewLine(true);
             
             if ( this.rtype == 1 )
             {
@@ -110,7 +112,7 @@ public abstract class BaseInterface
         } 
         catch (Exception e) 
         {
-        	$Logger.error(e ,this.getXClass().getSimpleName() + ".xml is not error.");
+            $Logger.error(e ,this.getXClass().getSimpleName() + ".xml is not error.");
             throw new RuntimeException(e);
         }
         finally

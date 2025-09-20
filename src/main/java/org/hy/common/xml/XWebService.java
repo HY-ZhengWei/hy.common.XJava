@@ -736,7 +736,9 @@ public class XWebService
     {
         try
         {
-            this.requestXML = (new FileHelp()).getContent(i_FileFullName ,i_CharSetName);
+            FileHelp v_FHelp = new FileHelp();
+            v_FHelp.setHaveNewLine(true);
+            this.requestXML = v_FHelp.getContent(i_FileFullName ,i_CharSetName);
         }
         catch (Exception exce)
         {
@@ -765,7 +767,9 @@ public class XWebService
     {
         try
         {
-            this.returnXML = (new FileHelp()).getContent(i_FileFullName ,i_CharSetName);
+            FileHelp v_FHelp = new FileHelp();
+            v_FHelp.setHaveNewLine(true);
+            this.returnXML = v_FHelp.getContent(i_FileFullName ,i_CharSetName);
         }
         catch (Exception exce)
         {
