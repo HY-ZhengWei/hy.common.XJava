@@ -1,5 +1,6 @@
 package org.hy.common.xml;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -88,6 +89,7 @@ import net.minidev.json.parser.JSONParser;
  *              2025-07-23  V4.3  修正：1.格式化Json字符串时，对占位符的处理上有在冒号与变量中间添加空格。发现人：王雨墨、景浩东
  *              2025-07-31  V4.4  修正：1.格式化Json字符串时，识别非占位符的情况，如：{"v":201}。发现人：李浩 
  *              2025-08-08  V4.5  修改：将所有方法throws抛异常的类型均改为RuntimeException，方便外界使用者不用显性try catch。建议人：李浩
+ *              2025-10-22  V5.0  添加：支持对象中属性为Map集合，并且Map集合中的元素也是一个对象的Json转Java对象。
  */
 public final class XJSON
 {
@@ -454,8 +456,23 @@ public final class XJSON
      * @param i_ObjectClass         JSONObject对应的Java类型
      * @return
      */
-    @SuppressWarnings("unchecked")
     public Object parser(XJSONObject i_JSONObject ,Class<?> i_ObjectClass)
+    {
+        return parser(i_JSONObject ,i_ObjectClass ,null);
+    }
+    
+    
+    
+    /**
+     * 将JSONObject解释成Java实例对象
+     * 
+     * @param i_JSONObject
+     * @param i_ObjectClass         JSONObject对应的Java类型
+     * @param i_ElementClass        集合中每个元素的Java类型。仅当 i_ObjectClass 是 Map集合是生效 
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public Object parser(XJSONObject i_JSONObject ,Class<?> i_ObjectClass ,Class<?> i_ElementClass)
     {
         if ( i_JSONObject == null )
         {
@@ -514,7 +531,7 @@ public final class XJSON
                 String [] v_NameAndClass  = v_JsonName.split($Serializable_SplitKey);
                 String    v_ValueClass    = v_NameAndClass.length >= 2 ? v_NameAndClass[1] : null;
                 String    v_MapKeyName    = v_NameAndClass[0];
-                Class<?>  v_MapValueClass = this.getObjectClass();
+                Class<?>  v_MapValueClass = Help.NVL(i_ElementClass ,this.getObjectClass());
                 
                 if ( !Help.isNull(v_ValueClass) )
                 {
@@ -786,7 +803,8 @@ public final class XJSON
                 }
                 else if ( v_Value.getClass() == JSONObject.class )
                 {
-                    Class<?> v_VClass = v_Method.getParameterTypes()[0];
+                    Class<?> v_VClass        = v_Method.getParameterTypes()[0];
+                    Class<?> v_VClassElement = null;
                     
                     // 控制参数 isJsonClassByObject 只控制Java转Json的过程；Json转Java的过程将自动判定
                     if ( !Help.isNull(v_ValueClass) )
@@ -802,8 +820,30 @@ public final class XJSON
                             $Logger.warn(exce.getMessage());
                         }
                     }
+                    else
+                    {
+                        // 2025-10-22 尝试获取Map中value的泛型
+                        if ( MethodReflect.isExtendImplement(v_VClass ,Map.class) )
+                        {
+                            try
+                            {
+                                String v_FieldName = v_Method.getName().substring(3 ,4).toLowerCase() + v_Method.getName().substring(4);
+                                Field  v_Field     = i_ObjectClass.getDeclaredField(v_FieldName);
+                                Class<?> v_Class   = MethodReflect.getGenerics(v_Field ,1);
+                                
+                                if ( v_Class != null )
+                                {
+                                    v_VClassElement = v_Class;
+                                }
+                            }
+                            catch (Exception exce)
+                            {
+                                $Logger.warn("未成功获取Map中的泛型" + i_ObjectClass.getName() + "." + v_Method.getName() ,exce.getMessage());
+                            }
+                        }
+                    }
                     
-                    v_ParserObj = this.parser(new XJSONObject((JSONObject)v_Value) ,v_VClass);
+                    v_ParserObj = this.parser(new XJSONObject((JSONObject)v_Value) ,v_VClass ,v_VClassElement);
                     
                     if ( v_ParserObj != null )
                     {
