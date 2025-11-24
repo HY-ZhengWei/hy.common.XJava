@@ -104,6 +104,7 @@ import org.xml.sax.InputSource;
  *              v2.1  2025-08-14  添加：获取对象池中的元数据
  *                                修改：会话级对象池，改为XJavaObject类型的元数据
  *              v2.2  2025-09-20  添加：XML节点<...>和</...>间的内容类型
+ *              v2.3  2025-11-10  修正：<constructor>在构造对象异常时，删除之前预先put在对象池中的信息
  */
 public final class XJava
 {
@@ -3850,7 +3851,16 @@ public final class XJava
             
             if ( v_Constructor != null )
             {
-                return v_Constructor.newInstance(v_ParamValueList.toArray());
+                try
+                {
+                    return v_Constructor.newInstance(v_ParamValueList.toArray());
+                }
+                catch (Exception exce)
+                {
+                    // 删除未初始化成功的对象  Add 2025-11-10
+                    XJava.remove(i_ConstructorTreeNode.getSuper().getNodeID());
+                    throw exce;
+                }
             }
             else
             {

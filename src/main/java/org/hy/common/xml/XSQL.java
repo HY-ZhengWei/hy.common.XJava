@@ -133,6 +133,8 @@ import org.hy.common.xml.plugins.XRule;
  *              v22.0 2023-04-20  添加：单行数据的批量操作（预解释执行模式）
  *              v22.1 2023-04-27  添加：log()方法记录XID，支持查看具体XSQL的执行日志
  *              v23.0 2023-10-17  添加：是否附加触发额外参数 triggerParams
+ *              v24.0 2025-11-24  优化：生成分页对象时，设置XJavaID
+ *                                添加：对外提删除克隆生成的分页对象
  */
 /*
  * 游标类型的说明
@@ -844,10 +846,11 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             v_NewXSQL.setDataSourceGroup(i_XSQL.getDataSourceGroup());
             v_NewXSQL.setResult(         i_XSQL.getResult());
             v_NewXSQL.getContent().setSqlText(v_PaginSQLText);
+            v_NewXSQL.setXJavaID("XPaging_" + v_PMKey);
             
             // 注意：这里是Key是i_XSQL，而不是v_NewXSQL的uuid
             $PagingMap.put(v_PMKey ,v_NewXSQL);
-            XJava.putObject("XPaging_" + v_PMKey ,v_NewXSQL);
+            XJava.putObject(v_NewXSQL.getXJavaID() ,v_NewXSQL);
             return v_NewXSQL;
         }
         else
@@ -859,6 +862,28 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
             
             $PagingMap.put(v_PMKey ,i_XSQL);
             return i_XSQL;
+        }
+    }
+    
+    
+    
+    /**
+     * 从缓存中删除之前生成的分页对象，好方便二次生成分页对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2025-11-24
+     * @version     v1.0
+     *
+     * @param i_XJavaID
+     */
+    public synchronized static void removePaging(String i_XJavaID)
+    {
+        // 仅限于克隆生成的分页对象才能被删除
+        // 对于非克隆生成的无法回退、无法二次生成分页对象
+        if ( i_XJavaID.startsWith("XPaging_") )
+        {
+            XJava.remove(i_XJavaID);
+            $PagingMap.remove(StringHelp.replaceFirst(i_XJavaID ,"XPaging_" ,""));
         }
     }
 
