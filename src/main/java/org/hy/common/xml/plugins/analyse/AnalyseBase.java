@@ -122,6 +122,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v23.1 2022-01-05  添加：通讯连接分析
  *              v24.1 2022-06-09  添加：XSQL & XSQLGroup 最大用时的统计
  *              v25.1 2023-04-27  添加：查看XSQL对象执行日志的SQL语句（支持集群）
+ *              v26.0 2026-01-07  添加：最大用时的日志统计
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -4189,13 +4190,14 @@ public class AnalyseBase extends Analyse
      * @createDate  2020-06-13
      * @version     v1.0
      *              v2.0  2021-01-27  添加：警告级的日志统计
+     *              v3.0  2026-01-07  添加：最大用时的日志统计
      *
      * @param  i_BasePath         服务请求根路径。如：http://127.0.0.1:80/hy
      * @param  i_ReLoadPath       重新加载的URL。如：http://127.0.0.1:80/hy/../analyseObject?logger=Y
      * @param  i_Cluster          是否为集群
      * @param  i_ShowEveryOne     是否显示每一个。仅在i_Cluster为True时有效，表示集群统计时，显示每台服务上每个日志项，并不日志项合并统计
      * @param  i_TotalType        统计类型(class、method、lineNumber)
-     * @param  i_SortType         排序类型(requectCount、lastTime、name、errorCount、execSumTime、execAvgTime)
+     * @param  i_SortType         排序类型(requectCount、lastTime、name、errorCount、execSumTime、execMaxTime、execAvgTime)
      * @param  i_FilterClassName  名称的模糊过滤条件
      * @param  i_Timer            定时刷新的时长（单位：毫秒）
      * @return
@@ -4297,6 +4299,7 @@ public class AnalyseBase extends Analyse
                                                 v_TR.setWarnCount(            v_TR.getWarnCount()       + v_Report.getWarnCount());
                                                 v_TR.setLastTime(    Math.max(v_TR.getLastTime()         ,v_Report.getLastTime()));
                                                 v_TR.setExecSumTime(          v_TR.getExecSumTime()     + v_Report.getExecSumTime());
+                                                v_TR.setExecMaxTime( Math.max(v_TR.getExecMaxTime()      ,v_Report.getExecMaxTime()));
                                                 v_TR.setExecAvgTime(AnalyseLoggerTotal.calcExecAvgTime(v_TR));
                                             }
                                             
@@ -4359,6 +4362,11 @@ public class AnalyseBase extends Analyse
         {
             Help.toSort(v_TotalList ,"execSumTime DESC" ,"execAvgTime DESC" ,"requestCount DESC" ,"className" ,"methodName");
         }
+        // 排序类型(最大用时)
+        else if ( "execMaxTime".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"execMaxTime DESC" ,"execAvgTime DESC" ,"requestCount DESC" ,"className" ,"methodName");
+        }
         // 排序类型(业务平均用时)
         else
         {
@@ -4371,6 +4379,7 @@ public class AnalyseBase extends Analyse
         long v_SumErrorFatalCount = 0L;
         long v_SumWarnCount       = 0L;
         long v_SumExecSumTime     = 0L;
+        long v_SumExecMaxTime     = 0L;
         for (LoggerReport v_Report : v_TotalList)
         {
             Map<String ,String> v_RKey      = new HashMap<String ,String>();
@@ -4399,6 +4408,7 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":ErrorFatalCount" ,"<span style='color:" + (v_Report.getErrorFatalCount() >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + (v_Report.getErrorFatalCount() > 0 ? "<a href='" + v_OperateURL + "&level=error" + "'>" + v_Report.getErrorFatalCount() + "</a>" : "0") + "</span>");
             v_RKey.put(":IsRunning"       ,v_IsRunning ? "运行中" : "-");
             v_RKey.put(":ExecSumTime"     ,"<span style='color:" + (v_Report.getExecSumTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecSumTime() >= 0 ? Date.toTimeLen(v_Report.getExecSumTime()) : "-") + "</span>");
+            v_RKey.put(":ExecMaxTime"     ,"<span style='color:" + (v_Report.getExecMaxTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecMaxTime() >= 0 ? Help.round(v_Report.getExecMaxTime() ,2) : "-") + "</span>");
             v_RKey.put(":ExecAvgTime"     ,"<span style='color:" + (v_Report.getExecAvgTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecAvgTime() >= 0 ? Help.round(v_Report.getExecAvgTime() ,2) : "-") + "</span>");
             v_RKey.put(":LastTime"        ,v_Report.getLastTime() <= 0L ? "-" : (v_Report.getLastTime() >= v_NowTime ? new Date(v_Report.getLastTime()).getFull() : "<span style='color:gray;'>" + new Date(v_Report.getLastTime()).getFull() + "</span>"));
             
@@ -4419,6 +4429,7 @@ public class AnalyseBase extends Analyse
             v_SumErrorFatalCount += v_Report.getErrorFatalCount();
             v_SumWarnCount       += v_Report.getWarnCount();
             v_SumExecSumTime     += v_Report.getExecSumTime();
+            v_SumExecMaxTime      = Help.max(v_SumExecMaxTime ,v_Report.getExecMaxTime());
         }
         
         // 合计
@@ -4435,6 +4446,7 @@ public class AnalyseBase extends Analyse
         v_RKey.put(":ErrorFatalCount" ,"<span style='color:" + (v_SumErrorFatalCount >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + v_SumErrorFatalCount + "</span>");
         v_RKey.put(":IsRunning"       ,"-");
         v_RKey.put(":ExecSumTime"     ,"<span style='color:" + (v_SumExecSumTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Date.toTimeLen(v_SumExecSumTime) : "-") + "</span>");
+        v_RKey.put(":ExecMaxTime"     ,"<span style='color:" + (v_SumExecMaxTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecMaxTime >= 0 ? v_SumExecMaxTime : "-") + "</span>");
         v_RKey.put(":ExecAvgTime"     ,"<span style='color:" + (v_SumExecSumTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Help.round(Help.division(v_SumExecSumTime ,Help.division(v_SumRequestCount , v_SumTotalCount)) ,2) : "-") + "</span>");
         v_RKey.put(":LastTime"        ,"-");
         v_RKey.put(":ErrorFatalIP"    ,"");
@@ -4496,8 +4508,8 @@ public class AnalyseBase extends Analyse
         v_Errors = null;
         
         return StringHelp.replaceAll(this.getTemplateShowLogger()
-                                    ,new String[]{":GotoTitle"           ,":Goto_02_Title" ,":Title"        ,":HttpBasePath" ,":Sort"   ,":TotalType" ,":Cluster"             ,":ShowEveryOne"              ,":Timer" ,":FilterClassName"          ,":Content"}
-                                    ,new String[]{v_GotoTitle.toString() ,v_GotoTitle02    ,"日志引擎分析" ,i_BasePath      ,i_SortType ,i_TotalType ,(i_Cluster ? "Y" : "N") ,(i_ShowEveryOne ? "Y" : "N") ,i_Timer  ,Help.NVL(i_FilterClassName) ,v_Buffer.toString()});
+                                    ,new String[]{":GotoTitle"           ,":Goto_02_Title" ,":Title"    ,":HttpBasePath" ,":Sort"    ,":TotalType" ,":Cluster"              ,":ShowEveryOne"              ,":Timer" ,":FilterClassName"          ,":Content"}
+                                    ,new String[]{v_GotoTitle.toString() ,v_GotoTitle02    ,"日志引擎分析" ,i_BasePath      ,i_SortType ,i_TotalType  ,(i_Cluster ? "Y" : "N") ,(i_ShowEveryOne ? "Y" : "N") ,i_Timer  ,Help.NVL(i_FilterClassName) ,v_Buffer.toString()});
     }
     
     

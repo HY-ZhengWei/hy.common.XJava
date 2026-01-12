@@ -13,6 +13,7 @@ import org.hy.common.xml.SerializableDef;
  * @createDate  2020-06-13
  * @version     v1.0
  *              v2.0  2021-01-27  添加：警告级的日志统计
+ *              v3.0  2026-01-07  添加：最大用时的日志统计
  */
 public class LoggerReport extends SerializableDef
 {
@@ -54,6 +55,9 @@ public class LoggerReport extends SerializableDef
     
     /** 方法累计用时 */
     private long   execSumTime;
+    
+    /** 方法最大用时 */
+    private long   execMaxTime;
     
     /** 方法平均用时 */
     private double execAvgTime;
@@ -258,8 +262,28 @@ public class LoggerReport extends SerializableDef
     {
         this.execSumTime = execSumTime;
     }
+    
+    
+    /**
+     * 获取：方法最大用时
+     */
+    public long getExecMaxTime()
+    {
+        return execMaxTime;
+    }
 
     
+    /**
+     * 设置：方法最大用时
+     * 
+     * @param i_ExecMaxTime 方法最大用时
+     */
+    public void setExecMaxTime(long i_ExecMaxTime)
+    {
+        this.execMaxTime = i_ExecMaxTime;
+    }
+
+
     /**
      * 获取：方法平均用时
      */
