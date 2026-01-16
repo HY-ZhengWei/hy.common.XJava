@@ -123,6 +123,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v24.1 2022-06-09  添加：XSQL & XSQLGroup 最大用时的统计
  *              v25.1 2023-04-27  添加：查看XSQL对象执行日志的SQL语句（支持集群）
  *              v26.0 2026-01-07  添加：最大用时的日志统计
+ *              v26.1 2026-01-16  修正：新基座微服务下未能正确识别热加载xml配置文件路径的问题
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -2880,15 +2881,26 @@ public class AnalyseBase extends Analyse
             if ( !i_Cluster )
             {
                 AppInitConfig v_AConfig  = (AppInitConfig)v_XFileNames.get(i_XFile);
-                File          v_XFileObj = new File(Help.getWebINFPath() + i_XFile);
+                File          v_XFileObj = null;
                 
+                // 判定 ../Tomcat/Webapps/Web项目名称/WEB-INF/ 目录
+                v_XFileObj = new File(Help.getWebINFPath() + i_XFile);
                 if ( v_XFileObj.exists() && v_XFileObj.isFile() )
                 {
                     v_AConfig.initW(i_XFile ,Help.getWebINFPath());
                 }
                 else
                 {
-                    v_AConfig.init(i_XFile);
+                    // 判定 ../Tomcat/Webapps/Web项目名称/WEB-INF/classes/ 目录
+                    v_XFileObj = new File(Help.getWebClassPath() + i_XFile);
+                    if ( v_XFileObj.exists() && v_XFileObj.isFile() )
+                    {
+                        v_AConfig.initW(i_XFile ,Help.getWebClassPath());
+                    }
+                    else
+                    {
+                        v_AConfig.init(i_XFile);
+                    }
                 }
                 
                 return Date.getNowTime().getFullMilli() + ": Has completed re loading, please check the console log.";
