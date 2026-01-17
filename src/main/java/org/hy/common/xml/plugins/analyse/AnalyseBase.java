@@ -124,6 +124,7 @@ import org.hy.common.xml.plugins.analyse.data.XSQLRetTable;
  *              v25.1 2023-04-27  添加：查看XSQL对象执行日志的SQL语句（支持集群）
  *              v26.0 2026-01-07  添加：最大用时的日志统计
  *              v26.1 2026-01-16  修正：新基座微服务下未能正确识别热加载xml配置文件路径的问题
+ *              v26.2 2026-01-17  添加：日志分析中的离散度的计算
  */
 @Xjava
 public class AnalyseBase extends Analyse
@@ -4312,7 +4313,8 @@ public class AnalyseBase extends Analyse
                                                 v_TR.setLastTime(    Math.max(v_TR.getLastTime()         ,v_Report.getLastTime()));
                                                 v_TR.setExecSumTime(          v_TR.getExecSumTime()     + v_Report.getExecSumTime());
                                                 v_TR.setExecMaxTime( Math.max(v_TR.getExecMaxTime()      ,v_Report.getExecMaxTime()));
-                                                v_TR.setExecAvgTime(AnalyseLoggerTotal.calcExecAvgTime(v_TR));
+                                                v_TR.setExecAvgTime( Math.max(v_TR.getExecAvgTime()      ,v_Report.getExecAvgTime()));  // 2026-01-17 丢用旧算法：AnalyseLoggerTotal.calcExecAvgTime(v_TR)
+                                                v_TR.setDispersion(  Math.max(v_TR.getDispersion()       ,v_Report.getDispersion()));
                                             }
                                             
                                             if ( v_Report.getErrorFatalCount() > 0L )
@@ -4379,6 +4381,11 @@ public class AnalyseBase extends Analyse
         {
             Help.toSort(v_TotalList ,"execMaxTime DESC" ,"execAvgTime DESC" ,"requestCount DESC" ,"className" ,"methodName");
         }
+        // 排序类型(离散度)
+        else if ( "dispersion".equalsIgnoreCase(i_SortType) )
+        {
+            Help.toSort(v_TotalList ,"dispersion DESC" ,"execAvgTime DESC" ,"requestCount DESC" ,"className" ,"methodName");
+        }
         // 排序类型(业务平均用时)
         else
         {
@@ -4420,8 +4427,9 @@ public class AnalyseBase extends Analyse
             v_RKey.put(":ErrorFatalCount" ,"<span style='color:" + (v_Report.getErrorFatalCount() >  0 ? "red;font-weight:bold"   : "gray") + ";'>" + (v_Report.getErrorFatalCount() > 0 ? "<a href='" + v_OperateURL + "&level=error" + "'>" + v_Report.getErrorFatalCount() + "</a>" : "0") + "</span>");
             v_RKey.put(":IsRunning"       ,v_IsRunning ? "运行中" : "-");
             v_RKey.put(":ExecSumTime"     ,"<span style='color:" + (v_Report.getExecSumTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecSumTime() >= 0 ? Date.toTimeLen(v_Report.getExecSumTime()) : "-") + "</span>");
-            v_RKey.put(":ExecMaxTime"     ,"<span style='color:" + (v_Report.getExecMaxTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecMaxTime() >= 0 ? Help.round(v_Report.getExecMaxTime() ,2) : "-") + "</span>");
+            v_RKey.put(":ExecMaxTime"     ,"<span style='color:" + (v_Report.getExecMaxTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecMaxTime() >= 0 ? v_Report.getExecMaxTime() : "-") + "</span>");
             v_RKey.put(":ExecAvgTime"     ,"<span style='color:" + (v_Report.getExecAvgTime()     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getExecAvgTime() >= 0 ? Help.round(v_Report.getExecAvgTime() ,2) : "-") + "</span>");
+            v_RKey.put(":Dispersion"      ,"<span style='color:" + (v_Report.getDispersion()      >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_Report.getDispersion()  >= 0 ? Help.round(v_Report.getDispersion()  ,2) : "-") + "</span>");
             v_RKey.put(":LastTime"        ,v_Report.getLastTime() <= 0L ? "-" : (v_Report.getLastTime() >= v_NowTime ? new Date(v_Report.getLastTime()).getFull() : "<span style='color:gray;'>" + new Date(v_Report.getLastTime()).getFull() + "</span>"));
             
             Map<String ,Object> v_MMErrors = v_Errors.get(v_Report.getId());
@@ -4459,7 +4467,8 @@ public class AnalyseBase extends Analyse
         v_RKey.put(":IsRunning"       ,"-");
         v_RKey.put(":ExecSumTime"     ,"<span style='color:" + (v_SumExecSumTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Date.toTimeLen(v_SumExecSumTime) : "-") + "</span>");
         v_RKey.put(":ExecMaxTime"     ,"<span style='color:" + (v_SumExecMaxTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecMaxTime >= 0 ? v_SumExecMaxTime : "-") + "</span>");
-        v_RKey.put(":ExecAvgTime"     ,"<span style='color:" + (v_SumExecSumTime     >= 0 ? "green;font-weight:bold" : "gray") + ";'>" + (v_SumExecSumTime >= 0 ? Help.round(Help.division(v_SumExecSumTime ,Help.division(v_SumRequestCount , v_SumTotalCount)) ,2) : "-") + "</span>");
+        v_RKey.put(":ExecAvgTime"     ,"-");
+        v_RKey.put(":Dispersion"      ,"-");
         v_RKey.put(":LastTime"        ,"-");
         v_RKey.put(":ErrorFatalIP"    ,"");
         

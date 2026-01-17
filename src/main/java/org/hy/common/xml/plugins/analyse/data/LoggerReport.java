@@ -14,6 +14,7 @@ import org.hy.common.xml.SerializableDef;
  * @version     v1.0
  *              v2.0  2021-01-27  添加：警告级的日志统计
  *              v3.0  2026-01-07  添加：最大用时的日志统计
+ *              v4.0  2026-01-17  添加：离散度
  */
 public class LoggerReport extends SerializableDef
 {
@@ -61,6 +62,9 @@ public class LoggerReport extends SerializableDef
     
     /** 方法平均用时 */
     private double execAvgTime;
+    
+    /** 离散度 */
+    private double dispersion;
     
     
     
@@ -302,8 +306,28 @@ public class LoggerReport extends SerializableDef
     {
         this.execAvgTime = execAvgTime;
     }
+    
+    
+    /**
+     * 获取：离散度
+     */
+    public double getDispersion()
+    {
+        return dispersion;
+    }
 
     
+    /**
+     * 设置：离散度
+     * 
+     * @param i_Dispersion 离散度
+     */
+    public void setDispersion(double i_Dispersion)
+    {
+        this.dispersion = i_Dispersion;
+    }
+
+
     /**
      * 获取：日志代码量（不包含Error级、Fatal级的、Warn级的）
      */
