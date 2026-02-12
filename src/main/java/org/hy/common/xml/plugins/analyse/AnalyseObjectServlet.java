@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.hy.common.Date;
-import org.hy.common.ExpireMap;
+import org.hy.common.ExpireCache;
 import org.hy.common.Help;
 import org.hy.common.Return;
 import org.hy.common.StringHelp;
@@ -104,25 +104,25 @@ public class AnalyseObjectServlet extends HttpServlet
     
     
     
-    private static final Logger               $Logger       = Logger.getLogger(AnalyseBase.class);
+    private static final Logger                 $Logger       = Logger.getLogger(AnalyseBase.class);
     
     /** 登陆的Session会话ID标识，标识着是否登陆成功 */
-    public  static final String               $SessionID    = "$XJAVA$";
+    public  static final String                 $SessionID    = "$XJAVA$";
     
     /** 登录验证码的超时时长（单位：秒） */
-    private static final int                  $LoginTimeout       = 30;
+    private static final int                    $LoginTimeout       = 30;
     
     /** 登录失败，锁会话的时长（单位：分钟） */
-    private static final int                  $LockSessionTimeLen = 10;
+    private static final int                    $LockSessionTimeLen = 10;
     
     /** 登录失败，锁全局的时长（单位：分钟） */
-    private static final int                  $LockGlobalTimeLen  = 30;
+    private static final int                    $LockGlobalTimeLen  = 30;
     
     /** 登录失败次数Map.key 为Session会话ID，Map.value为登录失败次数 */
-    private static ExpireMap<String ,Integer> $LoginCounts  = null;
+    private static ExpireCache<String ,Integer> $LoginCounts  = null;
     
     /** 登录验证码Map.key 为Session会话ID，Map.value为验证码 */
-    private static ExpireMap<String ,String>  $PasswdCheck  = null;
+    private static ExpireCache<String ,String>  $PasswdCheck  = null;
     
     
     
@@ -163,11 +163,11 @@ public class AnalyseObjectServlet extends HttpServlet
      * 
      * @return
      */
-    private synchronized ExpireMap<String ,Integer> getLoginCounts()
+    private synchronized ExpireCache<String ,Integer> getLoginCounts()
     {
         if ( $LoginCounts == null )
         {
-            $LoginCounts = new ExpireMap<String ,Integer>();
+            $LoginCounts = new ExpireCache<String ,Integer>();
         }
         
         return $LoginCounts;
@@ -184,11 +184,11 @@ public class AnalyseObjectServlet extends HttpServlet
      * 
      * @return
      */
-    private synchronized ExpireMap<String ,String> getPasswdCheck()
+    private synchronized ExpireCache<String ,String> getPasswdCheck()
     {
         if ( $PasswdCheck == null )
         {
-            $PasswdCheck = new ExpireMap<String ,String>();
+            $PasswdCheck = new ExpireCache<String ,String>();
         }
         
         return $PasswdCheck;

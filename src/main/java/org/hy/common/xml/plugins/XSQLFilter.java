@@ -12,7 +12,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.hy.common.Busway;
-import org.hy.common.ExpireMap;
+import org.hy.common.ExpireCache;
 import org.hy.common.Help;
 import org.hy.common.StringHelp;
 import org.hy.common.xml.XJava;
@@ -59,9 +59,9 @@ import org.hy.common.xml.XJava;
 public class XSQLFilter implements Filter 
 {
     
-    private static final ExpireMap<Long ,XSQLURL> $Requests  = new ExpireMap<Long ,XSQLURL>();
+    private static final ExpireCache<Long ,XSQLURL> $Requests  = new ExpireCache<Long ,XSQLURL>();
     
-    private static final Busway<XSQLURL>          $SQLBusway = new Busway<XSQLURL>(1000);
+    private static final Busway<XSQLURL>            $SQLBusway = new Busway<XSQLURL>(1000);
     
     
     

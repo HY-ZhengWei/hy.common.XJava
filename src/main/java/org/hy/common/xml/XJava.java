@@ -27,7 +27,7 @@ import org.hy.common.ClassInfo;
 import org.hy.common.ClassReflect;
 import org.hy.common.Date;
 import org.hy.common.Des;
-import org.hy.common.ExpireMap;
+import org.hy.common.ExpireCache;
 import org.hy.common.FieldReflect;
 import org.hy.common.Help;
 import org.hy.common.ListMap;
@@ -262,7 +262,7 @@ public final class XJava
      * 
      * $SessionMap 只负责运行过程中动态添加的对象，不对XML配置文件中的对象生效。
      */
-    private final static ExpireMap<String ,XJavaObject> $SessionMap                   = new ExpireMap<String ,XJavaObject>();
+    private final static ExpireCache<String ,XJavaObject> $SessionMap                 = new ExpireCache<String ,XJavaObject>();
     
     /**
      * TreeMap.TreeNode.orderByID的最大长度。
@@ -660,7 +660,7 @@ public final class XJava
      *
      * @return
      */
-    public static ExpireMap<String ,XJavaObject> getSessionMap()
+    public static ExpireCache<String ,XJavaObject> getSessionMap()
     {
         return $SessionMap;
     }

@@ -14,6 +14,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.hy.common.ExpireCache;
 import org.hy.common.ExpireMap;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
@@ -90,6 +91,7 @@ import net.minidev.json.parser.JSONParser;
  *              2025-07-31  V4.4  修正：1.格式化Json字符串时，识别非占位符的情况，如：{"v":201}。发现人：李浩 
  *              2025-08-08  V4.5  修改：将所有方法throws抛异常的类型均改为RuntimeException，方便外界使用者不用显性try catch。建议人：李浩
  *              2025-10-22  V5.0  添加：支持对象中属性为Map集合，并且Map集合中的元素也是一个对象的Json转Java对象。
+ *              2026-02-11  V6.0  添加：支持特殊类型ExpireCache的转Json，或转Java
  */
 public final class XJSON
 {
@@ -569,9 +571,13 @@ public final class XJSON
                         v_Value = Help.toObject(v_MapValueClass ,v_Value.toString());
                     }
                     
+                    if ( v_NewObj instanceof ExpireCache )
+                    {
+                        XJSONToJava.mapValueToJava(this ,(ExpireCache<String ,Object>)v_NewObj ,v_MapKeyName ,v_Value);
+                    }
                     if ( v_NewObj instanceof ExpireMap )
                     {
-                        XJSONToJava.mapValueToJava(this ,(ExpireMap<String ,Object>)v_NewObj ,v_MapKeyName ,v_Value);
+                        XJSONToJava.mapValueToJava(this ,(ExpireMap  <String ,Object>)v_NewObj ,v_MapKeyName ,v_Value);
                     }
                     else
                     {

@@ -15,8 +15,9 @@ import java.util.Set;
 
 import org.hy.common.ByteHelp;
 import org.hy.common.Date;
+import org.hy.common.Expire;
+import org.hy.common.ExpireCache;
 import org.hy.common.ExpireMap;
-import org.hy.common.ExpireMap.Expire;
 import org.hy.common.Help;
 import org.hy.common.MethodReflect;
 import org.hy.common.Return;
@@ -40,6 +41,7 @@ import net.minidev.json.JSONArray;
  * @version  V1.0  2021-12-09
  *           V2.0  2022-06-22 添加：支持特殊类型ExpireMap的转Json
  *           V3.0  2024-02-05 修正：Integer、Long、Float、Double、Boolean、Enum 按数字类型返回，生成的Json不带双引号
+ *           V4.0  2026-02-11 添加：支持特殊类型ExpireCache的转Json
  */
 public class XJSONToJson
 {
@@ -848,7 +850,56 @@ public class XJSONToJson
         
         XJSONObject v_ChildJsonObj = new XJSONObject();
         
-        for (Entry<? ,?> v_Item : i_JavaData.entrySetExpire())
+        for (Entry<? ,?> v_Item : i_JavaData.entrySet())
+        {
+            Object              v_Name     =               v_Item.getKey();
+            Expire<? ,?>        v_Value    = (Expire<? ,?>)v_Item.getValue();
+            Map<String ,Object> v_ValueMap = new HashMap<String ,Object>();
+            
+            if ( v_Name == null )
+            {
+                v_Name = "";
+            }
+            if ( v_Value != null )
+            {
+                v_ValueMap.put("value"      ,v_Value.getValue());
+                v_ValueMap.put("createTime" ,v_Value.getCreateTime());
+                v_ValueMap.put("time"       ,v_Value.getTime());
+            }
+            
+            // 对于Map集合，是可以支持每个元素均不相同的功能，所以 i_MethodReturnIsObject 传 true，
+            // 当作Object对象来处理  2021-09-30
+            i_XJson.parser(v_Name.toString() ,v_ValueMap ,v_ChildJsonObj ,i_ParserObjects ,true);
+        }
+        
+        return v_ChildJsonObj;
+    }
+    
+    
+    
+    /**
+     * ExpireCache转Json
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-02-11
+     * @version     v1.0
+     * 
+     * @param i_XJson
+     * @param i_ParserObjects  解析过的对象，防止对象中递归引用对象，而造成无法解释的问题。
+     * @param i_JavaData       待转的对象
+     * @return
+     * @throws Exception
+     */
+    public static XJSONObject toJson(XJSON i_XJson ,Map<Object ,Integer> i_ParserObjects ,ExpireCache<? ,?> i_JavaData) throws Exception
+    {
+        if ( i_XJson.isRecursion(i_ParserObjects ,i_JavaData) )
+        {
+            return null;
+        }
+        
+        XJSONObject v_ChildJsonObj = new XJSONObject();
+        
+        for (Entry<? ,?> v_Item : i_JavaData.entrySet())
         {
             Object              v_Name     =               v_Item.getKey();
             Expire<? ,?>        v_Value    = (Expire<? ,?>)v_Item.getValue();

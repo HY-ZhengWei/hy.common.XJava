@@ -6,7 +6,7 @@
 
     <groupId>org</groupId>
     <artifactId>hy.common.xjava</artifactId>
-    <version>4.7.0</version>
+    <version>4.7.1</version>
     <packaging>jar</packaging>
 
     <name>org.hy.common.xjava</name>
@@ -40,14 +40,14 @@
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.base</artifactId>
-            <version>1.0.202</version>
+            <version>1.0.204</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.file</artifactId>
-            <version>1.5.6</version>
+            <version>1.5.7</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -64,7 +64,7 @@
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.db</artifactId>
-            <version>2.7.5</version>
+            <version>2.7.6</version>
             <scope>provided</scope>
         </dependency>
 
@@ -78,21 +78,21 @@
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.net</artifactId>
-            <version>3.0.7</version>
+            <version>3.0.8</version>
             <scope>provided</scope>
         </dependency>
         
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.license</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.1</version>
             <scope>provided</scope>
         </dependency>
         
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.xcql</artifactId>
-            <version>1.1.1</version>
+            <version>1.1.2</version>
             <scope>provided</scope>
         </dependency>
         
