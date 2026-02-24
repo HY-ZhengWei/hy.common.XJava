@@ -174,11 +174,11 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
     /** 每个XSQL对象的执行日志。默认每个XSQL对象只保留100条日志。按 getObjectID() 分区 */
     public  static final TablePartitionBusway<String ,XSQLLog> $SQLBuswayTP         = new TablePartitionBusway<String ,XSQLLog>();
     
-    /** 所有SQL执行日志，有一定的执行顺序。默认只保留5000条执行过的SQL语句 */
-    public  static final Busway<XSQLLog>                       $SQLBusway           = new Busway<XSQLLog>(5000);
+    /** 所有SQL执行日志，有一定的执行顺序。默认只保留1000条执行过的SQL语句 */
+    public  static final Busway<XSQLLog>                       $SQLBusway           = new Busway<XSQLLog>(1000);
     
-    /** SQL执行异常的日志。默认只保留9000条执行异常的SQL语句 */
-    public  static final Busway<XSQLLog>                       $SQLBuswayError      = new Busway<XSQLLog>(9000);
+    /** SQL执行异常的日志。默认只保留1000条执行异常的SQL语句 */
+    public  static final Busway<XSQLLog>                       $SQLBuswayError      = new Busway<XSQLLog>(1000);
     
     /** XSQL */
     public  static final String                                $XSQLErrors          = "XSQL-Errors";
