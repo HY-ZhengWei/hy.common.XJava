@@ -1,6 +1,6 @@
 package org.apache.struts2.interceptor;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 
 
