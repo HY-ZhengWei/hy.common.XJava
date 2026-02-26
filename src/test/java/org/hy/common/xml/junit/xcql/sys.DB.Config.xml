@@ -13,8 +13,8 @@
         <dataSourceCQL id="DSCQL_001">
             <url>neo4j://127.0.0.1:7687</url>
             <username>neo4j</username>
-            <password>ZhengWei@qq.com</password>
-            <database>cdc</database>
+            <password>hy.ZhengWei@qq.com</password>
+            <database>callflow</database>
         </dataSourceCQL>
         
     </cqls>
