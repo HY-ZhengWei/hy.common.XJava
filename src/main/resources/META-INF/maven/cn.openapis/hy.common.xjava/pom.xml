@@ -6,7 +6,7 @@
 
     <groupId>org</groupId>
     <artifactId>hy.common.xjava</artifactId>
-    <version>4.7.5</version>
+    <version>4.7.6</version>
     <packaging>jar</packaging>
 
     <name>org.hy.common.xjava</name>
@@ -40,14 +40,14 @@
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.base</artifactId>
-            <version>1.0.205</version>
+            <version>1.0.206</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.file</artifactId>
-            <version>1.5.8</version>
+            <version>1.5.9</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -71,14 +71,14 @@
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.tpool</artifactId>
-            <version>1.4.1</version>
+            <version>1.4.3</version>
             <scope>provided</scope>
         </dependency>
         
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.net</artifactId>
-            <version>3.1.0</version>
+            <version>3.1.1</version>
             <scope>provided</scope>
         </dependency>
         
@@ -92,7 +92,7 @@
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.xcql</artifactId>
-            <version>1.1.7</version>
+            <version>1.1.8</version>
             <scope>provided</scope>
         </dependency>
         
@@ -105,17 +105,17 @@
         
         <!-- Oracle -->
         <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc14</artifactId>
-            <version>10.2.0.1.0</version>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc17</artifactId>
+            <version>23.26.1.0.0</version>
             <optional>true</optional>
         </dependency>
         
         <!-- MySQL -->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.33</version>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>9.6.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -143,7 +143,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>6.2.12</version>
+            <version>6.2.16</version>
             <optional>true</optional>
         </dependency>
         
@@ -153,24 +153,6 @@
             <artifactId>spring-boot-starter-web</artifactId>
             <version>3.5.11</version>
             <optional>true</optional>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-web</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-beans</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         
         <!-- Reduce 2.5.0 to 1.1.1 for greater compatibility (e.g. ASM) -->
@@ -184,23 +166,23 @@
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>2.41</version>
+            <version>3.1.11</version>
             <optional>true</optional>
         </dependency>
         
         <!-- Restful -->
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>2.1.1</version>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <version>3.1.0</version>
             <optional>true</optional>
         </dependency>
         
         <!-- Restful -->
         <dependency>
-            <groupId>org.glassfish.hk2.external</groupId>
-            <artifactId>javax.inject</artifactId>
-            <version>2.5.0-b62</version>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <version>2.0.1</version>
             <optional>true</optional>
         </dependency>
         
@@ -221,14 +203,14 @@
         <dependency>
             <groupId>com.mchange</groupId>
             <artifactId>c3p0</artifactId>
-            <version>0.9.5.5</version>
+            <version>0.12.0</version>
             <scope>test</scope>
         </dependency>
         
         <dependency>
-            <groupId>net.sourceforge.jtds</groupId>
-            <artifactId>jtds</artifactId>
-            <version>1.3.1</version>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>13.2.1.jre11</version>
             <scope>test</scope>
         </dependency>
 

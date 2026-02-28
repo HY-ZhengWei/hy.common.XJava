@@ -7,14 +7,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-import javax.inject.Singleton;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.Provider;
-
 import org.glassfish.jersey.message.internal.AbstractMessageReaderWriterProvider;
 import org.glassfish.jersey.message.internal.ReaderWriter;
 import org.glassfish.jersey.server.ContainerRequest;
@@ -23,6 +15,14 @@ import org.hy.common.Help;
 import org.hy.common.xml.XJSON;
 import org.hy.common.xml.XJava;
 import org.hy.common.xml.log.Logger;
+
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.ext.Provider;
 
 
 
