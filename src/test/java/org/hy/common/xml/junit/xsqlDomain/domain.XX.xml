@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="xconfig"         class="java.util.ArrayList" />
+    <import name="item"            class="org.hy.common.app.Param" />
+    
+    
+    
+    <!-- 统一配置数据库分域（即按用户级的动态数据库连接池） -->
+    <xconfig>
+        
+        <!-- 采购供应链的数据库分域 -->
+        <domain id="PscmDBDomain" class="xx.xx.common.domain.PscmDBDomain" />
+        
+    </xconfig>
+    
+</config>

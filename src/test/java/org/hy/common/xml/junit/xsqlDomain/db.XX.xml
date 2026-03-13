@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="sqls"            class="java.util.ArrayList" />
+    <import name="sqlGroup"        class="org.hy.common.xml.plugins.XSQLGroup" />
+    <import name="sql"             class="org.hy.common.xml.XSQL" />
+
+
+
+    <sqls>
+    
+        <sql id="XSQL_pscmLS_queryItemSumQtyByOrderNo_QUERY">
+            <domain ref="PscmDBDomain" />                     <!-- 使用数据库分域 -->
+            <dataSourceGroup ref="DSG_mssql_pscmLS" />        <!-- 默认的数据库 -->
+            
+            <content>
+                <![CDATA[
+                    SELECT SUM(stock_qty) stockQTY FROM pu_receive_detail WHERE maindjh = ':orderNo'
+                ]]>
+            </content>
+            
+            <result>
+                <row>xx.xx.mesExternalErp.bean.Supplies</row>
+                <cfill>setter(colValue)</cfill>
+            </result>
+            
+            <comment>根据到货单号查询物资入库总数量</comment>
+        </sql>
+        
+    </sqls>
+    
+</config>
