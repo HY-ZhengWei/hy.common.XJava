@@ -44,8 +44,9 @@ import org.hy.common.xml.event.RelationKeyMethod;
  *                                      改成通过方法返回值返回。优化后，整个getDatas()方法不用加同步锁，性能大幅提升。
  *              v9.0  2020-05-26  添加：判定表级对象、行级对象的Java类型是否为接口，接口是不能实例化，应预先抛出异常给出提醒。
  *              v10.0 2024-01-08  添加：ROW标记支持Map结构，并读取Map.get("固定的关键字")的数值
+ *              v11.0 2026-04-10  添加：实现深度克隆方法
  */
-public final class XSQLResult
+public final class XSQLResult implements Cloneable
 {
     /**
      * 正则表达式对：row 关键字的识别 -- 表示行级对象
@@ -223,6 +224,24 @@ public final class XSQLResult
     
     
     
+    @Override
+    protected Object clone() throws CloneNotSupportedException
+    {
+        XSQLResult v_Clone = new XSQLResult();
+        
+        v_Clone.table  =        this.getTable();
+        v_Clone.row    =        this.getRow();
+        v_Clone.cstyle =        this.getCstyle();
+        v_Clone.setFill(        this.getFill());
+        v_Clone.setCfill(       this.getCfill());
+        v_Clone.setFillEvent(   this.getFillEvent());
+        v_Clone.setRelationKeys(this.getRelationKeys());
+        
+        return v_Clone;
+    }
+
+
+
     /**
      * 将数据库结果集转化为Java实例对象
      * 

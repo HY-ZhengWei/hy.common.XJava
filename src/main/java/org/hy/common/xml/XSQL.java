@@ -135,6 +135,7 @@ import org.hy.common.xml.plugins.XRule;
  *              v23.0 2023-10-17  添加：是否附加触发额外参数 triggerParams
  *              v24.0 2025-11-24  优化：生成分页对象时，设置XJavaID
  *                                添加：对外提删除克隆生成的分页对象
+ *              v25.0 2026-04-10  添加：实现深度克隆方法
  */
 /*
  * 游标类型的说明
@@ -145,7 +146,7 @@ import org.hy.common.xml.plugins.XRule;
  * TYPE_SCROLL_SENSITIVE     支持backforward，random，last，first操作，对其它数据session对选择数据做出的更改是敏感，可见的。但是这种可见性仅限于update操作
  *                           在jvm中cache所有fetch到的记录rowid，需要进行二次查询，效率最低，开销最大
  */
-public final class XSQL implements Comparable<XSQL> ,XJavaID
+public final class XSQL implements Comparable<XSQL> ,XJavaID ,Cloneable
 {
     
     private static final Logger                                $Logger              = new Logger(XSQL.class ,true);
@@ -447,6 +448,43 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID
         this.beforeRule         = null;
         this.afterRule          = null;
         this.getID              = false;
+    }
+    
+    
+    
+    @Override
+    protected Object clone() throws CloneNotSupportedException
+    {
+        XSQL v_Clone = new XSQL();
+        
+        v_Clone.setDataSourceGroup(    this.getDataSourceGroup());     // 不深度克隆，而是采用引用的方式
+        v_Clone.setDomain(             this.getDomain());              // 不深度克隆，而是采用引用的方式
+        v_Clone.setContent(            this.getContent().getSqlText());
+        v_Clone.setResult((XSQLResult) this.getResult().clone());
+        v_Clone.setTrigger(            this.getTrigger());             // 不深度克隆，而是采用引用的方式
+        v_Clone.setTriggerParams(      this.isTriggerParams());
+        v_Clone.setBlobSafe(           this.isBlobSafe());
+        v_Clone.setType(               this.getType());
+        v_Clone.setLobName(            this.getLobName());
+        v_Clone.setLobWheres(          this.getLobWheres());
+        v_Clone.setLobXSQLID(          this.getLobXSQLID());
+        v_Clone.setComment(            this.getComment());
+        
+        v_Clone.callParams        =    this.callParams;
+        v_Clone.callParamInCount  =    this.callParamInCount;
+        v_Clone.callParamOutCount =    this.callParamOutCount;
+        
+        v_Clone.setBatchCommit(        this.getBatchCommit());
+        v_Clone.setAllowExecutesSplit( this.isAllowExecutesSplit());
+        v_Clone.setError(              this.getError());               // 不深度克隆，而是采用引用的方式
+        v_Clone.setBeforeRule(         this.getBeforeRule());          // 不深度克隆，而是采用引用的方式
+        v_Clone.setAfterRule(          this.getAfterRule());           // 不深度克隆，而是采用引用的方式
+        v_Clone.setGetID(              this.isGetID());
+        
+        // v_Clone.setXJavaID();                                       // 禁止深度克隆
+        // v_Clone.setCreate();                                        // 禁止深度克隆
+        
+        return v_Clone;
     }
     
     
