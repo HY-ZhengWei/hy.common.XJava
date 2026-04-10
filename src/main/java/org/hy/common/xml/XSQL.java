@@ -453,7 +453,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID ,Cloneable
     
     
     @Override
-    protected Object clone() throws CloneNotSupportedException
+    public Object clone() throws CloneNotSupportedException
     {
         XSQL v_Clone = new XSQL();
         

@@ -225,7 +225,7 @@ public final class XSQLResult implements Cloneable
     
     
     @Override
-    protected Object clone() throws CloneNotSupportedException
+    public Object clone() throws CloneNotSupportedException
     {
         XSQLResult v_Clone = new XSQLResult();
         
