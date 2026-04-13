@@ -74,15 +74,7 @@
         
         <!-- 查询达梦DM的分页模板SQL -->
         <!-- :StartIndex  下标从0开始 -->
-        <sql id="XSQLPaging_DAMENG">
-        
-            <value>
-                <![CDATA[
-                    :SQLPaging LIMIT :StartIndex ,:PagePerCount
-                ]]>
-            </value>
-            
-        </sql>
+        <sql id="XSQLPaging_DAMENG" this="XSQLPaging_MYSQL" />
         
         
         <!-- 查询SQL Server的分页模板SQL -->
