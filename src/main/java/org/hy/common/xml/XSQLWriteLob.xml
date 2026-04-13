@@ -24,6 +24,11 @@
             
         </sql>
         
+        
+        
+        <!-- 数据库达梦DM -->
+        <sql id="XSQL_WriteLob_DAMENG" this="XSQL_WriteLob_ORACLE" new="true" />
+        
     </sqls>
     
 </config>

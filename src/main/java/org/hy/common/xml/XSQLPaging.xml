@@ -72,6 +72,19 @@
         </sql>
         
         
+        <!-- 查询达梦DM的分页模板SQL -->
+        <!-- :StartIndex  下标从0开始 -->
+        <sql id="XSQLPaging_DAMENG">
+        
+            <value>
+                <![CDATA[
+                    :SQLPaging LIMIT :StartIndex ,:PagePerCount
+                ]]>
+            </value>
+            
+        </sql>
+        
+        
         <!-- 查询SQL Server的分页模板SQL -->
         <!-- 
               要求:SQLPaging的SELECT部分必须有如下关键字

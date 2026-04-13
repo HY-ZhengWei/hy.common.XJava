@@ -9,7 +9,7 @@
 
     <!-- 数据库元数据模块的相关SQL -->
     <sqls>
-        
+    
         <!-- 查询数据库ORACLE表、视图、索引、函数、过程、触发器、序列的元数据信息（按名称） -->
         <sql id="XSQL_DBMetadata_QueryByName_ORACLE" new="true">
         
@@ -29,6 +29,11 @@
             </result>
             
         </sql>
+        
+        
+        
+        <!-- 查询数据库达梦DM表、视图、索引、函数、过程、触发器、序列的元数据信息（按名称） -->
+        <sql id="XSQL_DBMetadata_QueryByName_DAMENG" this="XSQL_DBMetadata_QueryByName_MYSQL" new="true"/>
         
         
         
@@ -197,12 +202,52 @@
                              WHEN A.Object_Type = 'FUNCTION'        THEN 'DROP FUNCTION        ' || A.Object_Name
                              WHEN A.Object_Type = 'PROCEDURE'       THEN 'DROP PROCEDURE       ' || A.Object_Name
                              WHEN A.Object_Type = 'PACKAGE'         THEN 'DROP PACKAGE         ' || A.Object_Name
+                             WHEN A.Object_Type = 'PACKAGE BODY'    THEN 'DROP PACKAGE BODY    ' || A.Object_Name
                              WHEN A.Object_Type = 'SYNONYM'         THEN 'DROP SYNONYM         ' || A.Object_Name
                              WHEN A.Object_Type = 'TRIGGER'         THEN 'DROP TRIGGER         ' || A.Object_Name
                              WHEN A.Object_Type = 'TYPE'            THEN 'DROP TYPE            ' || A.Object_Name
                              WHEN A.Object_Type = 'DIRECTORY'       THEN 'DROP DIRECTORY       ' || A.Object_Name
                              WHEN A.Object_Type = 'JAVA CLASS'      THEN 'DROP JAVA CLASS      ' || A.Object_Name
                              WHEN A.Object_Type = 'CLUSTER'         THEN 'DROP CLUSTER         ' || A.Object_Name
+                             WHEN A.Object_Type = 'CONSTRAINT'      THEN 'DROP CONSTRAINT      ' || A.Object_Name
+                             WHEN A.Object_Type = 'JOB'             THEN 'DROP JOB             ' || A.Object_Name
+                             WHEN A.Object_Type = 'QUEUE'           THEN 'DROP QUEUE           ' || A.Object_Name
+                             WHEN A.Object_Type = 'DBLINK'          THEN 'DROP DBLINK          ' || A.Object_Name
+                              END AS DropSQL
+                  FROM  User_Objects  A
+                 WHERE  UPPER(A.Object_Name) = UPPER(':objectName')
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+        
+        <!-- 生成达梦DM数据库删除对象的SQL语句 -->
+        <sql id="XSQL_DBMetadata_DropByName_DAMENG" new="true">
+        
+            <content>
+                <![CDATA[
+                SELECT  CASE WHEN A.Object_Type = 'TABLE'           THEN 'DROP TABLE           ' || A.Object_Name
+                             WHEN A.Object_Type = 'VIEW'            THEN 'DROP VIEW            ' || A.Object_Name
+                             WHEN A.Object_Type = 'INDEX'           THEN 'DROP INDEX           ' || A.Object_Name
+                             WHEN A.Object_Type = 'INDEX PARTITION' THEN 'DROP INDEX PARTITION ' || A.Object_Name
+                             WHEN A.Object_Type = 'SEQUENCE'        THEN 'DROP SEQUENCE        ' || A.Object_Name
+                             WHEN A.Object_Type = 'FUNCTION'        THEN 'DROP FUNCTION        ' || A.Object_Name
+                             WHEN A.Object_Type = 'PROCEDURE'       THEN 'DROP PROCEDURE       ' || A.Object_Name
+                             WHEN A.Object_Type = 'PACKAGE'         THEN 'DROP PACKAGE         ' || A.Object_Name
+                             WHEN A.Object_Type = 'PACKAGE BODY'    THEN 'DROP PACKAGE BODY    ' || A.Object_Name
+                             WHEN A.Object_Type = 'SYNONYM'         THEN 'DROP SYNONYM         ' || A.Object_Name
+                             WHEN A.Object_Type = 'TRIGGER'         THEN 'DROP TRIGGER         ' || A.Object_Name
+                             WHEN A.Object_Type = 'TYPE'            THEN 'DROP TYPE            ' || A.Object_Name
+                             WHEN A.Object_Type = 'DIRECTORY'       THEN 'DROP DIRECTORY       ' || A.Object_Name
+                             WHEN A.Object_Type = 'JAVA CLASS'      THEN 'DROP JAVA CLASS      ' || A.Object_Name
+                             WHEN A.Object_Type = 'CLUSTER'         THEN 'DROP CLUSTER         ' || A.Object_Name
+                             WHEN A.Object_Type = 'CONSTRAINT'      THEN 'DROP CONSTRAINT      ' || A.Object_Name
+                             WHEN A.Object_Type = 'JOB'             THEN 'DROP JOB             ' || A.Object_Name
+                             WHEN A.Object_Type = 'QUEUE'           THEN 'DROP QUEUE           ' || A.Object_Name
+                             WHEN A.Object_Type = 'DBLINK'          THEN 'DROP DBLINK          ' || A.Object_Name
+                             WHEN A.Object_Type = 'CLASS'           THEN 'DROP CLASS           ' || A.Object_Name
                               END AS DropSQL
                   FROM  User_Objects  A
                  WHERE  UPPER(A.Object_Name) = UPPER(':objectName')
