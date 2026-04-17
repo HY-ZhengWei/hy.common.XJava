@@ -6,7 +6,7 @@
 
     <groupId>cn.openapis</groupId>
     <artifactId>hy.common.xjava</artifactId>
-    <version>4.8.0</version>
+    <version>4.8.1</version>
     <packaging>jar</packaging>
 
     <name>cn.openapis.hy.common.xjava</name>
@@ -157,7 +157,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>6.2.16</version>
+            <version>7.0.6</version>
             <optional>true</optional>
         </dependency>
         
@@ -165,7 +165,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>3.5.11</version>
+            <version>4.0.5</version>
             <optional>true</optional>
         </dependency>
         
