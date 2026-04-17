@@ -6,7 +6,7 @@
 
     <groupId>cn.openapis</groupId>
     <artifactId>hy.common.xjava</artifactId>
-    <version>4.8.1</version>
+    <version>4.8.2</version>
     <packaging>jar</packaging>
 
     <name>cn.openapis.hy.common.xjava</name>
@@ -15,8 +15,8 @@
     <description>XML语义开发框架(XML Semantic development framework)</description>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -106,7 +106,7 @@
         <dependency>
             <groupId>cn.openapis</groupId>
             <artifactId>hy.common.xcql</artifactId>
-            <version>1.1.8</version>
+            <version>1.1.9</version>
             <scope>provided</scope>
         </dependency>
         
@@ -314,7 +314,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.4.0</version>
                 <configuration>
-                    <source>17</source>                <!-- 项目Java版本 -->
+                    <source>21</source>                <!-- 项目Java版本 -->
                     <additionalOptions>
                         <additionalOption>-Xdoclint:none</additionalOption>
                     </additionalOptions>

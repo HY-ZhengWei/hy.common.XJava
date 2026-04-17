@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.hy.common.file.FileHelp;
-import org.hy.common.xml.plugins.XJavaSpringObjectFactotry;
 import org.springframework.boot.web.server.servlet.context.AnnotationConfigServletWebServerApplicationContext;
 
 
