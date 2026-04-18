@@ -1,7 +1,6 @@
 package org.hy.common.xml.plugins;
 
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.boot.ApplicationContextFactory;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
 

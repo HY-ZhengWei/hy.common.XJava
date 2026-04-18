@@ -5,6 +5,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 
+import org.hy.common.xml.plugins.XJavaSpringBootLoadingText;
 import org.junit.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
@@ -17,6 +18,15 @@ public class JU_Spring extends JU_SpringSuper
 {
     
     @Test
+    public void testLoadingText()
+    {
+        System.out.println(XJavaSpringBootLoadingText.getText(3));
+        System.out.println(XJavaSpringBootLoadingText.getText(4));
+    }
+    
+    
+    
+    @Test
     public void test() throws NoSuchMethodException, SecurityException
     {
         Method v_Method = DefaultListableBeanFactory.class.getMethod("doResolveDependency");
@@ -26,6 +36,7 @@ public class JU_Spring extends JU_SpringSuper
     
     
     
+    @SuppressWarnings("unused")
     @Test
     public void testSuper() throws Throwable
     {

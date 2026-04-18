@@ -1,10 +1,6 @@
 package org.hy.common.xml.plugins;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.hy.common.file.FileHelp;
-import org.springframework.boot.web.server.servlet.context.AnnotationConfigServletWebServerApplicationContext;
+import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
 
 
 
@@ -45,7 +41,8 @@ import org.springframework.boot.web.server.servlet.context.AnnotationConfigServl
  * 
  * @author      ZhengWei(HY)
  * @createDate  2018-11-08
- * @version     v1.0  
+ * @version     v1.0
+ *              v2.0  2026-04-18  升级：通过动态Java支持SpringBoot 4.x
  */
 public class XJavaSpringAnnotationConfigServletWebServerApplicationContext extends AnnotationConfigServletWebServerApplicationContext
 {
@@ -58,37 +55,7 @@ public class XJavaSpringAnnotationConfigServletWebServerApplicationContext exten
     public XJavaSpringAnnotationConfigServletWebServerApplicationContext() 
     {
         super(new XJavaSpringObjectFactotry());
-        
-        InputStream v_TxtInput = null;
-        
-        try
-        {
-            v_TxtInput = this.getClass().getResourceAsStream("SpringBoot-XJava.txt");
-            
-            FileHelp v_FileHelp         = new FileHelp();
-            String   v_SpringBoot_XJava = v_FileHelp.getContent(v_TxtInput ,"UTF-8" ,true);
-            System.out.println(v_SpringBoot_XJava);
-        }
-        catch (Exception exce)
-        {
-            // Nothing.
-        }
-        finally
-        {
-            if ( v_TxtInput != null )
-            {
-                try
-                {
-                    v_TxtInput.close();
-                }
-                catch (IOException exce)
-                {
-                    // Nothing.
-                }
-                
-                v_TxtInput = null;
-            }
-        }
+        System.out.println(XJavaSpringBootLoadingText.getText(3));
     }
     
 }

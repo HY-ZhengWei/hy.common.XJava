@@ -1,7 +1,6 @@
 package org.hy.common.xml.plugins;
 
 import org.hy.common.xml.XJava;
-import org.springframework.boot.ApplicationContextFactory;
 import org.springframework.stereotype.Component;
 
 

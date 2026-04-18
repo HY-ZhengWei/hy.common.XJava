@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="infos" class="java.util.ArrayList" />
+    <import name="info"  class="org.hy.common.app.Param" />
+
+
+
+    <!-- 加载SpringBoot&XJava文字 -->
+    <infos>
+        
+        <info id="XJavaSpringBootLoadingVersion_3x">
+            <value>
+<![CDATA[
+　
+　
+  ____             _             ____              _      ___    __  __   _ 
+ / ___| _ __  _ __(_)_ __   __ _| __ )  ___   ___ | |_   ( _ )   \ \/ /  | | __ ___   ____ _ 
+ \___ \| '_ \| '__| | '_ \ / _` |  _ \ / _ \ / _ \| __|  / _ \/\  \  /_  | |/ _` \ \ / / _` |
+  ___) | |_) | |  | | | | | (_| | |_) | (_) | (_) | |_  | (_>  <  /  \ |_| | (_| |\ V / (_| |
+ |____/| .__/|_|  |_|_| |_|\__, |____/ \___/ \___/ \__|  \___/\/ /_/\_\___/ \__,_| \_/ \__,_|
+       |_|                 |___/                    3.x                                      
+　
+　
+]]>
+            </value>
+        </info>
+        
+        
+        <info id="XJavaSpringBootLoadingVersion_4x">
+            <value>
+<![CDATA[
+　
+　
+  ____             _             ____              _      ___    __  __   _ 
+ / ___| _ __  _ __(_)_ __   __ _| __ )  ___   ___ | |_   ( _ )   \ \/ /  | | __ ___   ____ _ 
+ \___ \| '_ \| '__| | '_ \ / _` |  _ \ / _ \ / _ \| __|  / _ \/\  \  /_  | |/ _` \ \ / / _` |
+  ___) | |_) | |  | | | | | (_| | |_) | (_) | (_) | |_  | (_>  <  /  \ |_| | (_| |\ V / (_| |
+ |____/| .__/|_|  |_|_| |_|\__, |____/ \___/ \___/ \__|  \___/\/ /_/\_\___/ \__,_| \_/ \__,_|
+       |_|                 |___/                    4.x                                      
+　
+　
+]]>
+            </value>
+        </info>
+        
+        
+        <info id="XJavaSpringBootLoadingJava_3x">
+            <value>
+<![CDATA[
+package org.hy.common.xml.plugins;
+
+import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
+
+public class XJavaSpringBootAnnotationConfigServletWebServerApplicationContext extends AnnotationConfigServletWebServerApplicationContext
+{
+    public XJavaSpringBootAnnotationConfigServletWebServerApplicationContext() 
+    {
+        super(new XJavaSpringObjectFactotry());
+        System.out.println(XJavaSpringBootLoadingText.getText(3));
+    }
+}
+]]>
+            </value>
+        </info>
+        
+        
+        <info id="XJavaSpringBootLoadingJava_4x">
+            <value>
+<![CDATA[
+package org.hy.common.xml.plugins;
+
+import org.springframework.boot.web.server.servlet.context.AnnotationConfigServletWebServerApplicationContext;
+
+public class XJavaSpringBootAnnotationConfigServletWebServerApplicationContext extends AnnotationConfigServletWebServerApplicationContext
+{
+    public XJavaSpringBootAnnotationConfigServletWebServerApplicationContext() 
+    {
+        super(new XJavaSpringObjectFactotry());
+        System.out.println(XJavaSpringBootLoadingText.getText(4));
+    }
+}
+]]>
+            </value>
+        </info>
+        
+    </infos>
+    
+</config>
