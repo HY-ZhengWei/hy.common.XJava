@@ -191,6 +191,109 @@ public class JU_XJSON
     
     
     
+    /**
+     * 数组JSON转对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-04-21
+     * @version     v1.0
+     *
+     * @throws Exception
+     */
+    @Test
+    public void test_JsonArray001() throws Exception
+    {
+        String v_JsonString = """
+[
+    {
+        "code": "A001",
+        "name": "螺丝"
+    },
+    {
+        "code": "B001",
+        "name": "螺母"
+    }
+]
+                              """;
+        XJSON  v_Json = new XJSON();
+        Object v_Java = v_Json.toJava(v_JsonString);
+        System.out.println(v_Java);
+    }
+    
+    
+    
+    /**
+     * 数组JSON转对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-04-21
+     * @version     v1.0
+     *
+     * @throws Exception
+     */
+    @Test
+    public void test_JsonArray002() throws Exception
+    {
+        String v_JsonString = """
+[
+    {
+        "code": "A001",
+        "name": "螺丝",
+        "else": {
+            "weight": 15,
+            "unit": "g" 
+        } 
+    },
+    {
+        "code": "B001",
+        "name": "螺母",
+        "else": {
+            "weight": 30,
+            "unit": "g" 
+        } 
+    }
+]
+                              """;
+        XJSON  v_Json = new XJSON();
+        Object v_Java = v_Json.toJava(v_JsonString ,"else");
+        System.out.println(v_Java);
+    }
+    
+    
+    
+    /**
+     * 数组JSON转对象
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-04-21
+     * @version     v1.0
+     *
+     * @throws Exception
+     */
+    @Test
+    public void test_JsonArray003() throws Exception
+    {
+        String v_JsonString = """
+{
+    "datas": [
+        {
+            "code": "A001",
+            "name": "螺丝"
+        },
+        {
+            "code": "B001",
+            "name": "螺母"
+        }
+    ]
+}
+                              """;
+        XJSON  v_Json = new XJSON();
+        Object v_Java = v_Json.toJava(v_JsonString ,"datas");
+        System.out.println(v_Java);
+    }
+    
+    
+    
     @Test
     public void test_JsonDate() throws Exception
     {

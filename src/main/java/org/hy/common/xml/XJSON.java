@@ -92,6 +92,7 @@ import net.minidev.json.parser.JSONParser;
  *              2025-08-08  V4.5  修改：将所有方法throws抛异常的类型均改为RuntimeException，方便外界使用者不用显性try catch。建议人：李浩
  *              2025-10-22  V5.0  添加：支持对象中属性为Map集合，并且Map集合中的元素也是一个对象的Json转Java对象。
  *              2026-02-11  V6.0  添加：支持特殊类型ExpireCache的转Json，或转Java
+ *              2026-04-21  V7.0  添加：除了原先使用指定方法toJavaList()外，对于通用toJava也支持以 [] 开头的 JSON。
  */
 public final class XJSON
 {
@@ -995,6 +996,7 @@ public final class XJSON
      * @param i_Class
      * @return
      */
+    @SuppressWarnings("unchecked")
     public Object parser(String i_JSONString ,Class<?> i_Class)
     {
         if ( Help.isNull(i_JSONString) )
@@ -1013,7 +1015,25 @@ public final class XJSON
         
         try
         {
-            v_JSONRoot = new XJSONObject((JSONObject) v_JsonParser.parse(StringHelp.replaceAll(i_JSONString ,new String[]{"\n"} ,new String[]{""})));
+            Object v_ParserRet = v_JsonParser.parse(StringHelp.replaceAll(i_JSONString ,new String[]{"\n"} ,new String[]{""}));
+            
+            // 支持以 {} 开头的 JSON
+            if ( v_ParserRet instanceof JSONObject )
+            {
+                v_JSONRoot = new XJSONObject((JSONObject) v_ParserRet);
+            }
+            // 支持以 [] 开头的 JSON
+            else if ( v_ParserRet instanceof List )
+            {
+                List<JSONObject> v_ParserRetArr = (List<JSONObject>) v_ParserRet;
+                List<Object>     v_Objects      = new ArrayList<Object>();
+                for (JSONObject v_Item : v_ParserRetArr)
+                {
+                    v_JSONRoot = new XJSONObject((JSONObject) v_Item);
+                    v_Objects.add(parser(v_JSONRoot ,i_Class));
+                }
+                return v_Objects;
+            }
         }
         catch (Exception exce)
         {
@@ -1033,6 +1053,7 @@ public final class XJSON
      * @param i_Class
      * @return
      */
+    @SuppressWarnings("unchecked")
     public Object parser(String i_JSONString ,String i_JSONKey ,Class<?> i_Class)
     {
         if ( Help.isNull(i_JSONString) )
@@ -1056,8 +1077,55 @@ public final class XJSON
         
         try
         {
-            v_JSONRoot = new XJSONObject((JSONObject) v_JsonParser.parse(StringHelp.replaceAll(i_JSONString ,new String[]{"\n"} ,new String[]{""})));
-            v_Object   = v_JSONRoot.get(i_JSONKey);
+            Object v_ParserRet = v_JsonParser.parse(StringHelp.replaceAll(i_JSONString ,new String[]{"\n"} ,new String[]{""}));
+            
+            // 支持以 {} 开头的 JSON
+            if ( v_ParserRet instanceof JSONObject )
+            {
+                v_JSONRoot = new XJSONObject((JSONObject) v_ParserRet);
+                v_Object   = v_JSONRoot.get(i_JSONKey);
+            }
+            // 支持以 [] 开头的 JSON
+            else if ( v_ParserRet instanceof List )
+            {
+                List<JSONObject> v_ParserRetArr = (List<JSONObject>) v_ParserRet;
+                List<Object>     v_Objects      = new ArrayList<Object>();
+                for (JSONObject v_Item : v_ParserRetArr)
+                {
+                    v_JSONRoot = new XJSONObject((JSONObject) v_Item);
+                    v_Object   = v_JSONRoot.get(i_JSONKey);
+                    
+                    if ( v_Object == null )
+                    {
+                        try
+                        {
+                            v_Objects.add(i_Class.getDeclaredConstructor().newInstance());
+                        }
+                        catch (Exception exce)
+                        {
+                            throw new NullPointerException("JSON Parser Object is null.");
+                        }
+                    }
+                    else if ( v_Object.getClass() == JSONArray.class )
+                    {
+                        v_Objects.add(parser((JSONArray)v_Object ,i_Class));
+                    }
+                    else if ( v_Object.getClass() == JSONObject.class )
+                    {
+                        v_Objects.add(parser(new XJSONObject((JSONObject)v_Object) ,i_Class));
+                    }
+                    else if ( v_Object.getClass() == XJSONObject.class )
+                    {
+                        v_Objects.add(parser((XJSONObject)v_Object ,i_Class));
+                    }
+                    else
+                    {
+                        throw new NullPointerException("Unknown JSON type.");
+                    }
+                    
+                }
+                return v_Objects;
+            }
         }
         catch (Exception exce)
         {
