@@ -1196,6 +1196,79 @@ public final class XJSON
     
     
     /**
+     * Java对象转为Json字符串
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-04-24
+     * @version     v1.0
+     *
+     * @param i_JavaData      Java对象。
+     *                             1. 参数可以是Java Bean
+     *                             2. 参数可以是Map
+     * @return
+     */
+    public String toJsonText(Object i_JavaData)
+    {
+        return parser(i_JavaData).toJSONString();
+    }
+    
+    
+    
+    /**
+     * Java对象转为Json字符串
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-04-24
+     * @version     v1.0
+     *
+     * @param i_JavaData      Java对象。
+     *                             1. 参数可以是Java Bean
+     *                             2. 参数可以是Map
+     * @param i_JSONRootName  设置生成Json字符串的顶级节点名称
+     * @return
+     */
+    public String toJsonText(Object i_JavaData ,String i_JSONRootName)
+    {
+        return parser(i_JavaData ,i_JSONRootName).toJSONString();
+    }
+    
+    
+    
+    /**
+     * Java对象转为Json字符串，但仅返回二级节点
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-04-24
+     * @version     v1.0
+     *
+     * @param i_JavaData      Java对象。
+     *                             1. 参数可以是Java Bean
+     *                             2. 参数可以是Map
+     * @param i_JSONRootName  设置生成Json字符串的顶级节点名称
+     * @return
+     */
+    public String toJsonTextByChilds(Object i_JavaData ,String i_JSONRootName)
+    {
+        XJSONObject v_XJsonRoot = parser(i_JavaData ,i_JSONRootName);
+        Object      v_Childs    = v_XJsonRoot.get(i_JSONRootName);
+        
+        if ( v_Childs instanceof XJSONObject )
+        {
+            return ((XJSONObject) v_Childs).toJSONString();
+        }
+        else if ( v_Childs instanceof JSONArray )
+        {
+            return ((JSONArray) v_Childs).toJSONString();
+        }
+        else
+        {
+            return v_XJsonRoot.toJSONString();
+        }
+    }
+    
+    
+    
+    /**
      * 解释Java对象成为JSON
      * 
      * @param i_JavaData      Java对象。
