@@ -93,6 +93,8 @@ import net.minidev.json.parser.JSONParser;
  *              2025-10-22  V5.0  添加：支持对象中属性为Map集合，并且Map集合中的元素也是一个对象的Json转Java对象。
  *              2026-02-11  V6.0  添加：支持特殊类型ExpireCache的转Json，或转Java
  *              2026-04-21  V7.0  添加：除了原先使用指定方法toJavaList()外，对于通用toJava也支持以 [] 开头的 JSON。
+ *              2026-04-25  V8.0  添加：对象的成员属性是 List<Object>   时，将Json按 List<Map> 转Java
+ *                                添加：对象的成员属性是 Map<? ,Object> 时，将Json按 Map<? ,Map> 转Java
  */
 public final class XJSON
 {
@@ -850,7 +852,15 @@ public final class XJSON
                         }
                     }
                     
-                    v_ParserObj = this.parser(new XJSONObject((JSONObject)v_Value) ,v_VClass ,v_VClassElement);
+                    if ( Object.class.equals(v_VClassElement) )
+                    {
+                        // 2026-04-25：对象的成员属性是 Map<? ,Object> 时，将Json按 Map<? ,Map> 转Java
+                        v_ParserObj = this.parser(new XJSONObject((JSONObject)v_Value) ,v_VClass ,Map.class);
+                    }
+                    else
+                    {
+                        v_ParserObj = this.parser(new XJSONObject((JSONObject)v_Value) ,v_VClass ,v_VClassElement);
+                    }
                     
                     if ( v_ParserObj != null )
                     {
@@ -962,7 +972,7 @@ public final class XJSON
             {
                 if ( Object.class.equals(i_ElementClass) )
                 {
-                    // 如果List元素是Object（即万能类型），将按Map类型转Java
+                    // 2026-04-25：如果List元素是Object（即万能类型），将按Map类型转Java
                     v_ParserObj = parser(new XJSONObject((JSONObject)v_ElementObject) ,Map.class);
                 }
                 else
@@ -974,7 +984,7 @@ public final class XJSON
             {
                 if ( Object.class.equals(i_ElementClass) )
                 {
-                    // 如果List元素是Object（即万能类型），将按Map类型转Java
+                    // 2026-04-25：如果List元素是Object（即万能类型），将按Map类型转Java
                     v_ParserObj = parser((XJSONObject)v_ElementObject ,Map.class);
                 }
                 else
