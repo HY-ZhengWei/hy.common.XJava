@@ -1063,7 +1063,7 @@ public final class XJSON
         }
         catch (Exception exce)
         {
-            throw new RuntimeException(exce.getMessage());
+            throw new RuntimeException(exce.getMessage() + "\n" + i_JSONString);
         }
         
         return parser(v_JSONRoot ,i_Class);
