@@ -960,11 +960,27 @@ public final class XJSON
             }
             else if ( v_ElementObject.getClass() == JSONObject.class )
             {
-                v_ParserObj = parser(new XJSONObject((JSONObject)v_ElementObject) ,i_ElementClass);
+                if ( Object.class.equals(i_ElementClass) )
+                {
+                    // 如果List元素是Object（即万能类型），将按Map类型转Java
+                    v_ParserObj = parser(new XJSONObject((JSONObject)v_ElementObject) ,Map.class);
+                }
+                else
+                {
+                    v_ParserObj = parser(new XJSONObject((JSONObject)v_ElementObject) ,i_ElementClass);
+                }
             }
             else if ( v_ElementObject.getClass() == XJSONObject.class )
             {
-                v_ParserObj = parser((XJSONObject)v_ElementObject ,i_ElementClass);
+                if ( Object.class.equals(i_ElementClass) )
+                {
+                    // 如果List元素是Object（即万能类型），将按Map类型转Java
+                    v_ParserObj = parser((XJSONObject)v_ElementObject ,Map.class);
+                }
+                else
+                {
+                    v_ParserObj = parser((XJSONObject)v_ElementObject ,i_ElementClass);
+                }
             }
             else
             {
