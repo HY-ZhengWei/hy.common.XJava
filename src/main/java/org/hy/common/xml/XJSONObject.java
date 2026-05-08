@@ -12,13 +12,16 @@ import net.minidev.json.JSONAwareEx;
 import net.minidev.json.JSONStreamAwareEx;
 import net.minidev.json.JSONStyle;
 import net.minidev.json.JSONValue;
+import net.minidev.json.reader.JsonWriter;
 
 
 
 
 
 /**
- * 重写 JSONObject 类，不同是：继承了 LinkedHashMap。其它都是一样的。
+ * 重写 JSONObject 类，
+ *    不同处1：继承了 LinkedHashMap。
+ *    不同处2：Map入参的构造器，对Map排序。
  * 
  * 主要目的是使JSON格式的字符串，有一个排列顺序
  * 
@@ -26,6 +29,8 @@ import net.minidev.json.JSONValue;
  * @createDate  2014-11-30
  * @version     v1.0
  *              v2.0  2021-12-13  添加：从JSONObject转本类时，自动排序后初始的功能
+ *              v3.0  2026-05-08  升级：引用Json-Smart 2.6.0 版本的源码
+ *                                升级：对于末尾是数字的按自然数排序
  * 
  * @see net.minidev.json.JSONObject;
  */
@@ -34,101 +39,96 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
 
     private static final long serialVersionUID = -503443796854799292L;
 
-
-
-    public XJSONObject()
-    {
-        super();
+    public XJSONObject() {
+      super();
     }
 
+    public XJSONObject(int initialCapacity) {
+      super(initialCapacity);
+    }
 
-
-    // /**
-    // * Allow simply casting to Map<String, XX>
-    // */
-    // @SuppressWarnings("unchecked")
-    // public <T> T cast() {
-    // return (T) this;
-    // }
     /**
-     * Escape quotes, \, /, \r, \n, \b, \f, \t and other control characters
-     * (U+0000 through U+001F). It's the same as JSONValue.escape() only for
-     * compatibility here.
-     * 
+     * Escape quotes, \, /, \r, \n, \b, \f, \t and other control characters (U+0000 through U+001F).
+     * It's the same as JSONValue.escape() only for compatibility here.
+     *
      * @see JSONValue#escape(String)
      */
-    public static String escape(String s)
-    {
-        return JSONValue.escape(s);
+    public static String escape(String s) {
+      return JSONValue.escape(s);
     }
 
-
-
-    public static String toJSONString(Map<String ,? extends Object> map)
-    {
-        return toJSONString(map ,JSONValue.COMPRESSION);
+    public static String toJSONString(Map<String, ? extends Object> map) {
+      return toJSONString(map, JSONValue.COMPRESSION);
     }
-
-
 
     /**
-     * Convert a map to JSON text. The result is a JSON object. If this map is
-     * also a JSONAware, JSONAware specific behaviours will be omitted at this
-     * top level.
-     * 
+     * Convert a map to JSON text. The result is a JSON object. If this map is also a JSONAware,
+     * JSONAware specific behaviours will be omitted at this top level.
+     *
      * @see net.minidev.json.JSONValue#toJSONString(Object)
-     * 
      * @param map
      * @return JSON text, or "null" if map is null.
      */
-    public static String toJSONString(Map<String ,? extends Object> map ,JSONStyle compression)
-    {
-        StringBuilder sb = new StringBuilder();
-        try
-        {
-            writeJSON(map ,sb ,compression);
-        }
-        catch (IOException e)
-        {
-            // can not append on a StringBuilder
-        }
-        return sb.toString();
+    public static String toJSONString(Map<String, ? extends Object> map, JSONStyle compression) {
+      StringBuilder sb = new StringBuilder();
+      try {
+        writeJSON(map, sb, compression);
+      } catch (IOException e) {
+        // can not append on a StringBuilder
+      }
+      return sb.toString();
     }
 
-
+    /** Write a Key : value entry to a stream */
+    public static void writeJSONKV(String key, Object value, Appendable out, JSONStyle compression)
+        throws IOException {
+      if (key == null) out.append("null");
+      else if (!compression.mustProtectKey(key)) out.append(key);
+      else {
+        out.append('"');
+        JSONValue.escape(key, out, compression);
+        out.append('"');
+      }
+      out.append(':');
+      if (value instanceof String) compression.writeString(out, (String) value);
+      else JSONValue.writeJSONString(value, out, compression);
+    }
 
     /**
-     * Write a Key : value entry to a stream
+     * Puts value to object and returns this. Handy alternative to put(String key, Object value)
+     * method.
+     *
+     * @param fieldName key with which the specified value is to be associated
+     * @param fieldValue value to be associated with the specified key
+     * @return this
      */
-    public static void writeJSONKV(String key ,Object value ,Appendable out ,JSONStyle compression) throws IOException
-    {
-        if ( key == null )
-            out.append("null");
-        else if ( !compression.mustProtectKey(key) )
-            out.append(key);
-        else
-        {
-            out.append('"');
-            JSONValue.escape(key ,out ,compression);
-            out.append('"');
-        }
-        out.append(':');
-        if ( value instanceof String )
-        {
-            if ( !compression.mustProtectValue((String) value) )
-                out.append((String) value);
-            else
-            {
-                out.append('"');
-                JSONValue.escape((String) value ,out ,compression);
-                out.append('"');
-            }
-        }
-        else
-            JSONValue.writeJSONString(value ,out ,compression);
+    public XJSONObject appendField(String fieldName, Object fieldValue) {
+      put(fieldName, fieldValue);
+      return this;
     }
 
+    /**
+     * A Simple Helper object to String
+     *
+     * @return a value.toString() or null
+     */
+    public String getAsString(String key) {
+      Object obj = this.get(key);
+      if (obj == null) return null;
+      return obj.toString();
+    }
 
+    /**
+     * A Simple Helper cast an Object to an Number
+     *
+     * @return a Number or null
+     */
+    public Number getAsNumber(String key) {
+      Object obj = this.get(key);
+      if (obj == null) return null;
+      if (obj instanceof Number) return (Number) obj;
+      return Long.valueOf(obj.toString());
+    }
 
     // /**
     // * return a Key:value entry as stream
@@ -136,6 +136,7 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
     // public static String toString(String key, Object value) {
     // return toString(key, value, JSONValue.COMPRESSION);
     // }
+
     // /**
     // * return a Key:value entry as stream
     // */
@@ -149,204 +150,129 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
     // }
     // return sb.toString();
     // }
+
     /**
-     * Allows creation of a JSONObject from a Map. After that, both the
-     * generated JSONObject and the Map can be modified independently.
+     * Allows creation of a JSONObject from a Map. After that, both the generated JSONObject and the
+     * Map can be modified independently.
      */
-    public XJSONObject(Map<String ,?> map)
-    {
-        super(Help.toSort(map));
+    public XJSONObject(Map<String, ?> map) {
+      // super(map);          ZhengWei(HY) 原类的方法
+      super(Help.toSortStringInt(map));
     }
 
-
-
-    public static void writeJSON(Map<String ,Object> map ,Appendable out) throws IOException
-    {
-        writeJSON(map ,out ,JSONValue.COMPRESSION);
+    public static void writeJSON(Map<String, ? extends Object> map, Appendable out)
+        throws IOException {
+      writeJSON(map, out, JSONValue.COMPRESSION);
     }
-
-
 
     /**
-     * Encode a map into JSON text and write it to out. If this map is also a
-     * JSONAware or JSONStreamAware, JSONAware or JSONStreamAware specific
-     * behaviours will be ignored at this top level.
-     * 
+     * Encode a map into JSON text and write it to out. If this map is also a JSONAware or
+     * JSONStreamAware, JSONAware or JSONStreamAware specific behaviours will be ignored at this top
+     * level.
+     *
      * @see JSONValue#writeJSONString(Object, Appendable)
      */
-    public static void writeJSON(Map<String ,? extends Object> map ,Appendable out ,JSONStyle compression) throws IOException
-    {
-        if ( map == null )
-        {
-            out.append("null");
-            return;
-        }
-        // JSONStyler styler = compression.getStyler();
-        boolean first = true;
-        // if (styler != null) {
-        // styler.objectIn();
-        // }
-        out.append('{');
-        /**
-         * do not use <String, Object> to handle non String key maps
-         */
-        for (Map.Entry<? ,?> entry : map.entrySet())
-        {
-            if ( first )
-            {
-                first = false;
-            }
-            else
-            {
-                out.append(',');
-            }
-            // if (styler != null)
-            // out.append(styler.getNewLine());
-            writeJSONKV(entry.getKey().toString() ,entry.getValue() ,out ,compression);
-        }
-        // if (styler != null) {
-        // styler.objectOut();
-        // }
-        out.append('}');
-        // if (styler != null) {
-        // out.append(styler.getNewLine());
-        // }
+    public static void writeJSON(
+        Map<String, ? extends Object> map, Appendable out, JSONStyle compression) throws IOException {
+      if (map == null) {
+        out.append("null");
+        return;
+      }
+      JsonWriter.JSONMapWriter.writeJSONString(map, out, compression);
     }
 
+    /** serialize Object as json to an stream */
+    public void writeJSONString(Appendable out) throws IOException {
+      writeJSON(this, out, JSONValue.COMPRESSION);
+    }
 
+    /** serialize Object as json to an stream */
+    public void writeJSONString(Appendable out, JSONStyle compression) throws IOException {
+      writeJSON(this, out, compression);
+    }
+
+    public void merge(Object o2) {
+      merge(this, o2, false);
+    }
 
     /**
-     * serialize Object as json to an stream
+     * merge two JSONObject with overwrite or not overwrite = false will not overwrite existing key
+     * overwrite = true will overwrite the value with o2 of existing key
      */
-    @Override
-    public void writeJSONString(Appendable out) throws IOException
-    {
-        writeJSON(this ,out ,JSONValue.COMPRESSION);
+    public void merge(Object o2, boolean overwrite) {
+      merge(this, o2, overwrite);
     }
 
-
-
-    /**
-     * serialize Object as json to an stream
-     */
-    @Override
-    public void writeJSONString(Appendable out ,JSONStyle compression) throws IOException
-    {
-        writeJSON(this ,out ,compression);
+    protected static XJSONObject merge(XJSONObject o1, Object o2, boolean overwrite) {
+      if (o2 == null) return o1;
+      if (o2 instanceof XJSONObject) return merge(o1, (XJSONObject) o2, overwrite);
+      throw new RuntimeException("JSON merge can not merge XJSONObject with " + o2.getClass());
     }
 
-
-
-    public void merge(Object o2)
-    {
-        merge(this ,o2);
-    }
-
-
-
-    protected static XJSONObject merge(XJSONObject o1 ,Object o2)
-    {
-        if ( o2 == null )
-        {
-            return o1;
+    private static XJSONObject merge(XJSONObject o1, XJSONObject o2, boolean overwrite) {
+      if (o2 == null) return o1;
+      for (String key : o1.keySet()) {
+        Object value1 = o1.get(key);
+        Object value2 = o2.get(key);
+        if (value2 == null) continue;
+        if (value1 instanceof JSONArray) {
+          o1.put(key, merge((JSONArray) value1, value2));
+          continue;
         }
-        if ( o2 instanceof XJSONObject )
-        {
-            return merge(o1 ,(XJSONObject) o2);
+        if (value1 instanceof XJSONObject) {
+          o1.put(key, merge((XJSONObject) value1, value2, overwrite));
+          continue;
         }
-        throw new RuntimeException("JSON megre can not merge JSONObject with " + o2.getClass());
-    }
-
-
-
-    private static XJSONObject merge(XJSONObject o1 ,XJSONObject o2)
-    {
-        if ( o2 == null )
-        {
-            return o1;
+        if (value1.equals(value2)) continue;
+        if (value1.getClass().equals(value2.getClass())) {
+          if (overwrite) {
+            o1.put(key, value2);
+            continue;
+          }
+          throw new RuntimeException(
+              "JSON merge can not merge two " + value1.getClass().getName() + " Object together");
         }
-        for (String key : o1.keySet())
-        {
-            Object value1 = o1.get(key);
-            Object value2 = o2.get(key);
-            if ( value2 == null )
-                continue;
-            if ( value1 instanceof JSONArray )
-            {
-                o1.put(key ,merge((JSONArray) value1 ,value2));
-                continue;
-            }
-            if ( value1 instanceof XJSONObject )
-            {
-                o1.put(key ,merge((XJSONObject) value1 ,value2));
-                continue;
-            }
-            if ( value1.equals(value2) )
-                continue;
-            throw new RuntimeException("JSON megre can not merge " + value1.getClass() + " with " + value2.getClass());
-        }
-        for (String key : o2.keySet())
-        {
-            if ( o1.containsKey(key) )
-                continue;
-            o1.put(key ,o2.get(key));
-        }
-        return o1;
+        throw new RuntimeException(
+            "JSON merge can not merge "
+                + value1.getClass().getName()
+                + " with "
+                + value2.getClass().getName());
+      }
+      for (String key : o2.keySet()) {
+        if (o1.containsKey(key)) continue;
+        o1.put(key, o2.get(key));
+      }
+      return o1;
     }
 
-
-
-    protected static JSONArray merge(JSONArray o1 ,Object o2)
-    {
-        if ( o2 == null )
-        {
-            return o1;
-        }
-        if ( o1 instanceof JSONArray )
-        {
-            return merge(o1 ,(JSONArray) o2);
-        }
-        o1.add(o2);
-        return o1;
+    protected static JSONArray merge(JSONArray o1, Object o2) {
+      if (o2 == null) return o1;
+      if (o2 instanceof JSONArray) {
+        return merge(o1, (JSONArray) o2);
+      }
+      o1.add(o2);
+      return o1;
     }
 
-
-
-    private static JSONArray merge(JSONArray o1 ,JSONArray o2)
-    {
-        o1.addAll(o2);
-        return o1;
+    private static JSONArray merge(JSONArray o1, JSONArray o2) {
+      o1.addAll(o2);
+      return o1;
     }
 
-
-
-    @Override
-    public String toJSONString()
-    {
-        return toJSONString(this ,JSONValue.COMPRESSION);
+    public String toJSONString() {
+      return toJSONString(this, JSONValue.COMPRESSION);
     }
 
-
-
-    @Override
-    public String toJSONString(JSONStyle compression)
-    {
-        return toJSONString(this ,compression);
+    public String toJSONString(JSONStyle compression) {
+      return toJSONString(this, compression);
     }
 
-
-
-    public String toString(JSONStyle compression)
-    {
-        return toJSONString(this ,compression);
+    public String toString(JSONStyle compression) {
+      return toJSONString(this, compression);
     }
 
-
-
-    @Override
-    public String toString()
-    {
-        return toJSONString(this ,JSONValue.COMPRESSION);
+    public String toString() {
+      return toJSONString(this, JSONValue.COMPRESSION);
     }
     
 }

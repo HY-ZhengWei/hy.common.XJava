@@ -54,7 +54,7 @@ public class JU_JsonSmart
     public void test_JsonSmart_01()
     {
         String      v_JsonString = XJava.getParam("JsonSmart01").getValue();
-        JSONParser  v_JsonParser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+        JSONParser  v_JsonParser = new JSONParser(JSONParser.MODE_PERMISSIVE);
         XJSONObject v_JSONRoot   = null;
         
         try

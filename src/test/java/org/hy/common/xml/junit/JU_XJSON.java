@@ -1110,6 +1110,22 @@ public class JU_XJSON
     
     
     
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_JsonToMap4() throws Exception
+    {
+        String v_JonsText = """
+                            {"x1":"1","x2":"2","x3":"3","x4":"4","x5":"5","x6":"6","x7":"7","x8":"8","x9":"9","x10":"10"}
+                            """;
+        
+        XJSON v_Json = new XJSON();
+        Map<String ,Object> v_Value = (Map<String ,Object>) v_Json.toJava(v_JonsText ,Map.class);
+        
+        $Logger.info(v_Value);
+    }
+    
+    
+    
     @Test
     @SuppressWarnings("unchecked")
     public void test_JsonToList()

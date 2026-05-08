@@ -6,9 +6,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -95,6 +96,7 @@ import net.minidev.json.parser.JSONParser;
  *              2026-04-21  V7.0  添加：除了原先使用指定方法toJavaList()外，对于通用toJava也支持以 [] 开头的 JSON。
  *              2026-04-25  V8.0  添加：对象的成员属性是 List<Object>   时，将Json按 List<Map> 转Java
  *                                添加：对象的成员属性是 Map<? ,Object> 时，将Json按 Map<? ,Map> 转Java
+ *              2026-05-07  V9.0  添加：Json转Java时默认使用有顺序的Map和Set集合，并使用 MODE_PERMISSIVE 宽松模式
  */
 public final class XJSON
 {
@@ -494,7 +496,7 @@ public final class XJSON
         {
             if ( Map.class.equals(i_ObjectClass) )
             {
-                v_NewObj = new HashMap<Object ,Object>();
+                v_NewObj = new LinkedHashMap<Object ,Object>();
             }
             else if ( List.class.equals(i_ObjectClass) )
             {
@@ -506,7 +508,7 @@ public final class XJSON
             }
             else if ( Set.class.equals(i_ObjectClass) )
             {
-                v_NewObj = new HashSet<Object>();
+                v_NewObj = new LinkedHashSet<Object>();
             }
             else
             {
@@ -584,7 +586,7 @@ public final class XJSON
                     }
                     else
                     {
-                        XJSONToJava.mapValueToJava(this ,(Map<Object ,Object>)      v_NewObj ,v_MapKeyName ,v_Value);
+                        XJSONToJava.mapValueToJava(this ,(Map<Object ,Object>)        v_NewObj ,v_MapKeyName ,v_Value);
                     }
                 }
                 else
@@ -731,7 +733,7 @@ public final class XJSON
                         }
                         
                         v_ParserObj = parser((JSONArray)v_Value ,v_ActualTypeClass);
-                        Set<Object>  v_ParserSet  = new HashSet<Object>();
+                        Set<Object>  v_ParserSet  = new LinkedHashSet<Object>();
                         List<Object> v_ParserList = (List<Object>) v_ParserObj;
                         
                         for (Object v_Obj : v_ParserList)
@@ -1036,7 +1038,7 @@ public final class XJSON
         }
         
         
-        JSONParser v_JsonParser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+        JSONParser v_JsonParser = new JSONParser(JSONParser.MODE_PERMISSIVE);
         XJSONObject v_JSONRoot   = null;
         
         try
@@ -1097,7 +1099,7 @@ public final class XJSON
             throw new NullPointerException("JSON Parser Object Class is null.");
         }
         
-        JSONParser  v_JsonParser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+        JSONParser  v_JsonParser = new JSONParser(JSONParser.MODE_PERMISSIVE);
         XJSONObject v_JSONRoot   = null;
         Object      v_Object     = null;
         
@@ -1527,7 +1529,7 @@ public final class XJSON
 
 
     /**
-     * 获取：* 是否精确解释（默认：false）
+     * 获取：是否精确解释（默认：false）
      * 
      * 当精确解释时=true，   JSON字符串中的Key必须找到Java的setter方法，否则报错。
      * 当精确解释时=true，   Java对象转为JSON字符串时，必须getter方法与setter方法成对出现时，才会生成JSON字符串。
@@ -1544,14 +1546,14 @@ public final class XJSON
 
     
     /**
-     * 设置：* 是否精确解释（默认：false）
-         * 
-         * 当精确解释时=true，   JSON字符串中的Key必须找到Java的setter方法，否则报错。
-         * 当精确解释时=true，   Java对象转为JSON字符串时，必须getter方法与setter方法成对出现时，才会生成JSON字符串。
-         * 当非精确解释时=false，JSON字符串中的Key找到不Java的setter方法时，忽略JSON字符串Key对应的值。
-         * 当非精确解释时=false，Java对象转为JSON字符串时，不要求getter方法与setter方法必须成对出现。
-         * 
-         * 只用于解释JSON字符串成为Java实例对象
+     * 设置：是否精确解释（默认：false）
+     * 
+     * 当精确解释时=true，   JSON字符串中的Key必须找到Java的setter方法，否则报错。
+     * 当精确解释时=true，   Java对象转为JSON字符串时，必须getter方法与setter方法成对出现时，才会生成JSON字符串。
+     * 当非精确解释时=false，JSON字符串中的Key找到不Java的setter方法时，忽略JSON字符串Key对应的值。
+     * 当非精确解释时=false，Java对象转为JSON字符串时，不要求getter方法与setter方法必须成对出现。
+     * 
+     * 只用于解释JSON字符串成为Java实例对象
      * 
      * @param isAccuracy
      */
