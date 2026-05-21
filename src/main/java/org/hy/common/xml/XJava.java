@@ -43,6 +43,7 @@ import org.hy.common.XJavaID;
 import org.hy.common.app.Param;
 import org.hy.common.file.FileHelp;
 import org.hy.common.xcql.XCQL;
+import org.hy.common.xml.XJavaImport.Import;
 import org.hy.common.xml.annotation.XRequest;
 import org.hy.common.xml.annotation.XType;
 import org.hy.common.xml.annotation.XTypeAnno;
@@ -105,6 +106,7 @@ import org.xml.sax.InputSource;
  *                                修改：会话级对象池，改为XJavaObject类型的元数据
  *              v2.2  2025-09-20  添加：XML节点<...>和</...>间的内容类型
  *              v2.3  2025-11-10  修正：<constructor>在构造对象异常时，删除之前预先put在对象池中的信息
+ *              v2.4  2026-05-21  添加：众包引用模式
  */
 public final class XJava
 {
@@ -2546,11 +2548,45 @@ public final class XJava
                     String v_Imprt_Name  = getNodeAttribute(v_Node ,$XML_IMPORT_NAME);
                     String v_Imprt_Class = getNodeAttribute(v_Node ,$XML_IMPORT_CLASS);
                     
-                    if ( this.imports.containsKey(v_Imprt_Name) )
+                    // 众包引用模式
+                    Class<?> v_ImportClass = Help.forName(v_Imprt_Class);
+                    if ( MethodReflect.isExtendImplement(v_ImportClass ,XJavaImport.class) )
                     {
-                        this.imports.remove(v_Imprt_Name);
+                        if ( MethodReflect.allowNew(v_ImportClass) )
+                        {
+                            XJavaImport v_XJavaImport = (XJavaImport) v_ImportClass.getDeclaredConstructor().newInstance();
+                            List<Import> v_Imports    = v_XJavaImport.getImports();
+                            
+                            if ( Help.isNull(v_Imports) )
+                            {
+                                $Logger.error(v_Imprt_Name + ":" + v_Imprt_Class + " 无任何引包数据");
+                            }
+                            else
+                            {
+                                for (Import v_Import : v_Imports)
+                                {
+                                    if ( this.imports.containsKey(v_Import.name()) )
+                                    {
+                                        this.imports.remove(v_Import.name());
+                                    }
+                                    this.imports.put(v_Import.name() ,v_Import.className());
+                                }
+                            }
+                        }
+                        else
+                        {
+                            $Logger.error(v_Imprt_Name + ":" + v_Imprt_Class + " 无默认构造器");
+                        }
                     }
-                    this.imports.put(v_Imprt_Name ,v_Imprt_Class);
+                    // 单包引用模式
+                    else
+                    {
+                        if ( this.imports.containsKey(v_Imprt_Name) )
+                        {
+                            this.imports.remove(v_Imprt_Name);
+                        }
+                        this.imports.put(v_Imprt_Name ,v_Imprt_Class);
+                    }
                 }
                 else
                 {

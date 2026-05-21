@@ -1,5 +1,8 @@
 package org.hy.common.xml.junit;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hy.common.Date;
 import org.hy.common.Return;
 import org.hy.common.StringHelp;
@@ -75,7 +78,7 @@ public class JU_XHttp_Post
     @Test
     public void test_QRCodeLogin()
     {
-        XHttp  v_XHttp = new XHttp();
+        XHttp v_XHttp = new XHttp();
 
         v_XHttp.setProtocol("https");
         v_XHttp.setIp("127.0.0.1");
