@@ -97,6 +97,7 @@ import net.minidev.json.parser.JSONParser;
  *              2026-04-25  V8.0  添加：对象的成员属性是 List<Object>   时，将Json按 List<Map> 转Java
  *                                添加：对象的成员属性是 Map<? ,Object> 时，将Json按 Map<? ,Map> 转Java
  *              2026-05-07  V9.0  添加：Json转Java时默认使用有顺序的Map和Set集合，并使用 MODE_PERMISSIVE 宽松模式
+ *              2026-05-24  V10.0 修正：在Json转Java时，Java结构层级深处的成员属性是Object，直接返回JSONObject
  */
 public final class XJSON
 {
@@ -494,7 +495,12 @@ public final class XJSON
         Object v_NewObj = null;
         try
         {
-            if ( Map.class.equals(i_ObjectClass) )
+            if ( Object.class.equals(i_ObjectClass) )
+            {
+                // 2026-05-24 当Java类型为 Object 时，直接返回 i_JSONObject
+                return i_JSONObject.toJSONObject();
+            }
+            else if ( Map.class.equals(i_ObjectClass) )
             {
                 v_NewObj = new LinkedHashMap<Object ,Object>();
             }

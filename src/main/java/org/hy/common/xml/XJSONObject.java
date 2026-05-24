@@ -9,6 +9,7 @@ import org.hy.common.Help;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONAwareEx;
+import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStreamAwareEx;
 import net.minidev.json.JSONStyle;
 import net.minidev.json.JSONValue;
@@ -38,7 +39,21 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
 {
 
     private static final long serialVersionUID = -503443796854799292L;
-
+    
+    /**
+     * 转为 JSONObject 类，可用对外统一返回类型
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-05-24
+     * @version     v1.0
+     *
+     * @return
+     */
+    public JSONObject toJSONObject()
+    {
+        return new JSONObject(this);
+    }
+    
     public XJSONObject() {
       super();
     }
