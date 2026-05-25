@@ -1630,7 +1630,30 @@ public class XJSONToJson
                                 
                                 if ( i_XJson.isReturnNVL() )
                                 {
-                                    v_ChildJsonObj.put(v_Name ,"");
+                                    if ( v_Method.getReturnType() == Void.TYPE )
+                                    {
+                                        // Nothing.
+                                    }
+                                    else if ( v_Method.getReturnType().isArray() )
+                                    {
+                                        v_ChildJsonObj.put(v_Name ,new JSONArray());
+                                    }
+                                    else if ( MethodReflect.isExtendImplement(v_Method.getReturnType() ,List.class) )
+                                    {
+                                        v_ChildJsonObj.put(v_Name ,new JSONArray());
+                                    }
+                                    else if ( MethodReflect.isExtendImplement(v_Method.getReturnType() ,Set.class) )
+                                    {
+                                        v_ChildJsonObj.put(v_Name ,new JSONArray());
+                                    }
+                                    else if ( MethodReflect.isExtendImplement(v_Method.getReturnType() ,Map.class) )
+                                    {
+                                        v_ChildJsonObj.put(v_Name ,v_ChildJsonObj);
+                                    }
+                                    else
+                                    {
+                                        v_ChildJsonObj.put(v_Name ,"");
+                                    }
                                 }
                             }
                         }

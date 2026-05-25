@@ -3,8 +3,10 @@ package org.hy.common.xml.junit;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hy.common.Date;
 import org.hy.common.ExpireMap;
@@ -38,33 +40,66 @@ public class JU_XJSON
     
     private static final Logger $Logger = new Logger(JU_XJSON.class ,true);
     
-    private String     valueString;
+    private String              valueString;
+                                
+    private String              valueStrDate;
+                                
+    private Date                valueDate;
+                                
+    private Object              valueObject;
+                                
+    private byte    []          valueByteArr;
+                                
+    private int     []          valueIntArr;
+                                
+    private Integer []          valueIntegerArr;
+                                
+    private String  []          valueStringArr;
     
-    private String     valueStrDate;
+    private List<String>        valueList;
     
-    private Date       valueDate;
+    private Set<String>         valueSet;
     
-    private Object     valueObject;
+    private Map<String ,String> valueMap;
     
-    private byte    [] valueByteArr;
+    private Boolean             upper;
     
-    private int     [] valueIntArr;
     
-    private Integer [] valueIntegerArr;
     
-    private String  [] valueStringArr;
-    
-    private Boolean    upper;
+    @Test
+    public void test_isReturnEmpty()
+    {
+        JU_XJSON v_JavaData = new JU_XJSON();
+        XJSON    v_XJson    = new XJSON();
+        
+        v_JavaData.setValueString("");
+        v_JavaData.setValueList(new ArrayList<String>());
+        v_JavaData.setValueMap(new HashMap<String ,String>());
+        v_JavaData.setValueSet(new HashSet<String>());
+        v_JavaData.setValueIntArr(new int[0]);
+        
+        System.out.println("\n输出默认的Json情况");
+        System.out.println(v_XJson.toJsonText(v_JavaData));
+        
+        v_XJson.setReturnNVL(false);
+        System.out.println("\n输出非NULL、非零元素集合、非空字符串Json");
+        System.out.println(v_XJson.toJsonText(v_JavaData));
+        
+        v_XJson.setReturnNVL(false);
+        v_XJson.setReturnEmpty(true);
+        System.out.println("\n输出非NULL的Json");
+        System.out.println(v_XJson.toJsonText(v_JavaData));
+    }
     
     
     
     @Test
     public void 剪影字幕提取() throws Exception
     {
-        FileHelp          v_FileHelp = new FileHelp();
-        String            v_FileName = "C:\\Users\\hyzhe\\Desktop\\draft_content.json";   // 请将剪影字幕转一下格式后再使用哈
-        String            v_JsonData = v_FileHelp.getContent(v_FileName ,"GBK");
-        XJSON             v_XJson    = new XJSON();
+        FileHelp v_FileHelp = new FileHelp();
+        String   v_FileName = "C:\\Users\\hyzhe\\Desktop\\draft_content.json";   // 请将剪影字幕转一下格式后再使用哈
+        String   v_JsonData = v_FileHelp.getContent(v_FileName ,"GBK");
+        XJSON    v_XJson    = new XJSON();
         
         v_JsonData = StringHelp.replaceAll(v_JsonData ,"�" ,"");
         
@@ -1362,6 +1397,42 @@ public class JU_XJSON
     public void setValueStrDate(String valueStrDate)
     {
         this.valueStrDate = valueStrDate;
+    }
+
+
+    public List<String> getValueList()
+    {
+        return valueList;
+    }
+
+
+    public void setValueList(List<String> i_ValueList)
+    {
+        this.valueList = i_ValueList;
+    }
+
+    
+    public Map<String ,String> getValueMap()
+    {
+        return valueMap;
+    }
+
+    
+    public void setValueMap(Map<String ,String> i_ValueMap)
+    {
+        this.valueMap = i_ValueMap;
+    }
+
+
+    public Set<String> getValueSet()
+    {
+        return valueSet;
+    }
+
+
+    public void setValueSet(Set<String> i_ValueSet)
+    {
+        this.valueSet = i_ValueSet;
     }
     
 }

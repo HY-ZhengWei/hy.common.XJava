@@ -98,6 +98,8 @@ import net.minidev.json.parser.JSONParser;
  *                                添加：对象的成员属性是 Map<? ,Object> 时，将Json按 Map<? ,Map> 转Java
  *              2026-05-07  V9.0  添加：Json转Java时默认使用有顺序的Map和Set集合，并使用 MODE_PERMISSIVE 宽松模式
  *              2026-05-24  V10.0 修正：在Json转Java时，Java结构层级深处的成员属性是Object，直接返回JSONObject
+ *              2026-05-25  V11.0 添加：对象方法返回String类型值为 "" 时，是否还将其生成在Json字符串
+ *                                添加：对象方法返回List、Map、Set类型为0个元素的空集合时，是否还将其生成在Json字符串
  */
 public final class XJSON
 {
@@ -136,6 +138,14 @@ public final class XJSON
      * (默认：true  即空值也生成Json字符串)
      */
     private boolean     isReturnNVL;
+    
+    /**
+     * 对象方法返回String类型值为 "" 时，是否还将其生成在Json字符串。
+     * 对象方法返回List、Map、Set类型为0个元素的空集合时，是否还将其生成在Json字符串。
+     * 
+     * (默认：false)
+     */
+    private boolean     isReturnEmpty;
     
     /**
      * 在Java对象转Json字符串时，是否包含对成员方法的转换输出
@@ -178,6 +188,7 @@ public final class XJSON
         this.firstCharIsUpper    = false;
         this.isAccuracy          = false;
         this.isReturnNVL         = true;
+        this.isReturnEmpty       = false;
         this.isJsonMethod        = false;
         this.isSerializable      = false;
         this.isBigDecimalFormat  = false;
@@ -1418,11 +1429,25 @@ public final class XJSON
                 v_JSONName  = Help.NVL(v_JSONName ,"xdatas");
             }
 
-            v_JsonValueIsValid = ((JSONArray)v_JsonValue).size() > 0;
+            if ( this.isReturnEmpty )
+            {
+                v_JsonValueIsValid = true;
+            }
+            else
+            {
+                v_JsonValueIsValid = ((JSONArray)v_JsonValue).size() > 0;
+            }
         }
         else
         {
-            v_JsonValueIsValid = !"".equals(v_JsonValue);
+            if ( this.isReturnEmpty )
+            {
+                v_JsonValueIsValid = true;
+            }
+            else
+            {
+                v_JsonValueIsValid = !"".equals(v_JsonValue);
+            }
         }
 
         // 允许返回空时，强制Json字符是有效的
@@ -1570,7 +1595,6 @@ public final class XJSON
     
 
 
-
     /**
      * 获取：将对象转为Json字符串时，对象的方法返回 null 或 ""空字符串时，
      * 是否还将其生成在Json字符串中。
@@ -1597,8 +1621,36 @@ public final class XJSON
         this.isReturnNVL = isReturnNVL;
     }
     
+    
+    
+    /**
+     * 获取：对象方法返回String类型值为 "" 时，是否还将其生成在Json字符串。
+     *      对象方法返回List、Map、Set类型为0个元素的空集合时，是否还将其生成在Json字符串。
+     * 
+     * (默认：false)
+     */
+    public boolean isReturnEmpty()
+    {
+        return isReturnEmpty;
+    }
+
 
     
+    /**
+     * 设置：对象方法返回String类型值为 "" 时，是否还将其生成在Json字符串。
+     *      对象方法返回List、Map、Set类型为0个元素的空集合时，是否还将其生成在Json字符串。
+     * 
+     * (默认：false)
+     * 
+     * @param i_IsReturnEmpty
+     */
+    public void setReturnEmpty(boolean i_IsReturnEmpty)
+    {
+        this.isReturnEmpty = i_IsReturnEmpty;
+    }
+
+
+
     /**
      * 获取：当Java对象转Json字符串时，是否包含对成员方法的转换输出
      * 默认为：false，不转换输出
