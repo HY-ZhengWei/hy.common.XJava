@@ -107,6 +107,7 @@ import org.xml.sax.InputSource;
  *              v2.2  2025-09-20  添加：XML节点<...>和</...>间的内容类型
  *              v2.3  2025-11-10  修正：<constructor>在构造对象异常时，删除之前预先put在对象池中的信息
  *              v2.4  2026-05-21  添加：众包引用模式
+ *              v2.5  2026-06-03  添加：For循环批量创建对象
  */
 public final class XJava
 {
@@ -216,6 +217,21 @@ public final class XJava
     private final static String                         $XML_OBJECT_ENCRYPT           = "encrypt";
     
     /**
+     * For循环批量创建对象
+     */
+    private final static String                         $XML_OBJECT_FOR                = "for";
+    
+    /**
+     * For循环批量创建对象时，循环下标的ID名称（下标从0开始）。它会临时放在XJava对象池中
+     */
+    private final static String                         $XML_OBJECT_FOR_INDEX_ID       = "indexid";
+    
+    /**
+     * For循环批量创建对象时，循环每个元素的ID名称。它会临时放在XJava对象池中
+     */
+    private final static String                         $XML_OBJECT_FOR_ITEM_ID        = "itemid";
+    
+    /**
      * 真值才解释XJava。
      * 
      * 与Ref关键字类似，但比其多一个功能，就是 if="xx" 时，xx不是引用对象时，当字符串处理，
@@ -270,9 +286,9 @@ public final class XJava
      * TreeMap.TreeNode.orderByID的最大长度。
      * 此值决定着 XJava 能支持的树目录中同一层次中节点的数量
      * 
-     * 6 表示最大支持 999999 个对象实例
+     * 9 表示最大支持 999999999 个对象实例
      */
-    private final static int                            $TREE_NODE_ORDERBYID_MAXLEN   = 6;
+    private final static int                            $TREE_NODE_ORDERBYID_MAXLEN   = 9;
     
     
     
@@ -2877,13 +2893,15 @@ public final class XJava
                 String                v_ID                = getNodeAttribute(v_Node ,$XML_OBJECT_ID);
                 String                v_This              = getNodeAttribute(v_Node ,$XML_OBJECT_THIS);
                 String                v_ContentType       = getNodeAttribute(v_Node ,$XML_OBJECT_TYPE);
+                String                v_For               = getNodeAttribute(v_Node ,$XML_OBJECT_FOR);
+                String                v_ForIndexID        = getNodeAttribute(v_Node ,$XML_OBJECT_FOR_INDEX_ID);
+                String                v_ForItemID         = getNodeAttribute(v_Node ,$XML_OBJECT_FOR_ITEM_ID);
                 String                v_If                = getNodeAttribute(v_Node ,$XML_OBJECT_IF);
                 String                v_IfNot             = getNodeAttribute(v_Node ,$XML_OBJECT_IFNOT);
                 String                v_TreeNodeOrderByID = StringHelp.lpad(v_NodeIndex ,$TREE_NODE_ORDERBYID_MAXLEN ,"0");
                 TreeNode<XJavaObject> v_TreeNode          = new TreeNode<XJavaObject>(v_TreeNodeOrderByID ,v_ID ,i_SuperTreeNode);
                 boolean               v_SuperInstance_New = false;    // 父类是否在本节点被实例化
                 boolean               v_ThisFun           = false;    // 是否为This赋值功能
-                
                 
                 // 真值才解释XJava
                 if ( !Help.isNull(v_If) )
@@ -2993,508 +3011,608 @@ public final class XJava
                     }
                 }
                 
-                
-                // 标记有 id 的节点都将存入 $XML_OBJECTS 集合中
-                if ( v_ID != null && !"".equals(v_ID.trim()) )
+                // 解析For循环批量创建对象的信息
+                ForInfo v_ForInfo = new ForInfo(0 ,null); 
+                if ( !Help.isNull(v_For) )
                 {
-                    if ( $XML_OBJECTS.containsNodeID(v_ID) )
+                    if ( Help.isNumber(v_For) )
                     {
-                        // ID 与 This 两属性相同。
-                        // 类似于Java语言中下面的情况
-                        // String v_Name = "HY";
-                        // v_Name = v_Name;
-                        if ( v_ThisFun && v_ID.endsWith(v_This) )
+                        v_ForInfo = this.parserForInfo(v_For);
+                    }
+                    else
+                    {
+                        Object v_ForObj = this.getRefObject(io_SuperInstance ,v_Node ,v_For);
+                        v_ForInfo = this.parserForInfo(v_ForObj);
+                    }
+                }
+                String v_OrgID = v_ID;  // 先备份ID的值，下面的For会改它的值
+                for (int v_ForIndex=1; v_ForIndex<=Help.max(1 ,v_ForInfo.count); v_ForIndex++)
+                {
+                    Object  v_ForItemObj       = null;
+                    boolean v_AllowDelForIndex = false;
+                    boolean v_AllowDelForItem  = false;
+                    v_ID = v_OrgID;
+                    
+                    if ( v_ForInfo.iterator != null )
+                    {
+                        v_ForItemObj = v_ForInfo.iterator.next();
+                    }
+                    if ( !Help.isNull(v_ForIndexID) )
+                    {
+                        if ( XJava.getObject(v_ForIndexID) != null )
                         {
-                            // Nothing.
+                            $Logger.warn("id[" + Help.NVL(v_OrgID) + "] For's indexID[" + v_ForIndexID + "] is exist of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
                         }
                         else
                         {
-                            // ZhengWei(HY) Del 2016-01-04 删除下面的重复抛错，改为重复覆盖
-                            // throw new Exception("ID[" + v_ID + "] is exist of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
+                            // 临时放到XJava对象池中，可以本次循环体内使用
+                            XJava.putObject(v_ForIndexID ,v_ForIndex - 1);
+                            v_AllowDelForIndex = true;
+                        }
+                    }
+                    if ( !Help.isNull(v_ForItemID) )
+                    {
+                        if ( XJava.getObject(v_ForItemID) != null )
+                        {
+                            $Logger.warn("id[" + Help.NVL(v_OrgID) + "] For's itemID[" + v_ForItemID + "] is exist of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
+                        }
+                        else
+                        {
+                            // 临时放到XJava对象池中，可以本次循环体内使用
+                            XJava.putObject(v_ForItemID ,v_ForItemObj == null ? v_ForIndex : v_ForItemObj);
+                            v_AllowDelForItem = true;
+                        }
+                    }
+                    
+                    // 标记有 id 的节点都将存入 $XML_OBJECTS 集合中
+                    if ( v_ID != null && !"".equals(v_ID.trim()) )
+                    {
+                        if ( v_ForInfo.count >= 1 )
+                        {
+                            if ( v_ForItemObj == null )
+                            {
+                                v_ID = Help.NVL(v_ID) + v_ForIndex;
+                            }
+                            else
+                            {
+                                v_ID = Help.NVL(v_ID) + v_ForItemObj.toString();
+                            }
+                            
+                            if ( v_ForIndex >= 2 )
+                            {
+                                v_AttrClass    = null;
+                                v_AttrInstance = null;
+                                v_NodeIndex++;
+                                v_TreeNodeOrderByID = StringHelp.lpad(v_NodeIndex ,$TREE_NODE_ORDERBYID_MAXLEN ,"0");
+                            }
+                            v_TreeNode = new TreeNode<XJavaObject>(v_TreeNodeOrderByID ,v_ID ,i_SuperTreeNode);
+                        }
+                        
+                        if ( $XML_OBJECTS.containsNodeID(v_ID) )
+                        {
+                            // ID 与 This 两属性相同。
+                            // 类似于Java语言中下面的情况
+                            // String v_Name = "HY";
+                            // v_Name = v_Name;
+                            if ( v_ThisFun && v_ID.endsWith(v_This) )
+                            {
+                                // Nothing.
+                            }
+                            else
+                            {
+                                // ZhengWei(HY) Del 2016-01-04 删除下面的重复抛错，改为重复覆盖
+                                // throw new Exception("ID[" + v_ID + "] is exist of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
+                                $XML_OBJECTS.put(v_TreeNode);
+                            }
+                        }
+                        else
+                        {
                             $XML_OBJECTS.put(v_TreeNode);
                         }
                     }
-                    else
-                    {
-                        $XML_OBJECTS.put(v_TreeNode);
-                    }
-                }
-                
-                
-                // 第一个子节点时
-                if ( v_NodeIndex == 1 )
-                {
-                    // 构造器关键字
-                    if ( $XML_OBJECT_CONSTRUCTOR.equalsIgnoreCase(v_Node.getNodeName()) )
-                    {
-                        if ( io_SuperInstance == null )
-                        {
-                            io_SuperInstance    = this.constructor(i_SuperClass ,v_Node ,v_TreeNode);
-                            v_SuperInstance_New = true;
-                            
-                            String v_SuperID = getNodeAttribute(i_SuperNode ,$XML_OBJECT_ID);
-                            
-                            // 确保XJavaID优先被setter，好方便后续功能使用ID
-                            if ( (!Help.isNull(v_ID) || !Help.isNull(v_SuperID)) && io_SuperInstance instanceof XJavaID )
-                            {
-                                ((XJavaID)io_SuperInstance).setXJavaID(Help.NVL(v_ID ,v_SuperID));
-                            }
-                        }
-                        else
-                        {
-                            // 实例已被构造，将不做任何处理
-                        }
-                        
-                        continue;
-                    }
-                    else
-                    {
-                        // 父节点的Java类，不再简单的实例化，而是先判断是否有指定的构造器，如果没有的情况下，才简单的实例化。
-                        if ( i_SuperClass != null && io_SuperInstance == null )
-                        {
-                            int v_SuperModifiers = i_SuperClass.getModifiers();
-                            
-                            // 判断父节点的Java类的是为接口、抽象类、静态类
-                            if ( !Modifier.isInterface(v_SuperModifiers)
-                              && !Modifier.isAbstract(v_SuperModifiers)
-                              && !Modifier.isStatic(v_SuperModifiers) )
-                            {
-                                if ( i_SuperClass.getDeclaredConstructors().length >= 1 )
-                                {
-                                    try
-                                    {
-                                        io_SuperInstance    = i_SuperClass.getDeclaredConstructor().newInstance();
-                                        v_SuperInstance_New = true;
-                                        
-                                        String v_SuperID = getNodeAttribute(i_SuperNode ,$XML_OBJECT_ID);
-                                        
-                                        // 确保XJavaID优先被setter，好方便后续功能使用ID
-                                        if ( (!Help.isNull(v_ID) || !Help.isNull(v_SuperID)) && io_SuperInstance instanceof XJavaID )
-                                        {
-                                            ((XJavaID)io_SuperInstance).setXJavaID(Help.NVL(v_ID ,v_SuperID));
-                                        }
-                                    }
-                                    catch (Exception exce)
-                                    {
-                                        $Logger.error("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "]." ,exce);
-                                        throw new ClassNotFoundException("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                
-                // 当节点属性有引用关键字时
-                if ( v_RefID != null )
-                {
-                    v_AttrInstance = this.getRefObject(io_SuperInstance ,v_Node ,v_RefID);
-                    if ( v_AttrInstance != null )
-                    {
-                        v_AttrClass = v_AttrInstance.getClass();
-                        
-                        if ( "String".equalsIgnoreCase(v_Node.getNodeName()) )
-                        {
-                            v_TreeNode.setInfo(new XJavaObject(v_ID ,v_AttrInstance));
-                        }
-                    }
-                    else
-                    {
-                        throw new NullPointerException("RefID[" + v_RefID + "] instance object is not exist.");
-                    }
-                }
-                
-                
-                // 当节点为Call时
-                if ( $XML_OBJECT_CALL.equalsIgnoreCase(v_Node.getNodeName()) )
-                {
-                    if ( io_SuperInstance != null )
-                    {
-                        this.callMethod(io_SuperInstance ,v_Node ,v_TreeNode);
-                    }
-                }
-                // 标记有 this 属性，以实现赋值功能
-                else if ( v_ThisFun )
-                {
-                    if ( v_AttrInstance != null )
-                    {
-                        this.setInstance(v_AttrInstance.getClass() ,v_AttrInstance ,v_Node ,v_TreeNode);
-                    }
-                }
-                // 当节点为类时 或是 String 类时
-                else if ( v_ClassName != null || this.imports.containsKey(v_Node.getNodeName()) || "String".equalsIgnoreCase(v_Node.getNodeName()) )
-                {
-                    boolean       v_IsDefaultSetMethod = false;
-                    MethodReflect v_Setter             = null;
-                    
-                    if ( v_ClassName == null )
-                    {
-                        if ( "String".equalsIgnoreCase(v_Node.getNodeName()) )
-                        {
-                            v_ClassName = "java.lang.String";
-                        }
-                        else
-                        {
-                            v_ClassName = this.imports.get(v_Node.getNodeName());
-                        }
-                    }
-                    
-                    if ( i_SuperClass != null )
-                    {
-                        String v_SuperSetMethodName = null;
-                        
-                        // 尝试获取指定的setter方法名称
-                        try
-                        {
-                            v_SuperSetMethodName = getNodeAttribute(i_SuperNode ,$XML_OBJECT_SETTER);
-                        }
-                        catch (Exception exce)
-                        {
-                            v_SuperSetMethodName = null;
-                        }
-                        
-                        
-                        if ( v_SuperSetMethodName != null )
-                        {
-                            // 尝试获取指定的setter方法
-                            try
-                            {
-                                v_Setter = new MethodReflect(io_SuperInstance ,v_SuperSetMethodName ,MethodReflect.$NormType_Setter);
-                            }
-                            catch (Exception exce)
-                            {
-                                $Logger.error("Setter method [" + v_SuperSetMethodName + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
-                                throw new NoSuchMethodException("Setter method [" + v_SuperSetMethodName + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-                            }
-                        }
-                        
-                        
-                        if ( v_Setter == null )
-                        {
-                            // 当没有指定的setter方法时，尝试获取默认的setter方法
-                            try
-                            {
-                                v_Setter = new MethodReflect(io_SuperInstance ,v_Node.getNodeName() ,true ,MethodReflect.$NormType_Setter);
-                            }
-                            catch (Exception exce)
-                            {
-                                v_Setter = null;  // 允许出错，即允许没有默认的setter方法
-                            }
-                            v_IsDefaultSetMethod = true;
-                        }
-                    }
                     
                     
-                    // 当Setter的参数又是一个对象实例时，并且指定setter方法时
-                    if ( v_Setter != null && !v_IsDefaultSetMethod )
+                    // 第一个子节点时
+                    if ( v_NodeIndex == 1 )
                     {
-                        if ( v_AttrInstance == null )
+                        // 构造器关键字
+                        if ( $XML_OBJECT_CONSTRUCTOR.equalsIgnoreCase(v_Node.getNodeName()) )
                         {
-                            try
+                            if ( io_SuperInstance == null )
                             {
-                                v_AttrClass    = Help.forName(v_ClassName);
+                                io_SuperInstance    = this.constructor(i_SuperClass ,v_Node ,v_TreeNode);
+                                v_SuperInstance_New = true;
                                 
-                                // 这里也可以与下一个else if一样，不需要此句。
-                                // 但必须实现 setter 节点支持定义入参的类型及入参个数
-                                v_AttrInstance = v_AttrClass.getDeclaredConstructor().newInstance();
-                            }
-                            catch (Exception exce)
-                            {
-                                $Logger.error("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
-                                throw new ClassNotFoundException("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-                            }
-                            
-                            v_AttrInstance = this.setInstance(v_AttrClass ,v_AttrInstance ,v_Node ,v_TreeNode);
-                        }
-                        
-                        try
-                        {
-                            v_Setter.invoke(v_AttrInstance);
-                        }
-                        catch (Exception exce)
-                        {
-                            $Logger.error("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
-                            throw new NoSuchMethodException("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-                        }
-                    }
-                    // 当Setter的参数又是一个对象实例时，并且有默认的setter方法时
-                    else if ( v_Setter != null && v_IsDefaultSetMethod )
-                    {
-                        if ( v_AttrInstance == null )
-                        {
-                            try
-                            {
-                                v_AttrClass = Help.forName(v_ClassName);
-                            }
-                            catch (Exception exce)
-                            {
-                                $Logger.error("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
-                                throw new ClassNotFoundException("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-                            }
-                            
-                            v_AttrInstance = this.setInstance(v_AttrClass ,null ,v_Node ,v_TreeNode);
-                        }
-                        
-                        try
-                        {
-                            v_Setter.invoke(v_AttrInstance);
-                        }
-                        catch (Exception exce)
-                        {
-                            $Logger.error("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
-                            throw new NoSuchMethodException("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-                        }
-                    }
-                    // 没有指定的setter方法，也没有匹配到默认的setter方法
-                    else
-                    {
-                        if ( v_AttrInstance == null )
-                        {
-                            try
-                            {
-                                v_AttrClass = Help.forName(v_ClassName);
-                            }
-                            catch (Exception exce)
-                            {
-                                String v_Error = "";
-                                if ( v_ID != null )
+                                String v_SuperID = null;
+                                if ( i_SuperTreeNode == null || i_SuperTreeNode.getNodeID() == null )
                                 {
-                                    v_Error = "Exception of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]. ID is [" + v_ID + "]. Class is [" + v_ClassName + "]";
+                                    v_SuperID = getNodeAttribute(i_SuperNode ,$XML_OBJECT_ID);
                                 }
                                 else
                                 {
-                                    v_Error = "Exception of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]. Class is [" + v_ClassName + "]";
+                                    v_SuperID = i_SuperTreeNode.getNodeID();
                                 }
                                 
-                                $Logger.error(v_Error ,exce);
-                                throw new ClassNotFoundException(v_Error);
-                            }
-                            
-                            // 字符串类型特殊的对待
-                            if ( String.class == v_AttrClass )
-                            {
-                                String v_NodeValue = getNodeTextContent(v_Node ,v_ContentType);
-                                v_NodeValue = (String)this.encrypt(i_SuperNode ,v_Node ,v_NodeValue);
-                                v_AttrInstance = v_AttrClass.getConstructor(String.class).newInstance(StringHelp.replaceAll(v_NodeValue ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath));
-                            }
-                            else
-                            {
-                                v_AttrInstance = this.setInstance(v_AttrClass ,null ,v_Node ,v_TreeNode);
-                            }
-                        }
-                        
-                        if ( io_SuperInstance == null )
-                        {
-                            // 此处必须返回，即无任何setter方法，并且父节点尚未实例化时，只允许存在一个实例化对象。
-                            return v_AttrInstance;
-                        }
-                        else
-                        {
-                            // 当对象实例为List或Set集合
-                            if ( io_SuperInstance instanceof Collection )
-                            {
-                                try
+                                // 确保XJavaID优先被setter，好方便后续功能使用ID
+                                if ( (!Help.isNull(v_ID) || !Help.isNull(v_SuperID)) && io_SuperInstance instanceof XJavaID )
                                 {
-                                    Method v_Method = i_SuperClass.getMethod($XML_LIST_DEF_SETTER ,Object.class);
-                                    
-                                    v_Method.invoke(io_SuperInstance ,v_AttrInstance);
-                                }
-                                catch (Exception exce)
-                                {
-                                    $Logger.error("Execute List method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
-                                    throw new NoSuchMethodException("Execute List method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-                                }
-                            }
-                            // 当对象实例为Map集合
-                            else if ( io_SuperInstance instanceof Map )
-                            {
-                                try
-                                {
-                                    String v_Key        = getNodeAttribute(i_SuperNode ,$XML_MAP_KEY);
-                                    Method v_AttrMethod = MethodReflect.getGetMethod(v_AttrClass ,v_Key ,true);
-                                    if ( v_AttrMethod == null )
-                                    {
-                                        v_AttrMethod = MethodReflect.getGetMethod(v_AttrClass , v_Key ,false);
-                                    }
-                                    Object v_KeyValue   = v_AttrMethod.invoke(v_AttrInstance);
-                                    Method v_Method     = i_SuperClass.getMethod($XML_MAP_DEF_SETTER ,Object.class ,Object.class);
-                                    
-                                    v_Method.invoke(io_SuperInstance ,v_KeyValue ,v_AttrInstance);
-                                }
-                                catch (Exception exce)
-                                {
-                                    $Logger.error("Execute Map method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
-                                    throw new NoSuchMethodException("Execute Map method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-                                }
-                            }
-                            // 父节的实例类型与本节点的实例类型相同时，有可能其父类的Setter的参数又是一个对象实例
-                            else if ( v_AttrInstance != null && v_AttrInstance.getClass().equals(io_SuperInstance.getClass()) )
-                            {
-                                if ( v_SuperInstance_New )
-                                {
-                                    return v_AttrInstance;
-                                }
-                                else
-                                {
-                                    throw new Exception("Unknown exception.");
+                                    ((XJavaID)io_SuperInstance).setXJavaID(Help.NVL(v_ID ,v_SuperID));
                                 }
                             }
                             else
                             {
-                                throw new Exception("Unknown Class type.");
+                                // 实例已被构造，将不做任何处理
                             }
-                        }
-                        
-                    }
-                }
-                // 使用setter方法设置对象实例的属性
-                else
-                {
-                    if ( v_AttrInstance == null || v_RefID != null )
-                    {
-                        List<Method>        v_SetMethods = MethodReflect.getSetMethods(i_SuperClass, v_Node.getNodeName() ,true);
-                        Object              v_ParamValue = null;
-                        Map<String ,Object> v_SubmitMap  = getChildObjects(this.getNodeAttribute(v_Node ,$XML_OBJECT_SUBMIT));
-                        
-                        if ( v_RefID != null )
-                        {
-                            v_ParamValue = v_AttrInstance;
-                        }
-                        // 按树目录结构，获取子树目录中 XJava 解释过的所有实例化对象信息
-                        else if ( !Help.isNull(v_SubmitMap) )
-                        {
-                            v_ParamValue = v_SubmitMap;
-                        }
-                        // 当节点没有明确说明Java类型时，但其节点下又有多个子节点时
-                        else if ( getChildNodesSize(v_Node) >= 1 )
-                        {
-                            // 本节点 v_Node 在父节点有 setter 方法时，从setter方法的入参中获取本节点的Java的Class类型
-                            if ( !Help.isNull(v_SetMethods) )
-                            {
-                                // 尝试优先从父类的getter方法中获取成员属性的实例 Add 2025-02-28
-                                if ( io_SuperInstance != null && v_AttrInstance == null )
-                                {
-                                    Method v_GetMethod = MethodReflect.getGetMethod(i_SuperClass, v_Node.getNodeName() ,true);
-                                    if ( v_GetMethod != null )
-                                    {
-                                        v_AttrInstance = v_GetMethod.invoke(io_SuperInstance);
-                                    }
-                                }
-                                
-                                try
-                                {
-                                    v_AttrClass  = v_SetMethods.get(0).getParameterTypes()[0];
-                                    v_ParamValue = this.setInstance(v_AttrClass ,v_AttrInstance ,v_Node ,v_TreeNode);
-                                }
-                                catch (Exception exce)
-                                {
-                                    $Logger.error("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]" ,exce);
-                                    throw new InstantiationException("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].\n" + exce.getMessage());
-                                }
-                            }
-                            else
-                            {
-                                $Logger.error("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-                                throw new InstantiationException("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
-                            }
+                            
+                            continue;
                         }
                         else
                         {
-                            v_ParamValue = getNodeTextContent(v_Node ,v_ContentType);
-                            
-                            // 当节点值不存在时
-                            if ( v_ParamValue == null || "".equals(v_ParamValue) )
+                            // 父节点的Java类，不再简单的实例化，而是先判断是否有指定的构造器，如果没有的情况下，才简单的实例化。
+                            if ( i_SuperClass != null && io_SuperInstance == null )
                             {
-                                v_ParamValue = null;
-                            }
-                        }
-                        
-                        Object v_EncryptValue = this.encrypt(i_SuperNode ,v_Node ,v_ParamValue);
-                        if ( Help.isNull(v_SetMethods) )
-                        {
-                            // 对无Setter方法的成员属性赋值  ZhengWei(HY) Add 2017-11-24
-                            Field v_Field = FieldReflect.get(i_SuperClass ,v_Node.getNodeName());
-                            
-                            if ( v_Field != null )
-                            {
-                                try
-                                {
-                                    FieldReflect.set(v_Field ,io_SuperInstance ,v_EncryptValue ,this.replaces);
-                                }
-                                catch (Exception exce)
-                                {
-                                    $Logger.error("Field setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "]." ,exce);
-                                    throw new IllegalAccessException("Field setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + exce.getMessage());
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Method v_SetMethod = null ;
-                            int    v_MSize     = v_SetMethods.size();
-                            if ( v_MSize > 1 )
-                            {
-                                // 尝试Setter方法重载时，方法参数类型的匹配 ZhengWei(HY) Add 2018-05-04
-                                for (int i=0; i<v_MSize; i++)
-                                {
-                                    Method v_MTemp = v_SetMethods.get(i);
-                                    
-                                    if ( MethodReflect.isExtendImplement(v_ParamValue ,v_MTemp.getParameterTypes()[0]) )
-                                    {
-                                        v_SetMethod = v_MTemp;
-                                        break;
-                                    }
-                                }
+                                int v_SuperModifiers = i_SuperClass.getModifiers();
                                 
-                                if ( v_SetMethod == null )
+                                // 判断父节点的Java类的是为接口、抽象类、静态类
+                                if ( !Modifier.isInterface(v_SuperModifiers)
+                                  && !Modifier.isAbstract(v_SuperModifiers)
+                                  && !Modifier.isStatic(v_SuperModifiers) )
                                 {
-                                    if ( v_ParamValue.getClass().equals(String.class) )
+                                    if ( i_SuperClass.getDeclaredConstructors().length >= 1 )
                                     {
-                                        Class<?> v_ParamClass = Help.getClass(v_ParamValue.toString());
-                                        
-                                        for (int i=0; i<v_MSize; i++)
+                                        try
                                         {
-                                            Method v_MTemp = v_SetMethods.get(i);
+                                            io_SuperInstance    = i_SuperClass.getDeclaredConstructor().newInstance();
+                                            v_SuperInstance_New = true;
                                             
-                                            if ( MethodReflect.isExtendImplement(v_ParamClass ,v_MTemp.getParameterTypes()[0]) )
+                                            String v_SuperID = null;
+                                            if ( i_SuperTreeNode == null || i_SuperTreeNode.getNodeID() == null )
                                             {
-                                                v_SetMethod = v_MTemp;
-                                                break;
+                                                v_SuperID = getNodeAttribute(i_SuperNode ,$XML_OBJECT_ID);
+                                            }
+                                            else
+                                            {
+                                                v_SuperID = i_SuperTreeNode.getNodeID();
+                                            }
+                                            
+                                            // 确保XJavaID优先被setter，好方便后续功能使用ID
+                                            if ( (!Help.isNull(v_ID) || !Help.isNull(v_SuperID)) && io_SuperInstance instanceof XJavaID )
+                                            {
+                                                ((XJavaID)io_SuperInstance).setXJavaID(Help.NVL(v_ID ,v_SuperID));
                                             }
                                         }
+                                        catch (Exception exce)
+                                        {
+                                            $Logger.error("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "]." ,exce);
+                                            throw new ClassNotFoundException("New instance [" + i_SuperClass.toString() + "] exception of Node[" + i_SuperNode.getParentNode().getNodeName() + "." + i_SuperNode.getNodeName() + "].");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    
+                    // 当节点属性有引用关键字时
+                    if ( v_RefID != null )
+                    {
+                        v_AttrInstance = this.getRefObject(io_SuperInstance ,v_Node ,v_RefID);
+                        if ( v_AttrInstance != null )
+                        {
+                            v_AttrClass = v_AttrInstance.getClass();
+                            
+                            if ( "String".equalsIgnoreCase(v_Node.getNodeName()) )
+                            {
+                                v_TreeNode.setInfo(new XJavaObject(v_ID ,v_AttrInstance));
+                            }
+                        }
+                        else
+                        {
+                            throw new NullPointerException("RefID[" + v_RefID + "] instance object is not exist.");
+                        }
+                    }
+                    
+                    
+                    // 当节点为Call时
+                    if ( $XML_OBJECT_CALL.equalsIgnoreCase(v_Node.getNodeName()) )
+                    {
+                        if ( io_SuperInstance != null )
+                        {
+                            this.callMethod(io_SuperInstance ,v_Node ,v_TreeNode);
+                        }
+                    }
+                    // 标记有 this 属性，以实现赋值功能
+                    else if ( v_ThisFun )
+                    {
+                        if ( v_AttrInstance != null )
+                        {
+                            this.setInstance(v_AttrInstance.getClass() ,v_AttrInstance ,v_Node ,v_TreeNode);
+                        }
+                    }
+                    // 当节点为类时 或是 String 类时
+                    else if ( v_ClassName != null || this.imports.containsKey(v_Node.getNodeName()) || "String".equalsIgnoreCase(v_Node.getNodeName()) )
+                    {
+                        boolean       v_IsDefaultSetMethod = false;
+                        MethodReflect v_Setter             = null;
+                        
+                        if ( v_ClassName == null )
+                        {
+                            if ( "String".equalsIgnoreCase(v_Node.getNodeName()) )
+                            {
+                                v_ClassName = "java.lang.String";
+                            }
+                            else
+                            {
+                                v_ClassName = this.imports.get(v_Node.getNodeName());
+                            }
+                        }
+                        
+                        if ( i_SuperClass != null )
+                        {
+                            String v_SuperSetMethodName = null;
+                            
+                            // 尝试获取指定的setter方法名称
+                            try
+                            {
+                                v_SuperSetMethodName = getNodeAttribute(i_SuperNode ,$XML_OBJECT_SETTER);
+                            }
+                            catch (Exception exce)
+                            {
+                                v_SuperSetMethodName = null;
+                            }
+                            
+                            
+                            if ( v_SuperSetMethodName != null )
+                            {
+                                // 尝试获取指定的setter方法
+                                try
+                                {
+                                    v_Setter = new MethodReflect(io_SuperInstance ,v_SuperSetMethodName ,MethodReflect.$NormType_Setter);
+                                }
+                                catch (Exception exce)
+                                {
+                                    $Logger.error("Setter method [" + v_SuperSetMethodName + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
+                                    throw new NoSuchMethodException("Setter method [" + v_SuperSetMethodName + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                                }
+                            }
+                            
+                            
+                            if ( v_Setter == null )
+                            {
+                                // 当没有指定的setter方法时，尝试获取默认的setter方法
+                                try
+                                {
+                                    v_Setter = new MethodReflect(io_SuperInstance ,v_Node.getNodeName() ,true ,MethodReflect.$NormType_Setter);
+                                }
+                                catch (Exception exce)
+                                {
+                                    v_Setter = null;  // 允许出错，即允许没有默认的setter方法
+                                }
+                                v_IsDefaultSetMethod = true;
+                            }
+                        }
+                        
+                        
+                        // 当Setter的参数又是一个对象实例时，并且指定setter方法时
+                        if ( v_Setter != null && !v_IsDefaultSetMethod )
+                        {
+                            if ( v_AttrInstance == null )
+                            {
+                                try
+                                {
+                                    v_AttrClass    = Help.forName(v_ClassName);
+                                    
+                                    // 这里也可以与下一个else if一样，不需要此句。
+                                    // 但必须实现 setter 节点支持定义入参的类型及入参个数
+                                    v_AttrInstance = v_AttrClass.getDeclaredConstructor().newInstance();
+                                }
+                                catch (Exception exce)
+                                {
+                                    $Logger.error("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
+                                    throw new ClassNotFoundException("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                                }
+                                
+                                v_AttrInstance = this.setInstance(v_AttrClass ,v_AttrInstance ,v_Node ,v_TreeNode);
+                            }
+                            
+                            try
+                            {
+                                v_Setter.invoke(v_AttrInstance);
+                            }
+                            catch (Exception exce)
+                            {
+                                $Logger.error("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
+                                throw new NoSuchMethodException("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                            }
+                        }
+                        // 当Setter的参数又是一个对象实例时，并且有默认的setter方法时
+                        else if ( v_Setter != null && v_IsDefaultSetMethod )
+                        {
+                            if ( v_AttrInstance == null )
+                            {
+                                try
+                                {
+                                    v_AttrClass = Help.forName(v_ClassName);
+                                }
+                                catch (Exception exce)
+                                {
+                                    $Logger.error("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
+                                    throw new ClassNotFoundException("Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                                }
+                                
+                                v_AttrInstance = this.setInstance(v_AttrClass ,null ,v_Node ,v_TreeNode);
+                            }
+                            
+                            try
+                            {
+                                v_Setter.invoke(v_AttrInstance);
+                            }
+                            catch (Exception exce)
+                            {
+                                $Logger.error("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
+                                throw new NoSuchMethodException("Execute Setter method [" + v_Setter.getMethodURL() + "] is't exist of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                            }
+                        }
+                        // 没有指定的setter方法，也没有匹配到默认的setter方法
+                        else
+                        {
+                            if ( v_AttrInstance == null )
+                            {
+                                try
+                                {
+                                    v_AttrClass = Help.forName(v_ClassName);
+                                }
+                                catch (Exception exce)
+                                {
+                                    String v_Error = "";
+                                    if ( v_ID != null )
+                                    {
+                                        v_Error = "Exception of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]. ID is [" + v_ID + "]. Class is [" + v_ClassName + "]";
                                     }
                                     else
                                     {
-                                        // Nothing. 暂时没有想好怎么处理
+                                        v_Error = "Exception of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]. Class is [" + v_ClassName + "]";
+                                    }
+                                    
+                                    $Logger.error(v_Error ,exce);
+                                    throw new ClassNotFoundException(v_Error);
+                                }
+                                
+                                // 字符串类型特殊的对待
+                                if ( String.class == v_AttrClass )
+                                {
+                                    String v_NodeValue = getNodeTextContent(v_Node ,v_ContentType);
+                                    v_NodeValue = (String)this.encrypt(i_SuperNode ,v_Node ,v_NodeValue);
+                                    v_AttrInstance = v_AttrClass.getConstructor(String.class).newInstance(StringHelp.replaceAll(v_NodeValue ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath));
+                                }
+                                else
+                                {
+                                    v_AttrInstance = this.setInstance(v_AttrClass ,null ,v_Node ,v_TreeNode);
+                                }
+                            }
+                            
+                            if ( io_SuperInstance == null )
+                            {
+                                // 此处必须返回，即无任何setter方法，并且父节点尚未实例化时，只允许存在一个实例化对象。
+                                return v_AttrInstance;
+                            }
+                            else
+                            {
+                                // 当对象实例为List或Set集合
+                                if ( io_SuperInstance instanceof Collection )
+                                {
+                                    try
+                                    {
+                                        Method v_Method = i_SuperClass.getMethod($XML_LIST_DEF_SETTER ,Object.class);
+                                        
+                                        v_Method.invoke(io_SuperInstance ,v_AttrInstance);
+                                    }
+                                    catch (Exception exce)
+                                    {
+                                        $Logger.error("Execute List method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
+                                        throw new NoSuchMethodException("Execute List method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                                    }
+                                }
+                                // 当对象实例为Map集合
+                                else if ( io_SuperInstance instanceof Map )
+                                {
+                                    try
+                                    {
+                                        String v_Key        = getNodeAttribute(i_SuperNode ,$XML_MAP_KEY);
+                                        Method v_AttrMethod = MethodReflect.getGetMethod(v_AttrClass ,v_Key ,true);
+                                        if ( v_AttrMethod == null )
+                                        {
+                                            v_AttrMethod = MethodReflect.getGetMethod(v_AttrClass , v_Key ,false);
+                                        }
+                                        Object v_KeyValue   = v_AttrMethod.invoke(v_AttrInstance);
+                                        Method v_Method     = i_SuperClass.getMethod($XML_MAP_DEF_SETTER ,Object.class ,Object.class);
+                                        
+                                        v_Method.invoke(io_SuperInstance ,v_KeyValue ,v_AttrInstance);
+                                    }
+                                    catch (Exception exce)
+                                    {
+                                        $Logger.error("Execute Map method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]." ,exce);
+                                        throw new NoSuchMethodException("Execute Map method [add] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                                    }
+                                }
+                                // 父节的实例类型与本节点的实例类型相同时，有可能其父类的Setter的参数又是一个对象实例
+                                else if ( v_AttrInstance != null && v_AttrInstance.getClass().equals(io_SuperInstance.getClass()) )
+                                {
+                                    if ( v_SuperInstance_New )
+                                    {
+                                        return v_AttrInstance;
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("Unknown exception.");
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception("Unknown Class type.");
+                                }
+                            }
+                            
+                        }
+                    }
+                    // 使用setter方法设置对象实例的属性
+                    else
+                    {
+                        if ( v_AttrInstance == null || v_RefID != null )
+                        {
+                            List<Method>        v_SetMethods = MethodReflect.getSetMethods(i_SuperClass, v_Node.getNodeName() ,true);
+                            Object              v_ParamValue = null;
+                            Map<String ,Object> v_SubmitMap  = getChildObjects(this.getNodeAttribute(v_Node ,$XML_OBJECT_SUBMIT));
+                            
+                            if ( v_RefID != null )
+                            {
+                                v_ParamValue = v_AttrInstance;
+                            }
+                            // 按树目录结构，获取子树目录中 XJava 解释过的所有实例化对象信息
+                            else if ( !Help.isNull(v_SubmitMap) )
+                            {
+                                v_ParamValue = v_SubmitMap;
+                            }
+                            // 当节点没有明确说明Java类型时，但其节点下又有多个子节点时
+                            else if ( getChildNodesSize(v_Node) >= 1 )
+                            {
+                                // 本节点 v_Node 在父节点有 setter 方法时，从setter方法的入参中获取本节点的Java的Class类型
+                                if ( !Help.isNull(v_SetMethods) )
+                                {
+                                    // 尝试优先从父类的getter方法中获取成员属性的实例 Add 2025-02-28
+                                    if ( io_SuperInstance != null && v_AttrInstance == null )
+                                    {
+                                        Method v_GetMethod = MethodReflect.getGetMethod(i_SuperClass, v_Node.getNodeName() ,true);
+                                        if ( v_GetMethod != null )
+                                        {
+                                            v_AttrInstance = v_GetMethod.invoke(io_SuperInstance);
+                                        }
+                                    }
+                                    
+                                    try
+                                    {
+                                        v_AttrClass  = v_SetMethods.get(0).getParameterTypes()[0];
+                                        v_ParamValue = this.setInstance(v_AttrClass ,v_AttrInstance ,v_Node ,v_TreeNode);
+                                    }
+                                    catch (Exception exce)
+                                    {
+                                        $Logger.error("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "]" ,exce);
+                                        throw new InstantiationException("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].\n" + exce.getMessage());
+                                    }
+                                }
+                                else
+                                {
+                                    $Logger.error("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                                    throw new InstantiationException("Instantiation error of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "].");
+                                }
+                            }
+                            else
+                            {
+                                v_ParamValue = getNodeTextContent(v_Node ,v_ContentType);
+                                
+                                // 当节点值不存在时
+                                if ( v_ParamValue == null || "".equals(v_ParamValue) )
+                                {
+                                    v_ParamValue = null;
+                                }
+                            }
+                            
+                            Object v_EncryptValue = this.encrypt(i_SuperNode ,v_Node ,v_ParamValue);
+                            if ( Help.isNull(v_SetMethods) )
+                            {
+                                // 对无Setter方法的成员属性赋值  ZhengWei(HY) Add 2017-11-24
+                                Field v_Field = FieldReflect.get(i_SuperClass ,v_Node.getNodeName());
+                                
+                                if ( v_Field != null )
+                                {
+                                    try
+                                    {
+                                        FieldReflect.set(v_Field ,io_SuperInstance ,v_EncryptValue ,this.replaces);
+                                    }
+                                    catch (Exception exce)
+                                    {
+                                        $Logger.error("Field setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "]." ,exce);
+                                        throw new IllegalAccessException("Field setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + exce.getMessage());
                                     }
                                 }
                             }
                             else
                             {
-                                v_SetMethod = v_SetMethods.get(0);
-                            }
-                            
-                            try
-                            {
-                                MethodReflect.invokeSet(v_SetMethod ,io_SuperInstance ,v_EncryptValue ,this.replaces);
-                            }
-                            catch (Exception exce)
-                            {
-                                String v_Msg = "";
-                                if ( null != exce.getCause()
-                                  && null != exce.getCause().getMessage() )
+                                Method v_SetMethod = null ;
+                                int    v_MSize     = v_SetMethods.size();
+                                if ( v_MSize > 1 )
                                 {
-                                    v_Msg += exce.getCause().getMessage() + "\n";
+                                    // 尝试Setter方法重载时，方法参数类型的匹配 ZhengWei(HY) Add 2018-05-04
+                                    for (int i=0; i<v_MSize; i++)
+                                    {
+                                        Method v_MTemp = v_SetMethods.get(i);
+                                        
+                                        if ( MethodReflect.isExtendImplement(v_ParamValue ,v_MTemp.getParameterTypes()[0]) )
+                                        {
+                                            v_SetMethod = v_MTemp;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if ( v_SetMethod == null )
+                                    {
+                                        if ( v_ParamValue.getClass().equals(String.class) )
+                                        {
+                                            Class<?> v_ParamClass = Help.getClass(v_ParamValue.toString());
+                                            
+                                            for (int i=0; i<v_MSize; i++)
+                                            {
+                                                Method v_MTemp = v_SetMethods.get(i);
+                                                
+                                                if ( MethodReflect.isExtendImplement(v_ParamClass ,v_MTemp.getParameterTypes()[0]) )
+                                                {
+                                                    v_SetMethod = v_MTemp;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // Nothing. 暂时没有想好怎么处理
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    v_SetMethod = v_SetMethods.get(0);
                                 }
                                 
-                                $Logger.error("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "]." ,exce);
-                                throw new NoSuchMethodException("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + v_Msg + exce.getMessage());
+                                try
+                                {
+                                    MethodReflect.invokeSet(v_SetMethod ,io_SuperInstance ,v_EncryptValue ,this.replaces);
+                                }
+                                catch (Exception exce)
+                                {
+                                    String v_Msg = "";
+                                    if ( null != exce.getCause()
+                                      && null != exce.getCause().getMessage() )
+                                    {
+                                        v_Msg += exce.getCause().getMessage() + "\n";
+                                    }
+                                    
+                                    $Logger.error("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "]." ,exce);
+                                    throw new NoSuchMethodException("Execute setter value[" + v_ParamValue + "] of Node[" + v_Node.getParentNode().getNodeName() + "." + v_Node.getNodeName() + "] ,in Class[" + i_SuperClass.getName() + "].\n" + v_Msg + exce.getMessage());
+                                }
                             }
                         }
                     }
                     
-                }
+                    if ( !Help.isNull(v_ForIndexID) && v_AllowDelForIndex )
+                    {
+                        // 临时放到XJava对象池中，可以本次循环体内使用
+                        XJava.remove(v_ForIndexID);
+                    }
+                    if ( !Help.isNull(v_ForItemID) && v_AllowDelForItem )
+                    {
+                        // 临时放到XJava对象池中，可以本次循环体内使用
+                        XJava.remove(v_ForItemID);
+                    }
+                }   // END：For循环批量创建对象
             }
         }
         
@@ -3547,6 +3665,93 @@ public final class XJava
         return io_SuperInstance;
     }
     
+    
+    
+    private record ForInfo(int count ,Iterator<Object> iterator) {}
+    /**
+     * 获取For循环批量创建对象的数量和迭代器
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-06-03
+     * @version     v1.0
+     *
+     * @param i_ForObj
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private ForInfo parserForInfo(Object i_ForObj)
+    {
+        ForInfo v_Ret = null;
+        if ( i_ForObj == null )
+        {
+            v_Ret = new ForInfo(0 ,null);
+        }
+        else if ( String.class.equals(i_ForObj.getClass()) )
+        {
+            if ( Help.isNumber((String) i_ForObj) )
+            {
+                v_Ret = new ForInfo((int) Math.ceil(Double.parseDouble((String) i_ForObj)) ,null);
+            }
+        }
+        else if ( int.class.equals(i_ForObj.getClass()) )
+        {
+            v_Ret = new ForInfo((int) i_ForObj ,null);
+        }
+        else if ( Integer.class.equals(i_ForObj.getClass()) )
+        {
+            v_Ret = new ForInfo((Integer) i_ForObj ,null);
+        }
+        else if ( long.class.equals(i_ForObj.getClass()) )
+        {
+            v_Ret = new ForInfo(Math.toIntExact((long) i_ForObj) ,null);
+        }
+        else if ( Long.class.equals(i_ForObj.getClass()) )
+        {
+            v_Ret = new ForInfo(((Long) i_ForObj).intValue() ,null);
+        }
+        else if ( double.class.equals(i_ForObj.getClass()) )
+        {
+            v_Ret = new ForInfo((int) Math.ceil((double) i_ForObj) ,null);
+        }
+        else if ( Double.class.equals(i_ForObj.getClass()) )
+        {
+            v_Ret = new ForInfo(((Double) i_ForObj).intValue() ,null);
+        }
+        else if ( float.class.equals(i_ForObj.getClass()) )
+        {
+            v_Ret = new ForInfo((int) Math.ceil((float) i_ForObj) ,null);
+        }
+        else if ( Float.class.equals(i_ForObj.getClass()) )
+        {
+            v_Ret = new ForInfo(((Float) i_ForObj).intValue() ,null);
+        }
+        else if ( MethodReflect.isExtendImplement(i_ForObj ,List.class) )
+        {
+            List<Object> v_List = (List<Object>) i_ForObj;
+            v_Ret = new ForInfo(v_List.size() ,v_List.iterator());
+        }
+        else if ( MethodReflect.isExtendImplement(i_ForObj ,Map.class) )
+        {
+            Map<Object ,Object> v_Map = (Map<Object ,Object>) i_ForObj;
+            v_Ret = new ForInfo(v_Map.size() ,v_Map.keySet().iterator());
+        }
+        else if ( MethodReflect.isExtendImplement(i_ForObj ,Set.class) )
+        {
+            Set<Object> v_Set = (Set<Object>) i_ForObj;
+            v_Ret = new ForInfo(v_Set.size() ,v_Set.iterator());
+        }
+        else if ( Help.isArray(i_ForObj) )
+        {
+            List<Object> v_List = Help.toList((Object []) i_ForObj);
+            v_Ret = new ForInfo(v_List.size() ,v_List.iterator());
+        }
+        else
+        {
+            v_Ret = new ForInfo(0 ,null);
+        }
+        
+        return v_Ret;
+    }
     
     
     @SuppressWarnings("unused")

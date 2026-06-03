@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="xobjects" class="java.util.ArrayList" />
+    <import name="item"     class="org.hy.common.app.Param" />
+    <import name="dataMap"  class="java.util.Hashtable" />
+    <import name="datas"    class="java.util.ArrayList" />
+    <import name="data"     class="org.hy.common.xml.junit.xjavaFor.DataInfo" />
+    
+    
+    
+    <xobjects>
+    
+        <!-- 创建2个对象 -->
+        <item id="XJavaFor_" for="2">
+            <name>XJavaFor</name>
+            <value>123</value>
+            <comment>For循环批量创建对象的信息</comment>
+        </item>
+        
+        
+        <!-- 按集合数量创建多个 -->
+        <datas id="ID_Datas">
+            <String>ID1</String>
+            <String>ID2</String>
+            <String>ID3</String>
+        </datas>
+
+        <!-- 简单的List遍历 -->
+        <dataMap id="DataMap01" key="xid">
+            <data id="XJavaFor_Data_" for="ID_Datas">
+                <name>XJavaFor_Data_</name>
+                <comment>For循环批量创建对象的信息（按集合创建）</comment>
+            </data>
+        </dataMap>
+        
+        <!-- 高级的List遍历 -->
+        <dataMap id="DataMap02" key="xid">
+            <data id="XJavaFor_Data_" for="ID_Datas" itemID="xForItem" indexID="xForIndex">
+                <constructor>
+                    <int ref="xForIndex" />
+                </constructor>
+                <name>XJavaFor_Data_</name>
+                <data ref="xForItem" />      <!-- 获取遍历元素中的信息 -->
+                <comment>For循环批量创建对象的信息（按集合创建）</comment>
+            </data>
+        </dataMap>
+        
+    </xobjects>
+
+</config>
