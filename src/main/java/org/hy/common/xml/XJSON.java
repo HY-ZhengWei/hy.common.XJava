@@ -100,6 +100,7 @@ import net.minidev.json.parser.JSONParser;
  *              2026-05-24  V10.0 修正：在Json转Java时，Java结构层级深处的成员属性是Object，直接返回JSONObject
  *              2026-05-25  V11.0 添加：对象方法返回String类型值为 "" 时，是否还将其生成在Json字符串
  *                                添加：对象方法返回List、Map、Set类型为0个元素的空集合时，是否还将其生成在Json字符串
+ *              2026-06-07  V11.1 添加：所有Setter返回自己
  */
 public final class XJSON
 {
@@ -1552,9 +1553,10 @@ public final class XJSON
      * 
      * @param firstCharIsUpper
      */
-    public void setFirstCharIsUpper(boolean firstCharIsUpper)
+    public XJSON setFirstCharIsUpper(boolean firstCharIsUpper)
     {
         this.firstCharIsUpper = firstCharIsUpper;
+        return this;
     }
 
 
@@ -1588,9 +1590,10 @@ public final class XJSON
      * 
      * @param isAccuracy
      */
-    public void setAccuracy(boolean isAccuracy)
+    public XJSON setAccuracy(boolean isAccuracy)
     {
         this.isAccuracy = isAccuracy;
+        return this;
     }
     
 
@@ -1616,9 +1619,10 @@ public final class XJSON
      * 
      * @param isReturnNVL
      */
-    public void setReturnNVL(boolean isReturnNVL)
+    public XJSON setReturnNVL(boolean isReturnNVL)
     {
         this.isReturnNVL = isReturnNVL;
+        return this;
     }
     
     
@@ -1644,9 +1648,10 @@ public final class XJSON
      * 
      * @param i_IsReturnEmpty
      */
-    public void setReturnEmpty(boolean i_IsReturnEmpty)
+    public XJSON setReturnEmpty(boolean i_IsReturnEmpty)
     {
         this.isReturnEmpty = i_IsReturnEmpty;
+        return this;
     }
 
 
@@ -1668,9 +1673,10 @@ public final class XJSON
      * 
      * @param isJsonMethod
      */
-    public void setJsonMethod(boolean isJsonMethod)
+    public XJSON setJsonMethod(boolean isJsonMethod)
     {
         this.isJsonMethod = isJsonMethod;
+        return this;
     }
 
 
@@ -1702,9 +1708,10 @@ public final class XJSON
      * 
      * 默认为：false，不转换输出
      */
-    public void setSerializable(boolean isSerializable)
+    public XJSON setSerializable(boolean isSerializable)
     {
         this.isSerializable = isSerializable;
+        return this;
     }
 
 
@@ -1724,9 +1731,10 @@ public final class XJSON
      * 
      * @param isBigDecimalFormat
      */
-    public void setBigDecimalFormat(boolean isBigDecimalFormat)
+    public XJSON setBigDecimalFormat(boolean isBigDecimalFormat)
     {
         this.isBigDecimalFormat = isBigDecimalFormat;
+        return this;
     }
 
 
@@ -1746,7 +1754,7 @@ public final class XJSON
      * 
      * @param i_Digit
      */
-    public void setDigit(Integer i_Digit)
+    public XJSON setDigit(Integer i_Digit)
     {
         if ( i_Digit != null )
         {
@@ -1756,6 +1764,7 @@ public final class XJSON
         {
             this.digit = i_Digit;
         }
+        return this;
     }
     
 
@@ -1775,14 +1784,15 @@ public final class XJSON
      * 
      * @param recursionCount
      */
-    public void setRecursionCount(int recursionCount)
+    public XJSON setRecursionCount(int recursionCount)
     {
         this.recursionCount = recursionCount;
+        return this;
     }
     
 
 
-    public void setObjectClassName(String i_ClassName) throws ClassNotFoundException
+    public XJSON setObjectClassName(String i_ClassName) throws ClassNotFoundException
     {
         if ( Help.isNull(i_ClassName) )
         {
@@ -1790,13 +1800,15 @@ public final class XJSON
         }
         
         this.parserObjectClass = Help.forName(i_ClassName);
+        return this;
     }
     
     
     
-    public void setObjectClass(Class<?> i_Class)
+    public XJSON setObjectClass(Class<?> i_Class)
     {
         this.parserObjectClass = i_Class;
+        return this;
     }
     
     

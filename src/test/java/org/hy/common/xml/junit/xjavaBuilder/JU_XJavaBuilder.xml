@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <import name="xobjects" class="java.util.ArrayList" />
+    <import name="data"     class="org.hy.common.xml.junit.xjavaBuilder.DataBuilder" />
+    
+    
+    
+    <xobjects>
+    
+        <data id="XJavaBuilder">
+            <builder builder="builderX" build="buildX">
+                <host>127.0.0.1</host>
+                <post>8080</post>
+                <endpoint>
+                    <String>127.0.0.1</String>
+                    <int>80</int>
+                    <String>/xxx/yyy/zzz</String>
+                </endpoint>
+            </builder>
+        </data>
+        
+    </xobjects>
+
+</config>

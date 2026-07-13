@@ -6,6 +6,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ArrayList;
@@ -108,6 +109,7 @@ import org.xml.sax.InputSource;
  *              v2.3  2025-11-10  修正：<constructor>在构造对象异常时，删除之前预先put在对象池中的信息
  *              v2.4  2026-05-21  添加：众包引用模式
  *              v2.5  2026-06-03  添加：For循环批量创建对象
+ *              v2.6  2026-07-13  添加：builder模型创建对象
  */
 public final class XJava
 {
@@ -161,6 +163,15 @@ public final class XJava
     
     /** 构造器节点关键字。此关键字必须为构造节点的第一个子节点 */
     private final static String                         $XML_OBJECT_CONSTRUCTOR       = "constructor";
+    
+    /** Builder节点关键字。此关键字必须为构造节点的第一个子节点 */
+    private final static String                         $XML_OBJECT_BUILDER           = "builder";
+    
+    /** Builder节点的builder方法名称。此关键字必须为构造节点的第一个子节点 */
+    private final static String                         $XML_OBJECT_BUILDER_MName     = $XML_OBJECT_BUILDER;
+    
+    /** Builder节点的build方法名称。此关键字必须为构造节点的第一个子节点 */
+    private final static String                         $XML_OBJECT_BUILD_MName       = "build";
     
     /** 节点对应的 Java 类 */
     private final static String                         $XML_OBJECT_CLASS             = "class";
@@ -3146,6 +3157,36 @@ public final class XJava
                             
                             continue;
                         }
+                        else if ( $XML_OBJECT_BUILDER.equalsIgnoreCase(v_Node.getNodeName()) )
+                        {
+                            if ( io_SuperInstance == null )
+                            {
+                                io_SuperInstance    = this.builder(i_SuperClass ,v_Node ,v_TreeNode);
+                                v_SuperInstance_New = true;
+                                
+                                String v_SuperID = null;
+                                if ( i_SuperTreeNode == null || i_SuperTreeNode.getNodeID() == null )
+                                {
+                                    v_SuperID = getNodeAttribute(i_SuperNode ,$XML_OBJECT_ID);
+                                }
+                                else
+                                {
+                                    v_SuperID = i_SuperTreeNode.getNodeID();
+                                }
+                                
+                                // 确保XJavaID优先被setter，好方便后续功能使用ID
+                                if ( (!Help.isNull(v_ID) || !Help.isNull(v_SuperID)) && io_SuperInstance instanceof XJavaID )
+                                {
+                                    ((XJavaID)io_SuperInstance).setXJavaID(Help.NVL(v_ID ,v_SuperID));
+                                }
+                            }
+                            else
+                            {
+                                // 实例已被构造，将不做任何处理
+                            }
+                            
+                            continue;
+                        }
                         else
                         {
                             // 父节点的Java类，不再简单的实例化，而是先判断是否有指定的构造器，如果没有的情况下，才简单的实例化。
@@ -3864,6 +3905,350 @@ public final class XJava
     
     
     /**
+     * 构造器。对写有 "builder" 关键字节点的父节点进行指定构造器的构造。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-07-13
+     * @version     v1.0
+     *
+     * @param i_BuilderClass
+     * @param i_BuilderNode
+     * @param i_ConstructorTreeNode
+     * @return
+     * @throws Exception
+     */
+    private Object builder(Class<?> i_BuilderClass ,Node i_BuilderNode ,TreeNode<XJavaObject> i_ConstructorTreeNode) throws Exception
+    {
+        try
+        {
+            // 创建构建者。Object.builder
+            String v_BuilderMethodName = Help.NVL(this.getNodeAttribute(i_BuilderNode ,$XML_OBJECT_BUILDER_MName) ,$XML_OBJECT_BUILDER_MName);
+            Method v_BuilderMethod     = MethodReflect.getMethod(i_BuilderClass ,v_BuilderMethodName ,new Object[] {});
+            if ( v_BuilderMethod == null )
+            {
+                throw new NullPointerException(i_BuilderClass.getName() + "." + v_BuilderMethodName + "() is not exists");
+            }
+            
+            Object v_Builder = StaticReflect.invoke(v_BuilderMethod ,new Object[] {});
+            if ( v_Builder == null )
+            {
+                
+            }
+            
+            // 创建用构建者创建对象的方法。Object.builder.build
+            String v_BuildMethodName = Help.NVL(this.getNodeAttribute(i_BuilderNode ,$XML_OBJECT_BUILD_MName) ,$XML_OBJECT_BUILD_MName);
+            Method v_BuildMethod     = MethodReflect.getMethod(v_Builder ,v_BuildMethodName ,new Object[] {});
+            if ( v_BuildMethod == null )
+            {
+                throw new NullPointerException(i_BuilderClass.getName() + "." + v_BuildMethodName + "() is not exists");
+            }
+            
+            NodeList v_NodeList = i_BuilderNode.getChildNodes();
+            for (int v_Index=0; v_Index<v_NodeList.getLength(); v_Index++)
+            {
+                Node v_SetterNode = v_NodeList.item(v_Index);
+                
+                if ( "#".equals(v_SetterNode.getNodeName().substring(0 ,1)) )
+                {
+                    // Nothing.   过滤空标记
+                }
+                else
+                {
+                    Object v_SetterValue = null;
+                    String v_RefID       = this.getNodeAttribute(v_SetterNode ,$XML_OBJECT_REF);
+                    
+                    // 当节点属性有引用关键字时，获取调用方法的参数值
+                    if ( v_RefID != null )
+                    {
+                        v_SetterValue = this.getRefObject(null ,v_SetterNode ,v_RefID);
+                        
+                        if ( v_SetterValue != null )
+                        {
+                            List<Method> v_Setters = MethodReflect.getMethodsBest(v_Builder.getClass() ,v_SetterNode.getNodeName() ,new Object[] {v_SetterValue});
+                            if ( !Help.isNull(v_Setters) )
+                            {
+                                v_Setters.get(0).invoke(v_Builder ,v_SetterValue);
+                            }
+                            else
+                            {
+                                // 没有匹配到对应的方法
+                                String v_ErrorInfo = "Builder not found of method" + v_Builder.getClass().getName() + "." + v_SetterNode.getNodeName() + "() is't exist of Node[" + i_BuilderNode.getParentNode().getNodeName() + "." + i_BuilderNode.getNodeName() + "." + v_SetterNode.getNodeName() + "]."; 
+                                $Logger.error(v_ErrorInfo);
+                                throw new NoSuchMethodException(v_ErrorInfo);
+                            }
+                        }
+                        else
+                        {
+                            throw new NullPointerException("Ref method [" + v_RefID + "] is't exist of builder Node[" + i_BuilderNode.getParentNode().getNodeName() + "." + i_BuilderNode.getNodeName() + "." + v_SetterNode.getNodeName() + "].");
+                        }
+                    }
+                    else
+                    {
+                        this.builderSetter(v_Builder ,v_SetterNode ,i_ConstructorTreeNode);
+                    }
+                }
+            }
+            
+            try
+            {
+                // 获取对象，即执行 Object.builder.build
+                return v_BuildMethod.invoke(v_Builder);
+            }
+            catch (Exception exce)
+            {
+                // 删除未初始化成功的对象  Add 2025-11-10
+                XJava.remove(i_ConstructorTreeNode.getSuper().getNodeID());
+                throw exce;
+            }
+        }
+        catch (Exception exce)
+        {
+            $Logger.error(exce);
+            throw exce;
+        }
+    }
+    
+    
+    
+    /**
+     * 构造器。对写有 "builder" 关键字节点中的子节点Object.builder.Setter方法赋值。
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-07-13
+     * @version     v1.0
+     *
+     * @param i_Builder               构建者的实例。Object.builder
+     * @param i_SetterNode            构建者的赋值节点。Object.builder.setter
+     * @param i_ConstructorTreeNode
+     * @return
+     * @throws Exception
+     */
+    private void builderSetter(Object i_Builder ,Node i_SetterNode ,TreeNode<XJavaObject> i_ConstructorTreeNode) throws Exception
+    {
+        List<Class<?>> v_ParamClassList = new ArrayList<Class<?>>();
+        List<Object>   v_ParamValueList = new ArrayList<Object>();
+        int            v_ParamCount     = 0;
+        NodeList       v_NodeList       = i_SetterNode.getChildNodes();
+        for (int v_Index=0; v_Index<v_NodeList.getLength(); v_Index++)
+        {
+            Node v_ParamNode = v_NodeList.item(v_Index);
+            
+            if ( "#".equals(v_ParamNode.getNodeName().substring(0 ,1)) )
+            {
+                // Nothing.   过滤空标记
+            }
+            else
+            {
+                v_ParamCount++;
+                String   v_ParamClassName = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_CLASS);
+                Class<?> v_ParamClass     = null;
+                Object   v_ParamValue     = null;
+                String   v_RefID          = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_REF);
+                String   v_ContentType    = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_TYPE);
+                
+                // 标记有Class节点属性的情况
+                if ( v_ParamClassName != null )
+                {
+                    try
+                    {
+                        v_ParamClass = Help.forName(v_ParamClassName);
+                    }
+                    catch (Exception exce)
+                    {
+                        $Logger.error(exce);
+                        throw exce;
+                    }
+                }
+                // 节点名称为import指定的Class类型
+                else if ( this.imports.containsKey(v_ParamNode.getNodeName()) )
+                {
+                    try
+                    {
+                        v_ParamClass = Help.forName(this.imports.get(v_ParamNode.getNodeName()));
+                    }
+                    catch (Exception exce)
+                    {
+                        $Logger.error(exce);
+                        throw exce;
+                    }
+                }
+                // 当节点属性有引用关键字时，获取调用方法的参数值
+                else if ( v_RefID != null )
+                {
+                    v_ParamValue = this.getRefObject(null ,v_ParamNode ,v_RefID);
+                    
+                    if ( v_ParamValue != null )
+                    {
+                        v_ParamClass = v_ParamValue.getClass();
+                    }
+                    else
+                    {
+                        throw new NullPointerException("Ref method [" + v_RefID + "] is't exist of Constructor Node[" + i_SetterNode.getParentNode().getNodeName() + "." + i_SetterNode.getNodeName() + "].");
+                    }
+                }
+                else if ( $XML_JAVA_DATATYPE_CHAR.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = char.class;
+                    v_ParamValue = getNodeTextContent(v_ParamNode ,v_ContentType).charAt(0);
+                }
+                else if ( $XML_JAVA_DATATYPE_INT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = int.class;
+                    v_ParamValue = Integer.valueOf((String)encrypt(i_SetterNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
+                }
+                else if ( $XML_JAVA_DATATYPE_LONG.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = long.class;
+                    v_ParamValue = Long.valueOf((String)encrypt(i_SetterNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
+                }
+                else if ( $XML_JAVA_DATATYPE_BIGDECIMAL.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = BigDecimal.class;
+                    v_ParamValue = new BigDecimal((String)encrypt(i_SetterNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
+                }
+                else if ( $XML_JAVA_DATATYPE_DOUBLE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = double.class;
+                    v_ParamValue = Double.valueOf((String)encrypt(i_SetterNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
+                }
+                else if ( $XML_JAVA_DATATYPE_FLOAT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = float.class;
+                    v_ParamValue = Double.valueOf((String)encrypt(i_SetterNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
+                }
+                else if ( $XML_JAVA_DATATYPE_BOOLEAN.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = boolean.class;
+                    v_ParamValue = Boolean.valueOf(getNodeTextContent(v_ParamNode ,v_ContentType));
+                }
+                else if ( $XML_JAVA_DATATYPE_STRING.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = String.class;
+                    v_ParamValue = encrypt(i_SetterNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType));
+                    if ( v_ParamValue != null )
+                    {
+                        v_ParamValue = StringHelp.replaceAll(v_ParamValue.toString() ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath);
+                    }
+                }
+                else if ( $XML_JAVA_DATATYPE_DATE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = Date.class;
+                    v_ParamValue = new Date().setDate((String)encrypt(i_SetterNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
+                }
+                else if ( $XML_JAVA_DATATYPE_OBJECT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = Object.class;
+                    v_ParamValue = getNodeTextContent(v_ParamNode ,v_ContentType);
+                }
+                else if ( $XML_JAVA_DATATYPE_CLASS.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = Class.class;
+                    v_ParamValue = encrypt(i_SetterNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType));
+                }
+                else if ( $XML_JAVA_DATATYPE_BYTE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = byte.class;
+                    v_ParamValue = Byte.valueOf(getNodeTextContent(v_ParamNode ,v_ContentType));
+                }
+                else if ( $XML_JAVA_DATATYPE_SHORT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
+                {
+                    v_ParamClass = short.class;
+                    v_ParamValue = Short.valueOf((String)encrypt(i_SetterNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
+                }
+                else
+                {
+                    // 没有找到调用方法参数的Clss类型
+                    throw new NullPointerException("Method param[" + v_ParamCount + "] Class Type is not find of Constructor Node[" + i_SetterNode.getParentNode().getNodeName() + "." + i_SetterNode.getNodeName() + "].");
+                }
+                
+                v_ParamClassList.add(v_ParamClass);
+                
+                if ( v_ParamValue == null )
+                {
+                    // 当class属性与ref属性同时存在时
+                    if ( v_RefID != null )
+                    {
+                        v_ParamValue = this.getRefObject(null ,v_ParamNode ,v_RefID);
+                        
+                        if ( v_ParamValue != null )
+                        {
+                            if ( v_ParamClass == null )
+                            {
+                                v_ParamClass = v_ParamValue.getClass();
+                            }
+                            
+                            v_ParamValueList.add(v_ParamValue);
+                        }
+                        else
+                        {
+                            // 引用对象不存在
+                            throw new NullPointerException("Ref method [" + v_RefID + "] is't exist of Constructor Node[" + i_SetterNode.getParentNode().getNodeName() + "." + i_SetterNode.getNodeName() + "].");
+                        }
+                    }
+                    else
+                    {
+                        v_ParamValue = this.setInstance(v_ParamClass ,null ,v_ParamNode ,i_ConstructorTreeNode);
+                        
+                        if ( v_ParamValue != null )
+                        {
+                            v_ParamValueList.add(v_ParamValue);
+                        }
+                        else
+                        {
+                            // 方法参数的值没有解释成功
+                            throw new NullPointerException("Method param[" + v_ParamCount + "] is null of Constructor Node[" + i_SetterNode.getParentNode().getNodeName() + "." + i_SetterNode.getNodeName() + "].");
+                        }
+                    }
+                }
+                else
+                {
+                    v_ParamValueList.add(v_ParamValue);
+                }
+            }
+        }
+        
+        if ( v_ParamClassList.size() == 0 )
+        {
+            // 尝试获取指定的setter方法
+            List<Method> v_Setters = MethodReflect.getMethodsIgnoreCase(i_Builder.getClass() ,i_SetterNode.getNodeName() ,1);
+            if ( Help.isNull(v_Setters) )
+            {
+                String v_ErrorInfo = "Builder not found of method" + i_Builder.getClass().getName() + "." + i_SetterNode.getNodeName() + "() is't exist of Node[" + i_SetterNode.getParentNode().getParentNode().getNodeName() + "." + i_SetterNode.getParentNode().getNodeName() + "." + i_SetterNode.getNodeName() + "]."; 
+                $Logger.error(v_ErrorInfo);
+                throw new NoSuchMethodException(v_ErrorInfo);
+            }
+            else if ( v_Setters.size() >= 2 )
+            {
+                String v_ErrorInfo = "Builder not found of method" + i_Builder.getClass().getName() + "." + i_SetterNode.getNodeName() + "() multiple overloaded methods of Node[" + i_SetterNode.getParentNode().getParentNode().getNodeName() + "." + i_SetterNode.getParentNode().getNodeName() + "." + i_SetterNode.getNodeName() + "]."; 
+                $Logger.error(v_ErrorInfo);
+                throw new NoSuchMethodException(v_ErrorInfo);
+            }
+            
+            String v_ContentType = this.getNodeAttribute(i_SetterNode ,$XML_OBJECT_TYPE);
+            String v_XmlValue    = getNodeTextContent(i_SetterNode ,v_ContentType);
+            Object v_JavaValue   = Help.toObject(v_Setters.get(0).getParameterTypes()[0] ,v_XmlValue);
+            v_Setters.get(0).invoke(i_Builder ,v_JavaValue);
+        }
+        else
+        {
+            List<Method> v_Setters = MethodReflect.getMethodsBest(i_Builder.getClass() ,i_SetterNode.getNodeName() ,v_ParamClassList.toArray(new Class<?> [] {}));
+            if ( !Help.isNull(v_Setters) )
+            {
+                v_Setters.get(0).invoke(i_Builder ,v_ParamValueList.toArray());
+            }
+            else
+            {
+                // 没有匹配到对应的方法
+                String v_ErrorInfo = "Builder not found of method" + i_Builder.getClass().getName() + "." + i_SetterNode.getNodeName() + "() is't exist of Node[" + i_SetterNode.getParentNode().getParentNode().getNodeName() + "." + i_SetterNode.getParentNode().getNodeName() + "." + i_SetterNode.getNodeName() + "]."; 
+                $Logger.error(v_ErrorInfo);
+                throw new NoSuchMethodException(v_ErrorInfo);
+            }
+        }
+    }
+    
+    
+    
+    /**
      * 构造器。对写有 "constructor" 关键字节点的父节点进行指定构造器的构造。
      * 
      * @param i_ConstructorClass
@@ -3894,8 +4279,7 @@ public final class XJava
                 Class<?> v_ParamClass     = null;
                 Object   v_ParamValue     = null;
                 String   v_RefID          = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_REF);
-                String   v_v_ContentType  = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_TYPE);
-                
+                String   v_ContentType    = this.getNodeAttribute(v_ParamNode ,$XML_OBJECT_TYPE);
                 
                 // 标记有Class节点属性的情况
                 if ( v_ParamClassName != null )
@@ -3943,49 +4327,49 @@ public final class XJava
                 else if ( $XML_JAVA_DATATYPE_CHAR.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = char.class;
-                    v_ParamValue = getNodeTextContent(v_ParamNode ,v_v_ContentType).charAt(0);
+                    v_ParamValue = getNodeTextContent(v_ParamNode ,v_ContentType).charAt(0);
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_INT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = int.class;
-                    v_ParamValue = Integer.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
+                    v_ParamValue = Integer.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_LONG.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = long.class;
-                    v_ParamValue = Long.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
+                    v_ParamValue = Long.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_BIGDECIMAL.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = BigDecimal.class;
-                    v_ParamValue = new BigDecimal((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
+                    v_ParamValue = new BigDecimal((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_DOUBLE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = double.class;
-                    v_ParamValue = Double.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
+                    v_ParamValue = Double.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_FLOAT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = float.class;
-                    v_ParamValue = Double.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
+                    v_ParamValue = Double.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_BOOLEAN.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = boolean.class;
-                    v_ParamValue = Boolean.valueOf(getNodeTextContent(v_ParamNode ,v_v_ContentType));
+                    v_ParamValue = Boolean.valueOf(getNodeTextContent(v_ParamNode ,v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_STRING.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = String.class;
-                    v_ParamValue = encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType));
+                    v_ParamValue = encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType));
                     if ( v_ParamValue != null )
                     {
                         v_ParamValue = StringHelp.replaceAll(v_ParamValue.toString() ,$XML_Replace_Keys ,false).replaceAll($XML_CLASSPATH ,this.xmlClassPath);
@@ -3995,31 +4379,31 @@ public final class XJava
                 else if ( $XML_JAVA_DATATYPE_DATE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = Date.class;
-                    v_ParamValue = new Date().setDate((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
+                    v_ParamValue = new Date().setDate((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.TRUE);
                 }
                 else if ( $XML_JAVA_DATATYPE_OBJECT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = Object.class;
-                    v_ParamValue = getNodeTextContent(v_ParamNode ,v_v_ContentType);
+                    v_ParamValue = getNodeTextContent(v_ParamNode ,v_ContentType);
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_CLASS.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = Class.class;
-                    v_ParamValue = encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType));
+                    v_ParamValue = encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_BYTE.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = byte.class;
-                    v_ParamValue = Byte.valueOf(getNodeTextContent(v_ParamNode ,v_v_ContentType));
+                    v_ParamValue = Byte.valueOf(getNodeTextContent(v_ParamNode ,v_ContentType));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else if ( $XML_JAVA_DATATYPE_SHORT.equalsIgnoreCase(v_ParamNode.getNodeName()) )
                 {
                     v_ParamClass = short.class;
-                    v_ParamValue = Short.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_v_ContentType)));
+                    v_ParamValue = Short.valueOf((String)encrypt(i_ConstructorNode ,v_ParamNode ,getNodeTextContent(v_ParamNode ,v_ContentType)));
                     v_ParamClassChangeList.add(Boolean.FALSE);
                 }
                 else
@@ -4028,9 +4412,7 @@ public final class XJava
                     throw new NullPointerException("Method param[" + v_ParamCount + "] Class Type is not find of Constructor Node[" + i_ConstructorNode.getParentNode().getNodeName() + "." + i_ConstructorNode.getNodeName() + "].");
                 }
                 
-                
                 v_ParamClassList.add(v_ParamClass);
-                
                 
                 if ( v_ParamValue == null )
                 {
@@ -4073,23 +4455,28 @@ public final class XJava
                 {
                     v_ParamValueList.add(v_ParamValue);
                 }
-            
             }
-            
         }
-        
         
         Constructor<?> v_Constructor = null;
         if ( v_ParamClassList.size() == 0 )
         {
-            return i_ConstructorClass.getDeclaredConstructor().newInstance();
+            try
+            {
+                return i_ConstructorClass.getDeclaredConstructor().newInstance();
+            }
+            catch (Exception exce)
+            {
+                // 删除未初始化成功的对象  Add 2025-11-10
+                XJava.remove(i_ConstructorTreeNode.getSuper().getNodeID());
+                throw exce;
+            }
         }
         else
         {
             v_Constructor = this.constructor_GetConstructor(i_ConstructorClass
                                                            ,v_ParamClassList
                                                            ,v_ParamClassChangeList);
-            
             if ( v_Constructor != null )
             {
                 try
@@ -4128,7 +4515,6 @@ public final class XJava
         int               v_ParamSize       = i_ParamClassList.size();
         Constructor<?> [] v_ConstructorList = i_Class.getDeclaredConstructors();
         
-        
         if ( v_ConstructorList.length == 0 )
         {
             return null;
@@ -4137,7 +4523,6 @@ public final class XJava
         {
             return v_ConstructorList[0];
         }
-        
         
         for (int i=0; i<v_ConstructorList.length; i++)
         {
@@ -4180,7 +4565,6 @@ public final class XJava
                 }
             }
         }
-        
         
         return null;
     }

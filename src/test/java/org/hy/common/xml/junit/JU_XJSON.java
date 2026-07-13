@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,6 +64,26 @@ public class JU_XJSON
     private Map<String ,String> valueMap;
     
     private Boolean             upper;
+    
+    
+    
+    @Test
+    public void test_Iterator()
+    {
+        List<String> v_Datas = new ArrayList<String>();
+        v_Datas.add("1");
+        v_Datas.add("2");
+        v_Datas.add("3");
+        
+        Iterator<String> v_Iterator = v_Datas.iterator();
+        Map<String ,Object> v_Context = new HashMap<String ,Object>();
+        v_Context.put("data"  ,v_Iterator);
+        v_Context.put("data2" ,"123ABC");
+        
+        XJSON v_XJson = new XJSON();
+        System.out.println(v_XJson.toJsonText(v_Context));
+        System.out.print("是否还有数据：" + v_Iterator.hasNext());
+    }
     
     
     
