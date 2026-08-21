@@ -4,6 +4,7 @@
 
     <import name="xobjects" class="java.util.ArrayList" />
     <import name="data"     class="org.hy.common.xml.junit.xjavaBuilder.DataBuilder" />
+    <import name="minio"    class="io.minio.MinioClient" />
     
     
     
@@ -20,6 +21,19 @@
                 </endpoint>
             </builder>
         </data>
+        
+        
+        <minio id="Minio">
+            <builder>
+                <endpoint>
+                    <String>http://10.0.2.13:8888</String>
+                </endpoint>
+                <credentials>
+                    <String>systestuser</String>
+                    <String>sys!@#user</String>
+                </credentials>
+            </builder>
+        </minio>
         
     </xobjects>
 

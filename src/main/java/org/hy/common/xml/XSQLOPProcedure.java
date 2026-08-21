@@ -190,7 +190,6 @@ public class XSQLOPProcedure
      *          5. 当调用函数时，除自身返回值外还有一个或多个输出参数时，将每个输出值依次添加到List集合中，再将List集合返回。
      *                        List集合的首个元素为函数自身的返回值。
      */
-    @SuppressWarnings("resource")
     public static Object call(final XSQL i_XSQL ,final Object i_Values)
     {
         boolean             v_IsError        = false;
@@ -429,7 +428,6 @@ public class XSQLOPProcedure
      *          5. 当调用函数时，除自身返回值外还有一个或多个输出参数时，将每个输出值依次添加到List集合中，再将List集合返回。
      *                        List集合的首个元素为函数自身的返回值。
      */
-    @SuppressWarnings("resource")
     public static Object call(final XSQL i_XSQL ,final Map<String ,?> i_Values)
     {
         boolean             v_IsError        = false;

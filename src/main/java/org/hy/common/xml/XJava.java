@@ -6,7 +6,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ArrayList;
@@ -3926,13 +3925,13 @@ public final class XJava
             Method v_BuilderMethod     = MethodReflect.getMethod(i_BuilderClass ,v_BuilderMethodName ,new Object[] {});
             if ( v_BuilderMethod == null )
             {
-                throw new NullPointerException(i_BuilderClass.getName() + "." + v_BuilderMethodName + "() is not exists");
+                throw new NoSuchMethodException(i_BuilderClass.getName() + "." + v_BuilderMethodName + "() is not exists");
             }
             
             Object v_Builder = StaticReflect.invoke(v_BuilderMethod ,new Object[] {});
             if ( v_Builder == null )
             {
-                
+                throw new NoSuchMethodException("Call " + i_BuilderClass.getName() + "." + v_BuilderMethodName + "() is error.");
             }
             
             // 创建用构建者创建对象的方法。Object.builder.build
@@ -3940,7 +3939,7 @@ public final class XJava
             Method v_BuildMethod     = MethodReflect.getMethod(v_Builder ,v_BuildMethodName ,new Object[] {});
             if ( v_BuildMethod == null )
             {
-                throw new NullPointerException(i_BuilderClass.getName() + "." + v_BuildMethodName + "() is not exists");
+                throw new NoSuchMethodException(i_BuilderClass.getName() + "." + v_BuildMethodName + "() is not exists");
             }
             
             NodeList v_NodeList = i_BuilderNode.getChildNodes();
@@ -3998,6 +3997,7 @@ public final class XJava
             {
                 // 删除未初始化成功的对象  Add 2025-11-10
                 XJava.remove(i_ConstructorTreeNode.getSuper().getNodeID());
+                $Logger.error("Call " + i_BuilderClass.getName() + "." + v_BuilderMethodName + "()." + v_BuildMethodName + "() is error." ,exce);
                 throw exce;
             }
         }

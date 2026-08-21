@@ -497,7 +497,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID ,Cloneable
      * @version     v1.0
      *
      */
-    public void reset()
+    public synchronized void reset()
     {
         this.requestCount      = 0L;
         this.successCount      = 0L;
@@ -4014,7 +4014,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID ,Cloneable
         this.create = i_CreateObjectName.trim();
         this.type   = $Type_Create;
         
-        createObject();
+        this.createObject();
     }
     
     
@@ -4536,26 +4536,19 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID ,Cloneable
      */
     protected static void erroring(String i_SQL ,Exception i_Exce ,XSQL i_XSQL)
     {
-        XSQLLog v_XSQLLog = new XSQLLog(i_SQL ,i_Exce ,i_XSQL == null ? "" : i_XSQL.getObjectID());
+        XSQLLog v_XSQLLog = new XSQLLog(i_SQL ,i_Exce ,i_XSQL.getObjectID());
 
         $SQLBuswayTP   .putRow(i_XSQL.getObjectID() ,v_XSQLLog);
         $SQLBusway     .put(v_XSQLLog);
         $SQLBuswayError.put(v_XSQLLog);
         
-        String v_XJavaID = "";
-        
-        if ( i_XSQL != null )
+        if ( i_XSQL.getDataSourceGroup() != null )
         {
-            v_XJavaID = Help.NVL(i_XSQL.getXJavaID());
-            
-            if ( i_XSQL.getDataSourceGroup() != null )
-            {
-                i_XSQL.getDataSourceGroup().setException(true);
-            }
+            i_XSQL.getDataSourceGroup().setException(true);
         }
         
         $Logger.error("\n-- Error time:    " + Date.getNowTime().getFull()
-                    + "\n-- Error XSQL ID: " + v_XJavaID
+                    + "\n-- Error XSQL ID: " + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID())
                     + "\n-- Error SQL:     " + i_SQL ,i_Exce);
         
         i_Exce.printStackTrace();
@@ -4738,7 +4731,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID ,Cloneable
                 }
                 
                 v_Imports.add(v_Package);
-                v_Buffer.append(StringHelp.replaceAll(io_XRule.getValue() ,v_Imports.toArray(new String[] {}) ,new String[] {""}));
+                v_Buffer.append(StringHelp.replaceAll(io_XRule.getValue() ,v_Imports.toArray(new String[] {}) ,StringHelp.$ReplaceNil));
                 
                 io_XRule.setValue(v_Buffer.toString());
             }

@@ -67,16 +67,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -134,16 +125,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -205,16 +187,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -277,16 +250,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -349,16 +313,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -421,16 +376,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -492,16 +438,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -564,16 +501,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -636,16 +564,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -708,16 +627,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -773,16 +683,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -838,16 +739,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -899,7 +791,7 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.getResult() == null )
             {
-                throw new NullPointerException("Result is null of XSQL.");
+                throw new NullPointerException("Result is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             if ( !i_DSG.isValid() )
@@ -909,7 +801,7 @@ public class XSQLOPQuery
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryXSQLData_Inner.1" ,i_DSG);
@@ -960,17 +852,17 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.getResult() == null )
             {
-                throw new NullPointerException("Result is null of XSQL.");
+                throw new NullPointerException("Result is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             if ( null == i_Conn)
             {
-                throw new NullPointerException("Connection is null of XSQL.");
+                throw new NullPointerException("Connection is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             v_Statement = i_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
@@ -1028,16 +920,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -1101,16 +984,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -1174,16 +1048,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -1243,16 +1108,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -1311,16 +1167,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -1379,16 +1226,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -1442,7 +1280,7 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.getResult() == null )
             {
-                throw new NullPointerException("Result is null of XSQL.");
+                throw new NullPointerException("Result is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             if ( !i_DSG.isValid() )
@@ -1452,7 +1290,7 @@ public class XSQLOPQuery
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryXSQLData_Inner.2" ,i_DSG);
@@ -1505,7 +1343,7 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.getResult() == null )
             {
-                throw new NullPointerException("Result is null of XSQL.");
+                throw new NullPointerException("Result is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             if ( !i_DSG.isValid() )
@@ -1515,7 +1353,7 @@ public class XSQLOPQuery
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryXSQLData_Inner.3" ,i_DSG);
@@ -1568,7 +1406,7 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.getResult() == null )
             {
-                throw new NullPointerException("Result is null of XSQL.");
+                throw new NullPointerException("Result is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             if ( !i_DSG.isValid() )
@@ -1578,7 +1416,7 @@ public class XSQLOPQuery
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryXSQLData_Inner.4" ,i_DSG);
@@ -1641,16 +1479,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret;
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -1714,16 +1543,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret.getDatas();
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -1786,16 +1606,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret.getDatas();
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -1859,16 +1670,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret.getDatas();
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -1927,16 +1729,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret.getDatas();
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -1995,16 +1788,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret.getDatas();
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -2062,16 +1846,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret.getDatas();
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -2128,16 +1903,7 @@ public class XSQLOPQuery
             v_IORowCount = v_Ret.getRowCount();
             return v_Ret.getDatas();
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -2190,17 +1956,17 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.getResult() == null )
             {
-                throw new NullPointerException("Result is null of XSQL.");
+                throw new NullPointerException("Result is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             if ( null == i_Conn)
             {
-                throw new NullPointerException("Connection is null of XSQL.");
+                throw new NullPointerException("Connection is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             v_Statement = i_Conn.createStatement(ResultSet.TYPE_FORWARD_ONLY ,ResultSet.CONCUR_READ_ONLY);
@@ -2250,7 +2016,7 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.getResult() == null )
             {
-                throw new NullPointerException("Result is null of XSQL.");
+                throw new NullPointerException("Result is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             if ( !i_DSG.isValid() )
@@ -2260,7 +2026,7 @@ public class XSQLOPQuery
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             v_Conn      = i_XSQL.getConnection("XSQLOPQuery.queryBigData_Inner" ,i_DSG);
@@ -2312,16 +2078,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.queryBigger_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -2376,16 +2133,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.queryBigger_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNames);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -2440,16 +2188,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.queryBigger_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNoArr);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -2503,16 +2242,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.queryBigger_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -2567,16 +2297,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.queryBigger_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNames);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -2631,16 +2352,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.queryBigger_Inner(i_XSQL ,v_SQL ,v_DSG ,i_FilterColNoArr);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -2690,16 +2402,7 @@ public class XSQLOPQuery
         {
             return XSQLOPQuery.queryBigger_Inner(i_XSQL ,i_SQL ,i_XSQL.getDataSourceGroup());
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -2750,16 +2453,7 @@ public class XSQLOPQuery
         {
             return XSQLOPQuery.queryBigger_Inner(i_XSQL ,i_SQL ,i_XSQL.getDataSourceGroup() ,i_FilterColNames);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -2810,16 +2504,7 @@ public class XSQLOPQuery
         {
             return XSQLOPQuery.queryBigger_Inner(i_XSQL ,i_SQL ,i_XSQL.getDataSourceGroup() ,i_FilterColNoArr);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(i_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -2869,7 +2554,7 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.getResult() == null )
             {
-                throw new NullPointerException("Result is null of XSQL.");
+                throw new NullPointerException("Result is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             if ( !i_DSG.isValid() )
@@ -2879,7 +2564,7 @@ public class XSQLOPQuery
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             v_RowSize   = XSQLOPQuery.querySQLCount(i_XSQL ,"SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
@@ -2931,7 +2616,7 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.getResult() == null )
             {
-                throw new NullPointerException("Result is null of XSQL.");
+                throw new NullPointerException("Result is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             if ( !i_DSG.isValid() )
@@ -2941,7 +2626,7 @@ public class XSQLOPQuery
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             v_RowSize   = XSQLOPQuery.querySQLCount_Inner(i_XSQL ,"SELECT COUNT(1) FROM ( " + i_SQL + " ) HY" ,i_DSG);
@@ -2993,7 +2678,7 @@ public class XSQLOPQuery
         {
             if ( i_XSQL.getResult() == null )
             {
-                throw new NullPointerException("Result is null of XSQL.");
+                throw new NullPointerException("Result is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             if ( !i_DSG.isValid() )
@@ -3003,7 +2688,7 @@ public class XSQLOPQuery
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             v_RowSize   = XSQLOPQuery.querySQLCount(i_XSQL ,"SELECT COUNT(1) FROM ( " + i_SQL + " ) HY");
@@ -3062,16 +2747,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.querySQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -3129,16 +2805,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.querySQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -3191,16 +2858,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
             return XSQLOPQuery.querySQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -3254,16 +2912,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
             return XSQLOPQuery.querySQLCount_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -3320,7 +2969,7 @@ public class XSQLOPQuery
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             // XSQL getSQLCount() 自行判定是否有count(1) or count(*)
@@ -3395,16 +3044,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.querySQLValue_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesMap(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -3465,16 +3105,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(i_Values ,v_DSG);
             return XSQLOPQuery.querySQLValue_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL).setValuesObject(i_Values));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -3529,16 +3160,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
             return XSQLOPQuery.querySQLValue_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -3594,16 +3216,7 @@ public class XSQLOPQuery
             v_SQL = i_XSQL.getContent().getSQL(v_DSG);
             return XSQLOPQuery.querySQLValue_Inner(i_XSQL ,v_SQL ,v_DSG);
         }
-        catch (NullPointerException exce)
-        {
-            v_IsError   = true;
-            v_ErrorInfo = Help.NVL(exce.getMessage() ,"E");
-            if ( i_XSQL.getError() != null )
-            {
-                i_XSQL.getError().errorLog(new XSQLErrorInfo(v_SQL ,exce ,i_XSQL));
-            }
-            throw exce;
-        }
+        // RuntimeException 是 NullPointerException 的父类，不用专门再写一个 NullPointerException 类型的catch
         catch (RuntimeException exce)
         {
             v_IsError   = true;
@@ -3662,7 +3275,7 @@ public class XSQLOPQuery
             
             if ( Help.isNull(i_SQL) )
             {
-                throw new NullPointerException("SQL or SQL-Params is null of XSQL.");
+                throw new NullPointerException("SQL or SQL-Params is null of XSQL[" + Help.NVL(i_XSQL.getXJavaID() ,i_XSQL.getObjectID()) + "].");
             }
             
             v_Conn      = i_XSQL.getConnection("XSQLOPQuery.querySQLValue_Inner" ,i_DSG);

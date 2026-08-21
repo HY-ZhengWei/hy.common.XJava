@@ -101,6 +101,8 @@ import net.minidev.json.parser.JSONParser;
  *              2026-05-25  V11.0 添加：对象方法返回String类型值为 "" 时，是否还将其生成在Json字符串
  *                                添加：对象方法返回List、Map、Set类型为0个元素的空集合时，是否还将其生成在Json字符串
  *              2026-06-07  V11.1 添加：所有Setter返回自己
+ *              2026-08-21  V12.0 添加：多级数组嵌套时生成对象结构。如：[[1,2] ,[3,4]] 转为 List<List>
+ *                                                         如：[{"n":[1,2]} ,{"n":[3,4]}] 转为 List<Map<String ,List>>
  */
 public final class XJSON
 {
@@ -1012,6 +1014,10 @@ public final class XJSON
                     v_ParserObj = parser((XJSONObject)v_ElementObject ,i_ElementClass);
                 }
             }
+            else if ( Help.isBasicDataType(v_ElementObject.getClass()) )
+            {
+                v_ParserObj = v_ElementObject;
+            }
             else
             {
                 try
@@ -1071,13 +1077,27 @@ public final class XJSON
             // 支持以 [] 开头的 JSON
             else if ( v_ParserRet instanceof List )
             {
-                List<JSONObject> v_ParserRetArr = (List<JSONObject>) v_ParserRet;
-                List<Object>     v_Objects      = new ArrayList<Object>();
-                for (JSONObject v_Item : v_ParserRetArr)
+                List<Object> v_Objects           = new ArrayList<Object>();
+                Object       v_ArrayFirstElement = ((List<Object>)v_ParserRet).get(0);
+                
+                if ( v_ArrayFirstElement instanceof JSONObject )
                 {
-                    v_JSONRoot = new XJSONObject((JSONObject) v_Item);
-                    v_Objects.add(parser(v_JSONRoot ,i_Class));
+                    List<JSONObject> v_ParserRetArr = (List<JSONObject>) v_ParserRet;
+                    for (JSONObject v_Item : v_ParserRetArr)
+                    {
+                        v_JSONRoot = new XJSONObject((JSONObject) v_Item);
+                        v_Objects.add(parser(v_JSONRoot ,i_Class));
+                    }
                 }
+                else if ( v_ParserRet instanceof List )
+                {
+                    List<JSONArray> v_ParserRetArr = (List<JSONArray>) v_ParserRet;
+                    for (JSONArray v_Item : v_ParserRetArr)
+                    {
+                        v_Objects.add(parser(v_Item ,i_Class));
+                    }
+                }
+                
                 return v_Objects;
             }
         }
@@ -1879,7 +1899,7 @@ public final class XJSON
             return false;
         }
         
-        String v_JT = StringHelp.replaceAll(i_JsonText ,new String[] {"\n" ,"\r" ,"\t" ," "} ,new String[] {""});
+        String v_JT = StringHelp.replaceAll(i_JsonText ,new String[] {"\n" ,"\r" ,"\t" ," "} ,StringHelp.$ReplaceNil);
         
         int v_Len = v_JT.length();
         if ( v_Len < 2)

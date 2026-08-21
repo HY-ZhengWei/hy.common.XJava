@@ -134,6 +134,27 @@ public class JU_XJSON
     
     
     
+    @Test
+    public void test_数组()
+    {
+        XJSON  v_XJson    = new XJSON();
+        String v_JsonText = """
+                            [{"data": [1.0,-1.0]} ,{"data": [2.0,-2.0]}]
+                            """;
+        
+        Object v_JsonValue = v_XJson.toJava(v_JsonText);
+        System.out.println(v_JsonValue);
+        
+        
+        v_JsonText = """
+                     [[1.0,-1.0] ,[2.0,-2.0]]
+                     """;
+        v_JsonValue = v_XJson.toJava(v_JsonText);
+        System.out.println(v_JsonValue);
+    }
+    
+    
+    
     /**
      * 测试Getter方法的Object返回结果
      * 
