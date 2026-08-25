@@ -1944,10 +1944,10 @@ public final class XJSON
                 {
                     v_HaveGoto =  false;
                 }
-                // 对于 {"id": "1", "bookName": "B1", "bookVector": [1.0 ,-1.0]} 字符将无法正确识别为Json。因而先删除 Del 2026-08-25
-                /*
                 else if ( v_One == ',' )
                 {
+                    // 对于 {"id": "1", "bookName": "B1", "bookVector": [1.0 ,-1.0]} 字符将无法正确识别为Json。因而先删除 Del 2026-08-25
+                    /*
                     if ( v_JT.charAt(i + 1) != '"'
                       && v_JT.charAt(i + 1) != ']'
                       && v_JT.charAt(i + 1) != '}'
@@ -1956,10 +1956,10 @@ public final class XJSON
                     {
                         return false;
                     }
+                    */
                     
                     v_HaveGoto =  false;
                 }
-                */
                 else if ( v_One == '[' )
                 {
                     if ( v_HaveGoto )
