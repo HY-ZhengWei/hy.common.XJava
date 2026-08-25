@@ -45,7 +45,7 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Conn
+     * @param i_XSQL  查询对象
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL)
@@ -103,6 +103,7 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
+     * @param i_XSQL  查询对象
      * @param i_Conn
      * @return
      */
@@ -164,7 +165,8 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Values           占位符SQL的填充集合。
+     * @param i_XSQL    查询对象
+     * @param i_Values  占位符SQL的填充集合。
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Map<String ,?> i_Values)
@@ -226,7 +228,8 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Values           占位符SQL的填充集合。
+     * @param i_XSQL   查询对象
+     * @param i_Values 占位符SQL的填充集合。
      * @param i_Conn
      * @return
      */
@@ -289,8 +292,9 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Values           占位符SQL的填充集合。
-     * @param i_FilterColNames   按输出字段名称过滤。
+     * @param i_XSQL            查询对象
+     * @param i_Values          占位符SQL的填充集合。
+     * @param i_FilterColNames  按输出字段名称过滤。
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Map<String ,?> i_Values ,final List<String> i_FilterColNames)
@@ -352,6 +356,7 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
+     * @param i_XSQL             查询对象
      * @param i_Values           占位符SQL的填充集合。
      * @param i_FilterColNoArr   按输出字段位置过滤。
      * @return
@@ -415,7 +420,8 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Values              占位符SQL的填充对象。
+     * @param i_XSQL    查询对象
+     * @param i_Values  占位符SQL的填充对象。
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Values)
@@ -477,7 +483,8 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Values              占位符SQL的填充对象。
+     * @param i_XSQL    查询对象
+     * @param i_Values  占位符SQL的填充对象。
      * @param i_Conn
      * @return
      */
@@ -540,8 +547,9 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Values           占位符SQL的填充对象。
-     * @param i_FilterColNames   按输出字段名称过滤。
+     * @param i_XSQL            查询对象
+     * @param i_Values          占位符SQL的填充对象。
+     * @param i_FilterColNames  按输出字段名称过滤。
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Values ,final List<String> i_FilterColNames)
@@ -603,8 +611,9 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Values           占位符SQL的填充对象。
-     * @param i_FilterColNoArr   按输出字段位置过滤。
+     * @param i_XSQL            查询对象
+     * @param i_Values          占位符SQL的填充对象。
+     * @param i_FilterColNoArr  按输出字段位置过滤。
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Values ,final int [] i_FilterColNoArr)
@@ -665,7 +674,9 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_SQL              常规SQL语句
+     * @param i_XSQL  查询对象
+     * @param i_SQL   常规SQL语句
+     * @param i_Conn
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final String i_SQL ,final Connection i_Conn)
@@ -721,7 +732,8 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_SQL              常规SQL语句
+     * @param i_XSQL  查询对象
+     * @param i_SQL   常规SQL语句
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final String i_SQL)
@@ -777,7 +789,9 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_SQL              常规SQL语句
+     * @param i_XSQL  查询对象
+     * @param i_SQL   常规SQL语句
+     * @param i_DSG
      * @return
      */
     private static XSQLData queryXSQLData_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG)
@@ -839,7 +853,8 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_SQL              常规SQL语句
+     * @param i_XSQL  查询对象
+     * @param i_SQL   常规SQL语句
      * @return
      */
     private static XSQLData queryXSQLData_Inner(final XSQL i_XSQL ,final String i_SQL ,final Connection i_Conn)
@@ -897,8 +912,9 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_StartRow         开始读取的行号。下标从0开始。
-     * @param i_PagePerSize      每页显示多少条数据。只有大于0时，游标分页功能才生效。
+     * @param i_XSQL         查询对象
+     * @param i_StartRow     开始读取的行号。下标从0开始。
+     * @param i_PagePerSize  每页显示多少条数据。只有大于0时，游标分页功能才生效。
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final int i_StartRow ,final int i_PagePerSize)
@@ -959,9 +975,10 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Values           占位符SQL的填充集合。
-     * @param i_StartRow         开始读取的行号。下标从0开始。
-     * @param i_PagePerSize      每页显示多少条数据。只有大于0时，游标分页功能才生效。
+     * @param i_XSQL         查询对象
+     * @param i_Values       占位符SQL的填充集合。
+     * @param i_StartRow     开始读取的行号。下标从0开始。
+     * @param i_PagePerSize  每页显示多少条数据。只有大于0时，游标分页功能才生效。
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Map<String ,?> i_Values ,final int i_StartRow ,final int i_PagePerSize)
@@ -1023,9 +1040,10 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_Values           占位符SQL的填充对象。
-     * @param i_StartRow         开始读取的行号。下标从0开始。
-     * @param i_PagePerSize      每页显示多少条数据。只有大于0时，游标分页功能才生效。
+     * @param i_XSQL         查询对象
+     * @param i_Values       占位符SQL的填充对象。
+     * @param i_StartRow     开始读取的行号。下标从0开始。
+     * @param i_PagePerSize  每页显示多少条数据。只有大于0时，游标分页功能才生效。
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final Object i_Values ,final int i_StartRow ,final int i_PagePerSize)
@@ -1086,9 +1104,10 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      *
-     * @param i_SQL              常规SQL语句
-     * @param i_StartRow         开始读取的行号。下标从0开始。
-     * @param i_PagePerSize      每页显示多少条数据。只有大于0时，游标分页功能才生效。
+     * @param i_XSQL         查询对象
+     * @param i_SQL          常规SQL语句
+     * @param i_StartRow     开始读取的行号。下标从0开始。
+     * @param i_PagePerSize  每页显示多少条数据。只有大于0时，游标分页功能才生效。
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final String i_SQL ,final int i_StartRow ,final int i_PagePerSize)
@@ -1146,8 +1165,9 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_SQL              常规SQL语句
-     * @param i_FilterColNames   按输出字段名称过滤。
+     * @param i_XSQL            查询对象
+     * @param i_SQL             常规SQL语句
+     * @param i_FilterColNames  按输出字段名称过滤。
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final String i_SQL ,final List<String> i_FilterColNames)
@@ -1205,8 +1225,9 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_SQL              常规SQL语句
-     * @param i_FilterColNoArr   按输出字段位置过滤。
+     * @param i_XSQL            查询对象
+     * @param i_SQL             常规SQL语句
+     * @param i_FilterColNoArr  按输出字段位置过滤。
      * @return
      */
     public static XSQLData queryXSQLData(final XSQL i_XSQL ,final String i_SQL ,final int [] i_FilterColNoArr)
@@ -1264,9 +1285,10 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      *
-     * @param i_SQL              常规SQL语句
-     * @param i_StartRow         开始读取的行号。下标从0开始。
-     * @param i_PagePerSize      每页显示多少条数据。只有大于0时，游标分页功能才生效。
+     * @param i_XSQL         查询对象
+     * @param i_SQL          常规SQL语句
+     * @param i_StartRow     开始读取的行号。下标从0开始。
+     * @param i_PagePerSize  每页显示多少条数据。只有大于0时，游标分页功能才生效。
      * @return
      */
     private static XSQLData queryXSQLData_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG ,final int i_StartRow ,final int i_PagePerSize)
@@ -1328,8 +1350,9 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_SQL              常规SQL语句
-     * @param i_FilterColNames   按输出字段名称过滤。
+     * @param i_XSQL            查询对象
+     * @param i_SQL             常规SQL语句
+     * @param i_FilterColNames  按输出字段名称过滤。
      * @return
      */
     private static XSQLData queryXSQLData_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG ,final List<String> i_FilterColNames)
@@ -1391,8 +1414,9 @@ public class XSQLOPQuery
      * @createDate  2019-03-22
      * @version     v1.0
      * 
-     * @param i_SQL              常规SQL语句
-     * @param i_FilterColNoArr   按输出字段位置过滤。
+     * @param i_XSQL            查询对象
+     * @param i_SQL             常规SQL语句
+     * @param i_FilterColNoArr  按输出字段位置过滤。
      * @return
      */
     private static XSQLData queryXSQLData_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG ,final int [] i_FilterColNoArr)
@@ -1455,6 +1479,7 @@ public class XSQLOPQuery
      * @createDate  2018-01-17
      * @version     v1.0
      * 
+     * @param i_XSQL         查询对象
      * @param i_Values       占位符SQL的填充集合。
      * @param i_XSQLBigData  大数据处理接口
      * @return
@@ -1518,6 +1543,7 @@ public class XSQLOPQuery
      * @createDate  2018-01-17
      * @version     v1.0
      * 
+     * @param i_XSQL         查询对象
      * @param i_Values       占位符SQL的填充集合。
      * @param i_Conn         数据库连接
      * @param i_XSQLBigData  大数据处理接口
@@ -1582,6 +1608,7 @@ public class XSQLOPQuery
      * @createDate  2018-01-17
      * @version     v1.0
      * 
+     * @param i_XSQL         查询对象
      * @param i_Values       占位符SQL的填充对象。
      * @param i_XSQLBigData  大数据处理接口
      * @return
@@ -1645,6 +1672,7 @@ public class XSQLOPQuery
      * @createDate  2018-01-17
      * @version     v1.0
      * 
+     * @param i_XSQL         查询对象
      * @param i_Values       占位符SQL的填充对象。
      * @param i_Conn         数据库连接池
      * @param i_XSQLBigData  大数据处理接口
@@ -1705,7 +1733,8 @@ public class XSQLOPQuery
      * @author      ZhengWei(HY)
      * @createDate  2018-01-17
      * @version     v1.0
-     * 
+     *  
+     * @param i_XSQL         查询对象
      * @param i_XSQLBigData  大数据处理接口
      * 
      * @return
@@ -1765,6 +1794,7 @@ public class XSQLOPQuery
      * @createDate  2018-01-17
      * @version     v1.0
      * 
+     * @param i_XSQL         查询对象
      * @param i_Conn         数据库连接
      * @param i_XSQLBigData  大数据处理接口
      * @return
@@ -1826,6 +1856,7 @@ public class XSQLOPQuery
      * @createDate  2018-01-17
      * @version     v1.0
      * 
+     * @param i_XSQL         查询对象
      * @param i_SQL          常规SQL语句
      * @param i_Conn         数据库连接
      * @param i_XSQLBigData  大数据处理接口
@@ -1884,6 +1915,7 @@ public class XSQLOPQuery
      * @createDate  2018-01-17
      * @version     v1.0
      * 
+     * @param i_XSQL         查询对象
      * @param i_SQL          常规SQL语句
      * @param i_XSQLBigData  大数据处理接口
      * @return
@@ -1941,6 +1973,7 @@ public class XSQLOPQuery
      * @createDate  2018-01-17
      * @version     v1.0
      * 
+     * @param i_XSQL         查询对象
      * @param i_SQL          常规SQL语句
      * @param i_Conn         数据库连接
      * @param i_XSQLBigData  大数据处理接口
@@ -2001,6 +2034,7 @@ public class XSQLOPQuery
      * @createDate  2018-01-17
      * @version     v1.0
      * 
+     * @param i_XSQL         查询对象
      * @param i_SQL          常规SQL语句
      * @param i_XSQLBigData  大数据处理接口
      * @return
@@ -2059,7 +2093,8 @@ public class XSQLOPQuery
      * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
-     * @param i_Values           占位符SQL的填充集合。
+     * @param i_XSQL    查询对象
+     * @param i_Values  占位符SQL的填充集合。
      */
     public static XSQLBigger queryBigger(final XSQL i_XSQL ,final Map<String ,?> i_Values)
     {
@@ -2113,6 +2148,7 @@ public class XSQLOPQuery
      * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
+     * @param i_XSQL             查询对象
      * @param i_Values           占位符SQL的填充集合。
      * @param i_FilterColNames   按输出字段名称过滤。
      */
@@ -2168,6 +2204,7 @@ public class XSQLOPQuery
      * 1. 按集合 Map<String ,Object> 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
+     * @param i_XSQL             查询对象
      * @param i_Values           占位符SQL的填充集合。
      * @param i_FilterColNoArr   按输出字段位置过滤。
      */
@@ -2223,7 +2260,8 @@ public class XSQLOPQuery
      * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
-     * @param i_Values              占位符SQL的填充对象。
+     * @param i_XSQL    查询对象
+     * @param i_Values  占位符SQL的填充对象。
      */
     public static XSQLBigger queryBigger(final XSQL i_XSQL ,final Object i_Values)
     {
@@ -2277,8 +2315,9 @@ public class XSQLOPQuery
      * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
-     * @param i_Values              占位符SQL的填充对象。
-     * @param i_FilterColNames   按输出字段名称过滤。
+     * @param i_XSQL            查询对象
+     * @param i_Values          占位符SQL的填充对象。
+     * @param i_FilterColNames  按输出字段名称过滤。
      */
     public static XSQLBigger queryBigger(final XSQL i_XSQL ,final Object i_Values ,final List<String> i_FilterColNames)
     {
@@ -2332,8 +2371,9 @@ public class XSQLOPQuery
      * 1. 按对象 i_Values 填充占位符SQL，生成可执行的SQL语句；
      * 2. 并提交数据库执行SQL，将数据库结果集转化为Java实例对象返回
      * 
-     * @param i_Values           占位符SQL的填充对象。
-     * @param i_FilterColNoArr   按输出字段位置过滤。
+     * @param i_XSQL            查询对象
+     * @param i_Values          占位符SQL的填充对象。
+     * @param i_FilterColNoArr  按输出字段位置过滤。
      */
     public static XSQLBigger queryBigger(final XSQL i_XSQL ,final Object i_Values ,final int [] i_FilterColNoArr)
     {
@@ -2388,7 +2428,8 @@ public class XSQLOPQuery
      * 
      * 2. 通过 getBiggerNextData() 方法获取下一页数据
      * 
-     * @param i_SQL              常规SQL语句
+     * @param i_XSQL 
+     * @param i_SQL   常规SQL语句
      */
     public static XSQLBigger queryBigger(final XSQL i_XSQL ,final String i_SQL)
     {
@@ -2438,8 +2479,9 @@ public class XSQLOPQuery
      * 
      * 2. 通过 getBiggerNextData() 方法获取下一页数据
      * 
-     * @param i_SQL              常规SQL语句
-     * @param i_FilterColNames   按输出字段名称过滤。
+     * @param i_XSQL            查询对象
+     * @param i_SQL             常规SQL语句
+     * @param i_FilterColNames  按输出字段名称过滤。
      */
     public static XSQLBigger queryBigger(final XSQL i_XSQL ,final String i_SQL ,final List<String> i_FilterColNames)
     {
@@ -2489,8 +2531,9 @@ public class XSQLOPQuery
      * 
      * 2. 通过 getBiggerNextData() 方法获取下一页数据
      * 
-     * @param i_SQL              常规SQL语句
-     * @param i_FilterColNoArr   按输出字段位置过滤。
+     * @param i_XSQL 
+     * @param i_SQL             常规SQL语句
+     * @param i_FilterColNoArr  按输出字段位置过滤。
      */
     public static XSQLBigger queryBigger(final XSQL i_XSQL ,final String i_SQL ,final int [] i_FilterColNoArr)
     {
@@ -2540,7 +2583,8 @@ public class XSQLOPQuery
      * 
      * 2. 通过 getBiggerNextData() 方法获取下一页数据
      * 
-     * @param i_SQL              常规SQL语句
+     * @param i_XSQL  查询对象
+     * @param i_SQL   常规SQL语句
      */
     private static XSQLBigger queryBigger_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG)
     {
@@ -2601,8 +2645,9 @@ public class XSQLOPQuery
      * 
      * 2. 通过 getBiggerNextData() 方法获取下一页数据
      * 
-     * @param i_SQL              常规SQL语句
-     * @param i_FilterColNames   按输出字段名称过滤。
+     * @param i_XSQL            查询对象
+     * @param i_SQL             常规SQL语句
+     * @param i_FilterColNames  按输出字段名称过滤。
      */
     private static XSQLBigger queryBigger_Inner(final XSQL i_XSQL ,final String i_SQL ,final DataSourceGroup i_DSG ,final List<String> i_FilterColNames)
     {
@@ -2663,8 +2708,9 @@ public class XSQLOPQuery
      * 
      * 2. 通过 getBiggerNextData() 方法获取下一页数据
      * 
-     * @param i_SQL              常规SQL语句
-     * @param i_FilterColNoArr   按输出字段位置过滤。
+     * @param i_XSQL 
+     * @param i_SQL             常规SQL语句
+     * @param i_FilterColNoArr  按输出字段位置过滤。
      */
     private static XSQLBigger queryBigger_Inner(final XSQL i_XSQL ,final String i_SQL ,DataSourceGroup i_DSG ,final int [] i_FilterColNoArr)
     {

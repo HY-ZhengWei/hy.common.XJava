@@ -1888,6 +1888,7 @@ public final class XJSON
      * @author      ZhengWei(HY)
      * @createDate  2021-01-15
      * @version     v1.0
+     *              v2.0  2026-08-25  删除：逗号判定非法Json格式规则
      *
      * @param i_JsonText
      * @return
@@ -1943,6 +1944,8 @@ public final class XJSON
                 {
                     v_HaveGoto =  false;
                 }
+                // 对于 {"id": "1", "bookName": "B1", "bookVector": [1.0 ,-1.0]} 字符将无法正确识别为Json。因而先删除 Del 2026-08-25
+                /*
                 else if ( v_One == ',' )
                 {
                     if ( v_JT.charAt(i + 1) != '"'
@@ -1956,6 +1959,7 @@ public final class XJSON
                     
                     v_HaveGoto =  false;
                 }
+                */
                 else if ( v_One == '[' )
                 {
                     if ( v_HaveGoto )

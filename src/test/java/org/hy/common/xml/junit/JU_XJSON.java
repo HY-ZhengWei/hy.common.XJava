@@ -151,6 +151,20 @@ public class JU_XJSON
                      """;
         v_JsonValue = v_XJson.toJava(v_JsonText);
         System.out.println(v_JsonValue);
+        
+        
+        v_JsonText = """
+                [[1,-1] ,[2,-2]]
+                """;
+        v_JsonValue = v_XJson.toJava(v_JsonText);
+        System.out.println(v_JsonValue);
+        
+        
+        v_JsonText = """
+                [[1,-1] ,[2.0,-2]]
+                """;
+        v_JsonValue = v_XJson.toJava(v_JsonText);
+        System.out.println(v_JsonValue);
     }
     
     
