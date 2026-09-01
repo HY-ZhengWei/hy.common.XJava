@@ -1080,7 +1080,15 @@ public final class XJSON
                 List<Object> v_Objects           = new ArrayList<Object>();
                 Object       v_ArrayFirstElement = ((List<Object>)v_ParserRet).get(0);
                 
-                if ( v_ArrayFirstElement instanceof JSONObject )
+                if ( Help.isBasicDataType(v_ArrayFirstElement.getClass()) )
+                {
+                    List<Object> v_ParserRetArr = (List<Object>) v_ParserRet;
+                    for (Object v_Item : v_ParserRetArr)
+                    {
+                        v_Objects.add(v_Item);
+                    }
+                }
+                else if ( v_ArrayFirstElement instanceof JSONObject )
                 {
                     List<JSONObject> v_ParserRetArr = (List<JSONObject>) v_ParserRet;
                     for (JSONObject v_Item : v_ParserRetArr)
@@ -1089,7 +1097,7 @@ public final class XJSON
                         v_Objects.add(parser(v_JSONRoot ,i_Class));
                     }
                 }
-                else if ( v_ParserRet instanceof List )
+                else if ( v_ArrayFirstElement instanceof List )
                 {
                     List<JSONArray> v_ParserRetArr = (List<JSONArray>) v_ParserRet;
                     for (JSONArray v_Item : v_ParserRetArr)
