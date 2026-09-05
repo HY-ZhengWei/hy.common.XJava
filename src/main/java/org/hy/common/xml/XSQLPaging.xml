@@ -53,6 +53,19 @@
         </sql>
         
         
+        <!-- 查询时序库IoTDB的分页模板SQL -->
+        <!-- :StartIndex  下标从0开始 -->
+        <sql id="XSQLPaging_IOTDB">
+        
+            <value>
+                <![CDATA[
+                    :SQLPaging LIMIT :PagePerCount OFFSET :StartIndex
+                ]]>
+            </value>
+            
+        </sql>
+        
+        
         <!-- 查询Oracle的分页模板SQL -->
         <!-- :StartIndex  下标从0开始 -->
         <sql id="XSQLPaging_ORACLE">

@@ -184,6 +184,32 @@
         
         
         
+        <!-- 查询时序库IoTDB表、视图的元数据信息（按名称） -->
+        <sql id="XSQL_DBMetadata_QueryByName_IoTDB" new="true">
+        
+            <content>
+                <![CDATA[
+                SELECT  A.ObjectName  AS ONAME
+                  FROM  (
+                          SELECT  Table_Name      AS ObjectName
+                                 ,Database        AS DBName 
+                           FROM  INFORMATION_SCHEMA.Tables  
+                          UNION  ALL
+                          SELECT  Table_Name      AS ObjectName
+                                 ,Database        AS DBName 
+                           FROM  INFORMATION_SCHEMA.Views  
+                 WHERE  
+              <[   AND  UPPER(A.ObjectName) = UPPER(':objectName')   ]>
+                ]]>
+            </content>
+            
+            <result>
+                <row>java.util.HashMap</row>
+                <cfill>put(colName ,colValue)</cfill>
+                <cstyle>NORMAL</cstyle>
+            </result>
+            
+        </sql>
         
         
         
@@ -390,6 +416,33 @@
                   FROM  PG_Tables  A
                  WHERE  A.schemaname       = 'public'
                    AND  UPPER(A.tablename) = UPPER(':objectName')
+                ]]>
+            </content>
+            
+        </sql>
+        
+        
+        
+        <!-- 生成IoTDB时序库删除对象的SQL语句 -->
+        <sql id="XSQL_DBMetadata_DropByName_IoTDB" new="true">
+        
+            <content>
+                <![CDATA[
+                SELECT  A.DropSQL
+                  FROM  (
+                          SELECT  Table_Name      AS ObjectName
+                                 ,Database        AS DBName 
+                                 ,'TABLE'         AS ObjectType
+                                 ,CONCAT('DROP TABLE           ' ,Table_Name) AS DropSQL
+                           FROM  INFORMATION_SCHEMA.Tables  
+                          UNION  ALL
+                          SELECT  Table_Name      AS ObjectName
+                                 ,Database        AS DBName 
+                                 ,'VIEW'          AS ObjectType
+                                 ,CONCAT('DROP VIEW            ' ,Table_Name) AS DropSQL
+                           FROM  INFORMATION_SCHEMA.Views  
+                        )  A
+                 WHERE  UPPER(A.ObjectName) = UPPER(':objectName')
                 ]]>
             </content>
             
