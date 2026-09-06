@@ -55,6 +55,8 @@ import oracle.sql.CLOB;
  *              v3.0  2023-04-20  添加：单行数据的批量操作（预解释执行模式）
  *              v3.1  2023-05-17  添加：预解释执行模式异常时，同样输出具体数值，而不是一大堆?问号
  *              v4.0  2023-10-17  添加：是否附加触发额外参数的功能
+ *              v5.0  2026-09-06  添加：支持IoTDB时序库。因为 org.apache.iotdb.jdbc.IoTDBStatement类的executeUpdateSQL()方法，在成功时返回 0 值
+ *                                     时序库IoTDB版本为：2.0.10
  */
 public class XSQLOPUpdate
 {
@@ -369,8 +371,18 @@ public class XSQLOPUpdate
             
             v_Conn      = i_XSQL.getConnection("XSQLOPUpdate.executeUpdate_Inner" ,i_DSG);
             v_Statement = v_Conn.createStatement();
+            
             int v_Count = v_Statement.executeUpdate(i_SQL);
             i_XSQL.log(i_SQL);
+            
+            // IoTDB时序库的 org.apache.iotdb.jdbc.IoTDBStatement类的executeUpdateSQL()方法，在成功时返回 0 值。ADD 2026-09-06
+            if ( DataSourceGroup.$DBType_IoTDB.equals(i_DSG.getDbProductType()) )
+            {
+                if ( v_Count == 0 )
+                {
+                    v_Count = 1;
+                }
+            }
             
             Date v_EndTime = Date.getNowTime();
             i_XSQL.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Count);
@@ -696,6 +708,15 @@ public class XSQLOPUpdate
             v_Statement = i_Conn.createStatement();
             int v_Count = v_Statement.executeUpdate(i_SQL);
             i_XSQL.log(i_SQL);
+            
+            // IoTDB时序库的 org.apache.iotdb.jdbc.IoTDBStatement类的executeUpdateSQL()方法，在成功时返回 0 值。ADD 2026-09-06
+            if ( DataSourceGroup.$DBType_IoTDB.equals(i_XSQL.getDataSourceGroup().getDbProductType()) )
+            {
+                if ( v_Count == 0 )
+                {
+                    v_Count = 1;
+                }
+            }
             
             Date v_EndTime = Date.getNowTime();
             i_XSQL.success(v_EndTime ,v_EndTime.getTime() - v_BeginTime ,1 ,v_Count);
@@ -1096,6 +1117,15 @@ public class XSQLOPUpdate
             
             for (int v_Count : v_CountArr)
             {
+                // IoTDB时序库的 org.apache.iotdb.jdbc.IoTDBStatement类的executeUpdateSQL()方法，在成功时返回 0 值。ADD 2026-09-06
+                if ( DataSourceGroup.$DBType_IoTDB.equals(i_XSQL.getDataSourceGroup().getDbProductType()) )
+                {
+                    if ( v_Count == 0 )
+                    {
+                        v_Count = 1;
+                    }
+                }
+                
                 if ( v_Count >= 1 )
                 {
                     v_Ret += v_Count;
@@ -1376,6 +1406,16 @@ public class XSQLOPUpdate
                     {
                         v_SQL       = i_XSQL.getContent().getSQL(i_ObjList.get(i) ,v_DSG);
                         v_SQLCount = v_Statement.executeUpdate(v_SQL);
+                        
+                        // IoTDB时序库的 org.apache.iotdb.jdbc.IoTDBStatement类的executeUpdateSQL()方法，在成功时返回 0 值。ADD 2026-09-06
+                        if ( DataSourceGroup.$DBType_IoTDB.equals(i_XSQL.getDataSourceGroup().getDbProductType()) )
+                        {
+                            if ( v_SQLCount == 0 )
+                            {
+                                v_SQLCount = 1;
+                            }
+                        }
+                        
                         if ( v_SQLCount >= 1 )
                         {
                             v_Ret += v_SQLCount;
@@ -1399,6 +1439,16 @@ public class XSQLOPUpdate
                     {
                         v_SQL      = i_XSQL.getContent().getSQL(i_ObjList.get(i) ,v_DSG);
                         v_SQLCount = v_Statement.executeUpdate(v_SQL);
+                        
+                        // IoTDB时序库的 org.apache.iotdb.jdbc.IoTDBStatement类的executeUpdateSQL()方法，在成功时返回 0 值。ADD 2026-09-06
+                        if ( DataSourceGroup.$DBType_IoTDB.equals(i_XSQL.getDataSourceGroup().getDbProductType()) )
+                        {
+                            if ( v_SQLCount == 0 )
+                            {
+                                v_SQLCount = 1;
+                            }
+                        }
+                        
                         if ( v_SQLCount >= 1 )
                         {
                             v_Ret += v_SQLCount;
@@ -1745,6 +1795,15 @@ public class XSQLOPUpdate
                 
                 for (int v_Count : v_CountArr)
                 {
+                    // IoTDB时序库的 org.apache.iotdb.jdbc.IoTDBStatement类的executeUpdateSQL()方法，在成功时返回 0 值。ADD 2026-09-06
+                    if ( DataSourceGroup.$DBType_IoTDB.equals(i_XSQL.getDataSourceGroup().getDbProductType()) )
+                    {
+                        if ( v_Count == 0 )
+                        {
+                            v_Count = 1;
+                        }
+                    }
+                    
                     if ( v_Count >= 1 )
                     {
                         v_Ret += v_Count;
@@ -1800,6 +1859,15 @@ public class XSQLOPUpdate
                             
                             for (int v_Count : v_CountArr)
                             {
+                                // IoTDB时序库的 org.apache.iotdb.jdbc.IoTDBStatement类的executeUpdateSQL()方法，在成功时返回 0 值。ADD 2026-09-06
+                                if ( DataSourceGroup.$DBType_IoTDB.equals(i_XSQL.getDataSourceGroup().getDbProductType()) )
+                                {
+                                    if ( v_Count == 0 )
+                                    {
+                                        v_Count = 1;
+                                    }
+                                }
+                                
                                 if ( v_Count >= 1 )
                                 {
                                     v_Ret += v_Count;
