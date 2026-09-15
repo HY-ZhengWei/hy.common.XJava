@@ -372,16 +372,8 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
             
             if ( v_Ret == null )
             {
-                if ( i_BeanName.equals("healthContributorRegistry") )
-                {
-                    // 忽略Spring对Neo4j的健康监控。详见 management.health.neo4j.enabled = false
-                    // Nothing.
-                }
-                else
-                {
-                    exce.printStackTrace();
-                    throw exce;
-                }
+                exce.printStackTrace();
+                throw exce;
             }
         }
         catch (Throwable exce)
@@ -429,16 +421,8 @@ public class XJavaSpringObjectFactotry extends DefaultListableBeanFactory
             
             if ( v_Ret == null )
             {
-                if ( i_BeanName.equals("healthContributorRegistry") )
-                {
-                    // 忽略Spring对Neo4j的健康监控。详见 management.health.neo4j.enabled = false
-                    // Nothing.
-                }
-                else
-                {
-                    exce.printStackTrace();
-                    throw exce;
-                }
+                exce.printStackTrace();
+                throw exce;
             }
         }
         catch (Throwable exce)
