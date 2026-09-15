@@ -136,6 +136,7 @@ import org.hy.common.xml.plugins.XRule;
  *              v24.0 2025-11-24  优化：生成分页对象时，设置XJavaID
  *                                添加：对外提删除克隆生成的分页对象
  *              v25.0 2026-04-10  添加：实现深度克隆方法
+ *              v26.0 2026-09-15  优化：克隆XID时，用原对象XID+新对象的UUID组合成
  */
 /*
  * 游标类型的说明
@@ -436,7 +437,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID ,Cloneable
         this.callParamOutCount  = 0;
         this.batchCommit        = 0;
         this.allowExecutesSplit = false;
-        this.uuid               = StringHelp.getUUID();
+        this.uuid               = StringHelp.getUUID9n();
         this.requestCount       = 0L;
         this.successCount       = 0L;
         this.successTimeLen     = 0D;
@@ -457,7 +458,15 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID ,Cloneable
     {
         XSQL v_Clone = new XSQL();
         
-        v_Clone.setDataSourceGroup(    this.getDataSourceGroup());     // 不深度克隆，而是采用引用的方式
+        // 不深度克隆，而是采用引用的方式
+        if ( !Help.isNull(this.dataSourceGroups) )
+        {
+            for (DataSourceGroup v_DataSourceGroup : this.dataSourceGroups)
+            {
+                v_Clone.setDataSourceGroup(v_DataSourceGroup);
+            }
+        }
+        
         v_Clone.setDomain(             this.getDomain());              // 不深度克隆，而是采用引用的方式
         v_Clone.setContent(            this.getContent().getSqlText());
         v_Clone.setResult((XSQLResult) this.getResult().clone());
@@ -481,7 +490,7 @@ public final class XSQL implements Comparable<XSQL> ,XJavaID ,Cloneable
         v_Clone.setAfterRule(          this.getAfterRule());           // 不深度克隆，而是采用引用的方式
         v_Clone.setGetID(              this.isGetID());
         
-        // v_Clone.setXJavaID();                                       // 禁止深度克隆
+        v_Clone.setXJavaID(this.getXJavaID() + this.getObjectID());    // 克隆，但XID不同
         // v_Clone.setCreate();                                        // 禁止深度克隆
         
         return v_Clone;
