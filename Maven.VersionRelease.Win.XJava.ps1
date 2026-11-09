@@ -1,3 +1,9 @@
+param(
+    [string]$mode = ""   # 当 -mode org 时，只处理路径包含resources目录下的pom.xml
+)
+
+
+
 $pomPath = "pom.xml"
 $targetDir = ".."                            # 要替换的目标目录
 $targetArtifactId = "hy.common.xjava"        # 要匹配的artifactId
@@ -12,6 +18,7 @@ if (Test-Path $pomPath) {
     # 加载XML文件并解析版本号
     $pomXml = [xml](Get-Content $pomPath -Encoding UTF8)
     $newVersion = $pomXml.project.version
+    $sourcePomPath = (Resolve-Path $pomPath).Path
     
     # 显示版本号
     if ($newVersion) {
@@ -46,7 +53,8 @@ $targetPomFiles = Get-ChildItem -Path $targetDir -Filter "pom.xml" -Recurse |
         $_.FullName -notlike "*hy.common.db*" -and 
         $_.FullName -notlike "*hy.common.license*" -and 
         $_.FullName -notlike "*hy.common.net*" -and 
-        $_.FullName -notlike "*hy.common.xcql*"
+        $_.FullName -notlike "*hy.common.xcql*" -and
+        ( $mode -ne "org" -or $_.FullName.Contains("resources") )
     }
 
 if ($targetPomFiles.Count -eq 0) {
