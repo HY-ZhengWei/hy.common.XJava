@@ -6,7 +6,7 @@
 
     <groupId>org</groupId>
     <artifactId>hy.common.xjava</artifactId>
-    <version>5.0.6</version>
+    <version>5.0.7</version>
     <packaging>jar</packaging>
 
     <name>org.hy.common.xjava</name>
@@ -40,14 +40,14 @@
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.base</artifactId>
-            <version>1.0.213</version>
+            <version>1.0.217</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org</groupId>
             <artifactId>hy.common.file</artifactId>
-            <version>1.6.8</version>
+            <version>1.7.0</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>

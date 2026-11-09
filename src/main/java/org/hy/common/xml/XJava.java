@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -33,6 +34,7 @@ import org.hy.common.Help;
 import org.hy.common.ListMap;
 import org.hy.common.MethodReflect;
 import org.hy.common.PartitionMap;
+import org.hy.common.Queue;
 import org.hy.common.Return;
 import org.hy.common.StaticReflect;
 import org.hy.common.StringHelp;
@@ -109,6 +111,7 @@ import org.xml.sax.InputSource;
  *              v2.4  2026-05-21  添加：众包引用模式
  *              v2.5  2026-06-03  添加：For循环批量创建对象
  *              v2.6  2026-07-13  添加：builder模型创建对象
+ *              v2.7  2026-11-09  添加：多个队列统一管理的队列池QueueMap
  */
 public final class XJava
 {
@@ -291,6 +294,12 @@ public final class XJava
      * $SessionMap 只负责运行过程中动态添加的对象，不对XML配置文件中的对象生效。
      */
     private final static ExpireCache<String ,XJavaObject> $SessionMap                 = new ExpireCache<String ,XJavaObject>();
+    
+    /**
+     * 专用于保存多队列数据（采用：先进先出）
+     * 用独立的方法添加对象数据和获取对象数据 
+     */
+    private final static Map<String ,Queue<XJavaObject>>  $QueueMap                   = new ConcurrentHashMap<>();
     
     /**
      * TreeMap.TreeNode.orderByID的最大长度。
@@ -723,6 +732,33 @@ public final class XJava
         {
             return null;
         }
+    }
+    
+    
+    
+    /**
+     * 队列数据弹出
+     * 
+     * 注：队列数据与对象池是相对独立的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-11-09
+     * @version     v1.0
+     *
+     * @param i_QueueXID  队列XID
+     * @return
+     */
+    public static Object getQueue(String i_QueueXID)
+    {
+        Queue<XJavaObject> v_Queue  = $QueueMap.get(i_QueueXID);
+        XJavaObject        v_Object = null;
+        
+        if ( v_Queue != null )
+        {
+            v_Object = v_Queue.get();
+        }
+        
+        return v_Object;
     }
     
     
@@ -1631,6 +1667,28 @@ public final class XJava
     public static void putObject(String i_XID ,Object i_Object ,long i_Second)
     {
         $SessionMap.put(i_XID ,new XJavaObject(i_XID ,i_Object) ,i_Second);
+    }
+    
+    
+    
+    
+    /**
+     * 队列中添加数据
+     * 
+     * 注：队列数据与对象池是相对独立的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2026-11-09
+     * @version     v1.0
+     *
+     * @param i_QueueXID  队列XID
+     * @param i_XID       数据XID
+     * @param i_Object    数据
+     */
+    public static synchronized void putQueue(String i_QueueXID ,String i_XID ,Object i_Object)
+    {
+        $QueueMap.putIfAbsent(i_QueueXID ,new Queue<>());
+        $QueueMap.get(i_QueueXID).put(new XJavaObject(i_XID ,i_Object));
     }
     
     

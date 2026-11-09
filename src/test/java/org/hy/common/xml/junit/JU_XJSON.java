@@ -1348,6 +1348,21 @@ public class JU_XJSON
         
         System.out.println(XJSON.format(v_Value ,"    " ," " ,"\n"));
     }
+    
+    
+    
+    @Test
+    public void test_JsonToJava_20261027() throws Exception
+    {
+        String v_Text = """
+                        """;
+        
+        XJSON v_Json = new XJSON();
+        
+        System.out.println(Date.getTimeNano());
+        v_Json.toJava(v_Text);
+        System.out.println(Date.getTimeNano());
+    }
 
     
     
