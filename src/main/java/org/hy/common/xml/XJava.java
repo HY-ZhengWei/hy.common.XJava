@@ -750,15 +750,27 @@ public final class XJava
      */
     public static Object getQueue(String i_QueueXID)
     {
-        Queue<XJavaObject> v_Queue  = $QueueMap.get(i_QueueXID);
-        XJavaObject        v_Object = null;
+        Queue<XJavaObject> v_Queue   = $QueueMap.get(i_QueueXID);
+        XJavaObject        v_XObject = null;
         
         if ( v_Queue != null )
         {
-            v_Object = v_Queue.get();
+            v_XObject = v_Queue.get();
+            
+            if ( v_XObject != null )
+            {
+                try
+                {
+                    return v_XObject.getObject(false);
+                }
+                catch (NoSuchMethodException exce)
+                {
+                    $Logger.error(exce);
+                }
+            }
         }
         
-        return v_Object;
+        return null;
     }
     
     
