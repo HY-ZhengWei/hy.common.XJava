@@ -13,7 +13,7 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStreamAwareEx;
 import net.minidev.json.JSONStyle;
 import net.minidev.json.JSONValue;
-import net.minidev.json.reader.JsonWriter;
+import net.minidev.json.reader.JsonWriterI;
 
 
 
@@ -40,6 +40,50 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
 {
 
     private static final long serialVersionUID = -503443796854799292L;
+    
+    
+    public static final JsonWriterI<Map<String, ? extends Object>> JSONMapWriter =
+            new JsonWriterI<Map<String, ? extends Object>>() {
+              public <E extends Map<String, ? extends Object>> void writeJSONString(
+                  E map, Appendable out, JSONStyle compression) throws IOException {
+                boolean first = true;
+                compression.objectStart(out);
+                /** do not use <String, Object> to handle non String key maps */
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                  Object v = entry.getValue();
+                  if (v == null && compression.ignoreNull()) continue;
+                  if (first) {
+                    compression.objectFirstStart(out);
+                    first = false;
+                  } else {
+                    compression.objectNext(out);
+                  }
+                  XJSONObject.writeJSONKV_20261112(entry.getKey().toString(), v, out, compression);
+                  // JsonWriter.writeJSONKV(entry.getKey().toString(), v, out, compression);
+                  // compression.objectElmStop(out);
+                }
+                compression.objectStop(out);
+              }
+            };
+            
+            
+    public static void writeJSONKV_20261112(String key, Object value, Appendable out, JSONStyle compression)
+            throws IOException {
+          if (key == null) out.append("null");
+          else if (!compression.mustProtectKey(key)) out.append(key);
+          else {
+            out.append('"');
+            JSONValue.escape(key, out, compression);
+            out.append('"');
+          }
+          compression.objectEndOfKey(out);
+          out.append(' ');
+          if (value instanceof String) {
+            compression.writeString(out, (String) value);
+          } else JSONValue.writeJSONString(value, out, compression);
+          compression.objectElmStop(out);
+        }
+            
     
     /**
      * 转为 JSONObject 类，可用对外统一返回类型
@@ -194,7 +238,8 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
         out.append("null");
         return;
       }
-      JsonWriter.JSONMapWriter.writeJSONString(map, out, compression);
+      XJSONObject.JSONMapWriter.writeJSONString(map, out, compression);
+      // JsonWriter.JSONMapWriter.writeJSONString(map, out, compression);
     }
 
     /** serialize Object as json to an stream */
