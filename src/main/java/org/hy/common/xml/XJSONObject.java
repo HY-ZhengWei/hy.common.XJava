@@ -32,6 +32,7 @@ import net.minidev.json.reader.JsonWriter;
  *              v2.0  2021-12-13  添加：从JSONObject转本类时，自动排序后初始的功能
  *              v3.0  2026-05-08  升级：引用Json-Smart 2.6.0 版本的源码
  *                                升级：对于末尾是数字的按自然数排序
+ *              v3.1  2026-11-12  修正：冒号后固定追加一个空格。合作解决人：许辉
  * 
  * @see net.minidev.json.JSONObject;
  */
@@ -104,7 +105,7 @@ public class XJSONObject extends LinkedHashMap<String ,Object> implements JSONAw
         JSONValue.escape(key, out, compression);
         out.append('"');
       }
-      out.append(':');
+      out.append(':').append(' ');
       if (value instanceof String) compression.writeString(out, (String) value);
       else JSONValue.writeJSONString(value, out, compression);
     }
